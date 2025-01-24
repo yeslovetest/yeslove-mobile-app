@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for,flash  # Add render/ # Add session here
-from app.models import User, Post, Comment, Follow, db
+from app.models import User, Post, Comment, Follow, Like, ProfessionalDetails, db
 from flask_sqlalchemy import SQLAlchemy
 from app import bcrypt
 from flask import redirect
@@ -96,7 +96,8 @@ def signup():
 
     # Check if the email is already registered
     if User.query.filter_by(email=email).first():
-        return jsonify({'message': 'Email already registered'}), 400
+        flash('Email is already registered. Please log in.', 'danger')
+        return redirect(url_for('main.signup'))
 
     # Create the user
     new_user = User(username=username, email=email, password=password, is_professional=is_professional)
@@ -105,11 +106,45 @@ def signup():
 
     # Save professional details if applicable
     if is_professional:
-        # Save the license number and specialization to another table if needed
-        pass
+        professional_details = ProfessionalDetails(
+            user_id=new_user.id,
+            license=license_number,
+            specialization=specialization
+        )
+        db.session.add(professional_details)
+        db.session.commit()
 
-    return jsonify({'message': 'User created successfully', 'user_id': new_user.id}), 201
+    # Log the user in
+    session['user_id'] = new_user.id
 
+    # Redirect to the profile page after signup
+    return redirect(url_for('main.profile', user_id=new_user.id))
+
+
+#profile
+@main.route('/update_profile/<int:user_id>', methods=['GET', 'POST'])
+def update_profile(user_id):
+    """Allow users to update their profile."""
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        # Handle profile update
+        user.username = request.form.get('username', user.username)
+        user.bio = request.form.get('bio', user.bio)
+        # Handle additional updates like profile picture, etc.
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('main.profile', user_id=user.id))
+    
+    return render_template('update_profile.html', user=user)
+
+
+@main.route('/profile/<int:user_id>', methods=['GET'])
+def profile(user_id):
+    """Fetch user profile and posts."""
+    user = User.query.get_or_404(user_id)
+    posts = Post.query.filter_by(user_id=user_id).all()
+    return render_template('profile.html', user=user, posts=posts)
 
 
 # --- Feed and Post Routes ---
