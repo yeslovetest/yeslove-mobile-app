@@ -1,7 +1,10 @@
 from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for,flash  # Add render/ # Add session here
-from app.models import User, Post, Comment, Follow, Like, ProfessionalDetails, db
+from app.models import User, Post, Comment, Follow, Like, Chat, ProfessionalDetails, db
 from flask_sqlalchemy import SQLAlchemy
+import os
 from app import bcrypt
+from werkzeug.utils import secure_filename  # Import secure_filename
+from app.utils import allowed_file
 from flask import redirect
 
 
@@ -147,6 +150,54 @@ def profile(user_id):
     return render_template('profile.html', user=user, posts=posts)
 
 
+
+@main.route('/upload_profile_pic', methods=['POST'])
+def upload_profile_pic():
+    """Handle profile picture upload."""
+    if 'profile_pic' not in request.files:
+        return jsonify({'message': 'No file part'}), 400
+
+    file = request.files['profile_pic']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
+
+    # Ensure the file type is allowed
+    if not allowed_file(file.filename):
+        return jsonify({'message': 'Invalid file type'}), 400
+
+    # Save the file and update the user's profile picture
+    filename = secure_filename(file.filename)
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    file.save(os.path.join(upload_folder, filename))
+
+    user = User.query.get(session['user_id'])
+    if user:
+        user.profile_pic = filename
+        db.session.commit()
+        return jsonify({'message': 'Profile picture updated successfully', 'filename': filename}), 200
+    else:
+        return jsonify({'message': 'User not found'}), 404
+
+
+
+@main.route('/add_friend/<int:user_id>', methods=['POST'])
+def add_friend(user_id):
+    current_user_id = session['user_id']
+    if current_user_id == user_id:
+        return jsonify({'message': 'You cannot add yourself as a friend'}), 400
+
+    # Check if already friends
+    existing_friendship = Follow.query.filter_by(follower_id=current_user_id, followed_id=user_id).first()
+    if existing_friendship:
+        return jsonify({'message': 'Already friends'}), 400
+
+    # Create friendship
+    new_friendship = Follow(follower_id=current_user_id, followed_id=user_id)
+    db.session.add(new_friendship)
+    db.session.commit()
+    return jsonify({'message': 'Friend added successfully'}), 200
+
+
 # --- Feed and Post Routes ---
 
 @main.route('/feed/<int:user_id>', methods=['GET'])
@@ -161,9 +212,25 @@ def feed(user_id):
     # Fetch posts, ordered by timestamp
     posts = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc()).all()
 
-    # Return posts as JSON
-    return jsonify([
-        {
+    # Fetch post data
+    feed_data = []
+    for post in posts:
+        # Determine if the current user liked the post
+        liked_by_user = any(like.user_id == user_id for like in post.likes)
+
+        # Fetch the latest 3 comments for the post
+        latest_comments = post.comments[-3:]  # Adjust the number to fetch more or fewer comments
+        comments_data = [
+            {
+                'author': comment.author.username,
+                'author_pic': comment.author.profile_pic,
+                'content': comment.content,
+                'timestamp': comment.timestamp.isoformat()
+            }
+            for comment in latest_comments
+        ]
+
+        feed_data.append({
             'id': post.id,
             'author': post.author.username,
             'author_pic': post.author.profile_pic,
@@ -171,20 +238,28 @@ def feed(user_id):
             'image': post.image,
             'timestamp': post.timestamp.isoformat(),
             'likes': len(post.likes),
-            'comments': len(post.comments)
-        }
-        for post in posts
-    ])
+            'liked_by_user': liked_by_user,
+            'comments': comments_data
+        })
+
+    # Return feed data as JSON
+    return jsonify(feed_data)
 
 
 @main.route('/post', methods=['POST'])
 def create_post():
-    """Create a new post."""
     data = request.json
-    post = Post(content=data['content'], image=data.get('image'), user_id=data['user_id'])
+    content = data.get('content')
+    user_id = session['user_id']
+
+    if not content:
+        return jsonify({'message': 'Post content cannot be empty'}), 400
+
+    post = Post(content=content, user_id=user_id)
     db.session.add(post)
     db.session.commit()
-    return jsonify({'message': 'Post created successfully', 'post_id': post.id}), 201
+    return jsonify({'message': 'Post created successfully'}), 201
+
 
 
 @main.route('/post/<int:post_id>', methods=['GET'])
@@ -208,18 +283,20 @@ def get_post(post_id):
 @main.route('/post/<int:post_id>/like', methods=['POST'])
 def like_post(post_id):
     """Like or unlike a post."""
-    user_id = request.json['user_id']
+    user_id = session['user_id']
     existing_like = Like.query.filter_by(user_id=user_id, post_id=post_id).first()
 
     if existing_like:
+        # Unlike the post
         db.session.delete(existing_like)
         db.session.commit()
-        return jsonify({'message': 'Like removed'})
+        return jsonify({'message': 'Like removed'}), 200
     else:
+        # Like the post
         new_like = Like(user_id=user_id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
-        return jsonify({'message': 'Post liked'})
+        return jsonify({'message': 'Post liked'}), 201
 
 
 # --- Comment Routes ---
@@ -227,11 +304,18 @@ def like_post(post_id):
 @main.route('/post/<int:post_id>/comment', methods=['POST'])
 def add_comment(post_id):
     """Add a comment to a post."""
+    user_id = session['user_id']
     data = request.json
-    comment = Comment(content=data['content'], user_id=data['user_id'], post_id=post_id)
+    content = data.get('content')
+
+    if not content:
+        return jsonify({'message': 'Comment cannot be empty'}), 400
+
+    comment = Comment(content=content, user_id=user_id, post_id=post_id)
     db.session.add(comment)
     db.session.commit()
-    return jsonify({'message': 'Comment added successfully', 'comment_id': comment.id}), 201
+
+    return jsonify({'message': 'Comment added successfully'}), 201
 
 
 @main.route('/post/<int:post_id>/comments', methods=['GET'])
@@ -249,18 +333,26 @@ def get_comments(post_id):
 @main.route('/follow/<int:user_id>', methods=['POST'])
 def follow(user_id):
     """Follow or unfollow a user."""
-    current_user_id = request.json['current_user_id']
-    existing_follow = Follow.query.filter_by(follower_id=current_user_id, followed_id=user_id).first()
+    current_user_id = session['user_id']
+    follow_action = request.json.get('action', 'follow')  # Either 'follow' or 'unfollow'
 
+    if follow_action == 'unfollow':
+        existing_follow = Follow.query.filter_by(follower_id=current_user_id, followed_id=user_id).first()
+        if existing_follow:
+            db.session.delete(existing_follow)
+            db.session.commit()
+            return jsonify({'message': 'Unfollowed successfully'}), 200
+        return jsonify({'message': 'You are not following this user'}), 400
+
+    # Handle follow action
+    existing_follow = Follow.query.filter_by(follower_id=current_user_id, followed_id=user_id).first()
     if existing_follow:
-        db.session.delete(existing_follow)
-        db.session.commit()
-        return jsonify({'message': 'Unfollowed successfully'})
-    else:
-        new_follow = Follow(follower_id=current_user_id, followed_id=user_id)
-        db.session.add(new_follow)
-        db.session.commit()
-        return jsonify({'message': 'Followed successfully'})
+        return jsonify({'message': 'Already following'}), 400
+
+    new_follow = Follow(follower_id=current_user_id, followed_id=user_id)
+    db.session.add(new_follow)
+    db.session.commit()
+    return jsonify({'message': 'Followed successfully'}), 201
 
 
 @main.route('/followers/<int:user_id>', methods=['GET'])
@@ -280,4 +372,40 @@ def get_following(user_id):
     return jsonify([
         {'id': follow.followed_id, 'username': follow.followed.username}
         for follow in following
+    ])
+
+@main.route('/send_message', methods=['POST'])
+def send_message():
+    """Send a private message."""
+    sender_id = session['user_id']
+    data = request.json
+    receiver_id = data.get('receiver_id')
+    message = data.get('message')
+
+    if not message or not receiver_id:
+        return jsonify({'message': 'Message and receiver ID are required'}), 400
+
+    if sender_id == receiver_id:
+        return jsonify({'message': 'You cannot message yourself'}), 400
+
+    receiver = User.query.get(receiver_id)
+    if not receiver:
+        return jsonify({'message': 'Receiver not found'}), 404
+
+    new_message = Chat(sender_id=sender_id, receiver_id=receiver_id, message=message)
+    db.session.add(new_message)
+    db.session.commit()
+    return jsonify({'message': 'Message sent successfully'}), 201
+
+
+@main.route('/get_messages/<int:receiver_id>', methods=['GET'])
+def get_messages(receiver_id):
+    sender_id = session['user_id']
+    messages = Chat.query.filter(
+        ((Chat.sender_id == sender_id) & (Chat.receiver_id == receiver_id)) |
+        ((Chat.sender_id == receiver_id) & (Chat.receiver_id == sender_id))
+    ).order_by(Chat.timestamp.asc()).all()
+    return jsonify([
+        {'sender': msg.sender_id, 'receiver': msg.receiver_id, 'message': msg.message, 'timestamp': msg.timestamp}
+        for msg in messages
     ])
