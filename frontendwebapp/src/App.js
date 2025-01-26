@@ -24,13 +24,12 @@
 
 // export default App;
 
-
 import React, { useEffect } from 'react';
 import axios from 'axios';
 
 const App = () => {
     useEffect(() => {
-        axios.get('http://localhost:5000/api/test') // Replace with your Flask endpoint
+        axios.get('http://localhost:5000/api/test') // Replace this with the valid backend endpoint
             .then(response => console.log(response.data))
             .catch(error => console.error('Error fetching data:', error));
     }, []);
