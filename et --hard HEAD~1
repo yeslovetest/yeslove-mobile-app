@@ -1,0 +1,229 @@
+[33mcommit a64d011a0a24228965ea19558d44cf571638f5e8[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: f55814d 3b0d972
+Author: AchailletBadigra <badigraachailletsaturnin@yahoo.fr>
+Date:   Sun Jan 26 21:22:53 2025 +0000
+
+    Merge branch 'main' of https://github.com/yeslovetest/yeslove-mobile-app
+
+[33mcommit f55814d4ba976a23ebbcd8f98db58472de6d8c74[m
+Merge: c824bc1 4776d47
+Author: AchailletBadigra <badigraachailletsaturnin@yahoo.fr>
+Date:   Sun Jan 26 21:21:15 2025 +0000
+
+    Resolved merge conflicts
+
+[33mcommit 3b0d972fc9bc56af30febd7884f415da945ad153[m
+Author: AchailletBadigra <yeslovetest@gmail.com>
+Date:   Sun Jan 26 21:01:55 2025 +0000
+
+    test
+
+[33mcommit c824bc14e2966bf829967e9ecd8de6d79043fee6[m
+Author: AchailletBadigra <badigraachailletsaturnin@yahoo.fr>
+Date:   Sun Jan 26 20:50:04 2025 +0000
+
+    test
+
+[33mcommit 4776d4779aa715b6d5825877439db1a9463e45bc[m
+Author: AchailletBadigra <yeslovetest@gmail.com>
+Date:   Sun Jan 26 20:49:44 2025 +0000
+
+    test
+
+[33mcommit 4caf1f899cc567f04e7baeff4c1f0dec1a6c46dd[m[33m ([m[1;31morigin/yeslovephoneapp[m[33m, [m[1;32myeslovephoneapp[m[33m)[m
+Author: AchailletBadigra <badigraachailletsaturnin@yahoo.fr>
+Date:   Sun Jan 26 20:07:23 2025 +0000
+
+    Added frontendwebapp folder
+
+[33mcommit fb03436022ff32475f2236a7d133058a8889f2b3[m
+Author: AchailletBadigra <yeslovetest@gmail.com>
+Date:   Sun Jan 26 19:33:56 2025 +0000
+
+    test
+
+[33mcommit 0b7bab7d11ac76a74bbb249c9e82a58a58b6b768[m
+Merge: 13e0666 af3ee5f
+Author: AchailletBadigra <yeslovetest@gmail.com>
+Date:   Sun Jan 26 19:10:32 2025 +0000
+
+    Merge branch 'main' of https://github.com/yeslovetest/yeslove-mobile-app
+
+[33mcommit c435f4edf21a7cf0a69d42399d25deecc3c6cdaf[m
+Author: AchailletBadigra <badigraachailletsaturnin@yahoo.fr>
+Date:   Sun Jan 26 03:40:22 2025 +0000
+
+    frontendwebapp folder added
+
+[33mcommit 13e0666ea9884a785faa63c420e99de837758cb4[m
+Author: AchailletBadigra <badigraachailletsaturnin@yahoo.fr>
+Date:   Sun Jan 26 03:35:41 2025 +0000
+
+    Frontendwebapp folder added
+
+[33mcommit af3ee5fdcc966bf5744ba78217bae0adada481fc[m
+Merge: 80b0538 d977bad
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Sat Jan 25 19:48:33 2025 +0000
+
+    Merge pull request #8 from uche234/CharlesApp_Local
+    
+    Further Modifiction.
+
+[33mcommit 80b0538ecabd013f4d10dcbbff408095c225fb64[m
+Merge: 332c43a 8761580
+Author: Anya <anya@blisslandpizza.com>
+Date:   Sat Jan 25 20:45:26 2025 +0100
+
+    Merge pull request #7 from yeslovetest/create-react-native-project
+    
+    Created initial react native project
+
+[33mcommit d977badfaa5c5aead13108ce9a3295db43f11d2e[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Sat Jan 25 19:40:28 2025 +0000
+
+    Further Modifiction.
+
+[33mcommit 8761580bd22c5650ff379f95fda247604561b26b[m[33m ([m[1;31mupstream/create-react-native-project[m[33m, [m[1;31morigin/create-react-native-project[m[33m)[m
+Author: anyagardner <anya@blisslandpizza.com>
+Date:   Sat Jan 25 15:48:32 2025 +0100
+
+    Created initial react native project
+
+[33mcommit 332c43a21f31376e7bb44a9e0078ce1781bed1db[m
+Merge: d289561 4c18f56
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Fri Jan 24 22:52:30 2025 +0000
+
+    Merge pull request #6 from uche234/CharlesApp_Local
+    
+    Charles app local
+
+[33mcommit 4c18f567f7c658d0aab63b4a1c1fbe5cf6fa53d0[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Fri Jan 24 22:51:50 2025 +0000
+
+    Added profiles templates
+
+[33mcommit dd02ead82259d118cbab2faefba461b739c0b1ac[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Thu Jan 23 22:58:46 2025 +0000
+
+    changes
+
+[33mcommit d289561c1341d84087069a8f6af6d4dc42bd4827[m
+Merge: 85cc3b7 dbf8c1a
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Thu Jan 23 22:44:35 2025 +0000
+
+    Merge pull request #5 from uche234/CharlesApp_Local
+    
+    Charles app local
+
+[33mcommit dbf8c1afa98badae18717c58a4e155f1c9b20c85[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Thu Jan 23 22:43:25 2025 +0000
+
+    Lots more changes, please test
+
+[33mcommit 9713f8430b85d97cd81ff5d334601c128d9b1f0e[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Thu Jan 23 20:43:14 2025 +0000
+
+    Changes to sytle sheet
+
+[33mcommit 4b2d4119988e6abe773fc54f51b91cb66698703c[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Thu Jan 23 20:42:17 2025 +0000
+
+    made further changes
+
+[33mcommit d2cdfb821bdf5c7c73c44531debd9424b3363d36[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Wed Jan 22 19:51:55 2025 +0000
+
+    Add profile.html and Updated the user profile route
+
+[33mcommit 85cc3b7d05026c436ec9c0fe6383238a40d46e46[m
+Merge: 556e459 ce9f761
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Wed Jan 22 11:53:09 2025 +0000
+
+    Merge pull request #4 from uche234/main
+    
+    Merge pull request #1 from yeslovetest/main
+
+[33mcommit ce9f7613830239ae1cca8b2e44ad7a8448baf674[m
+Merge: 90c0fec 556e459
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Wed Jan 22 11:52:31 2025 +0000
+
+    Merge pull request #1 from yeslovetest/main
+    
+    Merge
+
+[33mcommit 556e4592648890667336edb60119360d44ed2356[m
+Merge: 841bb1f 42430ad
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Wed Jan 22 00:31:13 2025 +0000
+
+    Merge pull request #3 from uche234/CharlesApp_Local
+    
+    Charles app local
+
+[33mcommit 42430ad79d93086bdc4a19430f77bef9ca52c230[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Wed Jan 22 00:29:58 2025 +0000
+
+    Removed changes
+
+[33mcommit 6b61186d239cffb05b2d1632da0383693cf060a4[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Wed Jan 22 00:29:19 2025 +0000
+
+    Lots of Changes
+
+[33mcommit 841bb1ff033569f62849c9c3eccea759b28fbea6[m
+Merge: 5643b62 2accc18
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Tue Jan 21 22:31:10 2025 +0000
+
+    Merge pull request #2 from uche234/CharlesApp_Local
+    
+    Make some changes to app.py and created Base.html
+
+[33mcommit 2accc186ec7eda3d2abaa09ba81a9ab93d1b3837[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Tue Jan 21 21:52:10 2025 +0000
+
+    Make some changes to app.py and created Base.html
+
+[33mcommit 5643b628528adb5002b569161804ae53f7b260e0[m
+Merge: 90c0fec 7d1d99c
+Author: uche234 <33845130+uche234@users.noreply.github.com>
+Date:   Tue Jan 21 21:27:17 2025 +0000
+
+    Merge pull request #1 from uche234/CharlesApp_Local
+    
+    Added Home template
+
+[33mcommit 7d1d99ce876bc2aa58a928c218978376c0246efc[m
+Author: uche234 <charlesjackson16@hotmail.co.uk>
+Date:   Tue Jan 21 21:23:45 2025 +0000
+
+    Added Home template
+
+[33mcommit 90c0fec26e733f4c7758c33495e936176deb0512[m
+Author: Leo Badigra <yeslovetest@gmail.com>
+Date:   Mon Jan 20 00:41:52 2025 +0000
+
+    Initial Flask skeleton
+    
+    Initial Flask skeleton
+
+[33mcommit c75c247d77e83d896fd373fd14de671c567baea5[m
+Author: yeslovetest <yeslovetest@gmail.com>
+Date:   Fri Jan 17 23:44:28 2025 +0000
+
+    Initial commit
