@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <style>
+        /* Profile Page Styles */
+        .profile-banner {
+            position: relative;
+            background: url('https://via.placeholder.com/1200x300') no-repeat center center/cover;
+            height: 300px;
+            width: 100%;
+        }
+
+        .profile-picture {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .profile-header h1 {
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .profile-header p {
+            color: gray;
+            font-size: 1rem;
+        }
+
+        .profile-navigation {
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            margin-top: 20px;
+            padding: 10px 0;
+        }
+
+        .profile-navigation a {
+            margin: 0 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .profile-navigation a:hover {
+            text-decoration: underline;
+        }
+
+        .main-content {
+            margin-top: 20px;
+        }
+
+        .post-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-card h5 {
+            margin: 0;
+        }
+
+        .sidebar-widget {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Profile Banner -->
+        <div class="profile-banner">
+            <img src="{{ url_for('static', filename='images/' + user.profile_pic) }}" alt="Profile Picture" class="profile-picture">
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <h1>{{ user.username }}</h1>
+            <p>{{ user.bio }}</p>
+            <a href="{{ url_for('main.update_profile', user_id=user.id) }}" class="btn btn-primary btn-sm">Edit Profile</a>
+        </div>
+
+        <!-- Navigation -->
+        <div class="profile-navigation text-center">
+            <a href="#">Posts</a>
+            <a href="#">About</a>
+            <a href="#">Friends</a>
+            <a href="#">Photos</a>
+        </div>
+
+        <div class="row main-content">
+            <!-- Left Sidebar -->
+            <div class="col-md-4">
+                <div class="sidebar-widget">
+                    <h5>About</h5>
+                    <p>{{ user.bio }}</p>
+                    <p><strong>Location:</strong> {{ user.location or 'Not provided' }}</p>
+                </div>
+
+                <div class="sidebar-widget">
+                    <h5>Followers</h5>
+                    <p>{{ user.followers | length }}</p>
+                </div>
+
+                <div class="sidebar-widget">
+                    <h5>Following</h5>
+                    <p>{{ user.following | length }}</p>
+                </div>
+            </div>
+
+            <!-- Right Content -->
+            <div class="col-md-8">
+                <h5>{{ user.username }}'s Posts</h5>
+                {% if posts %}
+                    {% for post in posts %}
+                        <div class="post-card">
+                            <h5>{{ post.content }}</h5>
+                            <small class="text-muted">{{ post.timestamp }}</small>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-primary">Like</button>
+                                <button class="btn btn-sm btn-outline-secondary">Comment</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No posts to show.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
