@@ -25,3 +25,10 @@ class ProductionConfig(Config):
     """Production environment configuration."""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///production.db'
 
+
+
+class Config:
+    KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")
+    KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "your-realm")
+    KEYCLOAK_ISSUER = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM_NAME}"
+
