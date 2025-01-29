@@ -85,7 +85,7 @@ def require_auth():
 
 
 # -------------------------
-# 🔹 File Upload Helper Function
+# 🔹 File Upload Helper Functions
 # -------------------------
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
