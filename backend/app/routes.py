@@ -1,95 +1,122 @@
-from flask import request, jsonify
-from flask_restx import Namespace, Resource
-from flask_cors import CORS
+from flask import Blueprint, request, jsonify, session, current_app
+import requests
 from app.models import User, Post, Comment, Follow, Like, Chat, db
-from app.utils import require_auth  # ✅ Import Keycloak authentication middleware
+from flask_cors import CORS  # ✅ Allow React Native to connect
+from flask_restx import Namespace, Resource
+from app.utils import require_auth  # ✅ Import Keycloak authentication decorator
 
-# Create Namespace
-api = Namespace("api", description="API Endpoints")
+# ✅ Define the API Namespace
+main_api = Namespace("api", description="API Endpoints")  # ✅ Corrected
 
-# Enable CORS for React Native compatibility
-CORS(api, resources={r"/api/*": {"origins": "*"}})
+# ✅ Enable CORS for React Native compatibility
+main = Blueprint("main", __name__)
+CORS(main, resources={r"/api/*": {"origins": "*"}})
 
-# -------------------------
-# 🚀 PUBLIC ROUTES (NO AUTH REQUIRED)
-# -------------------------
-
-@api.route("/user/<int:user_id>")
-class PublicUserProfile(Resource):
-    def get(self, user_id):
-        """Fetch public user profile (No authentication required)"""
-        user = User.query.get_or_404(user_id)
-        return {
-            "username": user.username,
-            "bio": user.bio,
-            "profile_pic": user.profile_pic,
-        }, 200
-
-@api.route("/public_feed")
-class PublicFeed(Resource):
-    def get(self):
-        """Fetch public posts (No authentication required)"""
-        posts = Post.query.order_by(Post.timestamp.desc()).all()
-        return [{
-            "id": post.id,
-            "author": post.author.username,
-            "content": post.content,
-            "timestamp": post.timestamp.isoformat(),
-            "likes": len(post.likes),
-            "comments": len(post.comments)
-        } for post in posts], 200
 
 # -------------------------
-# 🚀 AUTHENTICATED ROUTES (REQUIRE LOGIN)
+# 🚀 AUTHENTICATION ROUTES (Keycloak)
 # -------------------------
 
-@api.route("/profile")
+@main_api.route("/signup")
+class Signup(Resource):
+    def post(self):
+        """Sign up a new user (Handled by Keycloak)."""
+        return {"message": "Use Keycloak for signup"}, 400
+
+
+@main_api.route("/login")
+class Login(Resource):
+    def post(self):
+        """Redirect users to Keycloak login page."""
+        keycloak_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/auth"
+        return {"login_url": keycloak_url}, 200
+
+@main_api.route("/logout")
+class Logout(Resource):
+    @require_auth()
+    def post(self):
+        """Log out the current user via Keycloak."""
+        token = request.headers.get("Authorization", "").split(" ")[1]
+        keycloak_logout_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/logout"
+
+        response = requests.post(
+            keycloak_logout_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        if response.status_code == 204:
+            return {"message": "Logged out successfully"}, 200
+        else:
+            return {"message": "Logout failed"}, response.status_code
+
+
+# -------------------------
+# 🚀 PROFILE ROUTES
+# -------------------------
+
+@main_api.route("/profile/<int:user_id>")
 class UserProfile(Resource):
-    @require_auth()  # 🔒 Require authentication
-    def get(self):
-        """Fetch user profile (Authenticated)"""
-        user_id = request.user["sub"]
-        user = User.query.get(user_id)
-
-        if not user:
-            return {"message": "User not found"}, 404
-
+    @require_auth()
+    def get(self, user_id):
+        """Get user profile and posts."""
+        user = User.query.get_or_404(user_id)
+        posts = Post.query.filter_by(user_id=user_id).all()
         return {
             "username": user.username,
-            "email": user.email,
             "bio": user.bio,
             "profile_pic": user.profile_pic,
+            "posts": [{"content": post.content, "timestamp": post.timestamp} for post in posts]
         }, 200
 
-@api.route("/feed")
-class Feed(Resource):
-    @require_auth()  # 🔒 Require authentication
-    def get(self):
-        """Fetch posts from followed users"""
-        user_id = request.user["sub"]
-        following_ids = [follow.followed_id for follow in Follow.query.filter_by(follower_id=user_id).all()]
-        following_ids.append(user_id)  # Include user's own posts
 
-        posts = Post.query.filter(Post.user_id.in_(following_ids)).order_by(Post.timestamp.desc()).all()
+@main_api.route("/update_profile")
+class UpdateProfile(Resource):
+    @require_auth()
+    def put(self):
+        """Update user profile."""
+        data = request.json
+        user = User.query.get_or_404(request.user["sub"])  # ✅ Get user from Keycloak token
+        user.bio = data.get("bio", user.bio)
+        user.profile_pic = data.get("profile_pic", user.profile_pic)
+        db.session.commit()
+        return {"message": "Profile updated successfully"}, 200
+
+
+# -------------------------
+# 🚀 FEED & POSTS ROUTES
+# -------------------------
+
+@main_api.route("/feed")
+class Feed(Resource):
+    @require_auth()
+    def get(self):
+        """Fetch posts from users the current user follows."""
+        user_id = request.user["sub"]
+        following = [follow.followed_id for follow in Follow.query.filter_by(follower_id=user_id).all()]
+        following.append(user_id)
+
+        posts = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc()).all()
 
         return [{
             "id": post.id,
             "author": post.author.username,
             "author_pic": post.author.profile_pic,
             "content": post.content,
+            "image": post.image,
             "timestamp": post.timestamp.isoformat(),
             "likes": len(post.likes),
             "comments": len(post.comments)
         } for post in posts], 200
 
-@api.route("/post")
+
+@main_api.route("/post")
 class CreatePost(Resource):
-    @require_auth()  # 🔒 Require authentication
+    @require_auth()
     def post(self):
-        """Create a new post"""
-        user_id = request.user["sub"]
+        """Create a new post."""
         data = request.json
-        content = data.get("content")
+        content = data["content"]
+        user_id = request.user["sub"]
 
         if not content:
             return {"message": "Post content cannot be empty"}, 400
@@ -99,11 +126,16 @@ class CreatePost(Resource):
         db.session.commit()
         return {"message": "Post created successfully"}, 201
 
-@api.route("/post/<int:post_id>/like")
+
+# -------------------------
+# 🚀 LIKES & COMMENTS
+# -------------------------
+
+@main_api.route("/post/<int:post_id>/like")
 class LikePost(Resource):
-    @require_auth()  # 🔒 Require authentication
+    @require_auth()
     def post(self, post_id):
-        """Like or unlike a post"""
+        """Like or unlike a post."""
         user_id = request.user["sub"]
         existing_like = Like.query.filter_by(user_id=user_id, post_id=post_id).first()
 
@@ -117,11 +149,12 @@ class LikePost(Resource):
         db.session.commit()
         return {"message": "Post liked"}, 201
 
-@api.route("/post/<int:post_id>/comment")
+
+@main_api.route("/post/<int:post_id>/comment")
 class AddComment(Resource):
-    @require_auth()  # 🔒 Require authentication
+    @require_auth()
     def post(self, post_id):
-        """Add a comment to a post"""
+        """Add a comment to a post."""
         user_id = request.user["sub"]
         data = request.json
         content = data.get("content")
@@ -132,13 +165,19 @@ class AddComment(Resource):
         comment = Comment(content=content, user_id=user_id, post_id=post_id)
         db.session.add(comment)
         db.session.commit()
+
         return {"message": "Comment added"}, 201
 
-@api.route("/follow/<int:user_id>")
+
+# -------------------------
+# 🚀 FRIEND SYSTEM
+# -------------------------
+
+@main_api.route("/follow/<int:user_id>")
 class FollowUser(Resource):
-    @require_auth()  # 🔒 Require authentication
+    @require_auth()
     def post(self, user_id):
-        """Follow or unfollow a user"""
+        """Follow or unfollow a user."""
         current_user_id = request.user["sub"]
         existing_follow = Follow.query.filter_by(follower_id=current_user_id, followed_id=user_id).first()
 
@@ -152,11 +191,16 @@ class FollowUser(Resource):
         db.session.commit()
         return {"message": "Followed successfully"}
 
-@api.route("/send_message")
+
+# -------------------------
+# 🚀 CHAT SYSTEM
+# -------------------------
+
+@main_api.route("/send_message")
 class SendMessage(Resource):
-    @require_auth()  # 🔒 Require authentication
+    @require_auth()
     def post(self):
-        """Send a private message"""
+        """Send a private message."""
         sender_id = request.user["sub"]
         data = request.json
         receiver_id = data["receiver_id"]
@@ -170,11 +214,12 @@ class SendMessage(Resource):
         db.session.commit()
         return {"message": "Message sent"}, 201
 
-@api.route("/get_messages/<int:receiver_id>")
+
+@main_api.route("/get_messages/<int:receiver_id>")
 class GetMessages(Resource):
-    @require_auth()  # 🔒 Require authentication
+    @require_auth()
     def get(self, receiver_id):
-        """Get chat messages"""
+        """Get chat messages."""
         sender_id = request.user["sub"]
         messages = Chat.query.filter(
             ((Chat.sender_id == sender_id) & (Chat.receiver_id == receiver_id)) |
@@ -183,7 +228,6 @@ class GetMessages(Resource):
 
         return [{"sender": msg.sender_id, "receiver": msg.receiver_id, "message": msg.message, "timestamp": msg.timestamp} for msg in messages], 200
 
-# -------------------------
-# ✅ REGISTER THE API
-# -------------------------
-api.add_namespace(api, path="/api")
+
+# ✅ Register the API correctly
+#api.add_namespace(main_namespace, path="/api")

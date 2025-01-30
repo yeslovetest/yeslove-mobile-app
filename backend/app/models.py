@@ -1,4 +1,3 @@
-from . import db
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()  # ✅ Define db instance without importing `app`

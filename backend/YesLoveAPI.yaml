@@ -1,0 +1,238 @@
+{
+  "swagger": "2.0",
+  "basePath": "/",
+  "paths": {
+    "/api/feed": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Fetch posts from users the current user follows",
+        "operationId": "get_feed",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/follow/{user_id}": {
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Follow or unfollow a user",
+        "operationId": "post_follow_user",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/get_messages/{receiver_id}": {
+      "parameters": [
+        {
+          "name": "receiver_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get chat messages",
+        "operationId": "get_get_messages",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/login": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Redirect users to Keycloak login page",
+        "operationId": "post_login",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Log out the current user via Keycloak",
+        "operationId": "post_logout",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/post": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Create a new post",
+        "operationId": "post_create_post",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/post/{post_id}/comment": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Add a comment to a post",
+        "operationId": "post_add_comment",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/post/{post_id}/like": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Like or unlike a post",
+        "operationId": "post_like_post",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/profile/{user_id}": {
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get user profile and posts",
+        "operationId": "get_user_profile",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/send_message": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Send a private message",
+        "operationId": "post_send_message",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/signup": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Sign up a new user (Handled by Keycloak)",
+        "operationId": "post_signup",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/update_profile": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Update user profile",
+        "operationId": "put_update_profile",
+        "tags": [
+          "api"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "YesLove API",
+    "version": "1.0"
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "api",
+      "description": "API Endpoints"
+    }
+  ],
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
+}
