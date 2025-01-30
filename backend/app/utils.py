@@ -1,13 +1,10 @@
 import json
 import os
 from urllib.request import urlopen
-from functools import wraps
-from flask import request, jsonify
-from authlib.jose import jwt
-from authlib.jose.errors import JoseError
 from authlib.jose.rfc7517.jwk import JsonWebKey
 from authlib.oauth2.rfc7523 import JWTBearerTokenValidator
-
+from authlib.jose import jwt
+from authlib.jose.errors import JoseError
 
 
 # -------------------------
@@ -26,14 +23,14 @@ KEYCLOAK_PUBLIC_KEYS = None
 # 🔹 Fetch & Cache Keycloak Public Keys
 # -------------------------
 def get_keycloak_public_keys():
-    """Fetch Keycloak public keys for JWT validation."""
+    """Fetch and cache Keycloak public keys for JWT validation."""
     global KEYCLOAK_PUBLIC_KEYS
     if not KEYCLOAK_PUBLIC_KEYS:
         try:
             response = urlopen(KEYCLOAK_PUBLIC_KEY_URL)
             KEYCLOAK_PUBLIC_KEYS = json.loads(response.read())
         except Exception as e:
-            print(f"Error fetching Keycloak public keys: {e}")
+            print(f"❌ Error fetching Keycloak public keys: {e}")
             return None
     return KEYCLOAK_PUBLIC_KEYS
 
@@ -55,7 +52,7 @@ def verify_jwt(token):
         claims.validate()
         return claims  # Return decoded claims
     except (JoseError, ValueError) as e:
-        print(f"JWT verification failed: {e}")
+        print(f"❌ JWT verification failed: {e}")
         return None
 
 
@@ -65,17 +62,20 @@ def verify_jwt(token):
 def require_auth():
     """Protect Flask routes by enforcing Keycloak JWT authentication."""
     def decorator(f):
+        from functools import wraps
+        from flask import request, jsonify
+
         @wraps(f)
         def wrapper(*args, **kwargs):
             auth_header = request.headers.get("Authorization", None)
             if not auth_header:
-                return jsonify({"message": "Missing Authorization Header"}), 401
+                return jsonify({"message": "❌ Missing Authorization Header"}), 401
             
             token = auth_header.split(" ")[1] if " " in auth_header else auth_header
             decoded_token = verify_jwt(token)
 
             if not decoded_token:
-                return jsonify({"message": "Invalid or expired token"}), 401
+                return jsonify({"message": "❌ Invalid or expired token"}), 401
 
             # Attach decoded user details to request context
             request.user = decoded_token
