@@ -21,7 +21,7 @@ export function testLogin() {
         scope: 'openid',
         client_id: 'yeslove',
         client_secret: 'kKDqlBTi0o5NtREvVyKjf1IjisGw5jqu',
-        username: 'test-user',
+        username: 'admin',
         password: 'change_me',
         grant_type: 'password',
     }),
