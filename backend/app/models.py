@@ -11,7 +11,7 @@ class User(db.Model):
     bio = db.Column(db.String(250), default='')
     profile_pic = db.Column(db.String(200), default='default.jpg')
     is_professional = db.Column(db.Boolean, default=False)  # Add this field to distinguish user type
-    test
+
 
     # Relationships
     posts = db.relationship('Post', backref='author', lazy=True)
