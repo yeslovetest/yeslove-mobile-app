@@ -1,37 +1,50 @@
 import json
 import os
 from urllib.request import urlopen
-from authlib.jose.rfc7517.jwk import JsonWebKey
-from authlib.oauth2.rfc7523 import JWTBearerTokenValidator
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-
+from flask import request, jsonify
+from functools import wraps
 
 # -------------------------
 # 🔹 Keycloak Configuration
 # -------------------------
-KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")
-KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "master")
-KEYCLOAK_ISSUER = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM_NAME}"
-KEYCLOAK_PUBLIC_KEY_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
+def get_keycloak_config():
+    """Retrieve Keycloak configuration dynamically."""
+    server_url = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080").rstrip("/")
+    realm_name = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
 
-# Cache for Keycloak Public Keys
-KEYCLOAK_PUBLIC_KEYS = None
+    return {
+        "server_url": server_url,
+        "realm_name": realm_name,
+        "issuer_url": f"{server_url}/realms/{"YesLove_Auth"}",
+        "certs_url": f"{server_url}/realms/{"YesLove_Auth"}/protocol/openid-connect/certs"
+    }
 
 
 # -------------------------
 # 🔹 Fetch & Cache Keycloak Public Keys
 # -------------------------
+KEYCLOAK_PUBLIC_KEYS = None  # Cache for public keys
+
 def get_keycloak_public_keys():
     """Fetch and cache Keycloak public keys for JWT validation."""
     global KEYCLOAK_PUBLIC_KEYS
+
+    keycloak_config = get_keycloak_config()
+    certs_url = keycloak_config["certs_url"]
+
+    print(f"🔹 Fetching Keycloak public keys from: {certs_url}")  # Debug output
+
     if not KEYCLOAK_PUBLIC_KEYS:
         try:
-            response = urlopen(KEYCLOAK_PUBLIC_KEY_URL)
+            response = urlopen(certs_url)
             KEYCLOAK_PUBLIC_KEYS = json.loads(response.read())
+            print("✅ Successfully fetched Keycloak public keys.")
         except Exception as e:
-            print(f"❌ Error fetching Keycloak public keys: {e}")
+            print(f"⚠️ Warning: Could not fetch Keycloak public keys. Error: {e}")
             return None
+
     return KEYCLOAK_PUBLIC_KEYS
 
 
@@ -43,13 +56,23 @@ def verify_jwt(token):
     try:
         public_keys = get_keycloak_public_keys()
         if not public_keys:
+            print("❌ Public keys not found.")
             return None
+
+        keycloak_config = get_keycloak_config()
+        expected_issuer = keycloak_config["issuer_url"]
 
         claims = jwt.decode(token, public_keys, claims_options={
             "exp": {"essential": True},
-            "iss": {"essential": True, "value": KEYCLOAK_ISSUER},
+            "iss": {"essential": True}
         })
-        claims.validate()
+
+        # ✅ Dynamically check issuer
+        if claims["iss"] != expected_issuer:
+            print(f"❌ Invalid issuer! Expected: {expected_issuer}, Found: {claims['iss']}")
+            return None
+
+        print("✅ JWT decoded successfully:", claims)  # Debug print
         return claims  # Return decoded claims
     except (JoseError, ValueError) as e:
         print(f"❌ JWT verification failed: {e}")
@@ -62,27 +85,34 @@ def verify_jwt(token):
 def require_auth():
     """Protect Flask routes by enforcing Keycloak JWT authentication."""
     def decorator(f):
-        from functools import wraps
-        from flask import request, jsonify
-
         @wraps(f)
         def wrapper(*args, **kwargs):
             auth_header = request.headers.get("Authorization", None)
             if not auth_header:
-                return jsonify({"message": "❌ Missing Authorization Header"}), 401
-            
+                return {"message": "❌ Missing Authorization Header"}, 401
+
             token = auth_header.split(" ")[1] if " " in auth_header else auth_header
             decoded_token = verify_jwt(token)
 
             if not decoded_token:
-                return jsonify({"message": "❌ Invalid or expired token"}), 401
+                return {"message": "❌ Invalid or expired token"}, 401
 
-            # Attach decoded user details to request context
-            request.user = decoded_token
+            # ✅ Ensure `sub` (Keycloak user ID) is available
+            keycloak_id = decoded_token.get("sub")
+            if not keycloak_id:
+                return {"message": "❌ Invalid token: Missing 'sub' (Keycloak ID)"}, 401
+
+            # ✅ Attach user details to request context
+            request.user = {
+                "keycloak_id": keycloak_id,
+                "email": decoded_token.get("email"),
+                "username": decoded_token.get("preferred_username"),
+            }
+
             return f(*args, **kwargs)
+
         return wrapper
     return decorator
-
 
 # -------------------------
 # 🔹 File Upload Helper Functions

@@ -1,6 +1,12 @@
 import os
 
+
 class Config:
+    """Base Configuration"""
+    SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
     """Base configuration."""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'default_secret_key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -12,9 +18,26 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Allowed file types
 
 class DevelopmentConfig(Config):
-    """Development environment configuration."""
+    """Development Configuration"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///dev.db")
+
+    # ✅ Keycloak Configuration
+    KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")
+    KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
+    KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
+    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "cTt94j1OFJrSI7SQkoeV2e2ochXPp21a")
+
+    @staticmethod
+    def keycloak_issuer():
+        """Return Keycloak Issuer URL"""
+        return f"{DevelopmentConfig.KEYCLOAK_SERVER_URL}/realms/{DevelopmentConfig.KEYCLOAK_REALM_NAME}"
+
+    @staticmethod
+    def keycloak_certs_url():
+        """Return Keycloak Public Keys URL"""
+        return f"{DevelopmentConfig.keycloak_issuer()}/protocol/openid-connect/certs"
+
 
 class TestingConfig(Config):
     """Testing environment configuration."""
@@ -24,17 +47,3 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Production environment configuration."""
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///production.db'
-
-
-
-class Config:
-    """Base configuration with Keycloak settings."""
-    KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")
-    KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "master")
-    KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "your-client-id")
-    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "your-client-secret")
-
-    KEYCLOAK_ISSUER = f"{KEYCLOAK_SERVER_URL}/realms/{KEYCLOAK_REALM_NAME}"
-    KEYCLOAK_PUBLIC_KEY_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
-    KEYCLOAK_LOGOUT_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/logout"
-    KEYCLOAK_TOKEN_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/token"
