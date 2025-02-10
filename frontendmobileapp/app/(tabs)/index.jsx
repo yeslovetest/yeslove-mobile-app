@@ -2,12 +2,12 @@ import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
 import { ApiApi } from '@/generated-api';
+import Login from "../login.jsx"
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to the Home Page!</Text>
-      <Button title='Login Test' onPress={testLogin}></Button>
     </View>
   );
 }

@@ -26,6 +26,7 @@ const TabLayout =() => {
           ios: {
             // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
+            backgroundColor: "#fff"
           },
           default: {},
         }),
