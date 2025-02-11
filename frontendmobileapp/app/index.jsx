@@ -1,7 +1,12 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { useRouter } from "expo-router";
+
 
 const Login = () => {
+const router = useRouter();
+
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
@@ -12,7 +17,7 @@ const Login = () => {
       <Text style={styles.label}>Password</Text>
       <TextInput style={styles.input} placeholder="Enter password" secureTextEntry={true} />
     
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={() => router.replace("/home")}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
     </View>
@@ -25,7 +30,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    width: 300,
+    width: 400,
     backgroundColor: "#f5f5f5",
   },
   title: {

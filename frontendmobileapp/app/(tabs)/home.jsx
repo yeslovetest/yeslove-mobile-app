@@ -1,10 +1,12 @@
 import React from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { ApiApi } from '@/generated-api';
-import Login from "../login.jsx"
 
 export default function HomeScreen() {
+const router = useRouter()
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to the Home Page!</Text>
@@ -46,5 +48,17 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
