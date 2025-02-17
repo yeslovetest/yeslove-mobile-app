@@ -23,7 +23,6 @@ const handleUsernameChange = (input) => {
 }
 
 const testLogin = (username, password) => {
-  console.log("AAA");
   axios.post(
     'http://localhost:8080/realms/master/protocol/openid-connect/token',
     new URLSearchParams({
@@ -41,8 +40,6 @@ const testLogin = (username, password) => {
       },
     }
   ).then((response) => {
-    console.log('Login successful');
-    console.log(response.data);
     router.replace("/(tabs)/home");  
   }).catch((error) => {
     console.error('Login failed:', error);
