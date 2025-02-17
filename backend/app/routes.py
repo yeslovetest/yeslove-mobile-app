@@ -4,6 +4,7 @@ from app.models import User, Post, Comment, Follow, Like, Chat, db
 from flask_cors import CORS  # ✅ Allow React Native to connect
 from flask_restx import Namespace, Resource
 from app.utils import require_auth  # ✅ Import Keycloak authentication utilities
+from app.logging_setup import logger  # ✅ Import logger
 
 # ✅ Define the API Namespace
 main_api = Namespace("api", description="API Endpoints")
@@ -27,18 +28,18 @@ class Signup(Resource):
 # -------------------------
 # 🚀 AUTHENTICATION ROUTES (Keycloak)
 # -------------------------
- 
+        
 @main_api.route("/login")
 class Login(Resource):
     def post(self):
         """Exchange user credentials for a Keycloak access token."""
         from app.utils import verify_jwt  # ✅ Move the import here to avoid circular import
         data = request.json
-        username = data.get("charlesj")
-        password = data.get("Password@90")
-
+        username = data.get("username")
+        password = data.get("password")
 
         if not username or not password:
+            logger.error("❌ Missing username or password")
             return {"message": "Username and password are required"}, 400
 
         keycloak_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/token"
@@ -59,12 +60,13 @@ class Login(Resource):
             # ✅ Decode token to get user info
             user_info = verify_jwt(access_token)
             if not user_info:
+                logger.error("❌ Invalid token received from Keycloak")
                 return {"message": "Invalid token received from Keycloak"}, 401
 
             # ✅ Ensure user exists in local DB
             existing_user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
             if not existing_user:
-                print("🔹 Creating new user in database...")
+                logger.info(f"🔹 Creating new user {user_info['preferred_username']} in database...")
                 new_user = User(
                     keycloak_id=user_info["sub"],
                     username=user_info.get("preferred_username", username),
@@ -72,12 +74,14 @@ class Login(Resource):
                 )
                 db.session.add(new_user)
                 db.session.commit()
+                logger.info(f"✅ User {new_user.username} created successfully.")
 
-                print(f"✅ User {new_user.username} created with Keycloak ID {new_user.keycloak_id}")
+            logger.info(f"✅ User {user_info['preferred_username']} logged in successfully.")
+            return token_data, 200
 
-            return token_data, 200  # ✅ Return the token
-
+        logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code
+
 
 
 @main_api.route("/logout")
@@ -110,7 +114,8 @@ class UserProfile(Resource):
         user = User.query.filter_by(keycloak_id=keycloak_id).first()
 
         if not user:
-            return {"message": "User not found"}, 404  # ✅ Always return a JSON object
+            logger.warning(f"❌ User with Keycloak ID {keycloak_id} not found")
+            return {"message": "User not found"}, 404
 
         response_data = {
             "username": user.username,
@@ -123,7 +128,8 @@ class UserProfile(Resource):
                 } for post in user.posts
             ]
         }
-
+        
+        logger.info(f"✅ Retrieved profile for user {user.username}")
         return response_data, 200  # ✅ Correctly formatted response
 
 
@@ -234,6 +240,7 @@ class LikePost(Resource):
         """Like or unlike a post."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
+            logger.warning(f"❌ User with Keycloak ID {request.user['keycloak_id']} not found")
             return {"message": "User not found"}, 404
 
         existing_like = Like.query.filter_by(user_id=user.id, post_id=post_id).first()
@@ -241,13 +248,14 @@ class LikePost(Resource):
         if existing_like:
             db.session.delete(existing_like)
             db.session.commit()
+            logger.info(f"🔹 User {user.username} unliked post {post_id}")
             return {"message": "Like removed"}, 200
 
         new_like = Like(user_id=user.id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
+        logger.info(f"✅ User {user.username} liked post {post_id}")
         return {"message": "Post liked"}, 201
-
 
 # -------------------------
 # 🚀 COMMENT ROUTES
@@ -366,18 +374,22 @@ class SendMessage(Resource):
         message = data.get("message")
 
         if not message or not receiver_id:
+            logger.error("❌ Message content or receiver ID missing")
             return {"message": "Message and receiver ID are required"}, 400
 
         if user.id == receiver_id:
+            logger.warning(f"❌ User {user.username} tried to message themselves")
             return {"message": "You cannot message yourself"}, 400
 
         receiver = User.query.get(receiver_id)
         if not receiver:
+            logger.warning(f"❌ Receiver ID {receiver_id} not found")
             return {"message": "Receiver not found"}, 404
 
         new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
         db.session.add(new_message)
         db.session.commit()
+        logger.info(f"✅ Message sent from {user.username} to {receiver.username}")
         return {"message": "Message sent successfully"}, 201
 
 
