@@ -1,10 +1,53 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from "expo-router";
+import axios from 'axios';
+
 
 
 const Login = () => {
 const router = useRouter();
+const [password, setPassword] = useState("");
+const [username, setUsername] = useState("")
+
+const handleLogin = () => {
+  testLogin(username, password)
+}
+
+const handlePasswordChange = (input) => {
+  setPassword(input)
+}
+
+const handleUsernameChange = (input) => {
+  setUsername(input)
+}
+
+const testLogin = (username, password) => {
+  console.log("AAA");
+  axios.post(
+    'http://localhost:8080/realms/master/protocol/openid-connect/token',
+    new URLSearchParams({
+      response_type: 'token',
+      scope: 'openid',
+      client_id: 'yeslove',
+      client_secret: 'ffFrajirLUbcyVyLuDkluTvPxZbptba4',
+      username: username,
+      password: password,
+      grant_type: 'password',
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  ).then((response) => {
+    console.log('Login successful');
+    console.log(response.data);
+    router.replace("/(tabs)/home");  
+  }).catch((error) => {
+    console.error('Login failed:', error);
+  });
+};
 
 
   return (
@@ -12,17 +55,19 @@ const router = useRouter();
       <Text style={styles.title}>Login</Text>
 
       <Text style={styles.label}>Username</Text>
-      <TextInput style={styles.input} placeholder="Enter username" />
+      <TextInput onChangeText={handleUsernameChange} value={username} style={styles.input} placeholder="Enter username" />
 
       <Text style={styles.label}>Password</Text>
-      <TextInput style={styles.input} placeholder="Enter password" secureTextEntry={true} />
+      <TextInput onChangeText={handlePasswordChange} value={password} style={styles.input} placeholder="Enter password" secureTextEntry={true} />
     
-      <TouchableOpacity style={styles.button} onPress={() => router.replace("/home")}>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
     </View>
   )
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
