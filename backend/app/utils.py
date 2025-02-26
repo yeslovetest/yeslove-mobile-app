@@ -20,8 +20,8 @@ def get_keycloak_config():
     return {
         "server_url": server_url,
         "realm_name": realm_name,
-        "issuer_url": f"{server_url}/realms/{realm_name}",
-        "certs_url": f"{server_url}/realms/{realm_name}/protocol/openid-connect/certs"
+        "issuer_url": f"{server_url}/realms/{"YesLove_Auth"}",
+        "certs_url": f"{server_url}/realms/{"YesLove_Auth"}/protocol/openid-connect/certs"
     }
 
 

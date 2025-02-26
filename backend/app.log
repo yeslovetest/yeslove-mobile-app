@@ -1,0 +1,92 @@
+2025-02-11 23:46:12,174 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_APP/protocol/openid-connect/certs
+2025-02-11 23:46:12,209 - ERROR - ⚠️ Could not fetch Keycloak public keys. Error: HTTP Error 404: Not Found
+2025-02-11 23:46:12,234 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-11 23:46:12,234 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-11 23:46:12,234 - INFO -  * Restarting with stat
+2025-02-11 23:46:12,525 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_APP/protocol/openid-connect/certs
+2025-02-11 23:46:12,544 - ERROR - ⚠️ Could not fetch Keycloak public keys. Error: HTTP Error 404: Not Found
+2025-02-11 23:46:12,555 - WARNING -  * Debugger is active!
+2025-02-11 23:46:12,564 - INFO -  * Debugger PIN: 561-500-359
+2025-02-11 23:47:17,782 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/utils.py', reloading
+2025-02-11 23:47:17,847 - INFO -  * Restarting with stat
+2025-02-11 23:47:18,265 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-11 23:47:18,287 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-11 23:47:18,303 - WARNING -  * Debugger is active!
+2025-02-11 23:47:18,308 - INFO -  * Debugger PIN: 561-500-359
+2025-02-11 23:47:41,118 - INFO - 127.0.0.1 - - [11/Feb/2025 23:47:41] "[33mGET / HTTP/1.1[0m" 404 -
+2025-02-11 23:47:45,166 - INFO - 127.0.0.1 - - [11/Feb/2025 23:47:45] "[33mGET / HTTP/1.1[0m" 404 -
+2025-02-11 23:47:48,750 - INFO - 127.0.0.1 - - [11/Feb/2025 23:47:48] "[33mGET /login HTTP/1.1[0m" 404 -
+2025-02-11 23:59:49,333 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-11 23:59:49,415 - INFO -  * Restarting with stat
+2025-02-11 23:59:49,849 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-11 23:59:49,890 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-11 23:59:49,908 - WARNING -  * Debugger is active!
+2025-02-11 23:59:49,915 - INFO -  * Debugger PIN: 561-500-359
+2025-02-12 19:59:44,733 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-12 19:59:44,839 - INFO -  * Restarting with stat
+2025-02-12 19:59:45,333 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 19:59:45,380 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-12 19:59:45,401 - WARNING -  * Debugger is active!
+2025-02-12 19:59:45,408 - INFO -  * Debugger PIN: 561-500-359
+2025-02-12 20:28:30,891 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-12 20:28:31,002 - INFO -  * Restarting with stat
+2025-02-12 20:28:31,508 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 20:28:31,554 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-12 20:28:31,574 - WARNING -  * Debugger is active!
+2025-02-12 20:28:31,582 - INFO -  * Debugger PIN: 561-500-359
+2025-02-12 21:36:32,855 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 21:36:32,895 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-12 21:36:32,916 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-12 21:36:32,916 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-12 21:36:32,916 - INFO -  * Restarting with stat
+2025-02-12 21:36:33,232 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 21:36:33,251 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-12 21:36:33,264 - WARNING -  * Debugger is active!
+2025-02-12 21:36:33,271 - INFO -  * Debugger PIN: 561-500-359
+2025-02-12 21:37:12,951 - INFO - 127.0.0.1 - - [12/Feb/2025 21:37:12] "[33mGET /api/profile/ HTTP/1.1[0m" 404 -
+2025-02-12 21:38:39,132 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 21:38:39,153 - WARNING - ❌ Token has expired.
+2025-02-12 21:38:39,154 - WARNING - ❌ Invalid or expired token
+2025-02-12 21:38:39,161 - INFO - 127.0.0.1 - - [12/Feb/2025 21:38:39] "[35m[1mGET /api/profile/93ad3b49-ffa0-4e2b-9688-1ea3dea6aebd HTTP/1.1[0m" 500 -
+2025-02-12 21:38:47,081 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 21:38:47,081 - WARNING - ❌ Token has expired.
+2025-02-12 21:38:47,081 - WARNING - ❌ Invalid or expired token
+2025-02-12 21:38:47,090 - INFO - 127.0.0.1 - - [12/Feb/2025 21:38:47] "[35m[1mGET /api/profile/93ad3b49-ffa0-4e2b-9688-1ea3dea6aebd HTTP/1.1[0m" 500 -
+2025-02-12 21:38:54,135 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-12 21:38:54,135 - WARNING - ❌ Token has expired.
+2025-02-12 21:38:54,136 - WARNING - ❌ Invalid or expired token
+2025-02-12 21:38:54,146 - INFO - 127.0.0.1 - - [12/Feb/2025 21:38:54] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-02-12 22:06:55,171 - INFO - 127.0.0.1 - - [12/Feb/2025 22:06:55] "[33mGET /profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 404 -
+2025-02-26 22:31:38,112 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-26 22:31:38,334 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-26 22:31:38,372 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-26 22:31:38,372 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-26 22:31:38,373 - INFO -  * Restarting with stat
+2025-02-26 22:31:38,686 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-26 22:31:38,705 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-26 22:31:38,719 - WARNING -  * Debugger is active!
+2025-02-26 22:31:38,726 - INFO -  * Debugger PIN: 287-623-644
+2025-02-26 22:34:11,099 - INFO - 127.0.0.1 - - [26/Feb/2025 22:34:11] "[33mGET /profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 404 -
+2025-02-26 22:47:43,933 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-26 22:47:44,044 - INFO -  * Restarting with stat
+2025-02-26 22:47:44,578 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-26 22:47:44,629 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-26 22:47:44,650 - WARNING -  * Debugger is active!
+2025-02-26 22:47:44,661 - INFO -  * Debugger PIN: 287-623-644
+2025-02-26 23:02:07,792 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-26 23:02:07,910 - INFO -  * Restarting with stat
+2025-02-26 23:02:08,365 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-26 23:02:08,413 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-26 23:02:08,430 - WARNING -  * Debugger is active!
+2025-02-26 23:02:08,436 - INFO -  * Debugger PIN: 287-623-644
+2025-02-26 23:04:30,588 - INFO - 127.0.0.1 - - [26/Feb/2025 23:04:30] "[33mGET /profile/79225cd4-fd0a-4d85-b7ea-22cc14375c75 HTTP/1.1[0m" 404 -
+2025-02-26 23:04:32,336 - INFO - 127.0.0.1 - - [26/Feb/2025 23:04:32] "[33mGET /profile/79225cd4-fd0a-4d85-b7ea-22cc14375c75 HTTP/1.1[0m" 404 -
+2025-02-26 23:06:39,804 - INFO - 127.0.0.1 - - [26/Feb/2025 23:06:39] "[33mGET /login HTTP/1.1[0m" 404 -
+2025-02-26 23:07:36,479 - INFO - 127.0.0.1 - - [26/Feb/2025 23:07:36] "[33mPOST /api/login%0A HTTP/1.1[0m" 404 -
+2025-02-26 23:08:45,357 - INFO - 127.0.0.1 - - [26/Feb/2025 23:08:45] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-26 23:08:58,794 - INFO - 127.0.0.1 - - [26/Feb/2025 23:08:58] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-26 23:09:14,840 - INFO - 127.0.0.1 - - [26/Feb/2025 23:09:14] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-26 23:13:37,965 - INFO - 127.0.0.1 - - [26/Feb/2025 23:13:37] "[33mPOST /login HTTP/1.1[0m" 404 -

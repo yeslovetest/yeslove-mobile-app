@@ -15,7 +15,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
     bio = db.Column(db.String(250), default="")
     profile_pic = db.Column(db.String(200), default="default.jpg")
-    is_professional = db.Column(db.Boolean, default=False)  # ✅ Distinguish user type
+    user_type = db.Column(db.String(20), default="standard")  # ✅ Default to "standard" or "professional"
 
     # ✅ Relationships
     posts = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")

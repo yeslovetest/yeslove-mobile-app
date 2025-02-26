@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 import requests
-from app.models import User, Post, Comment, Follow, Like, Chat, db
+from app.models import User, Post, Comment, Follow, Like, Chat, ProfessionalDetails, db
 from flask_cors import CORS  # ✅ Allow React Native to connect
 from flask_restx import Namespace, Resource
 from app.utils import require_auth  # ✅ Import Keycloak authentication utilities
@@ -32,11 +32,11 @@ class Signup(Resource):
 @main_api.route("/login")
 class Login(Resource):
     def post(self):
-        """Exchange user credentials for a Keycloak access token."""
-        from app.utils import verify_jwt  # ✅ Move the import here to avoid circular import
+        """Exchange user credentials for a Keycloak access token and check user type."""
+        from app.utils import verify_jwt  # ✅ Avoid circular imports
         data = request.json
-        username = data.get("username")
-        password = data.get("password")
+        username = data.get("charlesj")
+        password = data.get("Password@90")
 
         if not username or not password:
             logger.error("❌ Missing username or password")
@@ -63,24 +63,87 @@ class Login(Resource):
                 logger.error("❌ Invalid token received from Keycloak")
                 return {"message": "Invalid token received from Keycloak"}, 401
 
+            # ✅ Get Keycloak roles
+            keycloak_roles = user_info.get("realm_access", {}).get("roles", [])
+            logger.info(f"User roles from Keycloak: {keycloak_roles}")
+
+            # Determine user type
+            if "professional" in keycloak_roles:
+                user_type = "professional"
+            else:
+                user_type = "standard"
+
             # ✅ Ensure user exists in local DB
-            existing_user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
-            if not existing_user:
+            user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
+            if not user:
                 logger.info(f"🔹 Creating new user {user_info['preferred_username']} in database...")
-                new_user = User(
+                user = User(
                     keycloak_id=user_info["sub"],
                     username=user_info.get("preferred_username", username),
-                    email=user_info.get("email", "")
+                    email=user_info.get("email", ""),
+                    user_type=user_type
                 )
-                db.session.add(new_user)
+                db.session.add(user)
                 db.session.commit()
-                logger.info(f"✅ User {new_user.username} created successfully.")
+                logger.info(f"✅ User {user.username} created successfully.")
 
-            logger.info(f"✅ User {user_info['preferred_username']} logged in successfully.")
+            # ✅ If user is professional, ensure they have details
+            if user.user_type == "professional":
+                professional_details = ProfessionalDetails.query.filter_by(user_id=user.id).first()
+                if not professional_details:
+                    return {
+                        "message": "Professional details missing. Please provide license and specialization.",
+                        "set_professional_details_required": True
+                    }, 200
+
+            logger.info(f"✅ User {user.username} logged in successfully.")
             return token_data, 200
 
         logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code
+
+
+
+@main_api.route("/set_user_type")
+class SetUserType(Resource):
+    @require_auth()
+    def post(self):
+        """Set user type (professional or standard) for new users."""
+        data = request.json
+        keycloak_id = request.user["keycloak_id"]  # Get from token
+        user_type = data.get("user_type")  # Expect "professional" or "standard"
+        license = data.get("license")  # Only for professionals
+        specialization = data.get("specialization")  # Only for professionals
+
+        if user_type not in ["professional", "standard"]:
+            return {"message": "Invalid user type. Choose 'professional' or 'standard'."}, 400
+
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        # ✅ Prevent changing user type if Keycloak has already assigned it
+        keycloak_roles = request.user.get("realm_access", {}).get("roles", [])
+        if "professional" in keycloak_roles or "standard" in keycloak_roles:
+            return {"message": "User type is managed by Keycloak. Manual change not allowed."}, 400
+
+        # ✅ Update user type
+        user.user_type = user_type
+        db.session.commit()
+
+        if user_type == "professional":
+            # ✅ Ensure ProfessionalDetails are created
+            professional_details = ProfessionalDetails(
+                user_id=user.id,
+                license=license,
+                specialization=specialization
+            )
+            db.session.add(professional_details)
+            db.session.commit()
+            logger.info(f"✅ User {user.username} set as a professional.")
+
+        logger.info(f"✅ User {user.username} set as {user_type}.")
+        return {"message": f"User type set to {user_type}"}, 200
 
 
 
@@ -101,6 +164,31 @@ class Logout(Resource):
             return {"message": "Logged out successfully"}, 200
         return {"message": "Logout failed"}, response.status_code
 
+@main_api.route("/refresh_token")
+class RefreshToken(Resource):
+    def post(self):
+        """Refresh expired access token using Keycloak refresh token."""
+        data = request.json
+        refresh_token = data.get("refresh_token")
+
+        if not refresh_token:
+            return {"message": "Missing refresh token"}, 400
+
+        keycloak_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/token"
+        payload = {
+            "grant_type": "refresh_token",
+            "client_id": current_app.config["KEYCLOAK_CLIENT_ID"],
+            "client_secret": current_app.config["KEYCLOAK_CLIENT_SECRET"],
+            "refresh_token": refresh_token
+        }
+
+        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+
+        if response.status_code == 200:
+            return response.json(), 200
+        
+        return {"message": "Failed to refresh token"}, response.status_code
+
 
 # -------------------------
 # 🚀 PROFILE ROUTES
@@ -111,6 +199,8 @@ class UserProfile(Resource):
     @require_auth()
     def get(self, keycloak_id):
         """Get user profile and posts."""
+        logger.info(f"🔹 Fetching profile for Keycloak ID: {keycloak_id}")
+
         user = User.query.filter_by(keycloak_id=keycloak_id).first()
 
         if not user:
@@ -121,6 +211,7 @@ class UserProfile(Resource):
             "username": user.username,
             "bio": user.bio,
             "profile_pic": user.profile_pic,
+            "user_type": user.user_type,  # ✅ Include user type
             "posts": [
                 {
                     "content": post.content,
