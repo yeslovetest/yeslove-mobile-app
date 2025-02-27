@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from app import db  # ✅ Import the same db instance
 
 
-db = SQLAlchemy()
+#db = SQLAlchemy()
 
 # -------------------------
 # 🚀 User Model (Keycloak Integrated)
