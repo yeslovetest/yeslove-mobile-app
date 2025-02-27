@@ -1,238 +1,645 @@
 {
-  "swagger": "2.0",
-  "basePath": "/",
-  "paths": {
-    "/api/feed": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
+    "swagger": "2.0",
+    "basePath": "/",
+    "paths": {
+        "/api/feed": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Fetch posts from users the current user follows",
+                "operationId": "get_feed",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/Feed"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
         },
-        "summary": "Fetch posts from users the current user follows",
-        "operationId": "get_feed",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/follow/{user_id}": {
-      "parameters": [
-        {
-          "name": "user_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
+        "/api/follow/{user_id}": {
+            "parameters": [
+                {
+                    "name": "user_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Follow or unfollow a user",
+                "operationId": "post_follow_user",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/FollowUserRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/followers/{user_id}": {
+            "parameters": [
+                {
+                    "name": "user_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Fetch all followers of a user",
+                "operationId": "get_get_followers",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/GetFollowersRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/following/{user_id}": {
+            "parameters": [
+                {
+                    "name": "user_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Fetch all users the current user is following",
+                "operationId": "get_get_following",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/GetFollowingRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/get_messages/{receiver_id}": {
+            "parameters": [
+                {
+                    "name": "receiver_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Fetch chat messages between two users",
+                "operationId": "get_get_messages",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/GetMessagesRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/login": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Exchange user credentials for a Keycloak access token and check user type",
+                "operationId": "post_login",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/LoginRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Logout user from Keycloak",
+                "operationId": "post_logout",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/LogoutRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/post": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Create a new post",
+                "operationId": "post_create_post",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/CreatePostRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/post/{post_id}/comment": {
+            "parameters": [
+                {
+                    "name": "post_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Add a comment to a post",
+                "operationId": "post_add_comment",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/AddCommentRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/post/{post_id}/comments": {
+            "parameters": [
+                {
+                    "name": "post_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Fetch all comments for a post",
+                "operationId": "get_get_comments",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/GetMessagesRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/post/{post_id}/like": {
+            "parameters": [
+                {
+                    "name": "post_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Like or unlike a post",
+                "operationId": "post_like_post",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/LikePostRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/profile/{keycloak_id}": {
+            "parameters": [
+                {
+                    "name": "keycloak_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get user profile and posts",
+                "operationId": "get_user_profile",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/GetProfileRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/refresh_token": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Refresh expired access token using Keycloak refresh token",
+                "operationId": "post_refresh_token",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/send_message": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Send a private message",
+                "operationId": "post_send_message",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SendMessageRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/set_user_type": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Set user type (professional or standard) for new users",
+                "operationId": "post_set_user_type",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SetUserTypeRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/signup": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Keycloak handles user registration",
+                "operationId": "post_signup",
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/update_profile": {
+            "put": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Update user profile",
+                "operationId": "put_update_profile",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
         }
-      ],
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Follow or unfollow a user",
-        "operationId": "post_follow_user",
-        "tags": [
-          "api"
-        ]
-      }
     },
-    "/api/get_messages/{receiver_id}": {
-      "parameters": [
+    "info": {
+        "title": "YesLove API",
+        "version": "1.0"
+    },
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "tags": [
         {
-          "name": "receiver_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
+            "name": "api",
+            "description": "API Endpoints"
         }
-      ],
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
+    ],
+    "definitions": {
+        "LoginRequest": {
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "description": "User's Keycloak username"
+                },
+                "password": {
+                    "type": "string",
+                    "description": "User's Keycloak password"
+                }
+            },
+            "type": "object"
         },
-        "summary": "Get chat messages",
-        "operationId": "get_get_messages",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/login": {
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
+        "SetUserTypeRequest": {
+            "required": [
+                "user_type"
+            ],
+            "properties": {
+                "user_type": {
+                    "type": "string",
+                    "description": "Choose 'professional' or 'standard'"
+                },
+                "license": {
+                    "type": "string",
+                    "description": "License number (for professional users only)"
+                },
+                "specialization": {
+                    "type": "string",
+                    "description": "Specialization field (for professional users only)"
+                }
+            },
+            "type": "object"
         },
-        "summary": "Redirect users to Keycloak login page",
-        "operationId": "post_login",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/logout": {
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
+        "LogoutRequest": {
+            "properties": {},
+            "type": "object"
         },
-        "summary": "Log out the current user via Keycloak",
-        "operationId": "post_logout",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/post": {
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
+        "RefreshTokenRequest": {
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "description": "Valid refresh token"
+                }
+            },
+            "type": "object"
         },
-        "summary": "Create a new post",
-        "operationId": "post_create_post",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/post/{post_id}/comment": {
-      "parameters": [
-        {
-          "name": "post_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
+        "GetProfileRequest": {
+            "properties": {},
+            "type": "object"
+        },
+        "UpdateProfileRequest": {
+            "properties": {
+                "bio": {
+                    "type": "string",
+                    "description": "User's bio"
+                },
+                "profile_pic": {
+                    "type": "string",
+                    "description": "Profile picture URL"
+                }
+            },
+            "type": "object"
+        },
+        "Feed": {
+            "properties": {},
+            "type": "object"
+        },
+        "CreatePostRequest": {
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "Content of the post"
+                }
+            },
+            "type": "object"
+        },
+        "GetFollowersRequest": {
+            "properties": {},
+            "type": "object"
+        },
+        "LikePostRequest": {
+            "required": [
+                "post_id"
+            ],
+            "properties": {
+                "post_id": {
+                    "type": "integer",
+                    "description": "ID of the post to like or unlike"
+                }
+            },
+            "type": "object"
+        },
+        "AddCommentRequest": {
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "Content of the comment"
+                }
+            },
+            "type": "object"
+        },
+        "GetMessagesRequest": {
+            "properties": {},
+            "type": "object"
+        },
+        "FollowUserRequest": {
+            "required": [
+                "action"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "description": "'follow' to follow, 'unfollow' to unfollow"
+                }
+            },
+            "type": "object"
+        },
+        "GetFollowingRequest": {
+            "properties": {},
+            "type": "object"
+        },
+        "SendMessageRequest": {
+            "required": [
+                "message",
+                "receiver_id"
+            ],
+            "properties": {
+                "receiver_id": {
+                    "type": "integer",
+                    "description": "ID of the recipient user"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Message content"
+                }
+            },
+            "type": "object"
         }
-      ],
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Add a comment to a post",
-        "operationId": "post_add_comment",
-        "tags": [
-          "api"
-        ]
-      }
     },
-    "/api/post/{post_id}/like": {
-      "parameters": [
-        {
-          "name": "post_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
+    "responses": {
+        "ParseError": {
+            "description": "When a mask can't be parsed"
+        },
+        "MaskError": {
+            "description": "When any error occurs on mask"
         }
-      ],
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Like or unlike a post",
-        "operationId": "post_like_post",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/profile/{user_id}": {
-      "parameters": [
-        {
-          "name": "user_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
-        }
-      ],
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Get user profile and posts",
-        "operationId": "get_user_profile",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/send_message": {
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Send a private message",
-        "operationId": "post_send_message",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/signup": {
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Sign up a new user (Handled by Keycloak)",
-        "operationId": "post_signup",
-        "tags": [
-          "api"
-        ]
-      }
-    },
-    "/api/update_profile": {
-      "put": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Update user profile",
-        "operationId": "put_update_profile",
-        "tags": [
-          "api"
-        ]
-      }
     }
-  },
-  "info": {
-    "title": "YesLove API",
-    "version": "1.0"
-  },
-  "produces": [
-    "application/json"
-  ],
-  "consumes": [
-    "application/json"
-  ],
-  "tags": [
-    {
-      "name": "api",
-      "description": "API Endpoints"
-    }
-  ],
-  "responses": {
-    "ParseError": {
-      "description": "When a mask can't be parsed"
-    },
-    "MaskError": {
-      "description": "When any error occurs on mask"
-    }
-  }
 }
