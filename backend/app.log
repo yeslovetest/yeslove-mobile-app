@@ -100,3 +100,402 @@
 2025-02-26 23:56:11,035 - INFO - ✅ Successfully fetched Keycloak public keys.
 2025-02-26 23:56:11,051 - WARNING -  * Debugger is active!
 2025-02-26 23:56:11,056 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 11:57:08,204 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 11:57:08,257 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 11:57:51,773 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 11:57:51,815 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 11:58:18,564 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 11:58:18,584 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 11:58:18,598 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 11:58:18,598 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 11:58:18,599 - INFO -  * Restarting with stat
+2025-02-27 11:58:18,887 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 11:58:18,905 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 11:58:18,917 - WARNING -  * Debugger is active!
+2025-02-27 11:58:18,924 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 11:59:51,670 - INFO - 127.0.0.1 - - [27/Feb/2025 11:59:51] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 11:59:53,040 - INFO - 127.0.0.1 - - [27/Feb/2025 11:59:53] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:01:53,402 - INFO - 127.0.0.1 - - [27/Feb/2025 12:01:53] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:01:55,527 - INFO - 127.0.0.1 - - [27/Feb/2025 12:01:55] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:01:55,900 - INFO - 127.0.0.1 - - [27/Feb/2025 12:01:55] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:03:17,688 - INFO - 127.0.0.1 - - [27/Feb/2025 12:03:17] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:03:19,747 - INFO - 127.0.0.1 - - [27/Feb/2025 12:03:19] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:03:43,812 - INFO - 127.0.0.1 - - [27/Feb/2025 12:03:43] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:03:44,849 - INFO - 127.0.0.1 - - [27/Feb/2025 12:03:44] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:05:48,992 - INFO - 127.0.0.1 - - [27/Feb/2025 12:05:48] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:07:04,553 - INFO - 127.0.0.1 - - [27/Feb/2025 12:07:04] "[33mPOST /api/login%0A HTTP/1.1[0m" 404 -
+2025-02-27 12:07:56,275 - INFO - 127.0.0.1 - - [27/Feb/2025 12:07:56] "[33mPOST /api/login%0A HTTP/1.1[0m" 404 -
+2025-02-27 12:07:57,609 - INFO - 127.0.0.1 - - [27/Feb/2025 12:07:57] "[33mPOST /api/login%0A HTTP/1.1[0m" 404 -
+2025-02-27 12:08:09,519 - INFO - 127.0.0.1 - - [27/Feb/2025 12:08:09] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:08:21,545 - INFO - 127.0.0.1 - - [27/Feb/2025 12:08:21] "[31m[1mPOST /api/login HTTP/1.1[0m" 415 -
+2025-02-27 12:16:50,598 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-27 12:16:50,701 - INFO -  * Restarting with stat
+2025-02-27 12:16:51,136 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:16:51,177 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:16:51,197 - WARNING -  * Debugger is active!
+2025-02-27 12:16:51,203 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:18:00,622 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:18:00,624 - INFO - 127.0.0.1 - - [27/Feb/2025 12:18:00] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:18:01,875 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:18:01,876 - INFO - 127.0.0.1 - - [27/Feb/2025 12:18:01] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:19:09,722 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-27 12:19:09,817 - INFO -  * Restarting with stat
+2025-02-27 12:19:10,241 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:19:10,288 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:19:10,310 - WARNING -  * Debugger is active!
+2025-02-27 12:19:10,317 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:20:46,180 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:20:46,221 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:20:46,240 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 12:20:46,240 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 12:20:46,241 - INFO -  * Restarting with stat
+2025-02-27 12:20:46,528 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:20:46,547 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:20:46,560 - WARNING -  * Debugger is active!
+2025-02-27 12:20:46,567 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:20:58,555 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:20:58,557 - INFO - 127.0.0.1 - - [27/Feb/2025 12:20:58] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:20:59,895 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:20:59,896 - INFO - 127.0.0.1 - - [27/Feb/2025 12:20:59] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:22:04,464 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:22:04,465 - INFO - 127.0.0.1 - - [27/Feb/2025 12:22:04] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:29:41,994 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:29:41,997 - INFO - 127.0.0.1 - - [27/Feb/2025 12:29:41] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:33:26,296 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/config.py', reloading
+2025-02-27 12:33:26,383 - INFO -  * Restarting with stat
+2025-02-27 12:33:26,819 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:33:26,870 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:33:26,890 - WARNING -  * Debugger is active!
+2025-02-27 12:33:26,897 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:34:20,647 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-27 12:34:20,723 - INFO -  * Restarting with stat
+2025-02-27 12:34:21,151 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:34:21,170 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:34:21,185 - WARNING -  * Debugger is active!
+2025-02-27 12:34:21,192 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:35:14,656 - INFO - 127.0.0.1 - - [27/Feb/2025 12:35:14] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-02-27 12:35:56,820 - INFO - 127.0.0.1 - - [27/Feb/2025 12:35:56] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-02-27 12:39:19,551 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-27 12:39:19,634 - INFO -  * Restarting with stat
+2025-02-27 12:39:20,057 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:39:20,100 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:39:20,118 - WARNING -  * Debugger is active!
+2025-02-27 12:39:20,124 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:39:32,927 - INFO - Keycloak response: <method-wrapper '__str__' of builtin_function_or_method object at 0x10621b4c0>
+2025-02-27 12:39:32,962 - INFO - Keycloak response: 404 - {"error":"Realm does not exist"}
+2025-02-27 12:39:32,962 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:39:32,963 - INFO - 127.0.0.1 - - [27/Feb/2025 12:39:32] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:39:34,147 - INFO - Keycloak response: <method-wrapper '__str__' of builtin_function_or_method object at 0x106285df0>
+2025-02-27 12:39:34,159 - INFO - Keycloak response: 404 - {"error":"Realm does not exist"}
+2025-02-27 12:39:34,159 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:39:34,159 - INFO - 127.0.0.1 - - [27/Feb/2025 12:39:34] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:42:47,820 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-27 12:42:47,902 - INFO -  * Restarting with stat
+2025-02-27 12:42:48,323 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:42:48,369 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:42:48,387 - WARNING -  * Debugger is active!
+2025-02-27 12:42:48,394 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:43:03,527 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_APP/protocol/openid-connect/token
+2025-02-27 12:43:03,556 - INFO - Keycloak response: 404 - {"error":"Realm does not exist"}
+2025-02-27 12:43:03,556 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:43:03,557 - INFO - 127.0.0.1 - - [27/Feb/2025 12:43:03] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:43:07,603 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_APP/protocol/openid-connect/token
+2025-02-27 12:43:07,612 - INFO - Keycloak response: 404 - {"error":"Realm does not exist"}
+2025-02-27 12:43:07,612 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:43:07,613 - INFO - 127.0.0.1 - - [27/Feb/2025 12:43:07] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:47:08,533 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_APP/protocol/openid-connect/token
+2025-02-27 12:47:08,574 - INFO - Keycloak response: 404 - {"error":"Realm does not exist"}
+2025-02-27 12:47:08,574 - ERROR - ❌ Invalid login credentials
+2025-02-27 12:47:08,575 - INFO - 127.0.0.1 - - [27/Feb/2025 12:47:08] "[33mPOST /api/login HTTP/1.1[0m" 404 -
+2025-02-27 12:48:02,287 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:48:02,313 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:48:02,331 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 12:48:02,331 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 12:48:02,332 - INFO -  * Restarting with stat
+2025-02-27 12:48:02,621 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:48:02,638 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:48:02,648 - WARNING -  * Debugger is active!
+2025-02-27 12:48:02,654 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:48:09,668 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-02-27 12:48:09,725 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA2NjA1NDksImlhdCI6MTc0MDY2MDQ4OSwianRpIjoiYjlmYjM3MDctNWVlMy00YWRkLWJhYTMtOGVmYWQzYTZjMDNmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiIzMWY2ZDkwOC0xNWIzLTQzM2UtYjVkMi0wOTU1ODMyMmExMmYiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjMxZjZkOTA4LTE1YjMtNDMzZS1iNWQyLTA5NTU4MzIyYTEyZiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.R3yz8f6SKEkBhIfNIgwDRSPHSfarQaBNNnDfoKFUI69XEX84VVOqxtwNNh70tXDiMpwcb0lXPjng2yPcuYc-S_0le8nuwdu0K7LkAFLDLrAiV89NueqbL6kMKhasZ6rb7DjxLvnwZ0D_rLL5OMoxLSkZF2FTEDflkSBbkDnECtVd_Cv-In7RslJ5gKuPMZs9xM1ghWnAyj4ZfCG_sDOGmSB5G1FXToQT4O610iktknfeC2qO2hgFL8wPIDTItmRBhIjJd9c8zPC6iwjwFhDfchKkk5fRYCsGy4GglFT_UR-Y9kqLyHZjG2JJ-_HsVmyHfic8yA13w3S6BvcZ-cFC-g","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA2NjIyODksImlhdCI6MTc0MDY2MDQ4OSwianRpIjoiMDMwNTc3NzQtMzg4ZS00NzE4LWJhZGUtNmYzMjY2YTE2MzMyIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6IjMxZjZkOTA4LTE1YjMtNDMzZS1iNWQyLTA5NTU4MzIyYTEyZiIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjMxZjZkOTA4LTE1YjMtNDMzZS1iNWQyLTA5NTU4MzIyYTEyZiJ9.yU_8r-Pig9P1vIt89Ydgi91OaiKA0XBc-Zg_KDpkCng","token_type":"Bearer","not-before-policy":0,"session_state":"31f6d908-15b3-433e-b5d2-09558322a12f","scope":"profile email"}
+2025-02-27 12:48:09,726 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:48:09,740 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-02-27 12:48:09,740 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-02-27 12:48:09,765 - INFO - 127.0.0.1 - - [27/Feb/2025 12:48:09] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-02-27 12:58:30,773 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/models.py', reloading
+2025-02-27 12:58:30,856 - INFO -  * Restarting with stat
+2025-02-27 12:58:31,279 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:58:31,321 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:58:31,337 - WARNING -  * Debugger is active!
+2025-02-27 12:58:31,343 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:58:40,686 - INFO -  * Detected change in '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py', reloading
+2025-02-27 12:58:40,757 - INFO -  * Restarting with stat
+2025-02-27 12:58:41,149 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:58:41,167 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:58:41,183 - WARNING -  * Debugger is active!
+2025-02-27 12:58:41,189 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:59:30,742 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:59:30,760 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:59:30,778 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 12:59:30,779 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 12:59:30,779 - INFO -  * Restarting with stat
+2025-02-27 12:59:31,074 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:59:31,090 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 12:59:31,102 - WARNING -  * Debugger is active!
+2025-02-27 12:59:31,108 - INFO -  * Debugger PIN: 287-623-644
+2025-02-27 12:59:44,783 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-02-27 12:59:44,856 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA2NjEyNDQsImlhdCI6MTc0MDY2MTE4NCwianRpIjoiM2I2ZWY2MzctMjU3Ny00NTU2LWJiNTEtMzRhNjQxNzNmNjAzIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiJkZDczNDRjYi01OTJiLTRhZTItOWMxNy1lNmQxZTI5YmFiZTgiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImRkNzM0NGNiLTU5MmItNGFlMi05YzE3LWU2ZDFlMjliYWJlOCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.bG8fW2Mx4v07v3UYT-SDltSxvdlnGw0h-5fZfUlhzHt5bDCTihUQWG3mxaKZFniTz5amz-frhxOa0aZsVs3rYu6NiWpMKXuTJiyt0eiwA9yQ06QHZitdVqUUH61YxqQW4JivhtbJU6izex5A_HA4pi-J4M_Z1wqWUrWkEF9Bsi6YLseM4gWL9P9JJApNjMSqA_5d2o5yCnewS5NxQSc3AQ-0kRpdD3Jl_7GV4ozeLIKY5gkq6WQmXppozlfwJFE5X1jolJZX6v1wXUfb0YYBm9F2TfG5786cYjbflYDzzgqp1gii-98UDhQ3c1I3M6lMdh0RGHt1oN5Do_XssJDTRw","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA2NjI5ODQsImlhdCI6MTc0MDY2MTE4NCwianRpIjoiNGEzN2ZlOGQtN2JiMS00NDYwLWIzNmYtMmM1NDgzOTkwM2E4IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6ImRkNzM0NGNiLTU5MmItNGFlMi05YzE3LWU2ZDFlMjliYWJlOCIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImRkNzM0NGNiLTU5MmItNGFlMi05YzE3LWU2ZDFlMjliYWJlOCJ9.2MI-Ki3MyDHrLfXP8pJvL537gnIk_WhBJvh_5EozwRM","token_type":"Bearer","not-before-policy":0,"session_state":"dd7344cb-592b-4ae2-9c17-e6d1e29babe8","scope":"profile email"}
+2025-02-27 12:59:44,857 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 12:59:44,872 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-02-27 12:59:44,872 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-02-27 12:59:44,896 - INFO - 127.0.0.1 - - [27/Feb/2025 12:59:44] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-02-27 13:01:59,830 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 13:01:59,873 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 13:06:13,232 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 13:06:13,285 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 13:06:13,286 - ERROR - Error: Directory migrations already exists and is not empty
+2025-02-27 13:06:13,619 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 13:06:13,637 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 13:06:14,013 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 13:06:14,030 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 13:06:55,826 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 13:06:55,878 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 13:06:55,881 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 13:06:55,881 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 13:07:17,270 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-02-27 13:07:17,368 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA2NjE2OTcsImlhdCI6MTc0MDY2MTYzNywianRpIjoiODc3MzE3YTEtMmZkYi00OTA1LWExNjktY2E0YWRiZDk0OWRiIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiI4Y2Y1NjIyMS03NDNiLTRmMTMtYjQ0Zi1lYjlhZjE1OTc3NmIiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjhjZjU2MjIxLTc0M2ItNGYxMy1iNDRmLWViOWFmMTU5Nzc2YiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.LUl8nZzTP44uNwHepY6Nv9e3RtSlavMptOThnqrGxzLN5aXDXFuPFqIJkGfqqT0EpqVg1dLwBKikl9IlDWYhNzdJ1jwYnkLPudgWR0aL0Le_r399A2PcLn9f6QFKmE8WV2G-KjEnHfZMVG7_kC0QN69xHvDqTna360Sm8q-7RyRSvRLMl7ureO1FQVugHtqwslpSinyUYJlF16_2kthkz9HsMTqtKqp3gWFPg5wbiiQXc8Vag77vepoZ084FpaagHwrK98i5Om94msblNknK3-D44NHAUlv5DeUejn7SuhDC2cM1I9nGgeTOm3ADlrNUYs0ls6q4C7ftE9_zmt3KaA","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA2NjM0MzcsImlhdCI6MTc0MDY2MTYzNywianRpIjoiYmM4ZTg3ZWEtZDM3Ny00Mzg1LWEyY2UtMWE5YjI3YTljNWE5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6IjhjZjU2MjIxLTc0M2ItNGYxMy1iNDRmLWViOWFmMTU5Nzc2YiIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjhjZjU2MjIxLTc0M2ItNGYxMy1iNDRmLWViOWFmMTU5Nzc2YiJ9.jR9xd2pzzlHy89FlBwgg7-fjFEr69h76CTLxvbZn6z8","token_type":"Bearer","not-before-policy":0,"session_state":"8cf56221-743b-4f13-b44f-eb9af159776b","scope":"profile email"}
+2025-02-27 13:07:17,368 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 13:07:17,388 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-02-27 13:07:17,388 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-02-27 13:07:17,404 - ERROR - Exception on /api/login [POST]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 402, in wrapper
+    resp = resource(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/views.py", line 110, in view
+    return current_app.ensure_sync(self.dispatch_request)(**kwargs)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/resource.py", line 41, in dispatch_request
+    resp = meth(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py", line 87, in post
+    user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2754, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2853, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2239, in _execute_internal
+    bind = self.get_bind(**bind_arguments)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_sqlalchemy/session.py", line 53, in get_bind
+    engines = self._db.engines
+              ^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_sqlalchemy/extension.py", line 690, in engines
+    raise RuntimeError(
+RuntimeError: The current Flask app is not registered with this 'SQLAlchemy' instance. Did you forget to call 'init_app', or did you create multiple 'SQLAlchemy' instances?
+2025-02-27 13:07:17,413 - INFO - 127.0.0.1 - - [27/Feb/2025 13:07:17] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-02-27 14:00:18,422 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:00:18,476 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:00:50,700 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:00:50,731 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:00:50,737 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 14:00:50,737 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 14:00:59,775 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-02-27 14:00:59,848 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA2NjQ5MTksImlhdCI6MTc0MDY2NDg1OSwianRpIjoiM2M1ODc4NjItNWYwNi00MGI2LWJlZTUtYzYzMWQ5MTlhMTkwIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiIwYjI1MGI3MS00NmQ4LTQxZWEtODE3Yy0wNTI2ZGZiNDZhZWMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjBiMjUwYjcxLTQ2ZDgtNDFlYS04MTdjLTA1MjZkZmI0NmFlYyIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.gSxjyn45lLtoIaeMLiKQhdle_ZlEvwONO0RbXc5z-QH40vgIu6xBaz2rCORJOcpg8CzGpNiXC8TR9TSQRMTuMVACnDMw_GEvn7r2Rygp95OI5r37Y0nV1kCl6J7KgVqIOroMnxk_5B9rmR6Wn0Nl0DxMOco7tk8odzbPcAJeIQpfA0BAcqHdbX07LPKvv-ACOI2YQNTXKM4QDZdvLP_fm5A70EO81Abma2CU-ZQDvPCerCpN7RT6d2yBp6waXdHcFKK80WYdGMVX2FAjvnHOOxaVyd9wPZ5NBBFRrkO5ftu6MV6QS87BKdHQDAVhR6jIkYwTWuLnXP6r2ZbkWpzQaA","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA2NjY2NTksImlhdCI6MTc0MDY2NDg1OSwianRpIjoiMDgwMWU2N2MtMTc0Ny00Y2NkLTliNWMtMjYxOGI0N2Y1MTdmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6IjBiMjUwYjcxLTQ2ZDgtNDFlYS04MTdjLTA1MjZkZmI0NmFlYyIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjBiMjUwYjcxLTQ2ZDgtNDFlYS04MTdjLTA1MjZkZmI0NmFlYyJ9.4eZ8TiwTnPjzhkEeSJKnLN1eMbNMQIFYxjRVQa-oWyk","token_type":"Bearer","not-before-policy":0,"session_state":"0b250b71-46d8-41ea-817c-0526dfb46aec","scope":"profile email"}
+2025-02-27 14:00:59,848 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:00:59,866 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-02-27 14:00:59,866 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-02-27 14:00:59,884 - ERROR - Exception on /api/login [POST]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: user
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 402, in wrapper
+    resp = resource(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/views.py", line 110, in view
+    return current_app.ensure_sync(self.dispatch_request)(**kwargs)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/resource.py", line 41, in dispatch_request
+    resp = meth(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/app/routes.py", line 87, in post
+    user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2754, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2853, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/orm/context.py", line 305, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: user
+[SQL: SELECT user.id AS user_id, user.keycloak_id AS user_keycloak_id, user.username AS user_username, user.email AS user_email, user.created_at AS user_created_at, user.bio AS user_bio, user.profile_pic AS user_profile_pic, user.user_type AS user_user_type 
+FROM user 
+WHERE user.keycloak_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('19bd15ee-9060-48cb-98b5-a391eeebc104', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-02-27 14:00:59,892 - INFO - 127.0.0.1 - - [27/Feb/2025 14:00:59] "[35m[1mPOST /api/login HTTP/1.1[0m" 500 -
+2025-02-27 14:06:14,296 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:06:14,342 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:06:14,676 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:06:14,692 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:06:15,069 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:06:15,087 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:15:45,651 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:15:45,692 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:15:46,031 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:15:46,051 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:15:46,414 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:15:46,433 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:20:55,211 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:20:55,264 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:21:21,435 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:21:21,453 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:22:20,273 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:22:20,325 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:32:20,834 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:32:20,876 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:32:49,737 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:32:49,754 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:34:23,014 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:34:23,062 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:35:05,056 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:35:05,075 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:36:41,519 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:36:41,567 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:43:02,505 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:43:02,544 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:45:39,815 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:45:39,863 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:46:56,721 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:46:56,778 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:48:42,030 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:48:42,079 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:48:42,427 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:48:42,444 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:48:42,783 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:48:42,800 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:55:13,990 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:55:14,044 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:55:14,044 - ERROR - Error: Path doesn't exist: '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-02-27 14:55:40,047 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:55:40,069 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:55:55,714 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:55:55,730 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 14:55:55,731 - ERROR - Error: Path doesn't exist: '/Users/charlesjackson/MobileApp101/yeslove-mobile-app/backend/migrations'.  Please use the 'init' command to create a new scripts folder.
+2025-02-27 14:59:52,357 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 14:59:52,402 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:00:30,226 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:00:30,273 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:01:12,473 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:01:12,498 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:05:26,269 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:05:26,314 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:13:44,041 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:13:44,066 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:14:13,899 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:14:13,948 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:14:51,236 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:14:51,258 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:26:18,882 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:26:18,929 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:27:10,932 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:27:10,951 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:28:50,674 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:28:50,691 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:31:09,624 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:31:09,647 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:31:44,925 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:31:44,944 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:31:57,114 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:31:57,132 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:36:45,191 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:36:45,238 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:36:45,570 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:36:45,587 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:36:45,953 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:36:45,969 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:37:43,216 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:37:43,233 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:37:53,281 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:37:53,297 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:38:10,958 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:38:10,976 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:38:36,642 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:38:36,659 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:39:05,358 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:39:05,376 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:39:45,670 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:39:45,688 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:42:49,080 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:42:49,131 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-02-27 15:42:49,133 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-02-27 15:42:49,134 - INFO - [33mPress CTRL+C to quit[0m
+2025-02-27 15:42:56,482 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-02-27 15:42:56,555 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA2NzEwMzYsImlhdCI6MTc0MDY3MDk3NiwianRpIjoiNzFlNTc3Y2YtMzRjMS00MGI3LWIxMDctZDNmN2YzNmY2YjQ1IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiI4YzI2ODQ5OS1kMzQwLTRmMWItYjQ3Yy1lYjMxZmMxZjcwMzYiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjhjMjY4NDk5LWQzNDAtNGYxYi1iNDdjLWViMzFmYzFmNzAzNiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.N3Ph-XijyEGfdkehgcUS-nJHRdd2QdMLfj6KHmuisHL_QzDEgFHGk9XlUjRxQB8wyNF6sFrORrMr9GIUNBooFg0UdcfnaRPkS-DIsQ51vBG6GsNpH9Dx9WYTnJLPIDiyh8rIS_gFm8iEIJBQykLhH_quKnX_aMQkfpyeaDSI_w6wihP3Oin7ziuSQsrjASSHQJnCt1X1tjpFXgAKhtWGJetzDQzotff3RTM-kBwk22EdjRPLQEhhZSMLt6f5EV6yfQyWNWHR8fd6vaXKfVrnC9mYNJkDqsMUKzy77HkCMJY3W61ZSXt1zJNiXH4azHM1Eb_tmW-TiFsIPuPzsx_LDA","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA2NzI3NzYsImlhdCI6MTc0MDY3MDk3NiwianRpIjoiM2QyZDQ4YWEtOTExZS00ZTQyLWJjODUtZGI5NWFlNWIwZTAwIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6IjhjMjY4NDk5LWQzNDAtNGYxYi1iNDdjLWViMzFmYzFmNzAzNiIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjhjMjY4NDk5LWQzNDAtNGYxYi1iNDdjLWViMzFmYzFmNzAzNiJ9.pBDbnQ0USkunfTapefxfq80dzZ6tjlVrROEw6a-LUNM","token_type":"Bearer","not-before-policy":0,"session_state":"8c268499-d340-4f1b-b47c-eb31fc1f7036","scope":"profile email"}
+2025-02-27 15:42:56,556 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-02-27 15:42:56,572 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-02-27 15:42:56,572 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-02-27 15:42:56,591 - INFO - ✅ User charlesj logged in successfully.
+2025-02-27 15:42:56,592 - INFO - 127.0.0.1 - - [27/Feb/2025 15:42:56] "POST /api/login HTTP/1.1" 200 -

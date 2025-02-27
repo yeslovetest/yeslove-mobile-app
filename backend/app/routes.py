@@ -34,15 +34,26 @@ class Login(Resource):
     def post(self):
         """Exchange user credentials for a Keycloak access token and check user type."""
         from app.utils import verify_jwt  # ✅ Avoid circular imports
-        data = request.json
-        username = data.get("charlesj")
-        password = data.get("Password@90")
+
+        # ✅ Get JSON payload and handle missing content-type
+        data = request.get_json(silent=True)
+        if not data:
+            logger.error("❌ No JSON payload received")
+            return {"message": "Invalid request. Expected JSON payload."}, 400
+
+        username = data.get("username")  # ✅ Corrected
+        password = data.get("password")  # ✅ Corrected
 
         if not username or not password:
             logger.error("❌ Missing username or password")
             return {"message": "Username and password are required"}, 400
+        
+        
 
         keycloak_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/token"
+        
+        logger.info(f"Keycloak URL: {keycloak_url}")  #✅ Log the URL
+                     
         payload = {
             "grant_type": "password",
             "client_id": current_app.config["KEYCLOAK_CLIENT_ID"],
@@ -52,6 +63,8 @@ class Login(Resource):
         }
 
         response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        logger.info(f"Keycloak response: {response.status_code} - {response.text}")  # ✅ Debug response
+
 
         if response.status_code == 200:
             token_data = response.json()
@@ -68,10 +81,7 @@ class Login(Resource):
             logger.info(f"User roles from Keycloak: {keycloak_roles}")
 
             # Determine user type
-            if "professional" in keycloak_roles:
-                user_type = "professional"
-            else:
-                user_type = "standard"
+            user_type = "professional" if "professional" in keycloak_roles else "standard"
 
             # ✅ Ensure user exists in local DB
             user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
@@ -101,6 +111,7 @@ class Login(Resource):
 
         logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code
+
 
 
 
