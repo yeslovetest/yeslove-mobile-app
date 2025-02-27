@@ -6,7 +6,7 @@ from flask_restx import Namespace, Resource
 from app.utils import require_auth  # ✅ Import Keycloak authentication utilities
 from app.logging_setup import logger  # ✅ Import logger
 
-# ✅ Define the API Namespace
+# ✅ Define the API Namespaces
 main_api = Namespace("api", description="API Endpoints")
 
 # ✅ Enable CORS for React Native compatibility
