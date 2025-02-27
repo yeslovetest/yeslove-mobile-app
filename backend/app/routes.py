@@ -5,6 +5,9 @@ from flask_cors import CORS  # ✅ Allow React Native to connect
 from flask_restx import Namespace, Resource
 from app.utils import require_auth  # ✅ Import Keycloak authentication utilities
 from app.logging_setup import logger  # ✅ Import logger
+from app.api_models import register_models  # ✅ Import the function to register models
+
+
 
 # ✅ Define the API Namespaces
 main_api = Namespace("api", description="API Endpoints")
@@ -12,6 +15,9 @@ main_api = Namespace("api", description="API Endpoints")
 # ✅ Enable CORS for React Native compatibility
 main = Blueprint("main", __name__)
 CORS(main, resources={r"/api/*": {"origins": "*"}})
+
+models = register_models(main_api)  # ✅ Register models
+
 
 
 # -------------------------
@@ -31,6 +37,7 @@ class Signup(Resource):
         
 @main_api.route("/login")
 class Login(Resource):
+    @main_api.expect(models["login"])  # ✅ Attach the correct model
     def post(self):
         """Exchange user credentials for a Keycloak access token and check user type."""
         from app.utils import verify_jwt  # ✅ Avoid circular imports
@@ -118,6 +125,7 @@ class Login(Resource):
 @main_api.route("/set_user_type")
 class SetUserType(Resource):
     @require_auth()
+    @main_api.expect(models["set_user_type"])  # ✅ Attach model
     def post(self):
         """Set user type (professional or standard) for new users."""
         data = request.json
@@ -161,6 +169,7 @@ class SetUserType(Resource):
 @main_api.route("/logout")
 class Logout(Resource):
     @require_auth()
+    @main_api.expect(models["logout"])  # ✅ Attach model
     def post(self):
         """Logout user from Keycloak."""
         token = request.headers.get("Authorization").split(" ")[1]
@@ -177,6 +186,7 @@ class Logout(Resource):
 
 @main_api.route("/refresh_token")
 class RefreshToken(Resource):
+    @main_api.expect(models["refresh_token"])  # ✅ Attach model
     def post(self):
         """Refresh expired access token using Keycloak refresh token."""
         data = request.json
@@ -208,6 +218,7 @@ class RefreshToken(Resource):
 @main_api.route("/profile/<string:keycloak_id>")
 class UserProfile(Resource):
     @require_auth()
+    @main_api.expect(models["profile"])  # ✅ Attach model
     def get(self, keycloak_id):
         """Get user profile and posts."""
         logger.info(f"🔹 Fetching profile for Keycloak ID: {keycloak_id}")
@@ -239,6 +250,7 @@ class UserProfile(Resource):
 @main_api.route("/update_profile")
 class UpdateProfile(Resource):
     @require_auth()
+    @main_api.expect(models["update_profile"])  # ✅ Attach model
     def put(self):
         """Update user profile."""
         data = request.json
@@ -260,6 +272,7 @@ class UpdateProfile(Resource):
 @main_api.route("/feed")
 class Feed(Resource):
     @require_auth()
+    @main_api.expect(models["feed"])  # ✅ Attach model
     def get(self):
         """Fetch posts from users the current user follows."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()  # ✅ Use Keycloak UUID
@@ -288,6 +301,7 @@ class Feed(Resource):
 @main_api.route("/post")
 class CreatePost(Resource):
     @require_auth()
+    @main_api.expect(models["create_post"])  # ✅ Attach model
     def post(self):
         """Create a new post."""
         data = request.json
@@ -311,6 +325,7 @@ class CreatePost(Resource):
 @main_api.route("/follow/<int:user_id>")
 class FollowUser(Resource):
     @require_auth()
+    @main_api.expect(models["followers"])  # ✅ Attach model
     def post(self, user_id):
         """Follow or unfollow a user."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()  # ✅ Use Keycloak UUID
@@ -338,6 +353,7 @@ class FollowUser(Resource):
 @main_api.route("/post/<int:post_id>/like")
 class LikePost(Resource):
     @require_auth()
+    @main_api.expect(models["like_post"])  # ✅ Attach model
     def post(self, post_id):
         """Like or unlike a post."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -366,6 +382,7 @@ class LikePost(Resource):
 @main_api.route("/post/<int:post_id>/comment")
 class AddComment(Resource):
     @require_auth()
+    @main_api.expect(models["add_comment"])
     def post(self, post_id):
         """Add a comment to a post."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -386,6 +403,7 @@ class AddComment(Resource):
 
 @main_api.route("/post/<int:post_id>/comments")
 class GetComments(Resource):
+    @main_api.expect(models["get_messages"])  # ✅ Attach model
     def get(self, post_id):
         """Fetch all comments for a post."""
         comments = Comment.query.filter_by(post_id=post_id).all()
@@ -407,6 +425,7 @@ class GetComments(Resource):
 @main_api.route("/follow/<int:user_id>")
 class FollowUser(Resource):
     @require_auth()
+    @main_api.expect(models["follow"])  # ✅ Attach model
     def post(self, user_id):
         """Follow or unfollow a user."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -438,6 +457,7 @@ class FollowUser(Resource):
 
 @main_api.route("/followers/<int:user_id>")
 class GetFollowers(Resource):
+    @main_api.expect(models["followers"])  # ✅ Attach model
     def get(self, user_id):
         """Fetch all followers of a user."""
         followers = Follow.query.filter_by(followed_id=user_id).all()
@@ -449,6 +469,7 @@ class GetFollowers(Resource):
 
 @main_api.route("/following/<int:user_id>")
 class GetFollowing(Resource):
+    @main_api.expect(models["following"])  # ✅ Attach model
     def get(self, user_id):
         """Fetch all users the current user is following."""
         following = Follow.query.filter_by(follower_id=user_id).all()
@@ -465,6 +486,7 @@ class GetFollowing(Resource):
 @main_api.route("/send_message")
 class SendMessage(Resource):
     @require_auth()
+    @main_api.expect(models["send_message"])  # ✅ Attach model
     def post(self):
         """Send a private message."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -498,6 +520,7 @@ class SendMessage(Resource):
 @main_api.route("/get_messages/<int:receiver_id>")
 class GetMessages(Resource):
     @require_auth()
+    @main_api.expect(models["get_messages"])  # ✅ Attach model
     def get(self, receiver_id):
         """Fetch chat messages between two users."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
