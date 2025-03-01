@@ -88,29 +88,61 @@ const aboutItems = [
       </View>
     </View>
 
-    {/* Friends section */}
-    <View style={styles.friendsContainer}>
-      <View style={styles.friends}>
-        <View style={styles.friendsItem}>
-          <Text style={styles.activeFriendsText}>
-            My Friends
-          </Text>
-          <View style={styles.activeIndicator} />
+
+    {activeAboutTab === 'View' && (
+      <View>
+        {/* About/View */}
+        <View style={styles.viewItemContainer}>
+          <Text style={styles.viewItemText}>Name</Text>
+          <Text style={styles.viewItemInfo}>User's name</Text>
         </View>
 
-        {/*friends */}
-        <View style={styles.friend}>
-           <Image 
-           source={{ uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/avatar/bp-avatar.png" }} 
-           style={styles.friendImage} />
-           <Text style={styles.friendName}>Friend username</Text>
+        <View style={styles.viewItemContainer}>
+          <Text style={styles.viewItemText}>Email</Text>
+          <Text style={styles.viewItemInfo}>user@googlemail.com</Text>
         </View>
 
+        <View style={styles.viewItemContainer}>
+          <Text style={styles.viewItemText}>Phone</Text>
+          <Text style={styles.viewItemInfo}>12345 67910</Text>
+        </View>
 
+        <View style={styles.viewItemContainer}>
+          <Text style={styles.viewItemText}>Address</Text>
+          <Text style={styles.viewItemInfo}>user's address</Text>
+        </View>
+
+        <View style={styles.viewItemContainer}>
+          <Text style={styles.viewItemText}>Website</Text>
+          <Text style={styles.viewItemInfo}>user's website</Text>
+        </View>
+
+        {/* Friends section */}
+        <View style={styles.friendsContainer}>
+          <View style={styles.friends}>
+            <View style={styles.friendsItem}>
+              <Text style={styles.activeFriendsText}>
+                My Friends
+              </Text>
+              <View style={styles.activeIndicator} />
+            </View>
+
+            {/* Friends */}
+            <View style={styles.friend}>
+              <Image 
+                source={{ uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/avatar/bp-avatar.png" }} 
+                style={styles.friendImage} 
+              />
+              <Text style={styles.friendName}>Friend username</Text>
+            </View>
+          </View>
+        </View>
       </View>
-    </View>
+    )}
   </View>
 )}
+
+
 
 
 {/*Videos*/}
@@ -228,10 +260,9 @@ userBioContainer:{
 
 navBarContainer: {
   flex: 1,
-  backgroundColor: "#f8f8f8",
   justifyContent: "flex-start",
   alignItems: "center",
-  marginTop: 20
+  marginTop: 20,
 },
 navBar: {
   flexDirection: "row",
@@ -283,10 +314,9 @@ pageText: {
 
 friendsContainer: {
   flex: 1,
-  backgroundColor: "#f8f8f8",
   justifyContent: "flex-start",
   alignItems: "center",
-  marginTop: 10
+  marginTop: 10,
 },
 friends: {
   flexDirection: "column",
@@ -351,11 +381,10 @@ friendName: {
 
 aboutNavBarContainer: {
   flex: 1,
-  backgroundColor: "#f8f8f8",
   justifyContent: "flex-start",
   alignItems: "center",
   marginTop: 10,
-  marginBottom: 20,
+  marginBottom: 20
 },
 aboutNavBar: {
   flexDirection: "row",
@@ -383,6 +412,32 @@ activeAboutNavText: {
   fontWeight: "bold",
   color: "#000",
 },
+
+/*About/view*/
+
+viewItemContainer: {
+  backgroundColor: "#fff",
+  justifyContent: "flex-start",
+  alignItems: "flex-start",
+  paddingHorizontal: 30,
+  paddingVertical: 15,
+  marginBottom: 20,
+  width: "90vw"
+},
+
+viewItemText: {
+  fontSize: 20,
+  fontWeight: 600,
+  marginBottom: 10,
+  color: "#000",
+},
+
+viewItemInfo: {
+  border: "2px solid #f1f1f1",
+  width: "90%",
+  paddingVertical: 5,
+  paddingLeft: 10
+}
 
 
 });
