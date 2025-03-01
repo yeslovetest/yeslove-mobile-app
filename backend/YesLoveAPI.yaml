@@ -2,6 +2,122 @@
     "swagger": "2.0",
     "basePath": "/",
     "paths": {
+        "/api/about/{keycloak_id}": {
+            "parameters": [
+                {
+                    "name": "keycloak_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get user contact & education details for About section",
+                "operationId": "get_about_user",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/change_password": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Change user password via Keycloak API",
+                "operationId": "post_change_password",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/delete_account": {
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Delete user account via Keycloak API",
+                "operationId": "delete_delete_account",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/email_notifications": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get email notification settings",
+                "operationId": "get_email_notifications",
+                "tags": [
+                    "api"
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Update email notification settings",
+                "operationId": "post_email_notifications",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
         "/api/feed": {
             "get": {
                 "responses": {
@@ -9,16 +125,16 @@
                         "description": "Success"
                     }
                 },
-                "summary": "Fetch posts from users the current user follows",
+                "summary": "Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)",
                 "operationId": "get_feed",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/Feed"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -45,12 +161,12 @@
                 "operationId": "post_follow_user",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/FollowUserRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -141,12 +257,12 @@
                 "operationId": "get_get_messages",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/GetMessagesRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -205,13 +321,21 @@
         "/api/post": {
             "post": {
                 "responses": {
-                    "200": {
-                        "description": "Success"
+                    "201": {
+                        "description": "Post created successfully"
                     }
                 },
                 "summary": "Create a new post",
                 "operationId": "post_create_post",
                 "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    },
                     {
                         "name": "payload",
                         "required": true,
@@ -245,12 +369,12 @@
                 "operationId": "post_add_comment",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/AddCommentRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -309,12 +433,45 @@
                 "operationId": "post_like_post",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/LikePostRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/post/{post_id}/reaction": {
+            "parameters": [
+                {
+                    "name": "post_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Add or update a reaction to a post (like, love, laugh, etc",
+                "description": ").",
+                "operationId": "post_react_to_post",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -334,19 +491,58 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/ProfileResponse"
+                        }
                     }
                 },
                 "summary": "Get user profile and posts",
                 "operationId": "get_user_profile",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/GetProfileRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
+        "/api/profile_visibility": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get profile visibility settings",
+                "operationId": "get_profile_visibility",
+                "tags": [
+                    "api"
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Update profile visibility settings",
+                "operationId": "post_profile_visibility",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -378,6 +574,30 @@
                 ]
             }
         },
+        "/api/reset_password": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Send password reset email via Keycloak API",
+                "operationId": "post_reset_password",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "api"
+                ]
+            }
+        },
         "/api/send_message": {
             "post": {
                 "responses": {
@@ -389,12 +609,12 @@
                 "operationId": "post_send_message",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/SendMessageRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -413,12 +633,12 @@
                 "operationId": "post_set_user_type",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/SetUserTypeRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -451,12 +671,12 @@
                 "operationId": "put_update_profile",
                 "parameters": [
                     {
-                        "name": "payload",
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
                         "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/UpdateProfileRequest"
-                        }
+                        "description": "Bearer <token>",
+                        "default": "Bearer <your-access-token>"
                     }
                 ],
                 "tags": [
@@ -499,26 +719,6 @@
             },
             "type": "object"
         },
-        "SetUserTypeRequest": {
-            "required": [
-                "user_type"
-            ],
-            "properties": {
-                "user_type": {
-                    "type": "string",
-                    "description": "Choose 'professional' or 'standard'"
-                },
-                "license": {
-                    "type": "string",
-                    "description": "License number (for professional users only)"
-                },
-                "specialization": {
-                    "type": "string",
-                    "description": "Specialization field (for professional users only)"
-                }
-            },
-            "type": "object"
-        },
         "LogoutRequest": {
             "properties": {},
             "type": "object"
@@ -535,25 +735,108 @@
             },
             "type": "object"
         },
-        "GetProfileRequest": {
-            "properties": {},
-            "type": "object"
-        },
-        "UpdateProfileRequest": {
+        "ProfileResponse": {
             "properties": {
+                "username": {
+                    "type": "string",
+                    "description": "User's username"
+                },
                 "bio": {
                     "type": "string",
-                    "description": "User's bio"
+                    "description": "User bio"
                 },
                 "profile_pic": {
                     "type": "string",
                     "description": "Profile picture URL"
+                },
+                "user_type": {
+                    "type": "string",
+                    "description": "User type: professional or standard"
+                },
+                "contact_info": {
+                    "$ref": "#/definitions/ContactInfo"
+                },
+                "education_info": {
+                    "$ref": "#/definitions/EducationInfo"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PostSummary"
+                    }
                 }
             },
             "type": "object"
         },
-        "Feed": {
-            "properties": {},
+        "ContactInfo": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "User's full name"
+                },
+                "email": {
+                    "type": "string",
+                    "description": "Email address"
+                },
+                "phone": {
+                    "type": "string",
+                    "description": "Phone number"
+                },
+                "address": {
+                    "type": "string",
+                    "description": "User's address"
+                },
+                "website": {
+                    "type": "string",
+                    "description": "User's personal website"
+                }
+            },
+            "type": "object"
+        },
+        "EducationInfo": {
+            "properties": {
+                "birthday": {
+                    "type": "string",
+                    "description": "User's birthday"
+                },
+                "education": {
+                    "type": "string",
+                    "description": "Education details"
+                },
+                "institution": {
+                    "type": "string",
+                    "description": "Institution name"
+                },
+                "employment": {
+                    "type": "string",
+                    "description": "Current employment details"
+                }
+            },
+            "type": "object"
+        },
+        "PostSummary": {
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "Post content"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "description": "Timestamp of post"
+                }
+            },
+            "type": "object"
+        },
+        "ResetPasswordRequest": {
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "description": "User's email for password reset"
+                }
+            },
             "type": "object"
         },
         "CreatePostRequest": {
@@ -568,69 +851,16 @@
             },
             "type": "object"
         },
-        "GetFollowersRequest": {
-            "properties": {},
-            "type": "object"
-        },
-        "LikePostRequest": {
-            "required": [
-                "post_id"
-            ],
-            "properties": {
-                "post_id": {
-                    "type": "integer",
-                    "description": "ID of the post to like or unlike"
-                }
-            },
-            "type": "object"
-        },
-        "AddCommentRequest": {
-            "required": [
-                "content"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "description": "Content of the comment"
-                }
-            },
-            "type": "object"
-        },
         "GetMessagesRequest": {
             "properties": {},
             "type": "object"
         },
-        "FollowUserRequest": {
-            "required": [
-                "action"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string",
-                    "description": "'follow' to follow, 'unfollow' to unfollow"
-                }
-            },
+        "GetFollowersRequest": {
+            "properties": {},
             "type": "object"
         },
         "GetFollowingRequest": {
             "properties": {},
-            "type": "object"
-        },
-        "SendMessageRequest": {
-            "required": [
-                "message",
-                "receiver_id"
-            ],
-            "properties": {
-                "receiver_id": {
-                    "type": "integer",
-                    "description": "ID of the recipient user"
-                },
-                "message": {
-                    "type": "string",
-                    "description": "Message content"
-                }
-            },
             "type": "object"
         }
     },

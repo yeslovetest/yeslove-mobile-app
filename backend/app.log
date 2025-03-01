@@ -841,3 +841,540 @@ WHERE user.keycloak_id = ?
 2025-03-01 01:42:38,654 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
 2025-03-01 01:42:38,672 - INFO - ✅ User charlesj logged in successfully.
 2025-03-01 01:42:38,673 - INFO - 127.0.0.1 - - [01/Mar/2025 01:42:38] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 02:19:12,978 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:19:13,024 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 02:19:13,028 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 02:19:13,028 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 02:19:24,515 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:24] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 02:19:24,531 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:24] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 02:19:24,535 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:24] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 02:19:24,536 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:24] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 02:19:24,536 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:24] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 02:19:24,632 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:24] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 02:19:45,234 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-03-01 02:19:45,316 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA3OTU2NDUsImlhdCI6MTc0MDc5NTU4NSwianRpIjoiYjIzOWIxOTUtNTYxMi00Y2JkLTgwOGYtN2VjMWE2Y2IzMWMyIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiI5ZDk5MjY4Yy03ZmM1LTQzYmMtYTFkNi00NmU0ZjEzMjI1NjgiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjlkOTkyNjhjLTdmYzUtNDNiYy1hMWQ2LTQ2ZTRmMTMyMjU2OCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.Ekgo5f-UGwcWp2DbWasI7Nmq8SDPM3WxPvFtYYG6JLbTzhWH6H2wEcCVD3ppSEEgY9CqZYWtKv5WtJrIKfl7xOKbZli5CzF8xvaLpTHHDJp18Tss6Ov8rlrjpaFO-IA-XglobQ026LZo_LIeX9Krq3nXpG4yhJThdXdTubf4c4J-EsKoGTN3nTHpvG5w6WN-tk2Az9h3VzOgqteEZKORR_He_zAk6I9_Y_fOLf4DkY3NEISJMYyWRJ6umtuGGGV7hTwj0JSY9Li-TfSg8fQlxTW-emC790jsDzwq6cSfjWu93Vgh_NIhZt7yzONXgLEg3Yr_TwmJE3fQbXoE8k9_0g","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA3OTczODUsImlhdCI6MTc0MDc5NTU4NSwianRpIjoiOTJlM2MwYjEtN2NjNi00NGEyLTgwYTAtN2VmOTNjYTQ2MDhlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6IjlkOTkyNjhjLTdmYzUtNDNiYy1hMWQ2LTQ2ZTRmMTMyMjU2OCIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjlkOTkyNjhjLTdmYzUtNDNiYy1hMWQ2LTQ2ZTRmMTMyMjU2OCJ9.8FFRKBoiFIthQqdifvzMjdYAQeA3o6dcnaAmn-aoz2c","token_type":"Bearer","not-before-policy":0,"session_state":"9d99268c-7fc5-43bc-a1d6-46e4f1322568","scope":"profile email"}
+2025-03-01 02:19:45,317 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:19:45,343 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 02:19:45,343 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-03-01 02:19:45,369 - INFO - ✅ User charlesj logged in successfully.
+2025-03-01 02:19:45,370 - INFO - 127.0.0.1 - - [01/Mar/2025 02:19:45] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 02:20:24,242 - WARNING - ❌ Missing Authorization Header
+2025-03-01 02:20:24,243 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 02:20:24,249 - INFO - 127.0.0.1 - - [01/Mar/2025 02:20:24] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 02:26:10,333 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:26:10,386 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 02:26:10,388 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 02:26:10,388 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 02:26:28,599 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:28] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 02:26:28,624 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:28] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 02:26:28,624 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:28] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 02:26:28,624 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:28] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 02:26:28,627 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:28] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 02:26:28,724 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:28] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 02:26:44,542 - WARNING - ❌ Missing Authorization Header
+2025-03-01 02:26:44,543 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 02:26:44,550 - INFO - 127.0.0.1 - - [01/Mar/2025 02:26:44] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 02:27:18,047 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-03-01 02:27:18,133 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA3OTYwOTgsImlhdCI6MTc0MDc5NjAzOCwianRpIjoiOTcxMDgxZDAtNWRmMy00ZTcwLThmOGYtODNjMGYxM2NjYTZhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiJjN2FjNzAwOS1iYTJiLTQyMjUtYTU4Mi05ZWQzNjRlODcxODkiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImM3YWM3MDA5LWJhMmItNDIyNS1hNTgyLTllZDM2NGU4NzE4OSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.K8yZhQ1MNFAi7stx16suYuwVeL_fpOtj10zRrvIv2bT4_zvTADJF6LZe_HSP1w3A4GKlJ4T2nwNmzC-KhSFVXTfMC2J5qXgLZJ_J-eRHxoR1qWVV-kv3m5GN3gPoKg0T9qzrPe2rnZjyhXhza9vYfcuBH5VDFNPX-lK8VYkRAb4plXovlvLGeKk1LKLpJfo_7wNVk9BXPGffH8OfqAqmywPJpS_h7GQm3542W932hTWIKj0nvaKfgr8IkIgObhG5_jYAuaq_wv6KzgDr_0SxOViqVMJ1kZF-0jmxo8sxTppjbXraCQns-sqWKYXOTpc9ue95YRK_hInjlQ2UaROvAw","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA3OTc4MzgsImlhdCI6MTc0MDc5NjAzOCwianRpIjoiZGFkYzY0MjktMmY2YS00MWJjLWEwNTEtZWYyMjk2ZDFmNzE3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6ImM3YWM3MDA5LWJhMmItNDIyNS1hNTgyLTllZDM2NGU4NzE4OSIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImM3YWM3MDA5LWJhMmItNDIyNS1hNTgyLTllZDM2NGU4NzE4OSJ9.gPoHsnK44dU0jtkcQLI1IZJ3Q5eg2eMhPt7YC3C0p_U","token_type":"Bearer","not-before-policy":0,"session_state":"c7ac7009-ba2b-4225-a582-9ed364e87189","scope":"profile email"}
+2025-03-01 02:27:18,134 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:27:18,161 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 02:27:18,161 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-03-01 02:27:18,185 - INFO - ✅ User charlesj logged in successfully.
+2025-03-01 02:27:18,186 - INFO - 127.0.0.1 - - [01/Mar/2025 02:27:18] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 02:27:55,991 - WARNING - ❌ Missing Authorization Header
+2025-03-01 02:27:55,993 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 02:27:55,995 - INFO - 127.0.0.1 - - [01/Mar/2025 02:27:55] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 02:38:40,992 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:38:41,030 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 02:38:41,033 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 02:38:41,033 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 02:38:50,920 - INFO - 127.0.0.1 - - [01/Mar/2025 02:38:50] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 02:38:50,939 - INFO - 127.0.0.1 - - [01/Mar/2025 02:38:50] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 02:38:50,939 - INFO - 127.0.0.1 - - [01/Mar/2025 02:38:50] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 02:38:50,940 - INFO - 127.0.0.1 - - [01/Mar/2025 02:38:50] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 02:38:50,940 - INFO - 127.0.0.1 - - [01/Mar/2025 02:38:50] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 02:38:51,037 - INFO - 127.0.0.1 - - [01/Mar/2025 02:38:51] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 02:39:27,599 - WARNING - ❌ Missing Authorization Header
+2025-03-01 02:39:27,603 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 02:39:27,611 - INFO - 127.0.0.1 - - [01/Mar/2025 02:39:27] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 02:48:20,710 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:48:20,747 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 02:48:20,749 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 02:48:20,749 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 02:48:34,940 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:34] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 02:48:34,963 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:34] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 02:48:34,965 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:34] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 02:48:34,966 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:34] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 02:48:34,966 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:34] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 02:48:35,068 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:35] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 02:48:53,475 - WARNING - ❌ Missing Authorization Header
+2025-03-01 02:48:53,476 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 02:48:53,481 - INFO - 127.0.0.1 - - [01/Mar/2025 02:48:53] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 02:58:00,531 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 02:58:00,572 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 02:58:00,575 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 02:58:00,575 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 02:58:18,717 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:18] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 02:58:18,743 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:18] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 02:58:18,748 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:18] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 02:58:18,748 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:18] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 02:58:18,748 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:18] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 02:58:18,850 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:18] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 02:58:38,286 - WARNING - ❌ Missing Authorization Header
+2025-03-01 02:58:38,292 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 02:58:38,298 - INFO - 127.0.0.1 - - [01/Mar/2025 02:58:38] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 03:01:22,959 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-03-01 03:01:23,071 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA3OTgxNDMsImlhdCI6MTc0MDc5ODA4MywianRpIjoiOWM2YzhiNzYtYzVkYi00NzYxLWFiMTYtOGI0OGNkODFmZWRmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiI3NGU5MDY0OC0yMGZkLTRlYjctYWMxYS1lODc3ZmIwY2ViMjQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6Ijc0ZTkwNjQ4LTIwZmQtNGViNy1hYzFhLWU4NzdmYjBjZWIyNCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.aEPSWIT3rddaeESD2T0qlISBMW_tmsG2zI2zB9ZAFYkUPMnP1NOGS26qFZpgSTR8Cw1YxPVqiGT0DX2VVP4c6ToxKhDGMZDDwcqkuQ9X6sSI1f5bkz2dX3vo2_cXMCqQTf33k3uq1kcVI3t62KIMmjqABHytTbtiNdbiIoFYvfhmIN8dgZHS5RZcBp8nl17IcCirs-eYqlnYyzetygklwbKw2WJXk2hCh7shiv7ZOq-S14lA9KDTeMDBfbBjXX_DP1XKii7HdMjLev-WHRxttPGrLrKIWURbTIjN0odZ5TUEbt6fM30-aHAUXBOldtiX0Z7RF3AOo7NIjN8Qe_NNZw","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA3OTk4ODMsImlhdCI6MTc0MDc5ODA4MywianRpIjoiMjU5NmI0ZDgtNDA0Ny00M2QzLWI2ZmYtYjU4OGQ3MTkxOTI0IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6Ijc0ZTkwNjQ4LTIwZmQtNGViNy1hYzFhLWU4NzdmYjBjZWIyNCIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6Ijc0ZTkwNjQ4LTIwZmQtNGViNy1hYzFhLWU4NzdmYjBjZWIyNCJ9.WOEFOcWcV9rvCVVX7HFFo5_eFSNpQ6cSaSZHpnu9ebo","token_type":"Bearer","not-before-policy":0,"session_state":"74e90648-20fd-4eb7-ac1a-e877fb0ceb24","scope":"profile email"}
+2025-03-01 03:01:23,072 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 03:01:23,096 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 03:01:23,096 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-03-01 03:01:23,119 - INFO - ✅ User charlesj logged in successfully.
+2025-03-01 03:01:23,120 - INFO - 127.0.0.1 - - [01/Mar/2025 03:01:23] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 03:01:43,788 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 03:01:43,790 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 03:01:43,790 - INFO - 🔹 User authenticated: charlesj (19bd15ee-9060-48cb-98b5-a391eeebc104)
+2025-03-01 03:01:43,790 - INFO - 🔹 Fetching profile for Keycloak ID: 19bd15ee-9060-48cb-98b5-a391eeebc104
+2025-03-01 03:01:43,796 - INFO - ✅ Response Data: {'username': 'charlesj', 'bio': '', 'profile_pic': 'default.jpg', 'user_type': 'standard', 'contact_info': {'name': 'charlesj', 'email': 'charlesjackson16@hotmail.co.uk', 'phone': '', 'address': '', 'website': ''}, 'education_info': {'birthday': '', 'education': '', 'institution': '', 'employment': ''}, 'posts': []}
+2025-03-01 03:01:43,798 - INFO - 127.0.0.1 - - [01/Mar/2025 03:01:43] "GET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1" 200 -
+2025-03-01 09:09:31,902 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:09:31,936 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 09:09:31,939 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 09:09:31,939 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 09:09:48,834 - INFO - 127.0.0.1 - - [01/Mar/2025 09:09:48] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 09:09:48,851 - INFO - 127.0.0.1 - - [01/Mar/2025 09:09:48] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 09:09:48,855 - INFO - 127.0.0.1 - - [01/Mar/2025 09:09:48] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 09:09:48,855 - INFO - 127.0.0.1 - - [01/Mar/2025 09:09:48] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 09:09:48,856 - INFO - 127.0.0.1 - - [01/Mar/2025 09:09:48] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 09:09:48,953 - INFO - 127.0.0.1 - - [01/Mar/2025 09:09:48] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 09:10:20,030 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-03-01 09:10:20,110 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA4MjAyODAsImlhdCI6MTc0MDgyMDIyMCwianRpIjoiYzM3YWQ5ZGQtOGI0ZS00OGE0LTlmY2UtNDJhOTUyZGNiNjA4IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiJiMzBmNGYyMi0xMTRkLTQzZTMtOThmNC1mZmU0MGNkMzJkNmQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImIzMGY0ZjIyLTExNGQtNDNlMy05OGY0LWZmZTQwY2QzMmQ2ZCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.HqB978Z9VCuOVq_U5rEIx93yVcP8peeG_MszjNZFAinAb8k73UwmH87pWafWs5hPA0S-V0vvGUGT8lFNuL3JPm1e4DfRHI1Qi2Fv5_-qIchcAI_Ad-nM21ePRf5q0oDB6wmr9w7PRgBPICs6R-YHsSha-_7rklYxAv0ft1AZW9wCMHzgQQzCJcwL69zSPL9_DCvzMF1Bds69_d8-3_I8wDw2iu7EyXxpzqTd4obrtZd0OYdB5mPfg7mj11JxSZ5p19rNdNc_KNpNnuJr3z941qqDSuEdVYwe6EdbqqpGJpPdPn3yEnIV0MMjbWMnI8bVjU8jDoQ5qMeLGrBOJhojqw","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA4MjIwMjAsImlhdCI6MTc0MDgyMDIyMCwianRpIjoiNTdiYTc1MTAtNWYyNi00NjM2LWIwZGEtYTJhMTEwMzZlZmZhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6ImIzMGY0ZjIyLTExNGQtNDNlMy05OGY0LWZmZTQwY2QzMmQ2ZCIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImIzMGY0ZjIyLTExNGQtNDNlMy05OGY0LWZmZTQwY2QzMmQ2ZCJ9.tVBwLL32P2vfSx-AEywKLOQYDsWtX4G1jtQYaYwAF14","token_type":"Bearer","not-before-policy":0,"session_state":"b30f4f22-114d-43e3-98f4-ffe40cd32d6d","scope":"profile email"}
+2025-03-01 09:10:20,111 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:10:20,135 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 09:10:20,135 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-03-01 09:10:20,160 - INFO - ✅ User charlesj logged in successfully.
+2025-03-01 09:10:20,160 - INFO - 127.0.0.1 - - [01/Mar/2025 09:10:20] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 09:11:21,799 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:11:21,803 - WARNING - ❌ Token has expired.
+2025-03-01 09:11:21,803 - WARNING - ❌ Invalid or expired token
+2025-03-01 09:11:21,805 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 09:11:21,812 - INFO - 127.0.0.1 - - [01/Mar/2025 09:11:21] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 09:11:31,563 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:11:31,565 - WARNING - ❌ Token has expired.
+2025-03-01 09:11:31,565 - WARNING - ❌ Invalid or expired token
+2025-03-01 09:11:31,565 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 09:11:31,566 - INFO - 127.0.0.1 - - [01/Mar/2025 09:11:31] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 09:12:03,565 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:12:03,566 - WARNING - ❌ Token has expired.
+2025-03-01 09:12:03,566 - WARNING - ❌ Invalid or expired token
+2025-03-01 09:12:03,567 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 09:12:03,568 - INFO - 127.0.0.1 - - [01/Mar/2025 09:12:03] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 09:13:32,039 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:13:32,042 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 09:13:32,042 - INFO - 🔹 User authenticated: charlesj (19bd15ee-9060-48cb-98b5-a391eeebc104)
+2025-03-01 09:13:32,042 - INFO - 🔹 Fetching profile for Keycloak ID: 19bd15ee-9060-48cb-98b5-a391eeebc104
+2025-03-01 09:13:32,054 - INFO - ✅ Response Data: {'username': 'charlesj', 'bio': '', 'profile_pic': 'default.jpg', 'user_type': 'standard', 'contact_info': {'name': 'charlesj', 'email': 'charlesjackson16@hotmail.co.uk', 'phone': '', 'address': '', 'website': ''}, 'education_info': {'birthday': '', 'education': '', 'institution': '', 'employment': ''}, 'posts': []}
+2025-03-01 09:13:32,055 - INFO - 127.0.0.1 - - [01/Mar/2025 09:13:32] "GET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1" 200 -
+2025-03-01 09:14:38,362 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:14:38,364 - WARNING - ❌ Token has expired.
+2025-03-01 09:14:38,365 - WARNING - ❌ Invalid or expired token
+2025-03-01 09:14:38,365 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 09:14:38,367 - INFO - 127.0.0.1 - - [01/Mar/2025 09:14:38] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 09:16:12,536 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:16:12,538 - ERROR - ❌ JWT verification failed: Invalid signature padding: 
+2025-03-01 09:16:12,538 - WARNING - ❌ Invalid or expired token
+2025-03-01 09:16:12,539 - ERROR - Exception on /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 [GET]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 09:16:12,541 - INFO - 127.0.0.1 - - [01/Mar/2025 09:16:12] "[35m[1mGET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1[0m" 500 -
+2025-03-01 09:18:00,641 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-03-01 09:18:00,751 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA4MjA3NDAsImlhdCI6MTc0MDgyMDY4MCwianRpIjoiMzdlNDkxMDEtM2IxYS00MTZkLWE4NzgtZjJmZGFmZTc5OTQ5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiIwMDAwNzEwMi00YTg4LTQ0YjEtOGM4My1mNmM1NTE5ODZjY2YiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjAwMDA3MTAyLTRhODgtNDRiMS04YzgzLWY2YzU1MTk4NmNjZiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.ET_UZuUVzB3J8x5y3JJT3DFZ70RoXe2erIir_ESZ7uf_cgfQfvi5JmVtGP3HMFdt2xqi673TcdW1l08z39Pjh7uTxaNWiXM7d6IxSBrmCHeacg08keg_tB8niEEKjeTI6UC7YmzqzrQya9_SWPzO_gye_hQGxPmR8VjumvbtABbt3fJ9A4DdjrbaAXCBxWort4L85vTlbGuGwlRy7dmJaM6NILf5KaurvVrn_obrFDWAZBFXPKAIZTaefQUjJvx7Yo5hcFAWkiHOvCQt1N7FxuJ1yKyXGlU8sOmzxTOfh4nQRfooPomRPvTAcfUFUeCJO0z_tQMAUY7MYPVV4pksfA","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA4MjI0ODAsImlhdCI6MTc0MDgyMDY4MCwianRpIjoiZThiYzMyMTctMDRkYS00MjY4LTljZjgtZTQwZTEzMzMzZTAyIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6IjAwMDA3MTAyLTRhODgtNDRiMS04YzgzLWY2YzU1MTk4NmNjZiIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjAwMDA3MTAyLTRhODgtNDRiMS04YzgzLWY2YzU1MTk4NmNjZiJ9.w4-asAplC-7MWsefIUwxqM4PgHcK1p5wURcTSQVlCng","token_type":"Bearer","not-before-policy":0,"session_state":"00007102-4a88-44b1-8c83-f6c551986ccf","scope":"profile email"}
+2025-03-01 09:18:00,752 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:18:00,755 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 09:18:00,755 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-03-01 09:18:00,764 - INFO - ✅ User charlesj logged in successfully.
+2025-03-01 09:18:00,767 - INFO - 127.0.0.1 - - [01/Mar/2025 09:18:00] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 09:18:31,852 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:18:31,854 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 09:18:31,854 - INFO - 🔹 User authenticated: charlesj (19bd15ee-9060-48cb-98b5-a391eeebc104)
+2025-03-01 09:18:31,854 - INFO - 🔹 Fetching profile for Keycloak ID: 19bd15ee-9060-48cb-98b5-a391eeebc104
+2025-03-01 09:18:31,856 - INFO - ✅ Response Data: {'username': 'charlesj', 'bio': '', 'profile_pic': 'default.jpg', 'user_type': 'standard', 'contact_info': {'name': 'charlesj', 'email': 'charlesjackson16@hotmail.co.uk', 'phone': '', 'address': '', 'website': ''}, 'education_info': {'birthday': '', 'education': '', 'institution': '', 'employment': ''}, 'posts': []}
+2025-03-01 09:18:31,857 - INFO - 127.0.0.1 - - [01/Mar/2025 09:18:31] "GET /api/profile/19bd15ee-9060-48cb-98b5-a391eeebc104 HTTP/1.1" 200 -
+2025-03-01 09:19:27,856 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:19:27,858 - WARNING - ❌ Token has expired.
+2025-03-01 09:19:27,858 - WARNING - ❌ Invalid or expired token
+2025-03-01 09:19:27,858 - ERROR - Exception on /api/post [POST]
+Traceback (most recent call last):
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 406, in wrapper
+    return self.make_response(data, code, headers=headers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/api.py", line 430, in make_response
+    resp = self.representations[mediatype](data, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charlesjackson/MobileApp101/yeslove-mobile-app/.venv/lib/python3.12/site-packages/flask_restx/representations.py", line 22, in output_json
+    dumped = dumps(data, **settings) + "\n"
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Response is not JSON serializable
+2025-03-01 09:19:27,860 - INFO - 127.0.0.1 - - [01/Mar/2025 09:19:27] "[35m[1mPOST /api/post HTTP/1.1[0m" 500 -
+2025-03-01 09:29:21,030 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:29:21,078 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 09:29:21,080 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 09:29:21,080 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 09:29:41,663 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:41] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 09:29:41,678 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:41] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 09:29:41,679 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:41] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 09:29:41,680 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:41] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 09:29:41,685 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:41] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 09:29:41,774 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:41] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 09:29:58,175 - INFO - Keycloak URL: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/token
+2025-03-01 09:29:58,298 - INFO - Keycloak response: 200 - {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJlNDlkREZTamt6emJ1MlJnY0gwMEl1Y1plU09rZG0zd2RQX2hLUkdacWs4In0.eyJleHAiOjE3NDA4MjE0NTgsImlhdCI6MTc0MDgyMTM5OCwianRpIjoiOTdiYWYyMjEtODE5NS00YzRkLWJjMDItOWZmYWQwMTg3MjViIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiMTliZDE1ZWUtOTA2MC00OGNiLTk4YjUtYTM5MWVlZWJjMTA0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoieWVzbG92ZSIsInNlc3Npb25fc3RhdGUiOiJjNTk2Mzg1OC0yYWZlLTRkOWEtOWQwNy1kOWYyY2VmZDMyNjEiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsInByb2Zlc3Npb25hbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImM1OTYzODU4LTJhZmUtNGQ5YS05ZDA3LWQ5ZjJjZWZkMzI2MSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IkNoYXJsZXMgSmFja3NvbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImNoYXJsZXNqIiwiZ2l2ZW5fbmFtZSI6IkNoYXJsZXMiLCJmYW1pbHlfbmFtZSI6IkphY2tzb24iLCJlbWFpbCI6ImNoYXJsZXNqYWNrc29uMTZAaG90bWFpbC5jby51ayJ9.PojiBHtGkZW-hxGjDbjZ75e3MLxnZ4G5ZTrQK4RdU-R38SmOYUz9pDaBF93qTDpHDJMc6Qm0dUWe0YPniatXVCJZdEiLCypFUVN4jP_wOJoI29CnMraFSm73DS2gKTj5HhwsRBYN5uiOKuWaMLz0mpWg_XObTGWYronRXZI6Kt8p81-9A0fNdUWz-p68t_D6J759J_hwORQct34FGIzH5LlR8AyWQSqntzd7zLQZrnPNRCF21HrJC3IBFjvhC9YCWrBHySrgfS19blYwAHVihAYZUtuE51KlBM4RUFQtoJszkDZllpejF-yoxUK-K-EHfT6lxnyb5oX5M-hoWciQzg","expires_in":60,"refresh_expires_in":1800,"refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJhYWQzY2U1Yi1lMTkyLTRkNTgtOWM4Mi04MmE1YWJkYTIwZGEifQ.eyJleHAiOjE3NDA4MjMxOTgsImlhdCI6MTc0MDgyMTM5OCwianRpIjoiNTIzNDg2YTctNDE4My00ZmQ2LWI4MmItMTQ0ZDA4N2M0MmE5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9ZZXNMb3ZlX0F1dGgiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvcmVhbG1zL1llc0xvdmVfQXV0aCIsInN1YiI6IjE5YmQxNWVlLTkwNjAtNDhjYi05OGI1LWEzOTFlZWViYzEwNCIsInR5cCI6IlJlZnJlc2giLCJhenAiOiJ5ZXNsb3ZlIiwic2Vzc2lvbl9zdGF0ZSI6ImM1OTYzODU4LTJhZmUtNGQ5YS05ZDA3LWQ5ZjJjZWZkMzI2MSIsInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImM1OTYzODU4LTJhZmUtNGQ5YS05ZDA3LWQ5ZjJjZWZkMzI2MSJ9.qpb94a02anodwU7uSm5MO2LZsjKE6H2-_qINyl8nYfI","token_type":"Bearer","not-before-policy":0,"session_state":"c5963858-2afe-4d9a-9d07-d9f2cefd3261","scope":"profile email"}
+2025-03-01 09:29:58,299 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:29:58,324 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 09:29:58,325 - INFO - User roles from Keycloak: ['default-roles-master', 'offline_access', 'uma_authorization', 'professional']
+2025-03-01 09:29:58,358 - INFO - ✅ User charlesj logged in successfully.
+2025-03-01 09:29:58,359 - INFO - 127.0.0.1 - - [01/Mar/2025 09:29:58] "POST /api/login HTTP/1.1" 200 -
+2025-03-01 09:30:39,161 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:30:39,164 - INFO - ✅ JWT decoded successfully for user charlesj
+2025-03-01 09:30:39,164 - INFO - 🔹 User authenticated: charlesj (19bd15ee-9060-48cb-98b5-a391eeebc104)
+2025-03-01 09:30:39,176 - INFO - 127.0.0.1 - - [01/Mar/2025 09:30:39] "[35m[1mPOST /api/post HTTP/1.1[0m" 201 -
+2025-03-01 09:54:47,972 - INFO - 🔹 Fetching Keycloak public keys from: http://localhost:8080/realms/YesLove_Auth/protocol/openid-connect/certs
+2025-03-01 09:54:48,023 - INFO - ✅ Successfully fetched Keycloak public keys.
+2025-03-01 09:54:48,025 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-03-01 09:54:48,025 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-01 09:54:53,175 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:53] "GET /swagger HTTP/1.1" 200 -
+2025-03-01 09:54:53,197 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:53] "[36mGET /swaggerui/swagger-ui-bundle.js HTTP/1.1[0m" 304 -
+2025-03-01 09:54:53,198 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:53] "[36mGET /swaggerui/droid-sans.css HTTP/1.1[0m" 304 -
+2025-03-01 09:54:53,198 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:53] "[36mGET /swaggerui/swagger-ui.css HTTP/1.1[0m" 304 -
+2025-03-01 09:54:53,200 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:53] "[36mGET /swaggerui/swagger-ui-standalone-preset.js HTTP/1.1[0m" 304 -
+2025-03-01 09:54:53,306 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:53] "GET /swagger.json HTTP/1.1" 200 -
+2025-03-01 09:54:55,277 - INFO - 127.0.0.1 - - [01/Mar/2025 09:54:55] "GET /swagger.json HTTP/1.1" 200 -

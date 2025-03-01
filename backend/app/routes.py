@@ -125,6 +125,7 @@ class Login(Resource):
 @main_api.route("/set_user_type")
 class SetUserType(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["set_user_type"])  # ✅ Attach model
     def post(self):
         """Set user type (professional or standard) for new users."""
@@ -218,51 +219,56 @@ class RefreshToken(Resource):
 @main_api.route("/profile/<string:keycloak_id>")
 class UserProfile(Resource):
     @require_auth()
-    @main_api.expect(models["profile"])  # ✅ Attach model
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
+    @main_api.response(200, "Success", models["profile"])  # ✅ Ensure correct model
     def get(self, keycloak_id):
-        """Get full user profile including personal info, contact, education, and posts."""
+        """Get user profile and posts."""
         logger.info(f"🔹 Fetching profile for Keycloak ID: {keycloak_id}")
 
         user = User.query.filter_by(keycloak_id=keycloak_id).first()
+
         if not user:
             logger.warning(f"❌ User with Keycloak ID {keycloak_id} not found")
             return {"message": "User not found"}, 404
 
-        professional_details = ProfessionalDetails.query.filter_by(user_id=user.id).first()
-
+        # ✅ Ensure all fields are JSON-serializable
         response_data = {
-            "username": user.username,
-            "bio": user.bio,
-            "profile_pic": user.profile_pic,
-            "user_type": user.user_type,
+            "username": user.username or "",
+            "bio": user.bio or "",
+            "profile_pic": user.profile_pic or "",
+            "user_type": user.user_type or "standard",
             "contact_info": {
-                "name": f"{user.first_name} {user.last_name}",
-                "email": user.email,
-                "phone": user.phone if hasattr(user, "phone") else None,
-                "address": user.address if hasattr(user, "address") else None,
-                "website": user.website if hasattr(user, "website") else None,
+                "name": user.username or "",
+                "email": user.email or "",
+                "phone": getattr(user, 'phone', None) or "",
+                "address": getattr(user, 'address', None) or "",
+                "website": getattr(user, 'website', None) or "",
             },
             "education_info": {
-                "birthday": user.birthday.isoformat() if hasattr(user, "birthday") else None,
-                "education": professional_details.education if professional_details else None,
-                "institution": professional_details.institution if professional_details else None,
-                "employment": professional_details.employment if professional_details else None,
+                "birthday": getattr(user, 'birthday', None) or "",
+                "education": getattr(user, 'education', None) or "",
+                "institution": getattr(user, 'institution', None) or "",
+                "employment": getattr(user, 'employment', None) or "",
             },
             "posts": [
                 {
-                    "content": post.content,
+                    "content": post.content or "",
                     "timestamp": post.timestamp.isoformat() if post.timestamp else None
                 } for post in user.posts
             ]
         }
 
-        logger.info(f"✅ Retrieved profile for user {user.username}")
+        # 🔹 Log the response structure
+        logger.info(f"✅ Response Data: {response_data}")
+
+        # ✅ Return the response as a dictionary (DO NOT use `jsonify`)
         return response_data, 200
 
 
 @main_api.route("/update_profile")
 class UpdateProfile(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["update_profile"])  # ✅ Attach model
     def put(self):
         """Update user profile."""
@@ -281,6 +287,7 @@ class UpdateProfile(Resource):
 @main_api.route("/about/<string:keycloak_id>")
 class AboutUser(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["about"])  # ✅ Attach model
     def get(self, keycloak_id):
         """Get user contact & education details for About section."""
@@ -315,6 +322,7 @@ class AboutUser(Resource):
 @main_api.route("/change_password")
 class ChangePassword(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["change_password"])
     def post(self):
         """Change user password via Keycloak API."""
@@ -389,6 +397,7 @@ class EmailNotifications(Resource):
         return [{"setting_id": s.setting_id, "value": s.value} for s in settings], 200
 
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["email_notifications"])
     def post(self):
         """Update email notification settings."""
@@ -424,6 +433,7 @@ class ProfileVisibility(Resource):
         return [{"setting_id": s.setting_id, "value": s.value, "category": s.category} for s in settings], 200
 
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["profile_visibility"])
     def post(self):
         """Update profile visibility settings."""
@@ -453,6 +463,7 @@ class ProfileVisibility(Resource):
 @main_api.route("/delete_account")
 class DeleteAccount(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["delete_account"])
     def delete(self):
         """Delete user account via Keycloak API."""
@@ -476,6 +487,7 @@ class DeleteAccount(Resource):
 @main_api.route("/feed")
 class Feed(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["feed_query"])  # ✅ Attach model
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)."""
@@ -517,7 +529,8 @@ class Feed(Resource):
 @main_api.route("/post")
 class CreatePost(Resource):
     @require_auth()
-    @main_api.expect(models["create_post"])  # ✅ Attach model
+    @main_api.expect(models["auth_header"], models["create_post"])  # ✅ Expect Authorization and JSON body
+    @main_api.response(201, "Post created successfully")
     def post(self):
         """Create a new post."""
         data = request.json
@@ -536,6 +549,7 @@ class CreatePost(Resource):
 @main_api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["reaction"])  # ✅ Attach model
     def post(self, post_id):
         """Add or update a reaction to a post (like, love, laugh, etc.)."""
@@ -577,6 +591,7 @@ class ReactToPost(Resource):
 @main_api.route("/follow/<int:user_id>")
 class FollowUser(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["followers"])  # ✅ Attach model
     def post(self, user_id):
         """Follow or unfollow a user."""
@@ -605,6 +620,7 @@ class FollowUser(Resource):
 @main_api.route("/post/<int:post_id>/like")
 class LikePost(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["like_post"])  # ✅ Attach model
     def post(self, post_id):
         """Like or unlike a post."""
@@ -634,6 +650,7 @@ class LikePost(Resource):
 @main_api.route("/post/<int:post_id>/comment")
 class AddComment(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["add_comment"])
     def post(self, post_id):
         """Add a comment to a post."""
@@ -677,6 +694,7 @@ class GetComments(Resource):
 @main_api.route("/follow/<int:user_id>")
 class FollowUser(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["follow"])  # ✅ Attach model
     def post(self, user_id):
         """Follow or unfollow a user."""
@@ -738,6 +756,7 @@ class GetFollowing(Resource):
 @main_api.route("/send_message")
 class SendMessage(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["send_message"])  # ✅ Attach model
     def post(self):
         """Send a private message."""
@@ -772,6 +791,7 @@ class SendMessage(Resource):
 @main_api.route("/get_messages/<int:receiver_id>")
 class GetMessages(Resource):
     @require_auth()
+    @main_api.expect(models["auth_header"])  # ✅ Require Authorization Header
     @main_api.expect(models["get_messages"])  # ✅ Attach model
     def get(self, receiver_id):
         """Fetch chat messages between two users."""
