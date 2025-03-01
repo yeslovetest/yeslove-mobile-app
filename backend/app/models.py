@@ -84,7 +84,7 @@ class Follow(db.Model):
 
 
 # -------------------------
-# 🚀 Professional Details Model (One-to-One Relationship with User)
+# 🚀 Professional Details Model (One-to-One Relationship with User..)
 # -------------------------
 class ProfessionalDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
