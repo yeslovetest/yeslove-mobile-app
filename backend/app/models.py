@@ -135,6 +135,6 @@ class Reaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     reaction_type = db.Column(db.String(50), nullable=False)  # like, love, laugh, angry, etc.
-
+     
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")

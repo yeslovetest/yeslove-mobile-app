@@ -43,6 +43,16 @@ def register_models(api):
         "education_and_employment": fields.Nested(models["education_info"]),
     })
 
+    # ✅ Authorization Header Model
+    models["auth_header"] = api.parser()
+    models["auth_header"].add_argument(
+        "Authorization",
+        location="headers",
+        required=True,
+        help="Bearer <token>",
+        default="Bearer <your-access-token>"
+    )
+
     # ✅ Define API Request Models
     models["login"] = api.model("LoginRequest", {
         "username": fields.String(required=True, description="User's Keycloak username"),
