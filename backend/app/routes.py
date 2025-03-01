@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 import requests
-from app.models import User, Post, Comment, Follow, Like, Chat, ProfessionalDetails, db
+from app.models import User, Post, Comment, Follow, Like, Chat, Reaction, ProfessionalDetails,EmailNotificationSettings, ProfileVisibilitySettings, db
 from flask_cors import CORS  # ✅ Allow React Native to connect
 from flask_restx import Namespace, Resource
 from app.utils import require_auth  # ✅ Import Keycloak authentication utilities
@@ -220,20 +220,34 @@ class UserProfile(Resource):
     @require_auth()
     @main_api.expect(models["profile"])  # ✅ Attach model
     def get(self, keycloak_id):
-        """Get user profile and posts."""
+        """Get full user profile including personal info, contact, education, and posts."""
         logger.info(f"🔹 Fetching profile for Keycloak ID: {keycloak_id}")
 
         user = User.query.filter_by(keycloak_id=keycloak_id).first()
-
         if not user:
             logger.warning(f"❌ User with Keycloak ID {keycloak_id} not found")
             return {"message": "User not found"}, 404
+
+        professional_details = ProfessionalDetails.query.filter_by(user_id=user.id).first()
 
         response_data = {
             "username": user.username,
             "bio": user.bio,
             "profile_pic": user.profile_pic,
-            "user_type": user.user_type,  # ✅ Include user type
+            "user_type": user.user_type,
+            "contact_info": {
+                "name": f"{user.first_name} {user.last_name}",
+                "email": user.email,
+                "phone": user.phone if hasattr(user, "phone") else None,
+                "address": user.address if hasattr(user, "address") else None,
+                "website": user.website if hasattr(user, "website") else None,
+            },
+            "education_info": {
+                "birthday": user.birthday.isoformat() if hasattr(user, "birthday") else None,
+                "education": professional_details.education if professional_details else None,
+                "institution": professional_details.institution if professional_details else None,
+                "employment": professional_details.employment if professional_details else None,
+            },
             "posts": [
                 {
                     "content": post.content,
@@ -241,10 +255,9 @@ class UserProfile(Resource):
                 } for post in user.posts
             ]
         }
-        
-        logger.info(f"✅ Retrieved profile for user {user.username}")
-        return response_data, 200  # ✅ Correctly formatted response
 
+        logger.info(f"✅ Retrieved profile for user {user.username}")
+        return response_data, 200
 
 
 @main_api.route("/update_profile")
@@ -263,8 +276,199 @@ class UpdateProfile(Resource):
         user.profile_pic = data.get("profile_pic", user.profile_pic)
         db.session.commit()
         return {"message": "Profile updated successfully"}, 200
+    
+    
+@main_api.route("/about/<string:keycloak_id>")
+class AboutUser(Resource):
+    @require_auth()
+    @main_api.expect(models["about"])  # ✅ Attach model
+    def get(self, keycloak_id):
+        """Get user contact & education details for About section."""
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        professional_details = ProfessionalDetails.query.filter_by(user_id=user.id).first()
+
+        response_data = {
+            "contact": {
+                "name": f"{user.first_name} {user.last_name}",
+                "email": user.email,
+                "phone": user.phone if hasattr(user, "phone") else None,
+                "address": user.address if hasattr(user, "address") else None,
+                "website": user.website if hasattr(user, "website") else None,
+            },
+            "education_and_employment": {
+                "birthday": user.birthday.isoformat() if hasattr(user, "birthday") else None,
+                "education": professional_details.education if professional_details else None,
+                "institution": professional_details.institution if professional_details else None,
+                "employment": professional_details.employment if professional_details else None,
+            }
+        }
+        return response_data, 200
+    
+    
+# -------------------------
+# 🚀 Change Password ROUTES
+# -------------------------
+
+@main_api.route("/change_password")
+class ChangePassword(Resource):
+    @require_auth()
+    @main_api.expect(models["change_password"])
+    def post(self):
+        """Change user password via Keycloak API."""
+        data = request.json
+        new_password = data.get("new_password")
+
+        if not new_password:
+            return {"message": "New password is required"}, 400
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        keycloak_admin_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user.keycloak_id}/reset-password"
+        payload = {
+            "type": "password",
+            "value": new_password,
+            "temporary": False
+        }
+        headers = {"Authorization": f"Bearer {request.headers.get('Authorization').split()[1]}"}
+
+        response = requests.put(keycloak_admin_url, json=payload, headers=headers)
+
+        if response.status_code == 204:
+            return {"message": "Password changed successfully"}, 200
+        return {"message": "Failed to change password"}, response.status_code
 
 
+# -------------------------
+# 🚀 RESET PASSWORD (KEYCLOAK)
+# -------------------------
+
+@main_api.route("/reset_password")
+class ResetPassword(Resource):
+    @main_api.expect(models["reset_password"])
+    def post(self):
+        """Send password reset email via Keycloak API."""
+        data = request.json
+        email = data.get("email")
+
+        if not email:
+            return {"message": "Email is required"}, 400
+
+        keycloak_reset_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/auth"
+        payload = {
+            "client_id": current_app.config["KEYCLOAK_CLIENT_ID"],
+            "redirect_uri": current_app.config["FRONTEND_URL"],
+            "response_type": "code",
+            "scope": "openid",
+            "kc_action": "UPDATE_PASSWORD",
+            "email": email
+        }
+
+        response = requests.post(keycloak_reset_url, json=payload)
+
+        if response.status_code == 200:
+            return {"message": "Password reset email sent"}, 200
+        return {"message": "Failed to send password reset email"}, response.status_code
+
+
+# -------------------------
+# 🚀 EMAIL NOTIFICATION SETTINGS
+# -------------------------
+
+@main_api.route("/email_notifications")
+class EmailNotifications(Resource):
+    @require_auth()
+    def get(self):
+        """Get email notification settings."""
+        user_id = request.user["keycloak_id"]
+        settings = EmailNotificationSettings.query.filter_by(user_id=user_id).all()
+        return [{"setting_id": s.setting_id, "value": s.value} for s in settings], 200
+
+    @require_auth()
+    @main_api.expect(models["email_notifications"])
+    def post(self):
+        """Update email notification settings."""
+        data = request.json
+        user_id = request.user["keycloak_id"]
+
+        for setting in data.get("settings", []):
+            setting_id = setting["setting_id"]
+            value = setting["value"]
+
+            existing_setting = EmailNotificationSettings.query.filter_by(user_id=user_id, setting_id=setting_id).first()
+            if existing_setting:
+                existing_setting.value = value
+            else:
+                new_setting = EmailNotificationSettings(user_id=user_id, setting_id=setting_id, value=value)
+                db.session.add(new_setting)
+
+        db.session.commit()
+        return {"message": "Email notification settings updated"}, 200
+
+
+# -------------------------
+# 🚀 PROFILE VISIBILITY SETTINGS
+# -------------------------
+
+@main_api.route("/profile_visibility")
+class ProfileVisibility(Resource):
+    @require_auth()
+    def get(self):
+        """Get profile visibility settings."""
+        user_id = request.user["keycloak_id"]
+        settings = ProfileVisibilitySettings.query.filter_by(user_id=user_id).all()
+        return [{"setting_id": s.setting_id, "value": s.value, "category": s.category} for s in settings], 200
+
+    @require_auth()
+    @main_api.expect(models["profile_visibility"])
+    def post(self):
+        """Update profile visibility settings."""
+        data = request.json
+        user_id = request.user["keycloak_id"]
+
+        for setting in data.get("settings", []):
+            setting_id = setting["setting_id"]
+            value = setting["value"]
+            category = setting["category"]
+
+            existing_setting = ProfileVisibilitySettings.query.filter_by(user_id=user_id, setting_id=setting_id).first()
+            if existing_setting:
+                existing_setting.value = value
+            else:
+                new_setting = ProfileVisibilitySettings(user_id=user_id, setting_id=setting_id, value=value, category=category)
+                db.session.add(new_setting)
+
+        db.session.commit()
+        return {"message": "Profile visibility settings updated"}, 200
+
+
+# -------------------------
+# 🚀 DELETE ACCOUNT (KEYCLOAK)
+# -------------------------
+
+@main_api.route("/delete_account")
+class DeleteAccount(Resource):
+    @require_auth()
+    @main_api.expect(models["delete_account"])
+    def delete(self):
+        """Delete user account via Keycloak API."""
+        user_id = request.user["keycloak_id"]
+        user = User.query.filter_by(keycloak_id=user_id).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        keycloak_delete_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user_id}"
+        headers = {"Authorization": f"Bearer {request.headers.get('Authorization').split()[1]}"}
+
+        response = requests.delete(keycloak_delete_url, headers=headers)
+
+        if response.status_code == 204:
+            db.session.delete(user)
+            db.session.commit()
 # -------------------------
 # 🚀 FEED & POSTS ROUTES
 # -------------------------
@@ -272,19 +476,30 @@ class UpdateProfile(Resource):
 @main_api.route("/feed")
 class Feed(Resource):
     @require_auth()
-    @main_api.expect(models["feed"])  # ✅ Attach model
+    @main_api.expect(models["feed_query"])  # ✅ Attach model
     def get(self):
-        """Fetch posts from users the current user follows."""
+        """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)."""
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()  # ✅ Use Keycloak UUID
         if not user:
             return {"message": "User not found"}, 404
 
-        following = [follow.followed_id for follow in user.following]
-        following.append(user.id)
+        feed_type = request.args.get("feed_type", "all")  # ✅ Default to "all"
 
-        posts = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc()).all()
-
-        
+        # ✅ Fetch different types of posts based on the selected feed
+        if feed_type == "mentions":
+            posts = Post.query.filter(Post.content.contains(f"@{user.username}")).order_by(Post.timestamp.desc()).all()
+        elif feed_type == "favorites":
+            posts = Post.query.join(Like).filter(Like.user_id == user.id).order_by(Post.timestamp.desc()).all()
+        elif feed_type == "friends":
+            friend_ids = [follow.followed_id for follow in user.following]
+            posts = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()).all()
+        elif feed_type == "groups":
+            # 🔹 Future: Implement group post filtering
+            posts = []
+        else:  # "all"
+            following = [follow.followed_id for follow in user.following]
+            following.append(user.id)  # Include own posts
+            posts = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc()).all()
 
         return [{
             "id": post.id,
@@ -296,6 +511,7 @@ class Feed(Resource):
             "likes": len(post.likes),
             "comments": len(post.comments)
         } for post in posts], 200
+
 
 
 @main_api.route("/post")
@@ -316,6 +532,42 @@ class CreatePost(Resource):
         db.session.add(post)
         db.session.commit()
         return {"message": "Post created successfully"}, 201
+
+@main_api.route("/post/<int:post_id>/reaction")
+class ReactToPost(Resource):
+    @require_auth()
+    @main_api.expect(models["reaction"])  # ✅ Attach model
+    def post(self, post_id):
+        """Add or update a reaction to a post (like, love, laugh, etc.)."""
+        data = request.json
+        reaction_type = data.get("reaction_type")  # Expected values: like, love, laugh, angry, etc.
+        
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        post = Post.query.get(post_id)
+        if not post:
+            return {"message": "Post not found"}, 404
+
+        # ✅ Check if user already reacted to this post
+        existing_reaction = Reaction.query.filter_by(user_id=user.id, post_id=post_id).first()
+
+        if existing_reaction:
+            if existing_reaction.reaction_type == reaction_type:
+                db.session.delete(existing_reaction)  # Remove reaction if same type
+                db.session.commit()
+                return {"message": f"Removed {reaction_type} reaction"}, 200
+            else:
+                existing_reaction.reaction_type = reaction_type  # Update reaction type
+                db.session.commit()
+                return {"message": f"Updated reaction to {reaction_type}"}, 200
+        
+        # ✅ Add new reaction
+        new_reaction = Reaction(user_id=user.id, post_id=post_id, reaction_type=reaction_type)
+        db.session.add(new_reaction)
+        db.session.commit()
+        return {"message": f"Added {reaction_type} reaction"}, 201
 
 
 # -------------------------
