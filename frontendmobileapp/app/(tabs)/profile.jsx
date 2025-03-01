@@ -2,13 +2,18 @@ import React, { useState } from "react"
 import { ScrollView, ImageBackground, StyleSheet, Platform, Text, View, Image, TouchableOpacity } from 'react-native';
 
 export default function ProfilePage() {
-const [activeTab, setActiveTab] = useState("Timeline")
+const [activeTab, setActiveTab] = useState("Timeline");
+const [activeAboutTab, setActiveAboutTab] = useState("View")
 
 const navBarItems = [
   "Timeline", "About", "Videos",
   "Notifications", "Photos", "Settings",
   "Messages", "Invitations"
 ];
+
+const aboutItems = [
+  "View", "Edit"
+]
 
 
   return (
@@ -63,7 +68,50 @@ const navBarItems = [
 
 {/*About*/}
 
-{activeTab === 'About' && <Text>About Page Content</Text>}
+{activeTab === 'About' && (
+  <View>
+    {/* About navbar */}
+    <View style={styles.aboutNavBarContainer}>
+      <View style={styles.aboutNavBar}>
+        {aboutItems.map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.aboutItem, activeAboutTab === tab && styles.activeAboutItem]}
+            onPress={() => setActiveAboutTab(tab)}
+          >
+            <Text style={[styles.navText, activeAboutTab === tab && styles.activeAboutNavText]}>
+              {tab}
+            </Text>
+            {activeAboutTab === tab && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+
+    {/* Friends section */}
+    <View style={styles.friendsContainer}>
+      <View style={styles.friends}>
+        <View style={styles.friendsItem}>
+          <Text style={styles.activeFriendsText}>
+            My Friends
+          </Text>
+          <View style={styles.activeIndicator} />
+        </View>
+
+        {/*friends */}
+        <View style={styles.friend}>
+           <Image 
+           source={{ uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/avatar/bp-avatar.png" }} 
+           style={styles.friendImage} />
+           <Text style={styles.friendName}>Friend username</Text>
+        </View>
+
+
+      </View>
+    </View>
+  </View>
+)}
+
 
 {/*Videos*/}
 
@@ -229,6 +277,111 @@ content: {
 },
 pageText: {
   fontSize: 20,
+},
+
+/* Friends section styles */
+
+friendsContainer: {
+  flex: 1,
+  backgroundColor: "#f8f8f8",
+  justifyContent: "flex-start",
+  alignItems: "center",
+  marginTop: 10
+},
+friends: {
+  flexDirection: "column",
+  flexWrap: "wrap", 
+  width: "80vw", 
+  justifyContent: "flex-start",
+  backgroundColor: "#fff",
+  paddingVertical: 6,
+  paddingHorizontal: 10,
+  borderRadius: 10, 
+  elevation: 3, 
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+},
+friendsItem: {
+  width: "50%",
+  paddingHorizontal: 5,
+  paddingVertical: 15,
+  alignItems: "flex-start",
+  marginBottom: 15,
+},
+activeFriendsText: {
+  fontWeight: "bold",
+  color: "#000",
+  fontSize: 19
+},
+
+friendsText: {
+  fontWeight: "bold",
+  color: "#000",
+},
+
+/* Friends list*/
+
+friend: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingVertical: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: "#ddd",
+},
+
+friendImage: {
+  width: 50,
+  height: 50,
+  borderRadius: 25, 
+  marginRight: 10,
+},
+
+friendName: {
+  fontSize: 16,
+  fontWeight: "500",
+  color: "#000",
+},
+
+
+
+
+/* About navbar styles*/
+
+aboutNavBarContainer: {
+  flex: 1,
+  backgroundColor: "#f8f8f8",
+  justifyContent: "flex-start",
+  alignItems: "center",
+  marginTop: 10,
+  marginBottom: 20,
+},
+aboutNavBar: {
+  flexDirection: "row",
+  flexWrap: "wrap", 
+  width: "80vw", 
+  justifyContent: "center",
+  backgroundColor: "#fff",
+  paddingVertical: 3,
+  borderRadius: 10, 
+  elevation: 3, 
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+},
+aboutItem: {
+  width: "50%",
+  paddingVertical: 15,
+  alignItems: "center",
+},
+activeAboutItem: {
+  position: "relative",
+},
+activeAboutNavText: {
+  fontWeight: "bold",
+  color: "#000",
 },
 
 
