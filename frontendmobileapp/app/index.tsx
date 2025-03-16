@@ -2,17 +2,18 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import axios from 'axios';
-import {ApiApiFactory, ApiApi} from "../generated-api/api";
+import {ApiApiFactory, ApiApi } from "../generated-api/api";
 import { TOKEN_REFRESH_SERVICE } from '@/ts/token-refresh-service';
 import { useDispatch } from 'react-redux';
-import { setName } from './store/userSlice';
+import { setUser } from './store/userSlice';
 
 
 const Login = () => {
 const router = useRouter();
 const dispatch = useDispatch();
 const [password, setPassword] = useState("");
-const [username, setUsername] = useState("")
+const [username, setUsername] = useState("");
+
 
 const handleLogin = () => {
   testLogin(username, password)
@@ -28,17 +29,36 @@ const handleUsernameChange = (input: React.SetStateAction<string>) => {
 
 const testLogin = (username: string, password: string) => {
   axios.defaults.baseURL = "http://localhost:5000";
+
+  const apiInstance = ApiApiFactory(); 
+  console.log(apiInstance);
+
   ApiApiFactory().postLogin({password: password, username: username})
   .then((response) => {
-    dispatch(setName(username));
+    dispatch(setUser({ name: username }));
     axios.defaults.headers.common['Authorization'] = response.data.access_token ?? "";
-    TOKEN_REFRESH_SERVICE.startRefreshingToken(response.data.refresh_token ?? "");
+    TOKEN_REFRESH_SERVICE.startRefreshingToken(response.data.refresh_token ?? "")
+    
+    //fetch all user details on login
+
+    
+    ApiApiFactory()
+       .getUserProfile("agsvskdsjaksvauava")
+        .then((profileResponse) => {
+          dispatch(setUser(profileResponse.data)); 
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user profile:", error);
+        });
+    
+    ;
     router.replace("/(tabs)/home");  
   }).catch((error) => {
     console.error('Login failed:', error);
   });
 
 };
+
 
 
   return (
