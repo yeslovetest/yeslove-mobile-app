@@ -46,7 +46,7 @@ KEYCLOAK_CLIENT_SECRET=your-client-secret
 
 ``` bash
 cd yeslove-mobile-app/keycloakservice/bin
-kc.bat start-dev
+.\kc.bat start-dev
 
 # If first time setting up keycloak, set admin credentials as 
 set KEYCLOAK_ADMIN=admin
@@ -99,7 +99,7 @@ Here, you can explore and test all API endpoints with documentation.
 
 ### 1️⃣ **User Login**
 ```bash
-POST http://127.0.0.1:5000/api/login
+POST http://127.0.0.1:5000/api/auth/login
 Headers: { "Content-Type": "application/json" }
 Body: {
   "username": "testuser",
@@ -109,7 +109,7 @@ Body: {
 
 ### 2️⃣ **Fetch User Profile** (Requires Authentication)
 ```bash
-GET http://127.0.0.1:5000/api/profile/{keycloak_id}
+GET http://127.0.0.1:5000/api/profile/user/keycloak_id
 Headers: {
   "Authorization": "Bearer YOUR_ACCESS_TOKEN"
 }
@@ -117,7 +117,7 @@ Headers: {
 
 ### 3️⃣ **Create a New Post**
 ```bash
-POST http://127.0.0.1:5000/api/post
+POST http://127.0.0.1:5000/api/feed/post
 Headers: {
   "Authorization": "Bearer YOUR_ACCESS_TOKEN",
   "Content-Type": "application/json"
@@ -129,7 +129,7 @@ Body: {
 
 ### 4️⃣ **React to a Post**
 ```bash
-POST http://127.0.0.1:5000/api/post/{post_id}/reaction
+POST http://127.0.0.1:5000/api/feed/post/{post_id}/reaction
 Headers: {
   "Authorization": "Bearer YOUR_ACCESS_TOKEN",
   "Content-Type": "application/json"
@@ -141,7 +141,7 @@ Body: {
 
 ### 5️⃣ **Follow a User**
 ```bash
-POST http://127.0.0.1:5000/api/follow/{user_id}
+POST http://127.0.0.1:5000/api/feed/follow/{user_id}
 Headers: {
   "Authorization": "Bearer YOUR_ACCESS_TOKEN",
   "Content-Type": "application/json"

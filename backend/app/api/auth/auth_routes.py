@@ -296,7 +296,27 @@ class DeleteAccount(Resource):
             db.session.delete(user)
             db.session.commit()
 
+@api.route("/sync")
+class SyncUser(Resource):
+    @require_auth()
+    def post(self):
+        "Create user in local DB after first keycloak login"
+        from app.models import User, db
+        user_data = request.user
+        keycloak_id = user_data['keycloak_id']
 
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
+        if not user:
+            user = User(
+                keycloak_id=keycloak_id,
+                username=user_data.get('username'),
+                email=user_data.get('email')
+            )
+            db.session.add(user)
+            db.session.commit()
+            return {"message": "User synced", "user_id" : user.id}, 201
+        
+        return {"message" : "User already exists", "user_id" : user.id}, 200
 
 
 
