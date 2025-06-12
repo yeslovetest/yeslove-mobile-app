@@ -26,6 +26,7 @@ migrate = Migrate()
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    # app.config['SQLALCHEMY_DATABASE_URI'] = config_class.SQLALCHEMY_DATABASE_URI
 
     # 🌍 Enable CORS
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
@@ -49,6 +50,8 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(auth_api, path="/api/auth")
     api.add_namespace(feed_api, path="/api/feed")
     api.add_namespace(chat_api, path="/api/chat")
+
+    from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     with app.app_context():
