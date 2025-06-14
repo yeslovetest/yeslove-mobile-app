@@ -1,4 +1,4 @@
-import { StyleSheet  } from "react-native";
+import { StyleSheet,  Dimensions  } from "react-native";
 import theme from "../Variables"
 
 const styles = StyleSheet.create({
@@ -11,7 +11,8 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: theme.spacing.postWidth - 30,
-    height: 400,
+    height: Dimensions.get('window').height * 0.8,
+    marginTop: 10,
     backgroundColor: "#fff",
     padding: 15,
     borderRadius: 15,
@@ -20,6 +21,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomColor: theme.colors.primaryBlue,
     borderBottomWidth: 3,
+ },
+  scrollContainer: {
+    width: theme.spacing.postWidth - 30,
+    backgroundColor: "#fff",
+    padding: 15,
+    height: 50,
+    
  },
   title: {
     fontSize: 28,
@@ -48,6 +56,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginBottom: 15,
   },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
   button: {
     backgroundColor: '#fff',
     paddingVertical: 12,
@@ -59,6 +73,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderColor: theme.colors.primaryBlue,
     borderWidth: 1,
+   
   },
   buttonText: {
     color: theme.colors.primaryBlue,
@@ -81,4 +96,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles
+export default styles;

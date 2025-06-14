@@ -5,7 +5,8 @@ import { Router } from "expo-router";
 export enum LoginState{
     LOADING = "LOADING",
     LOGGED_IN = "LOGGED_IN",
-    LOGGED_OUT = "LOGGED_OUT"
+    LOGGED_OUT = "LOGGED_OUT",
+    SIGN_UP = "SIGN_UP"
 }
 
 const authSlice = createSlice({
@@ -16,7 +17,7 @@ const authSlice = createSlice({
             state.loginState = action.payload; 
         },
         logInAction: (state, action: PayloadAction<LoginRequest>) => {},
-        attemptRefreshFromLocalStorageAction: (state, action: PayloadAction<void>) => {}
+        attemptRefreshFromLocalStorageAction: (state, action: PayloadAction<void>) => {},
     },
 })
 

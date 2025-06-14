@@ -14,6 +14,7 @@ const LoginScreen = () => {
     handleUsernameChange,
     handlePasswordChange,
     handleLogin,
+    handleLoginStateChange,
   } = useLogin();
 
   return (
@@ -41,6 +42,11 @@ const LoginScreen = () => {
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>LOGIN</Text>
         </TouchableOpacity>
+
+        <Text style={styles.containerFooter}>
+          Not Registered?
+          <Text style={styles.footerLink} onPress={() => handleLoginStateChange('sign-up')}> Sign up!</Text>
+        </Text> 
       </View>
     </ImageBackground>
   );

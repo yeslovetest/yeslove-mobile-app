@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch } from '../app/store/hooks';
-import { logInAction } from '../app/store/authSlice';
+import { logInAction, setLoginStateAction, LoginState } from '../app/store/authSlice';
 import axios from 'axios';
 
 axios.defaults.baseURL = "http://localhost:5000";
@@ -17,11 +17,18 @@ export const useLogin = () => {
     dispatch(logInAction({ username, password }));
   };
 
+  const handleLoginStateChange = (action: string) => {
+    action == 'sign-up' ? 
+    dispatch(setLoginStateAction(LoginState.SIGN_UP)) : 
+    dispatch(setLoginStateAction(LoginState.LOGGED_OUT))
+  }
+
   return {
     username,
     password,
     handleUsernameChange,
     handlePasswordChange,
     handleLogin,
+    handleLoginStateChange
   };
 };
