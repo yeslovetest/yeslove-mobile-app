@@ -256,7 +256,7 @@
                         }
                     }
                 },
-                "summary": "Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)",
+                "summary": "Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination",
                 "operationId": "get_feed",
                 "parameters": [
                     {
@@ -538,6 +538,18 @@
             }
         },
         "/api/profile/email_notifications": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get email notification settings",
+                "operationId": "get_email_notifications",
+                "tags": [
+                    "profile"
+                ]
+            },
             "post": {
                 "responses": {
                     "200": {
@@ -556,18 +568,6 @@
                         }
                     }
                 ],
-                "tags": [
-                    "profile"
-                ]
-            },
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Get email notification settings",
-                "operationId": "get_email_notifications",
                 "tags": [
                     "profile"
                 ]
@@ -599,6 +599,18 @@
             }
         },
         "/api/profile/profile_visibility": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get profile visibility settings",
+                "operationId": "get_profile_visibility",
+                "tags": [
+                    "profile"
+                ]
+            },
             "post": {
                 "responses": {
                     "200": {
@@ -617,18 +629,6 @@
                         }
                     }
                 ],
-                "tags": [
-                    "profile"
-                ]
-            },
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Get profile visibility settings",
-                "operationId": "get_profile_visibility",
                 "tags": [
                     "profile"
                 ]
@@ -1021,6 +1021,10 @@
                 "author": {
                     "type": "string",
                     "description": "Username of the author"
+                },
+                "author_id": {
+                    "type": "string",
+                    "description": "The Keycloak-ID of the author"
                 },
                 "author_pic": {
                     "type": "string",

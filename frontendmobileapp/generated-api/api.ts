@@ -258,6 +258,12 @@ export interface Post {
      */
     'author'?: string;
     /**
+     * The Keycloak-ID of the author
+     * @type {string}
+     * @memberof Post
+     */
+    'author_id'?: string;
+    /**
      * URL to author\'s profile picture
      * @type {string}
      * @memberof Post
@@ -1346,7 +1352,7 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)
+         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
          * @param {FeedQuery} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1702,7 +1708,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)
+         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
          * @param {FeedQuery} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1835,7 +1841,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
     return {
         /**
          * 
-         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)
+         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
          * @param {FeedQuery} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1941,7 +1947,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
 export class FeedApi extends BaseAPI {
     /**
      * 
-     * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups)
+     * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
      * @param {FeedQuery} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

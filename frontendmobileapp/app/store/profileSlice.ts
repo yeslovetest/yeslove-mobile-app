@@ -5,6 +5,7 @@ const profileSlice = createSlice({
   name: "profile",
   initialState: {
     info: {} as UserProfile,
+    profiles: {} as Record<string, UserProfile>,
     view: { activeTab: "Timeline", activeAboutTab: "View",activeHomeTab: "" },
   }, //defines initial state
   reducers: {
@@ -44,6 +45,10 @@ const profileSlice = createSlice({
       state.view.activeAboutTab = action.payload;
     },
     persistUserInfoAction: (state, action: PayloadAction<void>) => {},
+    fetchUserDataAction: (state, action: PayloadAction<{id: string}>) => {},
+    storeUserDataAction: (state, action: PayloadAction<{id: string, profile: UserProfile}>)=>{
+      state.profiles[action.payload.id] = action.payload.profile;
+    }
   },
 });
 
@@ -58,5 +63,7 @@ export const {
   setActiveAboutTabAction,
   setActiveTabAction,
   persistUserInfoAction,
+  fetchUserDataAction,
+  storeUserDataAction
 } = profileSlice.actions;
 export default profileSlice.reducer;
