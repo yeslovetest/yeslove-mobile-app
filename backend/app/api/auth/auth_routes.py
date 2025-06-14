@@ -99,10 +99,61 @@ class Login(Resource):
 
 @api.route("/signup")
 class Signup(Resource):
+    from .auth_models import SignupRequest
+    @api.expect(SignupRequest)
     def post(self):
-        """Keycloak handles user registration."""
-        return {"message": "User signup is handled by Keycloak"}, 400
-    
+        "Creates a new KeyCloak user via Admin API"
+        data = request.json
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+
+        if not username or not email or not password:
+            return {"message": "Username,  email, and password are required"}, 400
+        
+        # Gets admin access token
+        token_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/master/protocol/openid-connect/token"
+        payload = {
+            "grant_type" : "password",
+            "client_id" : "admin-cli",
+            "username" : current_app.config["KEYCLOAK_ADMIN_USERNAME"],
+            "password" : current_app.config["KEYCLOAK_ADMIN_PASSWORD"],
+        }
+        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+
+        if token_response.status_code != 200:
+            return {"message": "Failed to authenticate with Keycloak"},500
+        
+        admin_token = token_response.json().get("access_token")
+
+        # Create User
+        create_user_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users"
+        headers = {
+            "Authorization": f"Bearer {admin_token}",
+            "Content-Type": "application/json"
+        }
+
+        user_payload = {
+            "username":username,
+            "email":email,
+            "enabled": True,
+            "credentials":[{
+                "type":"password",
+                "value":password,
+                "temporary":False
+            }]
+        }
+
+        response = requests.post(create_user_url, json=user_payload, headers=headers)
+
+        if response.status_code == 201:
+            return {"message":"User created in Keycloak"},201
+        elif response.status_code == 409:
+            return {"message":"User already exists"},409
+        else:
+            print("DEBUG → Keycloak error:", response.status_code, response.text)
+            return {"message":"Failed to create user", "details": response.text}, response.status_code
+        
 @api.route("/logout")
 class Logout(Resource):
     from .auth_models import LogoutRequest
@@ -295,28 +346,4 @@ class DeleteAccount(Resource):
         if response.status_code == 204:
             db.session.delete(user)
             db.session.commit()
-
-@api.route("/sync")
-class SyncUser(Resource):
-    @require_auth()
-    def post(self):
-        "Create user in local DB after first keycloak login"
-        from app.models import User, db
-        user_data = request.user
-        keycloak_id = user_data['keycloak_id']
-
-        user = User.query.filter_by(keycloak_id=keycloak_id).first()
-        if not user:
-            user = User(
-                keycloak_id=keycloak_id,
-                username=user_data.get('username'),
-                email=user_data.get('email')
-            )
-            db.session.add(user)
-            db.session.commit()
-            return {"message": "User synced", "user_id" : user.id}, 201
-        
-        return {"message" : "User already exists", "user_id" : user.id}, 200
-
-
 

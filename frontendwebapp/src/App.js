@@ -29,7 +29,7 @@ import axios from 'axios';
 
 const App = () => {
     useEffect(() => {
-        axios.get('http://localhost:5000/api/test') // Replace this with the valid backend endpoint
+        axios.get('http://localhost:3000') // Replace this with the valid backend endpoint
             .then(response => console.log(response.data))
             .catch(error => console.error('Error fetching data:', error));
     }, []);
