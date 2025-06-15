@@ -5,6 +5,7 @@ export enum TabType {
   GET_HELP = "GET_HELP",
   EVENTS = "EVENTS",
   PROFILE = "PROFILE",
+  INDIVIDUAL_EVENT = "INDIVIDUAL_EVENT"
 }
 
 export class TabData {

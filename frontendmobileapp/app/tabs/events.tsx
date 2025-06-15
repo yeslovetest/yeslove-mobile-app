@@ -1,23 +1,16 @@
-import { Image, StyleSheet, Platform, Text, View, ScrollView, Header } from 'react-native';
-import { useDispatch, useSelector } from "react-redux";
+import { View, Text } from 'react-native';
+import styles from "../../Styles/page-styles/EventsStyles";
+import EventNavbar from '@/components/events-components/EventNavbar';
+import Event from '@/components/events-components/EventsList';
+
 
 export default function EventsPage() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to the Events Page!</Text>
+     <Text style={styles.title}>Events</Text>
+     <EventNavbar />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-});
+
