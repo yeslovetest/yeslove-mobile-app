@@ -11,12 +11,15 @@ const theme = {
         /*text colour on orange banner on get help and home page */
         bannerTextColor: "#fff",
         /*border colour of user info on profile page */
-        viewEditBorderColor: "#f1f1f1"
+        viewEditBorderColor: "#f1f1f1",
+        /*background colour of text boxes in individual event tabs */
+        eventTextBackground: "#fefefe"
     },
     spacing: {
         /*width of posts, postbox, banner, and most component parent elements*/
         postWidth: vw(90),
         standardPageContentWidth: "90%",
+        eventTextBoxPadding: 15,
     }
 }
 
