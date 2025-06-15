@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
-import UserPostBox from '@/components/home-components/UserPostBox';7
+import UserPostBox from '@/components/home-components/UserPostBox';
 import FeedHeader from "@/components/home-components/FeedHeader";
 import styles from "../../Styles/page-styles/HomeStyles"
 import HomeNavBar from '@/components/home-components/HomeNavBar';
