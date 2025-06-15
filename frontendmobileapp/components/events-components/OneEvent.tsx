@@ -14,7 +14,7 @@ const OneEvent = (props: Props) => {
     const dispatch = useAppDispatch()
 
     const handleEventClick = () => {
-        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_EVENT }))
+        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_EVENT, data: props.event}))
     }
 
   return (
@@ -22,7 +22,7 @@ const OneEvent = (props: Props) => {
         <View style={styles.eventsContainer}>
     <View style={styles.eventContainer}>
                     <View style={styles.dateContainer}>
-                        <Text style={styles.dateText}>{props.event.date}</Text>
+                        <Text style={styles.dateText}>{props.event.dateShort}</Text>
                         <Text style={styles.yearText}>{props.event.year}</Text>
                     </View>
                     <ImageBackground style={styles.eventImg} imageStyle={{ borderRadius: 10 }} source={props.event.image}>

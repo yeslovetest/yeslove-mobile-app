@@ -28,6 +28,10 @@ const EventNavbar = () => {
           <Event />
         </View>
       )}
+
+      {activeTab === "Attending" && (
+        <View />
+      )}
     </View>
   )
 }
