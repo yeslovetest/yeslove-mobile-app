@@ -5,7 +5,7 @@ const profileSlice = createSlice({
   name: "profile",
   initialState: {
     profiles: {} as Record<string, UserProfile>,
-    view: { activeTab: "Timeline", activeAboutTab: "View",activeHomeTab: "" },
+    view: { activeTab: "Timeline", activeAboutTab: "View"},
   }, //defines initial state
   reducers: {
     setProfileInformationAction: (

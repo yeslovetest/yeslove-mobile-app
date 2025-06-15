@@ -1,5 +1,5 @@
 import React from "react";
-import {  TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import { changeTabAction, TabData, TabType } from "../../app/store/navigationSlice";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -10,13 +10,15 @@ interface Props {
   title: string;
   icon: string;
   clicked?: () => void;
+  selectionCondition?: () => boolean;
 }
 
 const FooterButton = (props: Props) => {
   const dispatch = useAppDispatch();
   const currentActiveTab = useAppSelector(
-    (state) => state.navigation.tabStack.at(-1)
+    (state) => state.navigation.tabStack.at(0)
   );
+  const isSelected = currentActiveTab?.type == props.tab.type;
 
   const handlePress = () => {
     dispatch(changeTabAction(props.tab));
@@ -25,8 +27,8 @@ const FooterButton = (props: Props) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-        <FontAwesome6 style={[styles.icon, currentActiveTab?.type == props.tab.type && styles.activeIcon]} name={props.icon}></FontAwesome6>
-        <Text>{props.title}</Text>
+      <FontAwesome6 style={[styles.icon, isSelected && styles.activeIcon]} name={props.icon}></FontAwesome6>
+      <Text>{props.title}</Text>
     </TouchableOpacity>
   );
 };
