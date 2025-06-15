@@ -65,7 +65,7 @@ http://localhost:8080
  Click Import
 
  Upload the file:
-yeslove-mobile-app/keycloakservice/YesLove_Auth-realm.json
+yeslove-mobile-app/keycloakservice/imports/YesLove_Auth-realm.json
 
 # Click Create
 

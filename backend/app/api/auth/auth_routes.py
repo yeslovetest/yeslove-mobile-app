@@ -147,13 +147,46 @@ class Signup(Resource):
         response = requests.post(create_user_url, json=user_payload, headers=headers)
 
         if response.status_code == 201:
-            return {"message":"User created in Keycloak"},201
+            # Fetches the created user's ID
+            get_users_url = f"{create_user_url}?username={username}"
+            get_response = requests.get(get_users_url, headers=headers)
+
+            if get_response.status_code != 200 or not get_response.json():
+                return {"message" : "User created, but failed to retrieve user ID"}, 500
+            
+            user_id = get_response.json()[0]["id"]
+
+            # Assigns VERIFY_EMAIL as a required action
+            verify_email_url = f"{create_user_url}/{user_id}"
+            verify_payload = {
+                "requiredActions": ["VERIFY_EMAIL"]
+            }
+            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers)
+
+            if patch_response.status_code != 204:
+                return {
+                    "message": "User created, but failed to trigger email verification",
+                    "details": patch_response.text
+                }, patch_response.status_code
+            
+            # Triggers email validation 
+            send_email_url = f"{create_user_url}/{user_id}/send-verify-email"
+            send_email_response = requests.put(send_email_url, headers=headers)
+
+            if send_email_response.status_code !=204:
+                return {
+                    "message": "User created and VERIFY_EMAIL action assigned, but failed to send email",
+                    "details": send_email_response.text
+                }, send_email_response.status_code
+            
+            return {"message":"User created in Keycloak and email verification sent"},201
+        
         elif response.status_code == 409:
             return {"message":"User already exists"},409
         else:
             print("DEBUG → Keycloak error:", response.status_code, response.text)
             return {"message":"Failed to create user", "details": response.text}, response.status_code
-        
+
 @api.route("/logout")
 class Logout(Resource):
     from .auth_models import LogoutRequest
