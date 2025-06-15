@@ -4,39 +4,15 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 const profileSlice = createSlice({
   name: "profile",
   initialState: {
-    info: {} as UserProfile,
     profiles: {} as Record<string, UserProfile>,
     view: { activeTab: "Timeline", activeAboutTab: "View",activeHomeTab: "" },
   }, //defines initial state
   reducers: {
     setProfileInformationAction: (
       state,
-      action: PayloadAction<UserProfile>
+      action: PayloadAction<{id: string, data: UserProfile}>
     ) => {
-      state.info = action.payload;
-    },
-    setNameAction: (state, action: PayloadAction<string>) => {
-      if (state.info.contact_info == undefined) return;
-      state.info.contact_info.name = action.payload;
-    },
-    setEmailAction: (state, action: PayloadAction<string>) => {
-      if (state.info.contact_info == undefined) return;
-      state.info.contact_info.email = action.payload;
-    },
-    setPhoneAction: (state, action: PayloadAction<string>) => {
-      if (state.info.contact_info == undefined) return;
-      state.info.contact_info.phone = action.payload;
-    },
-    setAddressAction: (state, action: PayloadAction<string>) => {
-      if (state.info.contact_info == undefined) return;
-      state.info.contact_info.address = action.payload;
-    },
-    setWebsiteAction: (state, action: PayloadAction<string>) => {
-      if (state.info.contact_info == undefined) return;
-      state.info.contact_info.website = action.payload;
-    },
-    setBioAction: (state, action: PayloadAction<string>) => {
-      state.info.bio = action.payload;
+      state.profiles[action.payload.id] = action.payload.data;
     },
     setActiveTabAction: (state, action: PayloadAction<string>) => {
       state.view.activeTab = action.payload;
@@ -54,12 +30,6 @@ const profileSlice = createSlice({
 
 export const {
   setProfileInformationAction,
-  setNameAction,
-  setAddressAction,
-  setEmailAction,
-  setPhoneAction,
-  setBioAction,
-  setWebsiteAction,
   setActiveAboutTabAction,
   setActiveTabAction,
   persistUserInfoAction,

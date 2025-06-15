@@ -18,7 +18,7 @@ const ProfileHeader = () => {
     ProfileApiFactory()
       .getUserProfile(userId)
       .then((response) => {
-        dispatch(setProfileInformationAction(response.data));
+        dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
       });
   }, [tabStack]));
 

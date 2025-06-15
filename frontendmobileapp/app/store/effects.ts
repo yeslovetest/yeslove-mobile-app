@@ -1,6 +1,5 @@
-import { call, put, putResolve, takeEvery } from "redux-saga/effects";
+import { call, put, takeEvery } from "redux-saga/effects";
 import { fetchUserDataAction, persistUserInfoAction, storeUserDataAction } from "./profileSlice";
-import { State } from "./store";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, TokenResponse, UserProfile, UserQueryResponse } from "@/generated-api";
 import { appSelect } from "./hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, LoginState, setLoginStateAction } from "./authSlice";
@@ -8,12 +7,12 @@ import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { setUserId } from "./userSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
-import { Router } from "expo-router";
 import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction } from "./feedSlice";
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* saveProfileInfoEffect(action: any) {
-  let info: UserProfile = yield appSelect(state => state.profile.info);
+  let userId: string = yield appSelect(state => state.user.id);
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[userId]);
   ProfileApiFactory()
     .putUpdateProfile(info)
     .catch((reason) => console.log("Failed to update user profile: " + reason));
