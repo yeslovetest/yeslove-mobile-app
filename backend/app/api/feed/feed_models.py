@@ -11,6 +11,7 @@ FeedQuery = api.model("FeedQuery", {
 Post = api.model('Post', {
     'id': fields.Integer(description='Post ID'),
     'author': fields.String(description='Username of the author'),
+    'author_id': fields.String(description='The Keycloak-ID of the author'),
     'author_pic': fields.String(description='URL to author\'s profile picture'),
     'content': fields.String(description='Text content of the post'),
     'image': fields.String(description='URL to image in the post'),

@@ -1,5 +1,5 @@
 import { call, put, putResolve, takeEvery } from "redux-saga/effects";
-import { persistUserInfoAction } from "./profileSlice";
+import { fetchUserDataAction, persistUserInfoAction, storeUserDataAction } from "./profileSlice";
 import { State } from "./store";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, TokenResponse, UserProfile, UserQueryResponse } from "@/generated-api";
 import { appSelect } from "./hooks";
@@ -64,6 +64,15 @@ function* postNewPost(action: PayloadAction<{content: string}>){
   yield put(updatePostsForFeedAction('all'));
 }
 
+function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
+  if(!info){
+    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
+    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
+  }
+
+}
+
 
 function* appSaga() {
   yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);
@@ -71,6 +80,7 @@ function* appSaga() {
   yield takeEvery(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
+  yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
 }
 
 export default appSaga;

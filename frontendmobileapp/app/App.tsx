@@ -13,6 +13,7 @@ import {
   LoginState,
 } from "./store/authSlice";
 import LoginLoadingScreen from "./login-screen/LoginLoadingScreen";
+import { TabType } from "./store/navigationSlice";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -22,7 +23,7 @@ const App = () => {
     }, [])
   );
   const currentActiveTab = useAppSelector(
-    (state) => state.navigation.currentTab
+    (state) => state.navigation.tabStack.at(-1)
   );
   const loginState = useAppSelector((state) => state.auth.loginState);
   return (
@@ -46,7 +47,7 @@ const App = () => {
               GET_HELP: <GetHelpPage></GetHelpPage>,
               EVENTS: <Text>Events</Text>,
               PROFILE: <ProfilePage></ProfilePage>,
-            }[currentActiveTab]
+            }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>
         </View>

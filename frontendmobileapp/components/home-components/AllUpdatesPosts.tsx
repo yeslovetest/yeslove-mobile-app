@@ -19,15 +19,7 @@ useFocusEffect(React.useCallback(() => {
             {posts.map((post, index) => (
                 <Post
                     key={index}
-                    name={post.author}
-                    timePosted={
-                        post.timestamp ? dayjs(post.timestamp).format('MMM D, YYYY h:mm A') : 'Unknown date'
-                      }
-                      
-                    numberOfLikes={post.likes}
-                    numberOfComments={post.comments}
-                    image={post.image}
-                    content={post.content}
+                    post={post}
                 />
             ))}
         </View>
