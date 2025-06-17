@@ -19,7 +19,7 @@ const Post = (props: Props) => {
     const [commentSectionExpanded, setCommentSectionExpanded] = useState(false)
 
     const CHAR_LIMIT = 200;
-    const isLongText = props.post.content?.length ?? 0 > CHAR_LIMIT
+    const isLongText = (props.post.content?.length || 0) > CHAR_LIMIT
 
     const handleToggle = () => {
         setExpanded(!expanded);
@@ -45,7 +45,7 @@ const Post = (props: Props) => {
                 </View>
             </View>
             <Text style={styles.postContent}>
-            {expanded || !isLongText ? props.post.content : `${props.post.content ?? "".substring(0, CHAR_LIMIT)}...`}
+            {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
             </Text>
 
             <View style={styles.seeLessAndLikeContainer}>

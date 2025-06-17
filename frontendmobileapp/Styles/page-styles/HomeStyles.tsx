@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     width: theme.spacing.postWidth,
     backgroundColor: "#fff",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     padding: 20,
     borderRadius: 15,
     marginBottom: 20,
@@ -201,6 +201,8 @@ const styles = StyleSheet.create({
 
   postContent: {
     color: "#555",
+    paddingHorizontal: 3,
+    width: "100%",
     fontSize: 15,
   },
 
@@ -287,6 +289,7 @@ const styles = StyleSheet.create({
       borderColor: "#ccc",
       outlineColor: "#ccc",
       borderRadius: 5,
+      paddingHorizontal: 3,
     },
 
     commentProfileImage: {
