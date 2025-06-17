@@ -19,6 +19,7 @@ const handleUserPost = (input: React.SetStateAction<string>) => {
 
 const handleUserPostButton = () => {
    dispatch(postNewPostAction({content: userPost}));
+   setUserPost("")
 }
 
   return (

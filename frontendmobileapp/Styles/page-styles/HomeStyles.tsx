@@ -289,6 +289,7 @@ const styles = StyleSheet.create({
       borderColor: "#ccc",
       outlineColor: "#ccc",
       borderRadius: 5,
+      paddingHorizontal: 3,
     },
 
     commentProfileImage: {
