@@ -11,9 +11,9 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: theme.spacing.postWidth - 30,
-    height: Dimensions.get('window').height * 0.8,
+    height: Dimensions.get('window').height * 0.87,
     marginTop: 10,
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.mainBkgColor,
     padding: 15,
     borderRadius: 15,
     display: "flex",
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
  },
   scrollContainer: {
     width: theme.spacing.postWidth - 30,
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.mainBkgColor,
     padding: 15,
     height: 50,
     
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mainBkgColor,
     marginBottom: 15,
   },
   buttonContainer: {
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mainBkgColor,
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
@@ -80,14 +80,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+   buttonNext: {
+    backgroundColor: theme.colors.mainBkgColor,
+    paddingVertical: 8,
+    borderRadius: 8,
+    margin: 35,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: theme.colors.footerBdColor,
+    borderWidth: 1,
+  },
+  greyText: {
+    color: theme.colors.footerFontColor, 
+    fontSize: 14,
+    fontWeight: '400'
+  },
   containerFooter: {
     textAlign: 'center',
-    color: 'rgb(100,100,100)',
-    marginTop: 30,
+    color: theme.colors.footerFontColor,
+    marginTop: 20,
     paddingTop: 12,
     fontSize: 16,
     borderTopWidth: 1,
-    borderColor: 'rgb(192, 187, 187)',
+    borderColor: theme.colors.footerBdColor,
     width: '100%',
   },
   footerLink: {

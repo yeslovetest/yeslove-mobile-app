@@ -36,13 +36,11 @@ const App = () => {
       )}
       {loginState == LoginState.LOGGED_OUT && (
         <View style={styles.container}>
-          <Header ></Header>
           <LoginScreen></LoginScreen>
         </View>
       )}
        {loginState == LoginState.SIGN_UP && (
         <View style={styles.container}>
-          <Header ></Header>
           <SignUpScreen></SignUpScreen>
         </View>
       )}

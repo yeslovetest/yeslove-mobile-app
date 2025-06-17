@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mainBkgColor,
     marginBottom: 15,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mainBkgColor,
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
@@ -65,14 +65,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
   containerFooter: {
     textAlign: 'center',
-    color: 'rgb(100,100,100)',
+    color: theme.colors.footerFontColor,
     marginTop: 30,
     paddingTop: 12,
     fontSize: 16,
     borderTopWidth: 1,
-    borderColor: 'rgb(192, 187, 187)',
+    borderColor: theme.colors.footerBdColor,
     width: '100%',
   },
   footerLink: {

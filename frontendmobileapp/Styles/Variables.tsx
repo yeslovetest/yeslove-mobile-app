@@ -11,7 +11,14 @@ const theme = {
         /*text colour on orange banner on get help and home page */
         bannerTextColor: "#fff",
         /*border colour of user info on profile page */
-        viewEditBorderColor: "#f1f1f1"
+        viewEditBorderColor: "#f1f1f1",
+        /*main background colour for login & signup screen components including text-box and buttons */
+        mainBkgColor: "#fff",
+        /*main font colour for login & signup screen container footer  */
+        footerFontColor: 'rgb(100,100,100)',
+        /*border colour for login & signup screen container footer  */
+        footerBdColor: 'rgb(192, 187, 187)',
+        
     },
     spacing: {
         /*width of posts, postbox, banner, and most component parent elements*/
