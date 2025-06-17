@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     width: theme.spacing.postWidth,
     backgroundColor: "#fff",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     padding: 20,
     borderRadius: 15,
     marginBottom: 20,
