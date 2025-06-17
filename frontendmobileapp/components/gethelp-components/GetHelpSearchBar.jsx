@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, ImageBackground, StyleSheet, Platform, Text, View, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, TextInput } from 'react-native';
 import styles from "../../Styles/page-styles/GetHelpStyles";
 
 

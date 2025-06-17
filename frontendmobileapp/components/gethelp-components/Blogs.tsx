@@ -1,10 +1,12 @@
-import { View, Text } from "react-native"
+import { View } from "react-native"
+import OneBlog from "./OneBlog"
+import BlogSearchBar from "./BlogSearchBar"
 
 const Blogs = () => {
   return (
     <View>
-      <Text>test</Text>
-
+      <BlogSearchBar />
+      <OneBlog />
     </View>
   )
 }
