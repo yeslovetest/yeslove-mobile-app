@@ -201,6 +201,8 @@ const styles = StyleSheet.create({
 
   postContent: {
     color: "#555",
+    paddingHorizontal: 3,
+    width: "100%",
     fontSize: 15,
   },
 
