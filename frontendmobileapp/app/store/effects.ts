@@ -1,6 +1,5 @@
-import { call, put, putResolve, takeEvery } from "redux-saga/effects";
-import { persistUserInfoAction } from "./profileSlice";
-import { State } from "./store";
+import { call, put, takeEvery } from "redux-saga/effects";
+import { fetchUserDataAction, persistUserInfoAction, storeUserDataAction } from "./profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, TokenResponse, UserProfile, UserQueryResponse } from "@/generated-api";
 import { appSelect } from "./hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, LoginState, setLoginStateAction } from "./authSlice";
@@ -8,12 +7,12 @@ import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { setUserId } from "./userSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
-import { Router } from "expo-router";
 import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction } from "./feedSlice";
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* saveProfileInfoEffect(action: any) {
-  let info: UserProfile = yield appSelect(state => state.profile.info);
+  let userId: string = yield appSelect(state => state.user.id);
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[userId]);
   ProfileApiFactory()
     .putUpdateProfile(info)
     .catch((reason) => console.log("Failed to update user profile: " + reason));
@@ -64,6 +63,15 @@ function* postNewPost(action: PayloadAction<{content: string}>){
   yield put(updatePostsForFeedAction('all'));
 }
 
+function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
+  if(!info){
+    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
+    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
+  }
+
+}
+
 
 function* appSaga() {
   yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);
@@ -71,6 +79,7 @@ function* appSaga() {
   yield takeEvery(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
+  yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
 }
 
 export default appSaga;

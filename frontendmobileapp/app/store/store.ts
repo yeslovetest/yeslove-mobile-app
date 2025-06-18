@@ -3,12 +3,13 @@ import userReducer from "./userSlice";
 import profileReducer from "./profileSlice";
 import feedReducer from "./feedSlice";
 import authReducer from "./authSlice";
-//import createSagaMiddleware from "redux-saga"
-
+import eventsReducer from "./eventsSlice";
+import getHelpReducer from "./getHelpSlice"
+import createSagaMiddleWare from "redux-saga"
 import appSaga from "./effects";
 import { navigationReducer } from "./navigationSlice";
 
-const createSagaMiddleWare = require('redux-saga').default;
+//const createSagaMiddleWare = require('redux-saga').default;
 export const sagaMiddleWare = createSagaMiddleWare();
 
 export const store = configureStore({
@@ -17,7 +18,9 @@ export const store = configureStore({
         profile: profileReducer,
         feed: feedReducer,
         navigation: navigationReducer,
-        auth: authReducer
+        auth: authReducer,
+        events: eventsReducer,
+        getHelp: getHelpReducer
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleWare)

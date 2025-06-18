@@ -8,18 +8,19 @@ import { ProfileApiFactory } from '@/generated-api';
 
 
 const ProfileHeader = () => {
-  const userId = useAppSelector((state) => state.user.id);
-  const userName = useAppSelector((state) => state.profile.info.username);
-  const bio = useAppSelector((state) => state.profile.info.bio);
+  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
+  const tabStack = useAppSelector((state) => state.navigation.tabStack);
+  const userName = useAppSelector((state) => state.profile.profiles[userId]?.username ?? "");
+  const bio = useAppSelector((state) => state.profile.profiles[userId]?.bio ?? "");
   const dispatch = useAppDispatch();
 
   useFocusEffect(React.useCallback(() => {
     ProfileApiFactory()
       .getUserProfile(userId)
       .then((response) => {
-        dispatch(setProfileInformationAction(response.data));
+        dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
       });
-  }, []));
+  }, [tabStack]));
 
 
 

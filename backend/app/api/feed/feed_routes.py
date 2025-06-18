@@ -11,9 +11,10 @@ api = Namespace("feed", description="API Endpoints")
 
 @api.route("/feed")
 class Feed(Resource):
-    from .feed_models import FeedQuery
+    from .feed_models import FeedQuery, FeedResponse
     @require_auth()
     @api.expect(FeedQuery)
+    @api.response(code=200, description="", model=FeedResponse)
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
         from app.models import User, Post, Like
@@ -38,8 +39,7 @@ class Feed(Resource):
         else:  # "all"
             following = [follow.followed_id for follow in user.following]
             following.append(user.id)
-            query = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc())
-
+            query = Post.query.order_by(Post.timestamp.desc())
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
 
@@ -47,6 +47,7 @@ class Feed(Resource):
             "posts": [{
                 "id": post.id,
                 "author": post.author.username,
+                "author_id": post.author.keycloak_id,
                 "author_pic": post.author.profile_pic,
                 "content": post.content,
                 "image": post.image,
