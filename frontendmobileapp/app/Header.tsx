@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import styles from "../Styles/component-styles/HeaderStyles"
 import { useAppDispatch, useAppSelector } from './store/hooks';

@@ -1,6 +1,5 @@
 
 import { View, Text } from 'react-native';
-import IndividualEventHeader from './IndividualEventHeader';
 import styles from '@/Styles/page-styles/EventsStyles';
 import { Event } from './placeholderEvents';
 import { useAppSelector } from '@/app/store/hooks';

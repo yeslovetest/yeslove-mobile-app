@@ -1,7 +1,6 @@
 import blogimg1 from "../../assets/images/blogimg1.png"
 import blogimg2 from "../../assets/images/blogimg2.png"
 import blogimg3 from "../../assets/images/blogimg3.jpg"
-import blogimg4 from "../../assets/images/blogimg4.png"
 
 export interface Blog{
     image: any;

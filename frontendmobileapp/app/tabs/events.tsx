@@ -1,7 +1,6 @@
 import { ScrollView, Text } from 'react-native';
 import styles from "../../Styles/page-styles/EventsStyles";
 import EventNavbar from '@/components/events-components/EventNavbar';
-import Event from '@/components/events-components/EventsList';
 
 
 export default function EventsPage() {

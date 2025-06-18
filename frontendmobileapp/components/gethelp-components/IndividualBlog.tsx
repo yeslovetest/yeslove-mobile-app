@@ -1,7 +1,5 @@
 import { ScrollView, ImageBackground } from "react-native";
 import styles from '@/Styles/page-styles/GetHelpStyles';
-import blogPlaceholders, { Blog } from "./placeholderBlogs";
-import { useAppSelector } from '@/app/store/hooks';
 import BlogContent from "./BlogContent";
 import BlogTitle from "./BlogTitle";
 
