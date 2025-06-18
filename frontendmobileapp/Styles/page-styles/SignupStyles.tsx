@@ -83,8 +83,9 @@ const styles = StyleSheet.create({
    buttonNext: {
     backgroundColor: theme.colors.mainBkgColor,
     paddingVertical: 8,
+    width: '50%',
     borderRadius: 8,
-    margin: 35,
+    margin: 30,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
