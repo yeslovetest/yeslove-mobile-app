@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
-import theme from "../Variables"
+import theme from "../Variables";
+import { vw } from '@/ts/viewport-units';
 
 const styles = StyleSheet.create({
   container: {
@@ -57,17 +58,17 @@ const styles = StyleSheet.create({
 
   /* Search bar */
   searchBarContainer: {
-    marginTop: 30,
+    marginTop: vw(5),
     width: theme.spacing.postWidth,
     borderRadius: 15,
-    height: 85,
+    padding: 15,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
 
   searchBar: {
-    width: 340,
+    width: "100%",
     height: 43,
     borderWidth: 1,
     borderColor: "#ddd",
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
 
   /* Professional profiles */
   professionalProfileContainer: {
-    marginTop: 30,
+    marginTop: vw(5),
     width: 380,
     backgroundColor: "#fff",
     justifyContent: "center",
@@ -151,6 +152,59 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: -2,
     },
+
+
+/*blogs */
+
+blogsContainer: {
+    marginTop: 30,
+    width: 380,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+},
+
+/*one blog */
+
+blogContainer: {
+  display: "flex",
+  width: "100%",
+  height: 500,
+  justifyContent: "flex-start",
+  alignItems: "flex-start",
+  borderRadius: 15,
+},
+blogImage: {
+  width: "100%",
+  height: 250,
+},
+blogTitle: {
+  textAlign: "left",
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  fontSize: 23,
+  fontWeight: "600"
+},
+authorAndDateContainer: {
+  display: "flex",
+  width: "100%",
+  justifyContent: "space-between",
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  alignItems: "center",
+  flexDirection: "row"
+},
+
+authorContainer: {
+display: "flex",
+alignItems: "center",
+flexDirection: "row"
+},
+authorIcon: {
+  color: theme.colors.primaryBlue,
+  paddingRight: 3,
+}
 });
 
 export default styles;
