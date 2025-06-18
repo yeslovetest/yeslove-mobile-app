@@ -7,6 +7,8 @@ import ProfilePage from "./tabs/profile";
 import HomeScreen from "./tabs/home";
 import GetHelpPage from "./tabs/gethelp";
 import LoginScreen from "./login-screen/LoginScreen";
+import SignUpScreen from "./signup-screen/SignUpScreen";
+//import GetEducatedPage from "./tabs/getEducated"
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
@@ -41,9 +43,14 @@ const App = () => {
           <LoginScreen></LoginScreen>
         </View>
       )}
+       {loginState == LoginState.SIGN_UP && (
+        <View style={styles.container}>
+          <SignUpScreen></SignUpScreen>
+        </View>
+      )}
       {loginState == LoginState.LOGGED_IN && (
         <View style={styles.container}>
-          <Header></Header>
+          <Header ></Header>
           {
             {
               HOME: <HomeScreen></HomeScreen>,

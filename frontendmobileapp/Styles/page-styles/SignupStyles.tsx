@@ -1,4 +1,4 @@
-import { StyleSheet  } from "react-native";
+import { StyleSheet,  Dimensions  } from "react-native";
 import theme from "../Variables"
 
 const styles = StyleSheet.create({
@@ -11,8 +11,9 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: theme.spacing.postWidth - 30,
-    height: 400,
-    backgroundColor: "#fff",
+    height: Dimensions.get('window').height * 0.87,
+    marginTop: 10,
+    backgroundColor: theme.colors.mainBkgColor,
     padding: 15,
     borderRadius: 15,
     display: "flex",
@@ -20,6 +21,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomColor: theme.colors.primaryBlue,
     borderBottomWidth: 3,
+ },
+  scrollContainer: {
+    width: theme.spacing.postWidth - 30,
+    backgroundColor: theme.colors.mainBkgColor,
+    padding: 15,
+    height: 50,
+    
  },
   title: {
     fontSize: 28,
@@ -48,6 +56,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.mainBkgColor,
     marginBottom: 15,
   },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
   button: {
     backgroundColor: theme.colors.mainBkgColor,
     paddingVertical: 12,
@@ -59,17 +73,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderColor: theme.colors.primaryBlue,
     borderWidth: 1,
+   
   },
   buttonText: {
     color: theme.colors.primaryBlue,
     fontSize: 16,
     fontWeight: 'bold',
   },
-
+   buttonNext: {
+    backgroundColor: theme.colors.mainBkgColor,
+    paddingVertical: 8,
+    width: '50%',
+    borderRadius: 8,
+    margin: 30,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: theme.colors.footerBdColor,
+    borderWidth: 1,
+  },
+  greyText: {
+    color: theme.colors.footerFontColor, 
+    fontSize: 14,
+    fontWeight: '400'
+  },
   containerFooter: {
     textAlign: 'center',
     color: theme.colors.footerFontColor,
-    marginTop: 30,
+    marginTop: 20,
     paddingTop: 12,
     fontSize: 16,
     borderTopWidth: 1,
@@ -82,4 +113,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles
+export default styles;

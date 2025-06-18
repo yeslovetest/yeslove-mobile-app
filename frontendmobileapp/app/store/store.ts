@@ -9,6 +9,7 @@ import createSagaMiddleWare from "redux-saga"
 import appSaga from "./effects";
 import { navigationReducer } from "./navigationSlice";
 
+//const createSagaMiddleWare = require('redux-saga').default;
 export const sagaMiddleWare = createSagaMiddleWare();
 
 export const store = configureStore({
@@ -29,6 +30,6 @@ sagaMiddleWare.run(appSaga)
 
 export type State = ReturnType<typeof store.getState>
 
-export type AppDispatch = typeof store.dispatch
+export type AppDispatch = typeof store.dispatch;
 
-export default store
+export default store;
