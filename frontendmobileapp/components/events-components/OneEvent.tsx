@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { useAppDispatch } from "@/app/store/hooks"
 import { openTabOnTopAction, TabType } from "@/app/store/navigationSlice"
 import styles from "@/Styles/page-styles/EventsStyles"
