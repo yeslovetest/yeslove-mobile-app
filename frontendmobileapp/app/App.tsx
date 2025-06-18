@@ -16,6 +16,7 @@ import LoginLoadingScreen from "./login-screen/LoginLoadingScreen";
 import { TabType } from "./store/navigationSlice";
 import EventsPage from "./tabs/events";
 import IndividualEvent from "@/components/events-components/IndividualEvent";
+import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -49,7 +50,8 @@ const App = () => {
               GET_HELP: <GetHelpPage></GetHelpPage>,
               EVENTS: <EventsPage></EventsPage>,
               PROFILE: <ProfilePage></ProfilePage>,
-              INDIVIDUAL_EVENT: <IndividualEvent />
+              INDIVIDUAL_EVENT: <IndividualEvent />,
+              INDIVIDUAL_BLOG: <IndividualBlog />
             }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>

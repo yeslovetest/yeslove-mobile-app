@@ -2,12 +2,23 @@ import { View, ImageBackground, Text } from "react-native";
 import styles from "@/Styles/page-styles/GetHelpStyles";
 import blogPlaceholders, { Blog } from "./placeholderBlogs";
 import Ionicons from '@expo/vector-icons/Ionicons';
-
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useAppDispatch } from "@/app/store/hooks"
+import { openTabOnTopAction, TabType } from "@/app/store/navigationSlice"
 export interface Props {
     blog: Blog
 }
 
+
+
 const OneBlog = (props: Props) => {
+
+    const dispatch = useAppDispatch()
+
+    const handleBlogClick = () => {
+        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_BLOG, data: props.blog }))
+    }
+
     return (
         <View style={styles.blogContainer}>
             <ImageBackground style={[styles.blogImage, {
@@ -15,14 +26,18 @@ const OneBlog = (props: Props) => {
                 borderTopRightRadius: 12,
                 overflow: 'hidden'
             }]} source={props.blog.image}></ImageBackground>
-            <Text style={styles.blogTitle}>{props.blog.title}</Text>
+            <Text onPress={handleBlogClick} style={styles.blogTitle}>{props.blog.title}</Text>
             <View style={styles.authorAndDateContainer}>
                 <View style={styles.authorContainer}>
-                <Ionicons name="person-sharp" size={24} style={styles.authorIcon} color="black" />
-                <Text>{props.blog.author}</Text>
+                    <Ionicons name="person-sharp" size={21} style={styles.authorIcon} color="black" />
+                    <Text style={styles.dateAndAuthorText}>{props.blog.author}</Text>
                 </View>
-                <Text>{props.blog.datePosted}</Text>
+                <View style={styles.authorContainer}>
+                    <FontAwesome name="calendar" size={21} style={styles.authorIcon} color="black" />
+                    <Text style={styles.dateAndAuthorText}>{props.blog.datePosted}</Text>
+                </View>
             </View>
+            <Text style={styles.blogSummary}>{props.blog.summary}</Text>
         </View>
     )
 }

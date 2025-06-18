@@ -9,7 +9,6 @@ import GetHelpNavbar from '@/components/gethelp-components/GetHelpNavbar';
 export default function GetHelpPage() {
   return (
     <ScrollView  contentContainerStyle={styles.contentContainer} style={styles.container}>
-      <GetHelpHeader />
       <GetHelpNavbar />
     </ScrollView>
   );

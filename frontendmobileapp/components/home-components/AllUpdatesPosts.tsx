@@ -5,7 +5,6 @@ import { setFeedDataAction, updatePostsForFeedAction } from '@/app/store/feedSli
 import { FeedApiFactory, ProfileApiFactory } from '@/generated-api';
 import { useFocusEffect } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import dayjs from 'dayjs';
 
 const AllUpdatesPosts = () => {
 const dispatch = useAppDispatch();

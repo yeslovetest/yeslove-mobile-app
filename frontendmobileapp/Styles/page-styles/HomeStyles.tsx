@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import theme from "../Variables"
+import { vw } from "@/ts/viewport-units";
 
 const styles = StyleSheet.create({
 
@@ -19,6 +20,7 @@ const styles = StyleSheet.create({
     feedHeaderContainer: {
         width: theme.spacing.postWidth,
         height: 115,
+        marginTop: vw(5),
         borderRadius: 15,
         justifyContent: "center",
         alignItems: "center",
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
     },
 
     userPostBoxContainer: {
-        marginTop: 30,
+        marginTop: vw(5),
         width: theme.spacing.postWidth,
         borderRadius: 10,
         height: 265,
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 100,
         paddingHorizontal: 10,
-        marginBottom: 15
+        marginBottom: vw(5)
     },
 
     postInput: {
@@ -138,8 +140,7 @@ const styles = StyleSheet.create({
       flex: 1,
       justifyContent: "flex-start",
       alignItems: "center",
-      marginTop: 20,
-      marginBottom: 20
+      marginTop: vw(5),
     },
     homeNavBar: {
       flexDirection: "row",
@@ -183,14 +184,13 @@ const styles = StyleSheet.create({
       /* */
 
   postContainer: {
-    marginTop: 20,
+    marginTop: vw(5),
     width: theme.spacing.postWidth,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "flex-start",
     padding: 20,
     borderRadius: 15,
-    marginBottom: 20,
   },
 
   profileName: {
