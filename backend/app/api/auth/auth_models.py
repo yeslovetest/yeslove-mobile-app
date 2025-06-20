@@ -2,6 +2,12 @@
 from .auth_routes import api
 from flask_restx import fields
 
+SignupRequest = api.model("SignupRequest", {
+    "username" : fields.String(require=True, description="Desired username"),
+    "email" : fields.String(require=True, description="User email"),
+    "password" : fields.String(require=True, description="User password")
+})
+
 LoginRequest = api.model("LoginRequest", {
         "username": fields.String(required=True, description="User's Keycloak username"),
         "password": fields.String(required=True, description="User's Keycloak password"),

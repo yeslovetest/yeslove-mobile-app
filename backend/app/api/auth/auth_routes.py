@@ -99,9 +99,93 @@ class Login(Resource):
 
 @api.route("/signup")
 class Signup(Resource):
+    from .auth_models import SignupRequest
+    @api.expect(SignupRequest)
     def post(self):
-        """Keycloak handles user registration."""
-        return {"message": "User signup is handled by Keycloak"}, 400
+        "Creates a new KeyCloak user via Admin API"
+        data = request.json
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+
+        if not username or not email or not password:
+            return {"message": "Username,  email, and password are required"}, 400
+        
+        # Gets admin access token
+        token_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/master/protocol/openid-connect/token"
+        payload = {
+            "grant_type" : "password",
+            "client_id" : "admin-cli",
+            "username" : current_app.config["KEYCLOAK_ADMIN_USER"],
+            "password" : current_app.config["KEYCLOAK_ADMIN_PASS"],
+        }
+        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+
+        if token_response.status_code != 200:
+            return {"message": "Failed to authenticate with Keycloak"},500
+        
+        admin_token = token_response.json().get("access_token")
+
+        # Create User
+        create_user_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users"
+        headers = {
+            "Authorization": f"Bearer {admin_token}",
+            "Content-Type": "application/json"
+        }
+
+        user_payload = {
+            "username":username,
+            "email":email,
+            "enabled": True,
+            "credentials":[{
+                "type":"password",
+                "value":password,
+                "temporary":False
+            }]
+        }
+
+        response = requests.post(create_user_url, json=user_payload, headers=headers)
+
+        if response.status_code == 201:
+            # Fetches the created user's ID
+            get_users_url = f"{create_user_url}?username={username}"
+            get_response = requests.get(get_users_url, headers=headers)
+
+            if get_response.status_code != 200 or not get_response.json():
+                return {"message" : "User created, but failed to retrieve user ID"}, 500
+            
+            user_id = get_response.json()[0]["id"]
+
+            # Assigns VERIFY_EMAIL as a required action
+            verify_email_url = f"{create_user_url}/{user_id}"
+            verify_payload = {
+                "requiredActions": ["VERIFY_EMAIL"]
+            }
+            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers)
+
+            if patch_response.status_code != 204:
+                return {
+                    "message": "User created, but failed to trigger email verification",
+                    "details": patch_response.text
+                }, patch_response.status_code
+            
+            # Triggers email validation 
+            send_email_url = f"{create_user_url}/{user_id}/send-verify-email"
+            send_email_response = requests.put(send_email_url, headers=headers)
+
+            if send_email_response.status_code !=204:
+                return {
+                    "message": "User created and VERIFY_EMAIL action assigned, but failed to send email",
+                    "details": send_email_response.text
+                }, send_email_response.status_code
+            
+            return {"message":"User created in Keycloak and email verification sent"},201
+        
+        elif response.status_code == 409:
+            return {"message":"User already exists"},409
+        else:
+            print("DEBUG → Keycloak error:", response.status_code, response.text)
+            return {"message":"Failed to create user", "details": response.text}, response.status_code
     
 @api.route("/logout")
 class Logout(Resource):
