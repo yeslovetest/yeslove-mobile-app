@@ -24,7 +24,9 @@ TokenResponse = api.model("TokenResponse", {
         "scope": fields.String(description="Scopes associated with the token"),
     })
 
-LogoutRequest = api.model("LogoutRequest", {})
+LogoutRequest = api.model("LogoutRequest", {
+    "refresh_token" : fields.String(require=True, description="Users refresh token")
+})
 
 RefreshTokenRequest = api.model("RefreshTokenRequest", {
         "refresh_token": fields.String(required=True, description="Valid refresh token")

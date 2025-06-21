@@ -190,22 +190,29 @@ class Signup(Resource):
 @api.route("/logout")
 class Logout(Resource):
     from .auth_models import LogoutRequest
-    @require_auth()
     @api.expect(LogoutRequest)  # ✅ Attach model
     def post(self):
         """Logout user from Keycloak."""
-        token = request.headers.get("Authorization").split(" ")[1]
+        data = request.get_json(silent=True)
+        refresh_token = data.get("refresh_token")
+
+        if not refresh_token:
+            return {"message": "Missing refresh token in request body"}, 400
+        
         keycloak_logout_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/logout"
 
-        response = requests.post(
-            keycloak_logout_url,
-            headers={"Authorization": f"Bearer {token}"},
-        )
+        payload = {
+            "client_id" : current_app.config["KEYCLOAK_CLIENT_ID"],
+            "client_secret" : current_app.config["KEYCLOAK_CLIENT_SECRET"],
+            "refresh_token" : refresh_token
+        }
+
+        response = requests.post(keycloak_logout_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
 
         if response.status_code == 204:
-            return {"message": "Logged out successfully"}, 200
-        return {"message": "Logout failed"}, response.status_code
-
+            return {"message" : "Logged out successfully"}, 200
+        return {"message" : "Logout failed", "details" : response.text}, response.status_code
+    
 @api.route("/refresh_token")
 class RefreshToken(Resource):
     from .auth_models import RefreshTokenRequest, TokenResponse
