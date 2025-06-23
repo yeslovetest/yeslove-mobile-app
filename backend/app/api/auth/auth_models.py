@@ -3,9 +3,13 @@ from .auth_routes import api
 from flask_restx import fields
 
 SignupRequest = api.model("SignupRequest", {
-    "username" : fields.String(require=True, description="Desired username"),
-    "email" : fields.String(require=True, description="User email"),
-    "password" : fields.String(require=True, description="User password")
+    "email" : fields.String(required=True, description="User email"),
+    "password" : fields.String(required=True, description="User password"),
+    "confirm_password" : fields.String(required=True, description="Confirm your password"),
+    "first_name" : fields.String(required=True, description="Users first name"),
+    "last_name" : fields.String(required=True, description="Users last name"),
+    "phone_number" : fields.String(required=True, description="Users phone number"),
+    "username" : fields.String(required=True, description="Desired username")
 })
 
 LoginRequest = api.model("LoginRequest", {

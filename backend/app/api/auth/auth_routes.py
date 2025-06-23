@@ -103,13 +103,26 @@ class Signup(Resource):
     @api.expect(SignupRequest)
     def post(self):
         "Creates a new KeyCloak user via Admin API"
-        data = request.json
-        username = data.get("username")
+        data = request.json or {}
+
         email = data.get("email")
         password = data.get("password")
+        confirm_password = data.get("password")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        phone_number = data.get("phone_number")
+        username = data.get("username")
 
-        if not username or not email or not password:
-            return {"message": "Username,  email, and password are required"}, 400
+        # Sanity check to ensure all fields have inputs
+        missing = [k for k in ("email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")
+                   if not data.get(k)]
+        
+        if missing:
+            return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
+        
+        # Password match check
+        if password != confirm_password:
+            return {"message" : f"Password and confirm password do not match"}, 400
         
         # Gets admin access token
         token_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/master/protocol/openid-connect/token"
@@ -136,7 +149,12 @@ class Signup(Resource):
         user_payload = {
             "username":username,
             "email":email,
+            "firstName" : first_name,
+            "lastName" : last_name,
             "enabled": True,
+            "attributes" : {
+                "phone_number" : phone_number
+            },
             "credentials":[{
                 "type":"password",
                 "value":password,
