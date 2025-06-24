@@ -4,7 +4,7 @@ from flask_restx import Namespace, Resource
 import requests
 
 from app.logging_setup import logger
-from app.utils import require_auth
+from app.utils import require_auth, is_valid_email
 
 
 
@@ -105,13 +105,17 @@ class Signup(Resource):
         "Creates a new KeyCloak user via Admin API"
         data = request.json or {}
 
-        email = data.get("email")
+        email = data.get("email", "").lower().strip()
         password = data.get("password")
-        confirm_password = data.get("password")
+        confirm_password = data.get("confirm_password")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
         phone_number = data.get("phone_number")
         username = data.get("username")
+        
+        # Rejects malformed emails
+        if not is_valid_email(email):
+            return {"message", "Invalid email address"}, 400
 
         # Sanity check to ensure all fields have inputs
         missing = [k for k in ("email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")
