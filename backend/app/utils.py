@@ -138,3 +138,16 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 def allowed_file(filename):
     """Check if a file has an allowed extension."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# -------------------------
+# 🔹 Email Format Validation
+# -------------------------
+
+import re
+
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+def is_valid_email(email: str) -> bool:
+    "Quick regex check for basic email syntax"
+    return bool(EMAIL_REGEX.match(email))

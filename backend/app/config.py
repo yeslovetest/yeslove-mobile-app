@@ -28,6 +28,9 @@ class DevelopmentConfig(Config):
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "cTt94j1OFJrSI7SQkoeV2e2ochXPp21a")
 
+    KEYCLOAK_ADMIN_USER    = os.getenv('KEYCLOAK_ADMIN_USER')
+    KEYCLOAK_ADMIN_PASS    = os.getenv('KEYCLOAK_ADMIN_PASS')
+    
     @staticmethod
     def keycloak_issuer():
         """Return Keycloak Issuer URL"""

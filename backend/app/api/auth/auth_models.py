@@ -2,6 +2,16 @@
 from .auth_routes import api
 from flask_restx import fields
 
+SignupRequest = api.model("SignupRequest", {
+    "email" : fields.String(required=True, description="User email"),
+    "password" : fields.String(required=True, description="User password"),
+    "confirm_password" : fields.String(required=True, description="Confirm your password"),
+    "first_name" : fields.String(required=True, description="Users first name"),
+    "last_name" : fields.String(required=True, description="Users last name"),
+    "phone_number" : fields.String(required=True, description="Users phone number"),
+    "username" : fields.String(required=True, description="Desired username")
+})
+
 LoginRequest = api.model("LoginRequest", {
         "username": fields.String(required=True, description="User's Keycloak username"),
         "password": fields.String(required=True, description="User's Keycloak password"),
@@ -18,7 +28,9 @@ TokenResponse = api.model("TokenResponse", {
         "scope": fields.String(description="Scopes associated with the token"),
     })
 
-LogoutRequest = api.model("LogoutRequest", {})
+LogoutRequest = api.model("LogoutRequest", {
+    "refresh_token" : fields.String(require=True, description="Users refresh token")
+})
 
 RefreshTokenRequest = api.model("RefreshTokenRequest", {
         "refresh_token": fields.String(required=True, description="Valid refresh token")
