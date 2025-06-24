@@ -4,6 +4,7 @@ from flask_restx import fields
 
 SignupRequest = api.model("SignupRequest", {
     "email" : fields.String(required=True, description="User email"),
+    "confirm_email" : fields.String(required=True, description="User email confirmation"),
     "password" : fields.String(required=True, description="User password"),
     "confirm_password" : fields.String(required=True, description="Confirm your password"),
     "first_name" : fields.String(required=True, description="Users first name"),

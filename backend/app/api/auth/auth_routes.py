@@ -106,6 +106,7 @@ class Signup(Resource):
         data = request.json or {}
 
         email = data.get("email", "").lower().strip()
+        confrim_email = data.("confirm_email", "").lower().strip()
         password = data.get("password")
         confirm_password = data.get("confirm_password")
         first_name = data.get("first_name")
@@ -115,7 +116,7 @@ class Signup(Resource):
         
         # Rejects malformed emails
         if not is_valid_email(email):
-            return {"message", "Invalid email address"}, 400
+            return {"message" : "Invalid email address"}, 400
 
         # Sanity check to ensure all fields have inputs
         missing = [k for k in ("email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")

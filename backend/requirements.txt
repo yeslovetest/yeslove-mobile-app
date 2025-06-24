@@ -27,3 +27,5 @@ typing-extensions
 Docker 
 
 authlib 
+
+email-validator
