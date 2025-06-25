@@ -11,7 +11,7 @@ const Page1 = () => {
   const {
     email,
     password,
-    confirmPassword,
+    confirm_password,
     pageNumber,
     emailBdColor,
     passwordBdColor,
@@ -44,9 +44,9 @@ const Page1 = () => {
 
             <Text style={styles.label}>Confirm Password</Text>
             <TextInput
-            onChangeText={signupAction.handleConfirmPassword}
+            onChangeText={signupAction.handleconfirm_password}
             style={{...styles.input, borderColor: passwordBdColor[0], borderBottomColor: passwordBdColor[1]}}
-            value={confirmPassword}
+            value={confirm_password}
             placeholder="Confirm password"
             secureTextEntry
             />

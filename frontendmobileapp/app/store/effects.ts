@@ -1,8 +1,8 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import { fetchUserDataAction, persistUserInfoAction, storeUserDataAction } from "./profileSlice";
-import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, TokenResponse, UserProfile, UserQueryResponse } from "@/generated-api";
+import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse } from "@/generated-api";
 import { appSelect } from "./hooks";
-import { attemptRefreshFromLocalStorageAction, logInAction, LoginState, setLoginStateAction } from "./authSlice";
+import { attemptRefreshFromLocalStorageAction, logInAction, LoginState, setLoginStateAction, signupAction, setSignupMessage } from "./authSlice";
 import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { setUserId } from "./userSlice";
@@ -72,6 +72,20 @@ function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
 
 }
 
+function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
+  let request = action.payload;
+
+  try{
+    const signupResponse = ((yield call(AuthApiFactory().postSignup, request)) as AxiosResponse<SignupResponse>).data as SignupResponse;
+
+    yield put(setSignupMessage(signupResponse.message ?? ""));
+  }catch (error) {
+    console.error('Sign up failed', error);
+    
+    yield put(setSignupMessage(String(error)));
+  }
+}
+
 
 function* appSaga() {
   yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);
@@ -80,6 +94,7 @@ function* appSaga() {
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
   yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
+  yield takeEvery(signupAction.type, handleSignupRequest);
 }
 
 export default appSaga;

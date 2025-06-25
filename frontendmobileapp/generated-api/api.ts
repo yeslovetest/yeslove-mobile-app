@@ -424,6 +424,68 @@ export interface SetUserTypeRequest {
 /**
  * 
  * @export
+ * @interface SignupRequest
+ */
+export interface SignupRequest {
+    /**
+     * User\'s  email
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'email': string;
+    /**
+     * User\'s password
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'password': string;
+    /**
+     * User\'s password
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'confirm_password': string;
+    /**
+     * User\'s first name
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'first_name': string;
+    /**
+     * User\'s last name
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'last_name': string;
+    /**
+     * User\'s phone number
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'phone_number': string;
+    /**
+     * User\'s username
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'username': string;
+}    
+/**
+ * 
+ * @export
+ * @interface SignupResponse
+ */
+export interface SignupResponse{
+    /**
+     * Sign up response message
+     * @type {string}
+     * @memberof SignupResponse
+     */
+    'message'?: string;
+}
+/**
+ * 
+ * @export
  * @interface TokenResponse
  */
 export interface TokenResponse {
@@ -818,11 +880,13 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Keycloak handles user registration
+         * @summary Send new user credentials to Keycloak for user registration
+         * @param {SignupRequest} payload
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSignup: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postSignup: async (payload: SignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            assertParamExists('postSignup', 'payload', payload)
             const localVarPath = `/api/auth/signup`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -835,11 +899,12 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Content-Type'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration);
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -949,12 +1014,13 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Keycloak handles user registration
+         * @summary Register new user on Keycloak
+         * @param {SignupRequest} payload
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postSignup(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postSignup(options);
+        async postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postSignup(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postSignup']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1041,12 +1107,13 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Keycloak handles user registration
+         * @summary Send new user credentials to Keycloak for user registration
+         * @param {SignupRequest} payload
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSignup(options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postSignup(options).then((request) => request(axios, basePath));
+        postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
+            return localVarFp.postSignup(payload, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1144,13 +1211,14 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Keycloak handles user registration
+     * @summary Send new user credentials to Keycloak for user registration
+     * @param {SignupRequest} payload
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthApi
      */
-    public postSignup(options?: RawAxiosRequestConfig) {
-        return AuthApiFp(this.configuration).postSignup(options).then((request) => request(this.axios, this.basePath));
+    public postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).postSignup(payload, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

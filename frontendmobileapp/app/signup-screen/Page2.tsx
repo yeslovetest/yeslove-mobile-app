@@ -1,4 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { useAppSelector } from '../store/hooks';
 import { useSignup } from '@/hooks/signUpLogic';
 import styles from "../../Styles/page-styles/SignupStyles"
 import theme from '@/Styles/Variables';
@@ -11,13 +12,20 @@ const Page2 = () => {
   const {
     email,
     password,
-    confirmPassword,
+    confirm_password,
     pageNumber,
     emailBdColor,
     passwordBdColor,
+    usernameBdColor,
+    firstNameBdColor,
+    lastNameBdColor,
+    phoneBdColor,
     ...signupAction
   } = useSignup();
 
+  const signupEmail = useAppSelector((state) => state.auth.signupEmail);
+  const signupPassword = useAppSelector((state) => state.auth.signupPassword);
+  const signupConfirmPassword = useAppSelector((state) => state.auth.signupPassword);
 
   return (
     
@@ -27,35 +35,35 @@ const Page2 = () => {
 
         <Text style={styles.label}>First Name</Text>
         <TextInput
-        style={styles.input}
+        style={{...styles.input, borderColor: firstNameBdColor[0], borderBottomColor: firstNameBdColor[1]}}
         placeholder="Enter first name"
-        onChangeText={signupAction.handleFirstNameChange}
+        onChangeText={signupAction.handlefirst_nameChange}
         />
 
         <Text style={styles.label}>Last Name</Text>
         <TextInput
-        style={styles.input}
+        style={{...styles.input, borderColor: lastNameBdColor[0], borderBottomColor: lastNameBdColor[1]}}
         placeholder="Enter last name"
-        onChangeText={signupAction.handleLastNameChange}
+        onChangeText={signupAction.handlelast_nameChange}
         />
 
-        <Text style={styles.label}>Phone Number</Text>
+        <Text style={styles.label}>phone_number Number</Text>
         <TextInput
-        style={styles.input}
+        style={{...styles.input, borderColor: phoneBdColor[0], borderBottomColor: phoneBdColor[1]}}
         placeholder="Enter phone number"
         keyboardType='number-pad'
-        onChangeText={signupAction.handlePhoneChange}
+        onChangeText={signupAction.handlephone_numberChange}
         />
 
         <Text style={styles.label}>Username</Text>
         <TextInput
         onChangeText={signupAction.handleUsernameChange}
-        style={styles.input}
+        style={{...styles.input, borderColor: usernameBdColor[0], borderBottomColor: usernameBdColor[1]}}
         placeholder="Enter username"
         />
 
         <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={signupAction.handleSignup}>
+            <TouchableOpacity style={styles.button} onPress={() => signupAction.handleSignup(signupEmail, signupPassword, signupConfirmPassword)}>
             <Text style={styles.buttonText}>SIGN UP</Text>
             </TouchableOpacity>  
         </View>
