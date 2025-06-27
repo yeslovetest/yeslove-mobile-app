@@ -36,6 +36,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: theme.colors.primaryBlue,
   },
+  errorMessage: {
+    fontSize: 16,
+    margin: 5,
+    color: 'red',
+    fontWeight: '600',
+  },
   input: {
     width: '100%',
     height: 50,

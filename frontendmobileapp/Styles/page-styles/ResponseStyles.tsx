@@ -11,11 +11,9 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     width: theme.spacing.postWidth - 30,
-  
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 15,
-    display: "flex",
     alignItems: "center",
     borderBottomColor: theme.colors.primaryBlue,
     borderBottomWidth: 3,
@@ -25,7 +23,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 50,
     marginBottom: 20,
-    color: '#111',
+    color: theme.colors.blackText,
     display: "flex",
     justifyContent: "center",
     alignItems: "center"
@@ -37,10 +35,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 80,
     textAlign: 'center',
-    color: '#111',
+    color: theme.colors.blackText,
   },
 
-  button: {
+  baseButton: {
     backgroundColor: theme.colors.primaryBlue,
     paddingVertical: 12,
     paddingHorizontal: 40,
@@ -52,7 +50,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primaryBlue,
     
   },
-  buttonText: {
+  baseButtonText: {
     color: theme.colors.mainBkgColor,
     fontSize: 16,
     fontWeight: 'bold',
@@ -60,20 +58,10 @@ const styles = StyleSheet.create({
 
   backButton: {
     backgroundColor: theme.colors.mainBkgColor,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-    marginTop: 10,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    borderColor: theme.colors.primaryBlue,
   },
 
   backButtonText: {
     color: theme.colors.primaryBlue,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 
 });

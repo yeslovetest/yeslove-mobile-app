@@ -2,7 +2,7 @@ import { call, put, takeEvery } from "redux-saga/effects";
 import { fetchUserDataAction, persistUserInfoAction, storeUserDataAction } from "./profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse } from "@/generated-api";
 import { appSelect } from "./hooks";
-import { attemptRefreshFromLocalStorageAction, logInAction, LoginState, setLoginStateAction, signupAction, setSignupMessage } from "./authSlice";
+import { attemptRefreshFromLocalStorageAction, logInAction, LoginState, setLoginStateAction, signupAction, setSignupMessage, setErrorMessage } from "./authSlice";
 import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { setUserId } from "./userSlice";
@@ -32,6 +32,7 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     yield put(setLoginStateAction(LoginState.LOGGED_IN));
   }catch (error) {
     console.error('Login failed:', error);
+    yield put(setErrorMessage('user does not exist'));
   }
 }
 

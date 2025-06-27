@@ -30,12 +30,12 @@ const Page3 = () => {
 
                     <Text style={styles.label}>We have sent a verification link to you email address: {signupEmail}</Text>
 
-                    <TouchableOpacity style={styles.button} onPress={() => signupActions.handleLoginStateChange('refresh-login')}>
-                    <Text style={styles.buttonText}>Login after Verification</Text>
+                    <TouchableOpacity style={styles.baseButton} onPress={() => signupActions.handleLoginStateChange('refresh-login')}>
+                    <Text style={styles.baseButtonText}>Login after Verification</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.backButton} onPress={signupActions.moveToPrevious}>
-                    <Text style={styles.backButtonText}>Go Back</Text>
+                    <TouchableOpacity style={[styles.baseButton, styles.backButton]} onPress={signupActions.moveToPrevious}>
+                    <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
                     </TouchableOpacity>
 
                 </View>
@@ -48,26 +48,26 @@ const Page3 = () => {
                     <Text style={styles.title}>User already exists</Text>
 
 
-                    <TouchableOpacity style={styles.button} onPress={() => signupActions.handleLoginStateChange('refresh-login')}>
-                    <Text style={styles.buttonText}>Login</Text>
+                    <TouchableOpacity style={styles.baseButton} onPress={() => signupActions.handleLoginStateChange('refresh-login')}>
+                    <Text style={styles.baseButtonText}>Login</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.backButton} onPress={signupActions.moveToPrevious}>
-                    <Text style={styles.backButtonText}>Go Back</Text>
+                    <TouchableOpacity style={[styles.baseButton, styles.backButton]} onPress={signupActions.moveToPrevious}>
+                    <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
                     </TouchableOpacity>
 
                 </View>
             </ImageBackground>
         )} 
 
-        {(signupResponse.includes('500') || signupResponse.includes('400')) &&
+        {(signupResponse.includes('500') || signupResponse.includes('400')) || (signupResponse.includes('Error')) &&
             (
             <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
                 <View style={styles.innerContainer}>
                     <Text style={styles.title}>Sign up failed</Text>
 
-                    <TouchableOpacity style={styles.backButton} onPress={signupActions.moveToPrevious}>
-                    <Text style={styles.backButtonText}>Go Back</Text>
+                    <TouchableOpacity style={[styles.baseButton, styles.backButton]} onPress={signupActions.moveToPrevious}>
+                    <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
                     </TouchableOpacity>
 
                 </View>
