@@ -44,23 +44,16 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: theme.colors.primaryBlue,
   },
-  input: {
-    width: '100%',
-    height: 50,
-    borderColor: '#ccc',
-    borderBottomColor: theme.colors.primaryBlue,
-    borderBottomWidth: 2,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: theme.colors.mainBkgColor,
-    marginBottom: 15,
+    errorMessage: {
+    fontSize: 16,
+    margin: 5,
+    color: 'red',
+    fontWeight: '600',
   },
   buttonContainer: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    
   },
   button: {
     backgroundColor: theme.colors.mainBkgColor,

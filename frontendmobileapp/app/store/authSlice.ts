@@ -1,4 +1,4 @@
-import { LoginRequest } from "@/generated-api";
+import { LoginRequest, SignupRequest } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 
@@ -12,7 +12,8 @@ export enum LoginState{
 const SignupPageNo = 1;
 const authSlice = createSlice({
     name: "auth",
-    initialState: { loginState: LoginState.LOADING, SignupPageNo: 1}, //defines initial state
+    initialState: { loginState: LoginState.LOADING, SignupPageNo: 1, 
+        signupEmail: '', signupPassword: '', signupConfirmPassword: '', signupResponse: "",  errorMessage: ''}, //defines initial state
     reducers: {
         setLoginStateAction: (state, action: PayloadAction<LoginState>) => {
             state.loginState = action.payload; 
@@ -24,9 +25,26 @@ const authSlice = createSlice({
         },
         decreasePageNo: (state, action: PayloadAction<number>) => {
             state.SignupPageNo = action.payload - 1;
+        },
+        signupAction: (state, action: PayloadAction<SignupRequest>) => {},
+        setSignupMessage: (state, action: PayloadAction<string>) => {
+            state.signupResponse = action.payload;
+        },
+        setSignupEmail: (state, action: PayloadAction<string>) => {
+            state.signupEmail = action.payload;
+        },
+        setSignupPassword: (state, action: PayloadAction<string>) => {
+            state.signupPassword = action.payload;
+        },
+        setSignupConfirmPassword: (state, action: PayloadAction<string>) => {
+            state.signupConfirmPassword = action.payload;
+        },
+        setErrorMessage: (state, action: PayloadAction<string>) => {
+            state.errorMessage = action.payload;
         }
     },
 })
 
-export const { setLoginStateAction, logInAction, attemptRefreshFromLocalStorageAction, increasePageNo, decreasePageNo} = authSlice.actions; 
+export const { setLoginStateAction, logInAction, attemptRefreshFromLocalStorageAction, increasePageNo, decreasePageNo, signupAction, setSignupMessage,
+     setSignupEmail, setSignupPassword, setSignupConfirmPassword, setErrorMessage} = authSlice.actions; 
 export default authSlice.reducer;

@@ -19,6 +19,8 @@ const theme = {
         footerFontColor: 'rgb(100,100,100)',
         /*border colour for login & signup screen container footer  */
         footerBdColor: 'rgb(192, 187, 187)',
+        /*black font-colour used for headers and texts in different pages of the app*/
+        blackText: '#111',
         /*background colour of text boxes in individual event tabs */
         eventTextBackground: "#fefefe"
     },

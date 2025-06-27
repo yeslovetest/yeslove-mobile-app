@@ -1,6 +1,10 @@
-import { View, Text, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import Input from '@/components/signup-components/Input';
 import { useSignup } from '@/hooks/signUpLogic';
 import styles from "../../Styles/page-styles/SignupStyles"
+import { useEffect, useState } from 'react';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { setErrorMessage } from '../store/authSlice';
 
 
 const image = {
@@ -8,6 +12,7 @@ const image = {
 };
 
 const Page1 = () => {
+  const dispatch = useAppDispatch();
   const {
     email,
     password,
@@ -18,37 +23,53 @@ const Page1 = () => {
     ...signupAction
   } = useSignup();
 
+  const errorMessage = useAppSelector((state) => state.auth.errorMessage);
+
+  const [errorDisplay, setErrorDisplay ] = useState("none");
+  const hideError = () => {
+    dispatch(setErrorMessage(''));
+    setErrorDisplay('none');
+  }
+
+  useEffect(() => {
+    setErrorDisplay('flex');
+    const timer = setTimeout(() => {
+      hideError(); 
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [emailBdColor, passwordBdColor, errorMessage]);
 
   return (
     <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
         <View style={styles.innerContainer}>
         <Text style={styles.title}>SIGN UP TO YESLOVE!</Text>
 
+            <Text style={{...styles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
             <Text style={styles.label}>Email</Text>
-            <TextInput
-            style={{...styles.input, borderColor: emailBdColor[0], borderBottomColor: emailBdColor[1]}}
+            <Input
             placeholder="Enter email"
             keyboardType='email-address'
-            value={email}
+            borderColor={emailBdColor[0]}
+            borderBottomColor={emailBdColor[1]}
             onChangeText={signupAction.handleEmailChange}
-            />
+            /> 
 
             <Text style={styles.label}>Password</Text>
-            <TextInput
-            onChangeText={signupAction.handlePasswordChange}
-            style={{...styles.input, borderColor: passwordBdColor[0], borderBottomColor: passwordBdColor[1]}}
-            value={password}
+            <Input
             placeholder="Enter password"
-            secureTextEntry
+            borderColor={passwordBdColor[0]}
+            borderBottomColor={passwordBdColor[1]}
+            onChangeText={signupAction.handlePasswordChange}
+            secureTextEntry = {true}
             />
 
             <Text style={styles.label}>Confirm Password</Text>
-            <TextInput
-            onChangeText={signupAction.handleConfirmPassword}
-            style={{...styles.input, borderColor: passwordBdColor[0], borderBottomColor: passwordBdColor[1]}}
-            value={confirmPassword}
+            <Input
             placeholder="Confirm password"
-            secureTextEntry
+            borderColor={passwordBdColor[0]}
+            borderBottomColor={passwordBdColor[1]}
+            onChangeText={signupAction.handleConfirmPassword}
+            secureTextEntry = {true}
             />
 
             <TouchableOpacity style={styles.buttonNext} onPress={signupAction.moveToNext}>
