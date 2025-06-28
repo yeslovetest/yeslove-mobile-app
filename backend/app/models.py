@@ -9,29 +9,72 @@ from app import db  # ✅ Import the same db instance
 # 🚀 User Model (Keycloak Integrated)
 # -------------------------
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    keycloak_id = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    phone = db.Column(db.String(20), nullable=True)
-    address = db.Column(db.String(255), nullable=True)
-    website = db.Column(db.String(255), nullable=True)
-    birthday = db.Column(db.Date, nullable=True)  # Store as date
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
-    bio = db.Column(db.String(250), default="")
-    profile_pic = db.Column(db.String(200), default="default.jpg")
-    user_type = db.Column(db.String(20), default="standard")  # ✅ Defaulgt to "standard" or "professional"
+    id              = db.Column(db.Integer, primary_key=True)
+    keycloak_id     = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
+    username        = db.Column(db.String(50), unique=True, nullable=False)
+    email           = db.Column(db.String(100), unique=True, nullable=False)
+    phone           = db.Column(db.String(20), nullable=True)
+    address         = db.Column(db.String(255), nullable=True)
+    website         = db.Column(db.String(255), nullable=True)
+    birthday        = db.Column(db.Date, nullable=True)  # Store as date
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
+    bio             = db.Column(db.String(250), default="")
+    profile_pic     = db.Column(db.String(200), default="default.jpg")
+    user_type       = db.Column(db.String(20), default="standard")  # ✅ Defaulgt to "standard" or "professional"
+
 
     # ✅ Relationships
-    posts = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
-    followers = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
-    following = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
+    posts       = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
+    followers   = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
+    following   = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
 
     # ✅ One-to-One Relationship with ProfessionalDetails
     professional_details = db.relationship(
         "ProfessionalDetails", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
 
+# -------------------------
+# 🚀 Professional Details Model (One-to-One Relationship with User..)
+# -------------------------
+class ProfessionalDetails(db.Model):
+
+    __tablename__ = "professional_details"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False
+    )
+
+    license_body = db.Column(
+        db.String(20),
+        nullable=True,
+        comment="HCPC, BACP or UKCP"
+    )
+
+    license_number = db.Column(
+        db.String(100),
+        nullable=True,
+        comment="Professional license/registration number"
+    )
+
+    consent_license_data = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        comment="User consented to use and display license data"
+    )
+
+    specialization = db.Column(db.String(200), nullable=True)
+
+    # ✅ Relationship to User
+    user = db.relationship(
+        "User",
+        back_populates="professional_details",
+        single_parent=True  # ✅ Ensure only one `ProfessionalDetails` per `User`
+    )
 
 # -------------------------
 # 🚀 Post Model
@@ -81,24 +124,6 @@ class Follow(db.Model):
 
     # ✅ Unique Constraint (Prevent duplicate follows)
     __table_args__ = (db.UniqueConstraint("follower_id", "followed_id", name="unique_follow"),)
-
-
-# -------------------------
-# 🚀 Professional Details Model (One-to-One Relationship with User..)
-# -------------------------
-class ProfessionalDetails(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), unique=True, nullable=False)
-    license = db.Column(db.String(100), nullable=True)
-    specialization = db.Column(db.String(200), nullable=True)
-
-    # ✅ Relationship to User
-    user = db.relationship(
-        "User",
-        back_populates="professional_details",
-        single_parent=True  # ✅ Ensure only one `ProfessionalDetails` per `User`
-    )
-
 
 # -------------------------
 # 🚀 Chat Model

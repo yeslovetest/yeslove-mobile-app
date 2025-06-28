@@ -105,29 +105,53 @@ class Signup(Resource):
         "Creates a new KeyCloak user via Admin API"
         data = request.json or {}
 
-        email = data.get("email", "").lower().strip()
-        confrim_email = data.("confirm_email", "").lower().strip()
-        password = data.get("password")
-        confirm_password = data.get("confirm_password")
-        first_name = data.get("first_name")
-        last_name = data.get("last_name")
-        phone_number = data.get("phone_number")
-        username = data.get("username")
+        # Core fields
+        email                       = data.get("email", "").lower().strip()
+        confrim_email               = data.get("confirm_email", "").lower().strip()
+        password                    = data.get("password")
+        confirm_password            = data.get("confirm_password")
+        first_name                  = data.get("first_name")
+        last_name                   = data.get("last_name")
+        phone_number                = data.get("phone_number")
+        username                    = data.get("username")
+        user_type                   = data.get("user_type")
+
+        
+        # Professional only fileds
+        user_type                   = data.get("user_type")
+        license_body                = data.get("license_body")
+        license_number              = data.get("license_number")
+        consent_license_data        = data.get("consent_license_data")
         
         # Rejects malformed emails
         if not is_valid_email(email):
             return {"message" : "Invalid email address"}, 400
 
+        if email != confrim_email:
+            return {"message" : "Emails do not match"}, 400
+        
+        if password != confirm_password:
+            return {"message" : "Passwords do not match"}, 400
+
         # Sanity check to ensure all fields have inputs
-        missing = [k for k in ("email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")
+        missing = [k for k in ("email", "confirm_email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")
                    if not data.get(k)]
         
         if missing:
             return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
         
-        # Password match check
-        if password != confirm_password:
-            return {"message" : f"Password and confirm password do not match"}, 400
+        # If user is professional, require license data and consent
+        if user_type == "Professional":
+            prof_missing = [
+                k for k in ("license_body", "license_number", "consent_license_data")
+                if data.get(k) is None or data.get(k) == ""
+            ]
+        
+            if prof_missing:
+                return { "message" : "Professional users must provide: " + ", ".join(prof_missing)}, 400
+        
+            if consent_license_data != "Yes":
+                return {"message" : "You must consent to use and display tour license data."}, 400
         
         # Gets admin access token
         token_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/master/protocol/openid-connect/token"
@@ -169,6 +193,14 @@ class Signup(Resource):
 
         response = requests.post(create_user_url, json=user_payload, headers=headers)
 
+        if user_type == "Professional":
+            user_payload["attributes"].update({
+                "license_body": license_body,
+                "license_number" : license_number,
+                "consent_license_data" : str(consent_license_data)
+            })
+
+        # Debug and error handling 
         if response.status_code == 201:
             # Fetches the created user's ID
             get_users_url = f"{create_user_url}?username={username}"
