@@ -8,6 +8,8 @@ from app.utils import require_auth, is_valid_email
 
 
 
+
+
 api = Namespace("auth", description="API Endpoints")
 
 @api.route("/login")
@@ -191,14 +193,14 @@ class Signup(Resource):
             }]
         }
 
-        response = requests.post(create_user_url, json=user_payload, headers=headers)
-
         if user_type == "Professional":
             user_payload["attributes"].update({
                 "license_body": license_body,
                 "license_number" : license_number,
                 "consent_license_data" : str(consent_license_data)
             })
+
+        response = requests.post(create_user_url, json=user_payload, headers=headers)
 
         # Debug and error handling 
         if response.status_code == 201:
@@ -234,6 +236,32 @@ class Signup(Resource):
                     "details": send_email_response.text
                 }, send_email_response.status_code
             
+            from app.models import User, ProfessionalDetails, db
+            
+            # Creates a local user row
+            new_user = User(
+                keycloak_id  = user_id,
+                username     = username, 
+                email        = email,
+                phone_number = phone_number,
+                user_type = user_type.lower()
+
+            )
+            db.session.add(new_user)
+            db.session.flush() # Populates new_user.id 
+            
+            # Creates a professional user row
+            if user_type == "Professional":
+                prof = ProfessionalDetails(
+                    user_id=new_user.id,
+                    license_body=license_body,
+                    license_number=license_number,
+                    consent_license_data=(consent_license_data in ["yes", True])
+                )
+                db.session.add(prof)
+
+            db.session.commit()
+
             return {"message":"User created in Keycloak and email verification sent"},201
         
         elif response.status_code == 409:

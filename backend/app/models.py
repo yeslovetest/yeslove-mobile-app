@@ -13,7 +13,7 @@ class User(db.Model):
     keycloak_id     = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
     username        = db.Column(db.String(50), unique=True, nullable=False)
     email           = db.Column(db.String(100), unique=True, nullable=False)
-    phone           = db.Column(db.String(20), nullable=True)
+    phone_number    = db.Column(db.String(20), nullable=True)
     address         = db.Column(db.String(255), nullable=True)
     website         = db.Column(db.String(255), nullable=True)
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
@@ -68,6 +68,32 @@ class ProfessionalDetails(db.Model):
     )
 
     specialization = db.Column(db.String(200), nullable=True)
+
+    # Admin fields 
+    is_verified = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        comment="Has an admin approved this license?"
+    )
+
+    verified_at = db.Column(
+        db.DateTime,
+        nullable=True,
+        comment="When the admin clicked Approve"
+    )
+
+    next_reverify_date = db.Column(
+        db.Date, 
+        nullable=True,
+        comment="Date to send next reminder"
+    )
+
+    license_expiry_date = db.Column(
+        db.Date,
+        nullable=True,
+        comment="Offical expirey if known"
+    )
 
     # ✅ Relationship to User
     user = db.relationship(
