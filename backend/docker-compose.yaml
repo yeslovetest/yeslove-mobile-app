@@ -1,4 +1,4 @@
-
+version: '3.8'
 
 services:
   postgres:
@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   keycloak:
-    image: keycloak/keycloak:${KEYCLOAK_VERSION}
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
     container_name: keycloak_server
     ports:
       - "${PORT_KEYCLOAK}:8080"
