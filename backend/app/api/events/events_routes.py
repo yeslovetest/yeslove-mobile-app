@@ -18,18 +18,13 @@ def parse_iso_datetime(dt_str):
 
 @api.route("/event_ids")
 @api.doc(
-    description="""Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.
-                Returns:
-                event_ids - list of ids meeting query criteria,
-                total_events - total number of events in query criteria,
-                total_pages - total number of pages under query criteria,
-                current_page - current page
-                per_page - number of items per page"""
-)
+    description="Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. "
+                "Supports pagination.")
 class EventIds(Resource):
-    from .events_models import EventsQuery
+    from .events_models import EventsQuery, EventsResponse
 
     @api.expect(EventsQuery)
+    @api.response(code=200, description="Success", model=EventsResponse)
     def get(self):
         from app.models import Event
         try:
@@ -73,18 +68,11 @@ class EventIds(Resource):
 
 @api.route("/event_info")
 class EventInfo(Resource):
-    from .events_models import EventInfoQuery, AddEventRequest
+    from .events_models import EventInfoQuery, AddEventRequest, EventInfoResponse
 
     @api.expect(EventInfoQuery)
-    @api.doc(description="""Retrieve detailed info for one or more events by their IDs. Supports pagination.
-                         Returns:
-                         event_infos - list of dictionaries containing event info, address is also a dictionary,
-                                       ^ attendees is a list of user ids. 
-                         total_events - total number of events in query criteria,
-                         total_pages - total number of pages under query criteria,
-                         current_page - current page
-                         per_page - number of items per page"""
-             )
+    @api.response(code=200, description="Success", model=EventInfoResponse)
+    @api.doc(description="Retrieve detailed info for one or more events by their IDs. Supports pagination.")
     def get(self):
         from app.models import User, Address, Event
         try:
@@ -121,7 +109,7 @@ class EventInfo(Resource):
                         
                          
                          """)
-    @api.response(201, "Event created successfully")
+    @api.response(201, "Success")
     def post(self):
         from app.models import User, Address, Event, db
 
@@ -183,12 +171,13 @@ class EventInfo(Resource):
 
 @api.route("/event_attendees")
 class EventAttendees(Resource):
-    from .events_models import AddAttendeeRequest, AttendingQuery
+    from .events_models import AddAttendeeRequest, AttendingQuery, EventsResponse
 
     @require_auth()
     @api.expect(AddAttendeeRequest)
     @api.doc(description="""
     """)
+    @api.response(201, "Success")
     def post(self):
         from app.models import User, Event, db
 
@@ -196,7 +185,6 @@ class EventAttendees(Resource):
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
 
         if not data.get("user_id"):
-            user_id = user.id
             attendee = user
         else:
             user_id = data.get("user_id")
@@ -226,6 +214,7 @@ class EventAttendees(Resource):
     @api.expect(AttendingQuery)
     @api.doc(description="""Returns Event IDs of all events to be attended/already attended by the provided user id)
     """)
+    @api.response(200, "Success", EventsResponse)
     def get(self):
         from app.models import Event, User
 
@@ -272,6 +261,7 @@ class RemoveAttendee(Resource):
     @require_auth()
     @api.expect(RemoveAttendeeRequest)
     @api.doc(description="Remove a user from an event's attendees list")
+    @api.response(201, "Success")
     def post(self):
         from app.models import User, Event, db
 
@@ -298,17 +288,18 @@ class RemoveAttendee(Resource):
         event.attending.remove(attendee)
         db.session.commit()
 
-        return {"message": "User removed from event successfully"}, 200
+        return {"message": "User removed from event successfully"}, 201
 
 @api.route("/created_events")
 class CreatedEvents(Resource):
-    from .events_models import CreatedEventsQuery
+    from .events_models import CreatedEventsQuery, EventsResponse
 
     @require_auth()
     @api.expect(CreatedEventsQuery)
     @api.doc(description="""Returns list of event ids created by the given user ID (defaults to account making the 
                             request). Can specify type as 'upcoming', 'past' and 'all'.
                          """)
+    @api.response(200, "Success", EventsResponse)
     def get(self):
         from app.models import User, Event
 

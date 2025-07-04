@@ -1,18 +1,51 @@
 from .events_routes import api
 from flask_restx import fields
 
+AddressModelResponse = api.model("AddressModelResponse", {
+    "number": fields.String,
+    "street": fields.String,
+    "city": fields.String,
+    "county": fields.String,
+    "country": fields.String,
+    "post_code": fields.String
+})
+
+EventModelResponse = api.model("EventsModelResponse", {
+    "name": fields.String,
+    "description": fields.String,
+    "location": fields.String,
+    "event_time": fields.DateTime(dt_format="iso8601"),
+    "address": fields.Nested(AddressModelResponse),
+    "attendees": fields.List(fields.Integer)
+})
+
 EventsQuery = api.model("EventsQuery", {
     "start_time": fields.String(required=False, description="Start time filter in ISO format"),
     "end_time": fields.String(required=False, description="End time filter in ISO format"),
     "page": fields.Integer(required=False, description="Page Number, default = 1"),
     "per_page": fields.Integer(required=False, description="Number of Events per page, default = 20")
-}
-                        )
+})
+
+EventsResponse = api.model("EventsResponse", {
+    "event_ids": fields.List(fields.Integer, description="List of Event IDs"),
+    "total_events": fields.Integer(description="total number of events meeting query"),
+    "total_pages": fields.Integer(description="total number of pages meeting the query"),
+    "current_page": fields.Integer(description="current page number"),
+    "per_page": fields.Integer(description="number of events per page")
+})
 
 EventInfoQuery = api.model("EventInfoQuery", {
     "event_ids": fields.List(fields.Integer, required=True, description="takes list of Ids for event to be fetched"),
     "page": fields.Integer(required=False, description="Page Number, default = 1"),
     "per_page": fields.Integer(required=False, description="Number of Events per page, default = 20")
+})
+
+EventInfoResponse = api.model("EventInfoResponse", {
+    "event_infos": fields.Nested(EventModelResponse),
+    "total_events": fields.Integer(description="total number of events meeting query"),
+    "total_pages": fields.Integer(description="total number of pages meeting the query"),
+    "current_page": fields.Integer(description="current page number"),
+    "per_page": fields.Integer(description="number of events per page")
 })
 
 AddEventRequest = api.model("AddEventRequest", {
