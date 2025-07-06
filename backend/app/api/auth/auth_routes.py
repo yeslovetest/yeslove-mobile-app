@@ -237,6 +237,11 @@ class Signup(Resource):
                 }, send_email_response.status_code
             
             from app.models import User, ProfessionalDetails, db
+            from sqlalchemy.exc import IntegrityError
+
+            # Check to see if username already taken
+            if User.query.filter_by(username=username).first():
+                return {"message" : "Username already exists"}, 409
             
             # Creates a local user row
             new_user = User(
@@ -247,20 +252,26 @@ class Signup(Resource):
                 user_type = user_type.lower()
 
             )
-            db.session.add(new_user)
-            db.session.flush() # Populates new_user.id 
             
-            # Creates a professional user row
-            if user_type == "Professional":
-                prof = ProfessionalDetails(
-                    user_id=new_user.id,
-                    license_body=license_body,
-                    license_number=license_number,
-                    consent_license_data=(consent_license_data in ["yes", True])
-                )
-                db.session.add(prof)
+            try:
+                db.session.add(new_user)
+                db.session.flush()
 
-            db.session.commit()
+                # Creates a professional user row
+                if user_type == "Professional":
+                    prof = ProfessionalDetails(
+                        user_id=new_user.id,
+                        license_body=license_body,
+                        license_number=license_number,
+                        consent_license_data=(consent_license_data in ["yes", True])
+                    )
+                    db.session.add(prof)
+
+                db.session.commit()
+            
+            except(IntegrityError):
+                db.session.rollback
+                return {"message" : "Username already exist"}, 409
 
             return {"message":"User created in Keycloak and email verification sent"},201
         
