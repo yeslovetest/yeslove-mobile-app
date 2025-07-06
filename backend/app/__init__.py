@@ -57,4 +57,8 @@ def create_app(config_class=DevelopmentConfig):
     with app.app_context():
         get_keycloak_public_keys()
 
+    # Initalises professional user admin panel
+    from .admin import init_admin
+    init_admin(app)
+
     return app
