@@ -3,10 +3,10 @@ from flask import current_app, request
 from flask_restx import Namespace, Resource
 import requests
 
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
 from app.utils import require_auth, is_valid_email
 
-
+logger = setup_logger()
 
 
 
@@ -31,6 +31,8 @@ class Login(Resource):
         username = data.get("username")  # ✅ Corrected
         password = data.get("password")  # ✅ Corrected
 
+        logger.info(f"Login attempt -> username : {username}, IP : {request.remote_addr}")
+
         if not username or not password:
             logger.error("❌ Missing username or password")
             return {"message": "Username and password are required"}, 400
@@ -50,10 +52,12 @@ class Login(Resource):
         }
 
         response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
-        logger.info(f"Keycloak response: {response.status_code} - {response.text}")  # ✅ Debug response
-
+        
 
         if response.status_code == 200:
+
+            logger.info("✅ Keycloak login succeeded")
+
             token_data = response.json()
             access_token = token_data.get("access_token")
 
@@ -95,6 +99,9 @@ class Login(Resource):
 
             logger.info(f"✅ User {user.username} logged in successfully.")
             return token_data, 200
+        
+        else:
+            logger.warning(f"❌ Keycloak login failed → Status {response.status_code}: {response.text[:100]}...")
 
         logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code
@@ -125,14 +132,19 @@ class Signup(Resource):
         license_number              = data.get("license_number")
         consent_license_data        = data.get("consent_license_data")
         
+        logger.info(f"Signup attempt : {username}, type={user_type}")
+
         # Rejects malformed emails
         if not is_valid_email(email):
+            logger.warning(f"❌ Invalid email format → {email}")
             return {"message" : "Invalid email address"}, 400
 
         if email != confrim_email:
+            logger.warning(f"❌ Email mismatch → {email} != {confrim_email}")
             return {"message" : "Emails do not match"}, 400
         
         if password != confirm_password:
+            logger.warning("❌ Password mismatch")
             return {"message" : "Passwords do not match"}, 400
 
         # Sanity check to ensure all fields have inputs
@@ -140,6 +152,7 @@ class Signup(Resource):
                    if not data.get(k)]
         
         if missing:
+            logger.warning(f"⚠️ Missing signup fields -> {missing}")
             return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
         
         # If user is professional, require license data and consent
@@ -150,6 +163,7 @@ class Signup(Resource):
             ]
         
             if prof_missing:
+                logger.warning(f"⚠️ Missing professional fields → {prof_missing}")
                 return { "message" : "Professional users must provide: " + ", ".join(prof_missing)}, 400
         
             if consent_license_data != "Yes":
@@ -166,6 +180,7 @@ class Signup(Resource):
         token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
 
         if token_response.status_code != 200:
+            logger.error("❌ Keycloak admin token fetch failed")
             return {"message": "Failed to authenticate with Keycloak"},500
         
         admin_token = token_response.json().get("access_token")
@@ -199,8 +214,12 @@ class Signup(Resource):
                 "license_number" : license_number,
                 "consent_license_data" : str(consent_license_data)
             })
+        
+        logger.debug("🔑 Admin token acquired successfully")
 
         response = requests.post(create_user_url, json=user_payload, headers=headers)
+
+        logger.info(f"🧩 Keycloak create user response → {response.status_code}")
 
         # Debug and error handling 
         if response.status_code == 201:
@@ -218,9 +237,12 @@ class Signup(Resource):
             verify_payload = {
                 "requiredActions": ["VERIFY_EMAIL"]
             }
+            logger.info(f"✅ User {username} created successfully in Keycloak")
+
             patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers)
 
             if patch_response.status_code != 204:
+                logger.warning(f"⚠️ Failed to assign VERIFY_EMAIL for user {username}")
                 return {
                     "message": "User created, but failed to trigger email verification",
                     "details": patch_response.text
@@ -231,6 +253,7 @@ class Signup(Resource):
             send_email_response = requests.put(send_email_url, headers=headers)
 
             if send_email_response.status_code !=204:
+                logger.warning(f"⚠️ Failed to send verification email to {email}")
                 return {
                     "message": "User created and VERIFY_EMAIL action assigned, but failed to send email",
                     "details": send_email_response.text
@@ -241,6 +264,7 @@ class Signup(Resource):
 
             # Check to see if username already taken
             if User.query.filter_by(username=username).first():
+                logger.warning(f"⚠️ Signup rejected → Username {username} already exists in local DB")
                 return {"message" : "Username already exists"}, 409
             
             # Creates a local user row
@@ -271,6 +295,7 @@ class Signup(Resource):
             
             except(IntegrityError):
                 db.session.rollback
+                logger.error(f"❌ Database error when saving user {username}: {e}")
                 return {"message" : "Username already exist"}, 409
 
             return {"message":"User created in Keycloak and email verification sent"},201
@@ -303,8 +328,12 @@ class Logout(Resource):
 
         response = requests.post(keycloak_logout_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
 
+        logger.info("User logout attempt via refresh token")
+
         if response.status_code == 204:
             return {"message" : "Logged out successfully"}, 200
+        
+        logger.error(f"Logout failed : {response.text}")
         return {"message" : "Logout failed", "details" : response.text}, response.status_code
     
 @api.route("/refresh_token")
@@ -330,7 +359,9 @@ class RefreshToken(Resource):
 
         response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
 
+        logger.info(f"Token refresh requested")
         if response.status_code == 200:
+            logger.error(f"Token refresh failed : {response.status_code}, {response.text}")
             return response.json(), 200
         
         return {"message": "Failed to refresh token"}, response.status_code
@@ -415,8 +446,11 @@ class ChangePassword(Resource):
 
         response = requests.put(keycloak_admin_url, json=payload, headers=headers)
 
+        logger.info(f"Password change requested for user {user.username}")
+        
         if response.status_code == 204:
             return {"message": "Password changed successfully"}, 200
+        logger.error(f"Password change failed for {user.username} : {response.text}")
         return {"message": "Failed to change password"}, response.status_code
 
 
@@ -439,7 +473,7 @@ class ResetPassword(Resource):
         keycloak_reset_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/auth"
         payload = {
             "client_id": current_app.config["KEYCLOAK_CLIENT_ID"],
-            "redirect_uri": current_app.config["FRONTEND_URL"],
+            "redirect_uri": current_app.config["FRONTEND_URI"],
             "response_type": "code",
             "scope": "openid",
             "kc_action": "UPDATE_PASSWORD",
@@ -448,8 +482,11 @@ class ResetPassword(Resource):
 
         response = requests.post(keycloak_reset_url, json=payload)
 
+        logger.info(f"Password reset request for email {email}")
+
         if response.status_code == 200:
             return {"message": "Password reset email sent"}, 200
+        logger.error(f"Password rest failed for {email} : {response.text}")
         return {"message": "Failed to send password reset email"}, response.status_code
 
 
@@ -477,9 +514,14 @@ class DeleteAccount(Resource):
 
         response = requests.delete(keycloak_delete_url, headers=headers)
 
+        logger.info(f"Account deletion requested for user {user.username}")
+
         if response.status_code == 204:
+            logger.info(f"Account deleted successfully for {user.username}")
             db.session.delete(user)
             db.session.commit()
+        else:
+            logger.error(f"Account deletion failed: {response.status_code} - {response.text}")
 
 
 

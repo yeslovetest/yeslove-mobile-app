@@ -6,9 +6,10 @@ from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, jsonify
 from functools import wraps
-from app.logging_setup import logger  # ✅ Import the logger
+from app.logging_setup import setup_logger  # ✅ Import the logger
 from datetime import datetime
 
+logger = setup_logger()
 # -------------------------
 # 🔹 Keycloak Configuration
 # -------------------------
