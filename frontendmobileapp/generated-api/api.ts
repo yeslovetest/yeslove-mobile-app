@@ -71,6 +71,50 @@ export interface ChangePasswordRequest {
 /**
  * 
  * @export
+ * @interface Comment
+ */
+export interface Comment {
+    /**
+     * Comment ID
+     * @type {number}
+     * @memberof Comment
+     */
+    'id'?: number;
+    /**
+     * content of the comment
+     * @type {string}
+     * @memberof Comment
+     */
+    'content'?: string;
+    /**
+     * Username of the author
+     * @type {string}
+     * @memberof Comment
+     */
+    'author'?: string;
+    /**
+     * Timestamp of the Comment in ISO format
+     * @type {string}
+     * @memberof Comment
+     */
+    'timestamp'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface CommentResponse
+ */
+export interface CommentResponse {
+    /**
+     * list containing all comments to a Post
+     * @type {Array<Comment>}
+     * @memberof CommentResponse
+     */
+    'comments'?: Array<Comment>;
+}
+/**
+ * 
+ * @export
  * @interface ContactInfo
  */
 export interface ContactInfo {
@@ -299,6 +343,12 @@ export interface Post {
      * @memberof Post
      */
     'comments'?: number;
+    /**
+     * current user reaction to post
+     * @type {string}
+     * @memberof Post
+     */
+    'current_user_reaction'?: string;
 }
 /**
  * 
@@ -337,6 +387,63 @@ export interface ProfileVisibilitySettings {
      * @memberof ProfileVisibilitySettings
      */
     'category': string;
+}
+/**
+ * 
+ * @export
+ * @interface Reaction
+ */
+export interface Reaction {
+    /**
+     * Reaction ID
+     * @type {number}
+     * @memberof Reaction
+     */
+    'id'?: number;
+    /**
+     * Reaction type
+     * @type {string}
+     * @memberof Reaction
+     */
+    'type'?: string;
+    /**
+     * the name of the user who reacted
+     * @type {string}
+     * @memberof Reaction
+     */
+    'author'?: string;
+    /**
+     * the profile pic of the user who reacted
+     * @type {string}
+     * @memberof Reaction
+     */
+    'picture'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ReactionResponse
+ */
+export interface ReactionResponse {
+    /**
+     * list containing all reactions to a Post
+     * @type {Array<Reaction>}
+     * @memberof ReactionResponse
+     */
+    'reactions'?: Array<Reaction>;
+}
+/**
+ * 
+ * @export
+ * @interface PostReactionToPostResponse
+ */
+export interface PostReactionToPostResponse{
+    /**
+     * response after posting a reaction
+     * @type {string}
+     * @memberof PostReactionToPostResponse
+     */
+    'message'?: string;
 }
 /**
  * 
@@ -1490,6 +1597,37 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @summary Fetch all reactions for a post
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getReactions: async (postId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('getReactions', 'postId', postId)
+            const localVarPath = `/api/feed/post/{post_id}/reactions`
+                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Fetch all followers of a user
          * @param {string} keycloakId 
          * @param {object} payload 
@@ -1794,10 +1932,23 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetComments(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetComments(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetComments(postId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetComments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Fetch all reactions for a post
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getReactions(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ReactionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getReactions(postId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FeedApi.getReactions']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1891,7 +2042,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PostReactionToPostResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postReactToPost(postId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postReactToPost']?.[localVarOperationServerIndex]?.url;
@@ -1924,8 +2075,18 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetComments(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetComments(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<CommentResponse> {
             return localVarFp.getGetComments(postId, options).then((request) => request(axios, basePath));
+        },
+         /**
+         * 
+         * @summary Fetch all reactions for a post
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getReactions(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<ReactionResponse> {
+            return localVarFp.getReactions(postId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2000,7 +2161,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<PostReactionToPostResponse> {
             return localVarFp.postReactToPost(postId, payload, options).then((request) => request(axios, basePath));
         },
     };

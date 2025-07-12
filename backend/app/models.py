@@ -58,6 +58,8 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    user = db.relationship('User', backref='comments')
+
 
 # -------------------------
 # 🚀 Like Model (Prevent Duplicate Likes)
