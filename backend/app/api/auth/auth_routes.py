@@ -8,6 +8,8 @@ from app.utils import require_auth
 
 
 
+
+
 api = Namespace("auth", description="API Endpoints")
 
 @api.route("/login")
@@ -100,8 +102,182 @@ class Login(Resource):
 @api.route("/signup")
 class Signup(Resource):
     def post(self):
-        """Keycloak handles user registration."""
-        return {"message": "User signup is handled by Keycloak"}, 400
+        "Creates a new KeyCloak user via Admin API"
+        data = request.json or {}
+
+        # Core fields
+        email                       = data.get("email", "").lower().strip()
+        confrim_email               = data.get("confirm_email", "").lower().strip()
+        password                    = data.get("password")
+        confirm_password            = data.get("confirm_password")
+        first_name                  = data.get("first_name")
+        last_name                   = data.get("last_name")
+        phone_number                = data.get("phone_number")
+        username                    = data.get("username")
+        user_type                   = data.get("user_type")
+
+        
+        # Professional only fileds
+        user_type                   = data.get("user_type")
+        license_body                = data.get("license_body")
+        license_number              = data.get("license_number")
+        consent_license_data        = data.get("consent_license_data")
+        
+        # Rejects malformed emails
+        if not is_valid_email(email):
+            return {"message" : "Invalid email address"}, 400
+
+        if email != confrim_email:
+            return {"message" : "Emails do not match"}, 400
+        
+        if password != confirm_password:
+            return {"message" : "Passwords do not match"}, 400
+
+        # Sanity check to ensure all fields have inputs
+        missing = [k for k in ("email", "confirm_email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")
+                   if not data.get(k)]
+        
+        if missing:
+            return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
+        
+        # If user is professional, require license data and consent
+        if user_type == "Professional":
+            prof_missing = [
+                k for k in ("license_body", "license_number", "consent_license_data")
+                if data.get(k) is None or data.get(k) == ""
+            ]
+        
+            if prof_missing:
+                return { "message" : "Professional users must provide: " + ", ".join(prof_missing)}, 400
+        
+            if consent_license_data != "Yes":
+                return {"message" : "You must consent to use and display tour license data."}, 400
+        
+        # Gets admin access token
+        token_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/master/protocol/openid-connect/token"
+        payload = {
+            "grant_type" : "password",
+            "client_id" : "admin-cli",
+            "username" : current_app.config["KEYCLOAK_ADMIN_USER"],
+            "password" : current_app.config["KEYCLOAK_ADMIN_PASS"],
+        }
+        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+
+        if token_response.status_code != 200:
+            return {"message": "Failed to authenticate with Keycloak"},500
+        
+        admin_token = token_response.json().get("access_token")
+
+        # Create User
+        create_user_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users"
+        headers = {
+            "Authorization": f"Bearer {admin_token}",
+            "Content-Type": "application/json"
+        }
+
+        user_payload = {
+            "username":username,
+            "email":email,
+            "firstName" : first_name,
+            "lastName" : last_name,
+            "enabled": True,
+            "attributes" : {
+                "phone_number" : phone_number
+            },
+            "credentials":[{
+                "type":"password",
+                "value":password,
+                "temporary":False
+            }]
+        }
+
+        if user_type == "Professional":
+            user_payload["attributes"].update({
+                "license_body": license_body,
+                "license_number" : license_number,
+                "consent_license_data" : str(consent_license_data)
+            })
+
+        response = requests.post(create_user_url, json=user_payload, headers=headers)
+
+        # Debug and error handling 
+        if response.status_code == 201:
+            # Fetches the created user's ID
+            get_users_url = f"{create_user_url}?username={username}"
+            get_response = requests.get(get_users_url, headers=headers)
+
+            if get_response.status_code != 200 or not get_response.json():
+                return {"message" : "User created, but failed to retrieve user ID"}, 500
+            
+            user_id = get_response.json()[0]["id"]
+
+            # Assigns VERIFY_EMAIL as a required action
+            verify_email_url = f"{create_user_url}/{user_id}"
+            verify_payload = {
+                "requiredActions": ["VERIFY_EMAIL"]
+            }
+            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers)
+
+            if patch_response.status_code != 204:
+                return {
+                    "message": "User created, but failed to trigger email verification",
+                    "details": patch_response.text
+                }, patch_response.status_code
+            
+            # Triggers email validation 
+            send_email_url = f"{create_user_url}/{user_id}/send-verify-email"
+            send_email_response = requests.put(send_email_url, headers=headers)
+
+            if send_email_response.status_code !=204:
+                return {
+                    "message": "User created and VERIFY_EMAIL action assigned, but failed to send email",
+                    "details": send_email_response.text
+                }, send_email_response.status_code
+            
+            from app.models import User, ProfessionalDetails, db
+            from sqlalchemy.exc import IntegrityError
+
+            # Check to see if username already taken
+            if User.query.filter_by(username=username).first():
+                return {"message" : "Username already exists"}, 409
+            
+            # Creates a local user row
+            new_user = User(
+                keycloak_id  = user_id,
+                username     = username, 
+                email        = email,
+                phone_number = phone_number,
+                user_type = user_type.lower()
+
+            )
+            
+            try:
+                db.session.add(new_user)
+                db.session.flush()
+
+                # Creates a professional user row
+                if user_type == "Professional":
+                    prof = ProfessionalDetails(
+                        user_id=new_user.id,
+                        license_body=license_body,
+                        license_number=license_number,
+                        consent_license_data=(consent_license_data in ["yes", True])
+                    )
+                    db.session.add(prof)
+
+                db.session.commit()
+            
+            except(IntegrityError):
+                db.session.rollback
+                return {"message" : "Username already exist"}, 409
+
+            return {"message":"User created in Keycloak and email verification sent"},201
+        
+        elif response.status_code == 409:
+            return {"message":"User already exists"},409
+        else:
+            print("DEBUG → Keycloak error:", response.status_code, response.text)
+            return {"message":"Failed to create user", "details": response.text}, response.status_code
     
 @api.route("/logout")
 class Logout(Resource):
