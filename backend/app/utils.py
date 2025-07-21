@@ -121,6 +121,7 @@ def require_auth():
                 "keycloak_id": keycloak_id,
                 "email": decoded_token.get("email"),
                 "username": decoded_token.get("preferred_username"),
+                "realm_access": decoded_token.get("realm_access", {})  # <-- Add this line
             }
 
             logger.info(f"🔹 User authenticated: {request.user['username']} ({request.user['keycloak_id']})")
