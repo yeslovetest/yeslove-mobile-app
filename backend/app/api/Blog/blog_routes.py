@@ -2,25 +2,26 @@ from flask import request
 from flask_restx import Namespace, Resource
 from app.logging_setup import logger
 from app.utils import require_auth
-from .blog_models import CreateBlogPost
-from app.models import BlogPost, User, db
 from datetime import datetime
 
-api = Namespace("Blog", description="API Endpoints")
+api = Namespace("blog", description="API Endpoints")
 
 
-@api.route("/admin/blog-post")
+@api.route("/blog-post")
 class CreateBlog(Resource):
+    from .blog_models import CreateBlogPost
     """Endpoint for creating blog posts for the Get Educated page (Admins only)."""   
-
     @require_auth()
     @api.expect(CreateBlogPost)
     def post(self):
         """Create a blog post for the Get Educated page (Admins only)."""
+        from app.models import BlogPost, User, db
         try:
-            # ✅ Check for admin role
-            roles = request.user.get("realm_access", {}).get("roles", [])
-            if "admin" not in roles:
+            # ✅ Get Keycloak roles and log them
+            keycloak_roles = request.user.get("realm_access", {}).get("roles", [])
+            logger.info(f"User roles from Keycloak: {', '.join(keycloak_roles) if keycloak_roles else 'No roles found'}")
+
+            if "admin" not in keycloak_roles:
                 logger.warning(f"Unauthorized blog post creation attempt by user {request.user.get('keycloak_id')}")
                 return {"message": "Access denied. Admins only."}, 403
 

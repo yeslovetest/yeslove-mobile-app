@@ -12,7 +12,7 @@ from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
-
+from app.api.blog.blog_routes import api as blog_api
 
 
 # Load environment variables
@@ -50,6 +50,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(auth_api, path="/api/auth")
     api.add_namespace(feed_api, path="/api/feed")
     api.add_namespace(chat_api, path="/api/chat")
+    api.add_namespace(blog_api, path="/api/blog")
 
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
 
