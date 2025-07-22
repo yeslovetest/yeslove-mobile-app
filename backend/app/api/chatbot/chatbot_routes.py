@@ -18,8 +18,8 @@ class SendMessage(Resource):
         data = request.json  # <-- always executed
 
         if not user:
-            # return {"message": "User not found"}, 404
-            pass  # or handle accordingly
+            return {"message": "User not found"}, 404
+            pass
 
         user_message = data.get("message", "")
         history = data.get("history", [])
