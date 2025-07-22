@@ -83,9 +83,11 @@ class CreatePost(Resource):
     @api.response(201, "Post created successfully")
     def post(self):
         """Create a new post."""
-        from app.models import User, Post, db
+        from app.models import User, Post, Follow, db
+        from app.notifications import send_push_notification_to_users
+
         data = request.json
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()  # ✅ Use Keycloak UUID
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
 
@@ -95,6 +97,20 @@ class CreatePost(Resource):
         post = Post(content=data["content"], user_id=user.id)
         db.session.add(post)
         db.session.commit()
+
+        # --- Send notification to all followers ---
+        follower_links = Follow.query.filter_by(followed_id=user.id).all()
+        follower_user_ids = [f.follower_id for f in follower_links]
+        try:
+            send_push_notification_to_users(
+                user_ids=follower_user_ids,
+                title="New Post",
+                message=f"{user.username} just posted: {data['content'][:50]}",
+                data={"post_id": post.id}
+            )
+        except Exception as notify_err:
+            logger.error(f"Failed to send push notification for post {post.id}: {notify_err}")
+
         return {"message": "Post created successfully"}, 201
     
 # -------------------------

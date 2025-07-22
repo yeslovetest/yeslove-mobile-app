@@ -13,8 +13,10 @@ from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
 from app.api.blog.blog_routes import api as blog_api
+from app.api.deviceToken.device_token_routes import api as device_token_api
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
+
 
 # Load environment variables
 load_dotenv()
@@ -53,7 +55,8 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(feed_api, path="/api/feed")
     api.add_namespace(chat_api, path="/api/chat")
     api.add_namespace(blog_api, path="/api/blog")
-    api.add_namespace(chatbot_api, path="/api/chatbot")  
+    api.add_namespace(device_token_api, path="/api/device")
+    api.add_namespace(chatbot_api, path="/api/chatbot")
 
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
     
