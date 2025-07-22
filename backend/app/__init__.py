@@ -12,6 +12,7 @@ from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
+from app.api.blog.blog_routes import api as blog_api
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
 
@@ -45,32 +46,15 @@ def create_app(config_class=DevelopmentConfig):
     app.config["KEYCLOAK_CERTS_URL"] = config_class.keycloak_certs_url()
 
     # 📊 Initialize API
-    #api = Api(app, title="YesLove API", version="1.0", doc="/swagger")
+    api = Api(app, title="YesLove API", version="1.0", doc="/swagger")
 
-    authorizations = {
-    'Bearer Auth': {
-        'type': 'apiKey',
-        'in': 'header',
-        'name': 'Authorization',
-        'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"'
-    }
-        }
-
-    api = Api(
-        app,
-        version='1.0',
-        title='YesLove API',
-        description='API documentation',
-        authorizations=authorizations,
-        security='Bearer Auth',
-        doc="/swagger"
-    )
     api.add_namespace(profile_api, path="/api/profile")
     api.add_namespace(auth_api, path="/api/auth")
     api.add_namespace(feed_api, path="/api/feed")
     api.add_namespace(chat_api, path="/api/chat")
-    api.add_namespace(chatbot_api, path="/api/chatbot")
-    
+    api.add_namespace(blog_api, path="/api/blog")
+    api.add_namespace(chatbot_api, path="/api/chatbot")  
+
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
     
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
@@ -78,5 +62,10 @@ def create_app(config_class=DevelopmentConfig):
         get_keycloak_public_keys()
 
     app.chatbot = Chatbot() #initializing the chatbot
+    
+    # Initalises professional user admin panel
+    from .admin import init_admin
+    init_admin(app)
+
     
     return app
