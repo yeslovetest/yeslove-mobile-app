@@ -199,3 +199,10 @@ class BlogPost(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     image_url = db.Column(db.String(500))  # Optional image
+    
+class DeviceToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    token = db.Column(db.String(255), unique=True, nullable=False)
+    platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
