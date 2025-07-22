@@ -15,7 +15,7 @@ class SendMessage(Resource):
         from app.models import User
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
-            #return {"message": "User not found"}, 404
+            return {"message": "User not found"}, 404
 
         data = request.json
         user_message = data.get("message", "")
