@@ -19,6 +19,7 @@ import { TabType } from "./store/navigationSlice";
 import EventsPage from "./tabs/events";
 import IndividualEvent from "@/components/events-components/IndividualEvent";
 import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
+import IndividualPost from "@/components/home-components/IndividualPost";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -58,7 +59,8 @@ const App = () => {
               EVENTS: <EventsPage></EventsPage>,
               PROFILE: <ProfilePage></ProfilePage>,
               INDIVIDUAL_EVENT: <IndividualEvent />,
-              INDIVIDUAL_BLOG: <IndividualBlog />
+              INDIVIDUAL_BLOG: <IndividualBlog />,
+              INDIVIDUAL_POST: <IndividualPost />,
             }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>

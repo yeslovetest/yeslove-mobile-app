@@ -17,7 +17,7 @@ class Feed(Resource):
     @api.response(code=200, description="", model=FeedResponse)
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
-        from app.models import User, Post, Like
+        from app.models import User, Post, Like, Reaction
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
@@ -43,6 +43,13 @@ class Feed(Resource):
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
 
+        post_ids = [post.id for post in posts]
+
+        # Fetch all reactions by the current user for these posts and create map for quick lookup
+        reactions = Reaction.query.filter(
+            Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
+        reaction_map = {reaction.post_id: reaction for reaction in reactions}
+
         return {
             "posts": [{
                 "id": post.id,
@@ -53,7 +60,8 @@ class Feed(Resource):
                 "image": post.image,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
-                "comments": len(post.comments)
+                "comments": len(post.comments),
+                "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
                 "page": paginated_posts.page,
@@ -104,7 +112,27 @@ class CreatePost(Resource):
             logger.error(f"Failed to send push notification for post {post.id}: {notify_err}")
 
         return {"message": "Post created successfully"}, 201
-
+    
+# -------------------------
+# 🚀 Reaction ROUTES
+# -------------------------
+ 
+@api.route("/post/<int:post_id>/reactions")
+class GetReactions(Resource):
+    def get(self, post_id):
+        """Fetch all reactions for a post."""
+        from app.models import Reaction
+        reactions = Reaction.query.filter_by(post_id=post_id).all()
+        return {
+            "reactions": [
+                {
+                    "id": reaction.id,
+                    "type": reaction.reaction_type,
+                    "author": reaction.user.username,
+                    "picture": reaction.user.profile_pic,
+                }
+            for reaction in reactions]
+            }, 200
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
     from .feed_models import ReactionRequest
@@ -207,16 +235,17 @@ class GetComments(Resource):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
-        return [
-            {
-                "id": comment.id,
-                "content": comment.content,
-                "author": comment.user.username,
-                "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
-            }
-            for comment in comments
-        ], 200
-
+        return {
+            "comments": [
+                {
+                    "id": comment.id,
+                    "content": comment.content,
+                    "author": comment.user.username,
+                    "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
+                }
+            for comment in comments]
+            }, 200
+    
 
 # -------------------------
 # 🚀 FOLLOW ROUTES
