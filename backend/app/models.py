@@ -206,7 +206,6 @@ class Reaction(db.Model):
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
-
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -258,3 +257,13 @@ class Address(db.Model):
             "country": self.country,
             "post_code": self.post_code
         }
+
+# ------------------------- Create BlogPost Model -------------------------
+class BlogPost(db.Model):
+    __tablename__ = "blog_posts"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    image_url = db.Column(db.String(500))  # Optional image
