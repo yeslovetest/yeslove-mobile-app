@@ -1,4 +1,4 @@
-import { LoginRequest, SignupRequest } from "@/generated-api";
+import { LoginRequest, SignupRequest, ChangePasswordRequest } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 
@@ -13,7 +13,8 @@ const SignupPageNo = 1;
 const authSlice = createSlice({
     name: "auth",
     initialState: { loginState: LoginState.LOADING, SignupPageNo: 1, 
-        signupEmail: '', signupPassword: '', signupConfirmPassword: '', signupResponse: "",  errorMessage: ''}, //defines initial state
+        signupEmail: '', signupPassword: '', signupConfirmPassword: '', 
+        signupResponse: "",  errorMessage: '', message: ''}, //defines initial state
     reducers: {
         setLoginStateAction: (state, action: PayloadAction<LoginState>) => {
             state.loginState = action.payload; 
@@ -41,10 +42,15 @@ const authSlice = createSlice({
         },
         setErrorMessage: (state, action: PayloadAction<string>) => {
             state.errorMessage = action.payload;
-        }
+        },
+        setUserPassword: (state, action: PayloadAction<ChangePasswordRequest>) => {},
+        setMessage: (state, action: PayloadAction<string>) => {
+            state.message = action.payload;
+        },
     },
 })
 
 export const { setLoginStateAction, logInAction, attemptRefreshFromLocalStorageAction, increasePageNo, decreasePageNo, signupAction, setSignupMessage,
-     setSignupEmail, setSignupPassword, setSignupConfirmPassword, setErrorMessage} = authSlice.actions; 
+     setSignupEmail, setSignupPassword, setSignupConfirmPassword, 
+     setErrorMessage, setUserPassword, setMessage} = authSlice.actions; 
 export default authSlice.reducer;

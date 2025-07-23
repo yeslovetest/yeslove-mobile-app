@@ -286,6 +286,19 @@ export interface LoginRequest {
 /**
  * 
  * @export
+ * @interface LogoutRequest
+ */
+export interface LogoutRequest {
+    /**
+     * User\'s refresh token
+     * @type {string}
+     * @memberof LogoutRequest
+     */
+    'refresh_token': string;
+}
+/**
+ * 
+ * @export
  * @interface Post
  */
 export interface Post {
@@ -844,11 +857,11 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {object} payload 
+         * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postLogout: async (payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postLogout: async (payload: LogoutRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'payload' is not null or undefined
             assertParamExists('postLogout', 'payload', payload)
             const localVarPath = `/api/auth/logout`;
@@ -1070,11 +1083,11 @@ export const AuthApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {object} payload 
+         * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postLogout(payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postLogout(payload: LogoutRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postLogout(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postLogout']?.[localVarOperationServerIndex]?.url;
@@ -1175,11 +1188,11 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {object} payload 
+         * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postLogout(payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        postLogout(payload: LogoutRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postLogout(payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1271,12 +1284,12 @@ export class AuthApi extends BaseAPI {
     /**
      * 
      * @summary Logout user from Keycloak
-     * @param {object} payload 
+     * @param {LogoutRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthApi
      */
-    public postLogout(payload: object, options?: RawAxiosRequestConfig) {
+    public postLogout(payload: LogoutRequest, options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).postLogout(payload, options).then((request) => request(this.axios, this.basePath));
     }
 

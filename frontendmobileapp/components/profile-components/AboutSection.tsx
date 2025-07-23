@@ -90,7 +90,8 @@ const AboutSection = () => {
         <View style={styles.aboutNavBarContainer}>
           <View style={styles.aboutNavBar}>
             {aboutItems.map((tab) => (
-              <TouchableOpacity key={tab} style={[styles.aboutItem, activeAboutTab === tab && styles.activeAboutItem]} onPress={() => dispatch(setActiveAboutTabAction(tab))}>
+              <TouchableOpacity key={tab} style={[styles.aboutItem, activeAboutTab === tab && styles.activeAboutItem]} 
+              onPress={() => dispatch(setActiveAboutTabAction(tab))}>
                 <Text style={[styles.navText, activeAboutTab === tab && styles.activeAboutNavText]}>{tab}</Text>
                 {activeAboutTab === tab && <View style={styles.activeIndicator} />}
               </TouchableOpacity>

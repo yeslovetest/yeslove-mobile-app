@@ -91,8 +91,6 @@ const Post = (props: Props) => {
             <View style={styles.seeLessAndLikeContainer} onPointerLeave={() => setPopUpState('hidden')}>
                 <View style={{...styles.likeButtonContainer, backgroundColor: 'white'}} >
                     
-                    
-                    
                     <View style={{...styles.reactionPopUp, visibility: popUpState}}
                           onPointerLeave={() => setPopUpState('hidden')}>
                         <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('like')} >
@@ -107,7 +105,6 @@ const Post = (props: Props) => {
                     </View>
 
                     
-
                     <TouchableOpacity style={[styles.likeIcon, styles.reactionIcon]} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
                         {(reactionType === 'default') && 
                             (<Ionicons   name="thumbs-up-outline" size={24} color='black' />)
