@@ -36,6 +36,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: theme.colors.primaryBlue,
   },
+  errorMessage: {
+    fontSize: 16,
+    margin: 5,
+    color: 'red',
+    fontWeight: '600',
+  },
   input: {
     width: '100%',
     height: 50,
@@ -45,11 +51,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mainBkgColor,
     marginBottom: 15,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mainBkgColor,
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
@@ -63,6 +69,21 @@ const styles = StyleSheet.create({
   buttonText: {
     color: theme.colors.primaryBlue,
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  containerFooter: {
+    textAlign: 'center',
+    color: theme.colors.footerFontColor,
+    marginTop: 30,
+    paddingTop: 12,
+    fontSize: 16,
+    borderTopWidth: 1,
+    borderColor: theme.colors.footerBdColor,
+    width: '100%',
+  },
+  footerLink: {
+    color: theme.colors.primaryBlue,
     fontWeight: 'bold',
   },
 });

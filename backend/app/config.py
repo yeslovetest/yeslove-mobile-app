@@ -20,14 +20,21 @@ class Config:
 class DevelopmentConfig(Config):
     """Development Configuration"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///dev.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI", "sqlite:///dev.db")
 
     # ✅ Keycloak Configuration
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")
     KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
+<<<<<<< HEAD
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "S7G8tim4Xv1e0pfIy63q1uyz3WOVEdYX")
+=======
+    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "fBRbYdMRY7L8V3RY0Y6RgxMihPeP7yBV")
+>>>>>>> 442125f0e6c2deda34b2955840a9821f95007986
 
+    KEYCLOAK_ADMIN_USER    = os.getenv('KEYCLOAK_ADMIN_USER')
+    KEYCLOAK_ADMIN_PASS    = os.getenv('KEYCLOAK_ADMIN_PASS')
+    
     @staticmethod
     def keycloak_issuer():
         """Return Keycloak Issuer URL"""

@@ -5,9 +5,8 @@ import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
-import { FeedApiFactory } from '@/generated-api';
-import { postNewPostAction, setFeedDataAction } from '@/app/store/feedSlice';
+import { useAppDispatch } from '@/app/store/hooks'
+import { postNewPostAction } from '@/app/store/feedSlice';
 
 const UserPostBox = () => {
 const dispatch = useAppDispatch()
@@ -19,6 +18,7 @@ const handleUserPost = (input: React.SetStateAction<string>) => {
 
 const handleUserPostButton = () => {
    dispatch(postNewPostAction({content: userPost}));
+   setUserPost("")
 }
 
   return (

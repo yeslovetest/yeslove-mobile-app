@@ -11,11 +11,25 @@ const theme = {
         /*text colour on orange banner on get help and home page */
         bannerTextColor: "#fff",
         /*border colour of user info on profile page */
-        viewEditBorderColor: "#f1f1f1"
+        viewEditBorderColor: "#f1f1f1",
+
+        /*main background colour for login & signup screen components including text-box and buttons */
+        mainBkgColor: "#fff",
+        /*main font colour for login & signup screen container footer  */
+        footerFontColor: 'rgb(100,100,100)',
+        /*border colour for login & signup screen container footer  */
+        footerBdColor: 'rgb(192, 187, 187)',
+        /*black font-colour used for headers and texts in different pages of the app*/
+        blackText: '#111',
+        /*background colour of text boxes in individual event tabs */
+        eventTextBackground: "#fefefe"
     },
+  
     spacing: {
         /*width of posts, postbox, banner, and most component parent elements*/
-        postWidth: vw(90)
+        postWidth: vw(90),
+        standardPageContentWidth: "90%",
+        eventTextBoxPadding: 15,
     }
 }
 

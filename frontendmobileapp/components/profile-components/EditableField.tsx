@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { ScrollView, ImageBackground, StyleSheet, Platform, Text, View, Image, TouchableOpacity, TextInput } from 'react-native';
+import React from 'react'
+import { Text, View,TextInput } from 'react-native';
 import styles from "../../Styles/page-styles/ProfileStyles";
 
 

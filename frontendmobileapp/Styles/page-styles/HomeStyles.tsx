@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import theme from "../Variables"
+import { vw } from "@/ts/viewport-units";
 
 const styles = StyleSheet.create({
 
@@ -8,16 +9,24 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginTop: 10,
+        width: theme.spacing.standardPageContentWidth
+    },
+
+    containerIndPost: {
+      marginTop: 0,
+      width: '100%',
     },
 
     contentContainer: {
         justifyContent: "flex-start",
         alignItems: "center",
+        paddingBottom: 50
       },
 
     feedHeaderContainer: {
         width: theme.spacing.postWidth,
         height: 115,
+        marginTop: vw(5),
         borderRadius: 15,
         justifyContent: "center",
         alignItems: "center",
@@ -77,7 +86,7 @@ const styles = StyleSheet.create({
     },
 
     userPostBoxContainer: {
-        marginTop: 30,
+        marginTop: vw(5),
         width: theme.spacing.postWidth,
         borderRadius: 10,
         height: 265,
@@ -91,7 +100,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 100,
         paddingHorizontal: 10,
-        marginBottom: 15
+        marginBottom: vw(5)
     },
 
     postInput: {
@@ -137,9 +146,10 @@ const styles = StyleSheet.create({
       flex: 1,
       justifyContent: "flex-start",
       alignItems: "center",
-      marginTop: 20,
-      marginBottom: 20
+      marginTop: vw(5),
     },
+
+
     homeNavBar: {
       flexDirection: "row",
       flexWrap: "wrap", 
@@ -154,6 +164,17 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.2,
       shadowRadius: 4,
     },
+
+      indPostNavBarContainer: {
+      marginTop: 1,
+      marginBottom: 1,
+      borderRadius: 0,
+    },
+
+     indPostNavBar: {
+      borderRadius: 0,
+    },
+
     homeItem: {
       width: "50%",
       paddingVertical: 15,
@@ -182,14 +203,24 @@ const styles = StyleSheet.create({
       /* */
 
   postContainer: {
-    marginTop: 20,
+    marginTop: vw(5),
     width: theme.spacing.postWidth,
     backgroundColor: "#fff",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     padding: 20,
     borderRadius: 15,
-    marginBottom: 20,
+  },
+
+    indPostContainer: {
+    borderBottomStartRadius: 0,
+    borderBottomEndRadius: 0,
+  },
+
+    indCommentContainer: {
+    marginTop: 0,
+    marginBottom: 1,
+    borderRadius: 0,
   },
 
   profileName: {
@@ -200,6 +231,9 @@ const styles = StyleSheet.create({
 
   postContent: {
     color: "#555",
+    paddingHorizontal: 3,
+    paddingBottom: 10,
+    width: "100%",
     fontSize: 15,
   },
 
@@ -239,6 +273,9 @@ const styles = StyleSheet.create({
       flexDirection: "row",
       alignItems: "center",
       width: "100%", 
+      borderTopColor: theme.colors.footerBdColor,
+      borderTopWidth: 1,
+
     },
     
     likeButtonContainer: {
@@ -250,11 +287,11 @@ const styles = StyleSheet.create({
     },
     
     likeIcon: {
-      marginRight: 5,
+      marginRight: 20,
     },
 
     commentIcon: {
-      marginLeft: 15,
+      marginLeft: 25,
       marginRight: 5,
     },
 
@@ -262,7 +299,7 @@ const styles = StyleSheet.create({
 
     commentContainer: {
       width: "100%",
-      height: 90,
+     
       display: "flex",
       justifyContent: "center",
       flexDirection: "column",
@@ -272,7 +309,7 @@ const styles = StyleSheet.create({
 
     postCommentContainer: {
       width: "100%",
-      height: 100,
+      
       display: "flex",
       justifyContent: "center",
       flexDirection: "row",
@@ -286,6 +323,7 @@ const styles = StyleSheet.create({
       borderColor: "#ccc",
       outlineColor: "#ccc",
       borderRadius: 5,
+      paddingHorizontal: 3,
     },
 
     commentProfileImage: {
@@ -311,8 +349,42 @@ const styles = StyleSheet.create({
 
     submitCommentButtonText: {
             color: "#fff"
-    }
-    
+    },
+  
+   /* post reaction styles */  
+   reactionPopUp :{
+    visibility: 'hidden', 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    borderWidth: 0, 
+    borderRadius: 10, 
+    padding: 5,
+    position: 'absolute', 
+    left: 20, 
+    bottom: 10, 
+    backgroundColor: 'white', 
+    zIndex: 1000, 
+    shadowOffset: {width: 3, height: -2}, 
+    shadowOpacity: 0.1, 
+    elevation: 2 
+  },
+
+  reactionIcon: {
+    borderRadius: 20, 
+    padding: 5,
+    backgroundColor: 'white', 
+    zIndex: 100, 
+    shadowOffset: {width: 3, height: -2}, 
+    shadowOpacity: 0.2, 
+    elevation: 3, 
+    borderWidth: 1,
+    borderColor: 'grey',
+  },
+
+  emoji: {
+    fontSize: 24,
+  }
 
 })
 

@@ -120,16 +120,32 @@ KEYCLOAK_CLIENT_SECRET=your-client-secret
 PERSPECTIVE_API_KEY=your-key-here
 ```
 
+<<<<<<< HEAD
 ## 📂 Step 5: Initialize the Database
 
+=======
+## 🛠 Step 5: Setup KeyCloak
+# KeyCloak has been installed into the KeyCloakService directory
+
+Install Docker 
+In the (docker-compose.yaml) 
+Run the Keycloak Service 
+Open http://localhost:8080/
+
+## 📂 Step 6: Initialize the Database
+>>>>>>> 442125f0e6c2deda34b2955840a9821f95007986
 ```bash
 flask db init  # Run only if migrations folder is missing
 flask db migrate -m "Initial migration"
 flask db upgrade
 ```
 
+<<<<<<< HEAD
 ## 🚀 Step 6: Start the Flask Application
 
+=======
+## 🚀 Step 7: Start the Flask Application
+>>>>>>> 442125f0e6c2deda34b2955840a9821f95007986
 ```bash
 flask run
 ```

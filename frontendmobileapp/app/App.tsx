@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet } from "react-native";
 import Footer from "./footer/Footer";
 import Header from "./Header";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
@@ -7,12 +7,19 @@ import ProfilePage from "./tabs/profile";
 import HomeScreen from "./tabs/home";
 import GetHelpPage from "./tabs/gethelp";
 import LoginScreen from "./login-screen/LoginScreen";
+import SignUpScreen from "./signup-screen/SignUpScreen";
+//import GetEducatedPage from "./tabs/getEducated"
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
   LoginState,
 } from "./store/authSlice";
 import LoginLoadingScreen from "./login-screen/LoginLoadingScreen";
+import { TabType } from "./store/navigationSlice";
+import EventsPage from "./tabs/events";
+import IndividualEvent from "@/components/events-components/IndividualEvent";
+import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
+import IndividualPost from "@/components/home-components/IndividualPost";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -22,7 +29,7 @@ const App = () => {
     }, [])
   );
   const currentActiveTab = useAppSelector(
-    (state) => state.navigation.currentTab
+    (state) => state.navigation.tabStack.at(-1)
   );
   const loginState = useAppSelector((state) => state.auth.loginState);
   return (
@@ -37,16 +44,24 @@ const App = () => {
           <LoginScreen></LoginScreen>
         </View>
       )}
+       {loginState == LoginState.SIGN_UP && (
+        <View style={styles.container}>
+          <SignUpScreen></SignUpScreen>
+        </View>
+      )}
       {loginState == LoginState.LOGGED_IN && (
         <View style={styles.container}>
-          <Header></Header>
+          <Header ></Header>
           {
             {
               HOME: <HomeScreen></HomeScreen>,
               GET_HELP: <GetHelpPage></GetHelpPage>,
-              EVENTS: <Text>Events</Text>,
+              EVENTS: <EventsPage></EventsPage>,
               PROFILE: <ProfilePage></ProfilePage>,
-            }[currentActiveTab]
+              INDIVIDUAL_EVENT: <IndividualEvent />,
+              INDIVIDUAL_BLOG: <IndividualBlog />,
+              INDIVIDUAL_POST: <IndividualPost />,
+            }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>
         </View>
