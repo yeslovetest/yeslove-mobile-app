@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+#Log files
+*.log
+node_modules
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
@@ -176,3 +181,4 @@ cython_debug/
 
 # Log Files
 *.log
+>>>>>>> 49eca51 (Implemented user restriction on posts, comments, and chat using moderation)

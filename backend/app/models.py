@@ -1,6 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from app import db  # ✅ Import the same db instance
+from sqlalchemy.orm import declarative_base
+from app.extensions import db
+
+Base = declarative_base()
 
 
 #db = SQLAlchemy()
@@ -31,6 +34,10 @@ class User(db.Model):
     professional_details = db.relationship(
         "ProfessionalDetails", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
+    
+    # Warning and suspension to user
+    warnings = db.Column(db.Integer, default=0)
+    is_suspended = db.Column(db.Boolean, default=False)
 
 
 # -------------------------
@@ -42,6 +49,8 @@ class Post(db.Model):
     image = db.Column(db.String(200), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    status = db.Column(db.String(20), default="visible")  # visible, removed, flagged
 
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
@@ -138,3 +147,46 @@ class Reaction(db.Model):
      
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
+
+
+##### ModerationLog model with explanations #####
+class ModerationLog(db.Model):
+    # 🔹 Unique ID for each moderation event
+    id = db.Column(db.Integer, primary_key=True)
+
+    # 🔹 ID of the user who submitted the content (can be null for anonymous or deleted users)
+    user_id = db.Column(db.Integer, nullable=True)
+
+    # 🔹 What kind of content this is (e.g., 'post', 'comment', 'message')
+    content_type = db.Column(db.String(50))  # e.g., 'post', 'comment', 'message'
+
+    # 🔹 The actual text/content that was flagged
+    content = db.Column(db.Text)
+
+    # 🔹 The main moderation score (e.g., toxicity) used in the decision
+    score = db.Column(db.Float)
+
+    # 🔹 Full set of moderation attributes (TOXICITY, INSULT, THREAT, etc.) returned from Perspective API
+    attributes = db.Column(db.JSON)
+
+    # 🔹 Severity level decided by the system (e.g., 'low', 'medium', 'high')
+    severity = db.Column(db.String(20))  # low, medium, high
+
+    # 🔹 What action was automatically taken by the system (e.g., 'blocked', 'allowed', 'review')
+    auto_action = db.Column(db.String(20))  # blocked, allowed, review
+
+    # 🔹 What the admin decided later (e.g., 'approved', 'rejected', 'escalated')
+    admin_override = db.Column(db.String(20), nullable=True)
+
+    # 🔹 Optional notes from the admin explaining their override
+    admin_notes = db.Column(db.Text, nullable=True)
+
+    # 🔹 Admin user ID who reviewed and overrode the moderation decision
+    reviewed_by = db.Column(db.Integer, nullable=True)
+
+    # 🔹 Timestamp when the admin reviewed it
+    reviewed_at = db.Column(db.DateTime)
+
+    # 🔹 When the moderation log entry was created (automatically set)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    

@@ -1,9 +1,14 @@
+from app.logging_setup import logger
 from flask import request
 from flask_restx import Namespace, Resource, reqparse
 
+from app.utils.perspective_api import moderate_text
+from app.utils.moderation_utils import process_moderation
 from app.logging_setup import logger
 
 from app.utils import require_auth
+from app.models import ModerationLog
+from datetime import datetime
 
 
 
@@ -69,24 +74,60 @@ class Feed(Resource):
 @api.route("/post")
 class CreatePost(Resource):
     from .feed_models import CreatePostRequest
+
     @require_auth()
     @api.expect(CreatePostRequest)
     @api.response(201, "Post created successfully")
     def post(self):
-        """Create a new post."""
-        from app.models import User, Post, db
+        """Create a new post with automatic moderation, spam & rate limiting."""
+        from app.models import User, Post, ModerationLog, db
+        from datetime import datetime
+        import os
+        from app.utils.moderation_utils import is_spammy_content, is_posting_too_fast
+
         data = request.json
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()  # ✅ Use Keycloak UUID
+        content = data.get("content")
+
+        if not content:
+            return {"message": "Post content cannot be empty"}, 400
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
 
-        if not data.get("content"):
-            return {"message": "Post content cannot be empty"}, 400
+        # ✅ Extra spam check (based on .env toggle)
+        if os.getenv("ENABLE_SPAM_FILTER", "false").lower() == "true":
+            if is_spammy_content(content):
+                return {"message": "Post flagged for spammy content"}, 400
 
-        post = Post(content=data["content"], user_id=user.id)
+        # ✅ Rate limiting check (based on .env toggle)
+        if os.getenv("ENABLE_RATE_LIMIT_CHECK", "false").lower() == "true":
+            if is_posting_too_fast(user):
+                return {"message": "You're posting too quickly. Please slow down."}, 400
+
+        # ✅ Perspective moderation
+        status, score, log = process_moderation(content, user, content_type="post")
+        if log:
+            db.session.add(log)
+
+        # ✅ Save post with moderation status
+        post = Post(content=content, user_id=user.id, status=status)
         db.session.add(post)
         db.session.commit()
-        return {"message": "Post created successfully"}, 201
+
+        message = {
+            "visible": "Post created successfully.",
+            "flagged": "Post was flagged for review.",
+            "removed": "Your post was removed for violating guidelines."
+        }.get(status)
+
+        return {
+            "message": message,
+            "toxicity_score": score,
+            "post_id": post.id,
+            "status": status
+        }, 201
+
 
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
@@ -163,11 +204,16 @@ class LikePost(Resource):
 @api.route("/post/<int:post_id>/comment")
 class AddComment(Resource):
     from .feed_models import AddCommentRequest
+
     @require_auth()
     @api.expect(AddCommentRequest)
     def post(self, post_id):
-        """Add a comment to a post."""
-        from app.models import User, Comment, db
+        """Add a comment to a post with moderation, spam & rate limiting."""
+        from app.models import User, Comment, ModerationLog, db
+        from datetime import datetime
+        import os
+        from app.utils.moderation_utils import process_moderation, is_spammy_content, is_posting_too_fast
+
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
@@ -178,10 +224,43 @@ class AddComment(Resource):
         if not content:
             return {"message": "Comment cannot be empty"}, 400
 
+        # ✅ Spam detection
+        if os.getenv("ENABLE_SPAM_FILTER", "false").lower() == "true":
+            if is_spammy_content(content):
+                return {"message": "Comment flagged as spam"}, 400
+
+        # ✅ Rate-limiting
+        if os.getenv("ENABLE_RATE_LIMIT_CHECK", "false").lower() == "true":
+            if is_posting_too_fast(user):
+                return {"message": "You're commenting too fast. Slow down."}, 400
+
+        # ✅ Perspective moderation
+        status, score, log = process_moderation(content, user, content_type="comment")
+
+        if log:
+            db.session.add(log)
+            if log.severity == "high":
+                db.session.commit()
+                return {
+                    "message": "Your comment was removed due to harmful language.",
+                    "toxicity_score": score,
+                    "triggered": list(log.attributes.keys())
+                }, 400
+
+        # ✅ Save comment anyway, maybe flagged
         comment = Comment(content=content, user_id=user.id, post_id=post_id)
         db.session.add(comment)
         db.session.commit()
-        return {"message": "Comment added"}, 201
+
+        message = "Comment added"
+        if status == "flagged":
+            message += " (flagged for review)"
+
+        return {
+            "message": message,
+            "toxicity_score": score
+        }, 201
+
 
 
 @api.route("/post/<int:post_id>/comments")

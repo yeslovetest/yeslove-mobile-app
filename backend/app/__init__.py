@@ -1,11 +1,17 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
 import os
+from flask import Flask
+# from flask_sqlalchemy import SQLAlchemy
+# from flask_bcrypt import Bcrypt
+# from flask_migrate import Migrate
 from flask_restx import Api
 from flask_cors import CORS
-from flask_migrate import Migrate
 from dotenv import load_dotenv
+from app.extensions import db, bcrypt, migrate
+
+
+# 👇 Must come before importing config
+load_dotenv()
+
 from app.config import DevelopmentConfig
 from app.utils import get_keycloak_public_keys
 from app.api.auth.auth_routes import api as auth_api
@@ -18,10 +24,10 @@ from app.api.chat.chat_routes import api as chat_api
 # Load environment variables
 load_dotenv()
 
-# 🔹 Initialize extensions
-db = SQLAlchemy()
-bcrypt = Bcrypt()
-migrate = Migrate()
+# # 🔹 Initialize extensions
+# db = SQLAlchemy()
+# bcrypt = Bcrypt()
+# migrate = Migrate()
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -49,9 +55,20 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(auth_api, path="/api/auth")
     api.add_namespace(feed_api, path="/api/feed")
     api.add_namespace(chat_api, path="/api/chat")
+    
+    
+    @app.route('/routes')
+    def list_routes():
+        from flask import jsonify
+        return jsonify([str(rule) for rule in app.url_map.iter_rules()])
+
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     with app.app_context():
         get_keycloak_public_keys()
 
+    
     return app
+
+
+
