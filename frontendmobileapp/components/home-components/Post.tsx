@@ -24,6 +24,7 @@ const Post = (props: Props) => {
     
 
     const changeReaction= (reaction: string) => {
+        // runs when a user selects a reaction from the pop up
         if (reaction === 'reverseReaction' && reactionType === 'default'){
             dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: 'like'}));
             setReactionType('like');

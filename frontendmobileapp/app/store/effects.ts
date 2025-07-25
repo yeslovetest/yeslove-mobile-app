@@ -1,14 +1,19 @@
 import { call, put, takeEvery } from "redux-saga/effects";
-import { fetchUserDataAction, persistUserInfoAction, storeUserDataAction } from "./profileSlice";
+import { fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, storeUserDataAction, updateEmailNotificationSettings, updateProfileVisibilitySettings } from "./profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
   TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, CommentResponse, 
   ReactionResponse, PostReactionToPostResponse,
-  ChangePasswordRequest} from "@/generated-api";
+  ChangePasswordRequest,
+  DeleteAccountRequest,
+  EmailNotificationSettings,
+  ProfileVisibilitySettings} from "@/generated-api";
 import { appSelect } from "./hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
   setSignupMessage, setErrorMessage, setUserPassword, 
-  setMessage} from "./authSlice";
+  setMessage,
+  setDeleteConfirmation,
+  logoutAction} from "./authSlice";
 import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { setUserId, setName, setPassword  } from "./userSlice";
@@ -16,6 +21,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postComment, 
    setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost
  } from "./feedSlice";
+import { changeTabAction, TabType } from "./navigationSlice";
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* saveProfileInfoEffect(action: any) {
@@ -127,6 +133,24 @@ function* fetchPostReactions (action: PayloadAction<{postId: number}>){
   yield put(setReactions(reactions.reactions ?? []));
 }
 
+function* handleLogout(action: PayloadAction<string>) {
+  try {
+    yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
+
+    // Stop the refresh token polling synchronously
+    TOKEN_REFRESH_SERVICE.stopRefreshingToken();
+    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, '');
+    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, '');
+    yield put(changeTabAction({ type: TabType.HOME }));
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+    yield put(setFeedDataAction([]));
+    yield put(setEmailNotificationSettings([]));
+    yield put(setProfileVisibilitySettings([]));
+  } catch (error) {
+    console.error('Logout Failed!', error);
+  }
+}
+
 function* handlePasswordChange(action: PayloadAction<ChangePasswordRequest>) {
   let request = action.payload;
 
@@ -138,6 +162,47 @@ function* handlePasswordChange(action: PayloadAction<ChangePasswordRequest>) {
   }catch (error) {
     console.error('password change failed', error);
     
+  }
+}
+
+function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
+  const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string;
+  try{
+    yield call(AuthApiFactory().deleteDeleteAccount, action.payload);
+    yield put(logoutAction(refreshToken || ''));
+  }
+  catch (error) {
+    console.error('Delete action failed', error);
+  }
+}
+
+function* fetchEmailNotificationSettings(action: PayloadAction<void>){
+  const emailNotificationSettings = ((yield call(ProfileApiFactory().getEmailNotifications)) as AxiosResponse<EmailNotificationSettings>).data as EmailNotificationSettings;
+  yield put(setEmailNotificationSettings(emailNotificationSettings.settings ?? []));
+}
+
+function* updateEmailSettings(action: PayloadAction<EmailNotificationSettings>){
+  
+  try{
+    yield call(ProfileApiFactory().postEmailNotifications, action.payload);
+    yield put(setMessage('Email Notification Settings Saved!'));
+  }catch (error) {
+    console.error('email notification setting failed', error);
+  }
+}
+
+function* fetchProfileVisiblitySettings(action: PayloadAction<void>){
+  const profileVisibilitySettings = ((yield call(ProfileApiFactory().getProfileVisibility)) as AxiosResponse<ProfileVisibilitySettings>).data as ProfileVisibilitySettings;
+  yield put(setProfileVisibilitySettings(profileVisibilitySettings.settings ?? []));
+}
+
+function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>){
+  
+  try{
+    yield call(ProfileApiFactory().postProfileVisibility, action.payload);
+    yield put(setMessage('Profile Visibility Settings Saved!'));
+  }catch (error) {
+    console.error('profile visibility setting failed', error);
   }
 }
 
@@ -154,7 +219,13 @@ function* appSaga() {
   yield takeEvery(retrievePostReactions.type, fetchPostReactions);
   yield takeEvery(postReactionToPost.type, handleReactionToPost);
   yield takeEvery(postLikePost.type, handleLikePost);
+  yield takeEvery(logoutAction.type, handleLogout);
   yield takeEvery(setUserPassword.type, handlePasswordChange);
+  yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
+  yield takeEvery(getEmailNotificationSettings.type, fetchEmailNotificationSettings);
+  yield takeEvery(updateEmailNotificationSettings.type, updateEmailSettings);
+  yield takeEvery(getProfileVisibilitySettings.type, fetchProfileVisiblitySettings);
+  yield takeEvery(updateProfileVisibilitySettings.type, updateProfileSettings);
 
 }
 
