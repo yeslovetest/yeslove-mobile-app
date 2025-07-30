@@ -38,7 +38,6 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   try{
     const loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<TokenResponse>).data as TokenResponse;
     axios.defaults.headers.common['Authorization'] = loginResponse.access_token ?? "";
-    console.log(loginResponse.refresh_token)
     TOKEN_REFRESH_SERVICE.startRefreshingToken(loginResponse.refresh_token ?? "");
     yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, loginResponse.refresh_token ?? "");
     const userQueryResponse: UserQueryResponse  = ((yield call(ProfileApiFactory().postGetUserKeycloakIdFlexible, {username: request.username})) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
@@ -58,7 +57,6 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
   if(refreshToken){
     try{
       const refreshResponse = ((yield call(AuthApiFactory().postRefreshToken, {refresh_token: refreshToken})) as AxiosResponse<TokenResponse>).data as TokenResponse;
-      console.log(refreshToken)
       axios.defaults.headers.common['Authorization'] = refreshResponse.access_token ?? "";
       TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshResponse.refresh_token ?? "");
       yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshResponse.refresh_token ?? "");
