@@ -8,18 +8,18 @@ api = Namespace("chatbot", description="API Endpoints")
 @api.route("/message")
 class SendMessage(Resource):
     from .chatbot_models import MessageRequest
-
-    @require_auth() 
+    # all commented lines is to allow testing API without having to login
+    #@require_auth()  
     @api.expect(MessageRequest)
     def post(self):
         """Send a message to chatbot."""
         from app.models import User
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        #user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         data = request.json  # <-- always executed
 
-        if not user:
-            return {"message": "User not found"}, 404
-            pass
+        #if not user:
+            #return {"message": "User not found"}, 404
+            #pass
 
         user_message = data.get("message", "")
         history = data.get("history", [])

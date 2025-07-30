@@ -480,7 +480,8 @@ class DeleteAccount(Resource):
         if response.status_code == 204:
             db.session.delete(user)
             db.session.commit()
-
+            return {"message": "Account delete successful"}, 200
+        return {"message": "Failed to delete account"}, response.status_code
 
 
 
