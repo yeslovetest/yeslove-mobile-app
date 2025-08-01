@@ -113,7 +113,6 @@ class ProfessionalDetails(db.Model):
         back_populates="professional_details",
         single_parent=True  # ✅ Ensure only one `ProfessionalDetails` per `User`
     )
->>>>>>> origin
 
 # -------------------------
 # 🚀 Post Model
@@ -229,7 +228,7 @@ class Event(db.Model):
             "name": self.name,
             "description": self.description,
             "location": self.location,
-            "event_time": self.event_time,
+            "event_time": self.event_time.isoformat(),
             "creator_id": self.creator_id,
             "address": self.address.to_dict() if self.address else None,
             "attendees": [user.id for user in self.attendees]

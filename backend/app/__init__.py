@@ -12,11 +12,8 @@ from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
-<<<<<<< HEAD
 from app.api.events.events_routes import api as events_api
-=======
 from app.api.blog.blog_routes import api as blog_api
->>>>>>> origin/main
 
 
 # Load environment variables
@@ -66,5 +63,9 @@ def create_app(config_class=DevelopmentConfig):
     # Initalises professional user admin panel
     from .admin import init_admin
     init_admin(app)
+
+    # debug stuff - sam
+    print("Routes registered:")
+    print(app.url_map)
 
     return app

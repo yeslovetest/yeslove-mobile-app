@@ -1,3 +1,5 @@
+import logging
+
 from flask import request
 from flask_restx import Namespace, Resource, reqparse
 
@@ -23,11 +25,15 @@ def parse_iso_datetime(dt_str):
 class EventIds(Resource):
     from .events_models import EventsQuery, EventsResponse
 
+
+    # get event ids
     @api.expect(EventsQuery)
     @api.response(code=200, description="Success", model=EventsResponse)
     def get(self):
         from app.models import Event
         try:
+            #change this to JSON for consistency
+            logging.info("attempting to get request arguments")
             start_time_str = request.args.get("start_time")
             end_time_str = request.args.get("end_time")
             page = int(request.args.get("page", 1))
@@ -70,20 +76,26 @@ class EventIds(Resource):
 class EventInfo(Resource):
     from .events_models import EventInfoQuery, AddEventRequest, EventInfoResponse
 
+
+    # get event info
     @api.expect(EventInfoQuery)
     @api.response(code=200, description="Success", model=EventInfoResponse)
     @api.doc(description="Retrieve detailed info for one or more events by their IDs. Supports pagination.")
     def get(self):
         from app.models import User, Address, Event
         try:
-            event_ids = request.args.getlist("event_ids")
+            logging.info("Attempting to get Event")
+
+            logging.info("Getting request")
+            data = request.json
+            event_ids = data.get("event_ids")
+            page = int(data.get("page", 1))
+            per_page = int(data.get("per_page", 20))
+
             if not event_ids:
                 return {"message": "event_ids parameter is required"}, 400
 
             event_ids = [int(id_) for id_ in event_ids]
-
-            page = int(request.args.get("page", 1))
-            per_page = int(request.args.get("per_page", 20))
 
             pagination = Event.query.filter(Event.id.in_(event_ids)).paginate(page=page, per_page=per_page)
             events = pagination.items
@@ -101,29 +113,35 @@ class EventInfo(Resource):
             logger.error(f"Error getting event information {e}")
             return {"message": "Error getting event information"}, 500
 
+
+    # create new event
     @require_auth()
     @api.expect(AddEventRequest)
     @api.doc(description="""Add event to events table,
                         Can take an address id if the address is already within in the database,
                         otherwise can be added line by line. Address isn't required to allow for online events.
-                        
-                         
                          """)
     @api.response(201, "Success")
     def post(self):
         from app.models import User, Address, Event, db
 
+        logger.info("Attempting to create new event")
+
+        logger.info("Getting request...")
         data = request.json
         creator = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
 
+        logger.info("Verifying creator...")
         if not creator:
             return {"message": "User not found"}, 404
 
         if data.get("address_id"):
+            logger.info("Checking for address in system")
             event_address = Address.query.filter_by(id=data.get("address_id")).first()
             if not event_address:
                 return {"message": "Address id does not exist"}, 400
         elif data.get("address_number"):
+            logger.info("Creating address")
             country = data.get("address_country") or "UK"
             event_address = Address(
                 number=data.get("address_number"),
@@ -136,19 +154,24 @@ class EventInfo(Resource):
             db.session.add(event_address)
             db.session.flush()
         else:
+            logger.info("No address given")
             event_address = None
 
+        logger.info("Getting event name")
         if not data.get("name"):
             return {"message": "Event name cannot be empty"}, 400
 
+        logger.info("Getting event time")
         if not data.get("event_time"):
             return {"message": "Event must have a datetime in ISO format"}, 400
 
+        logger.info("Trying to parse ISO datetime")
         try:
             event_datetime = parse_iso_datetime(data.get("event_time"))
         except Exception:
             return {"message": "Invalid datetime format. Use ISO format."}, 400
 
+        logger.info("Creating Event")
         event = Event(
             name=data.get("name"),
             description=data.get("description"),
@@ -159,11 +182,14 @@ class EventInfo(Resource):
             address_id=event_address.id if event_address else None
         )
 
+        logger.info("Adding event to database")
         db.session.add(event)
 
+        logger.info("Checking if creator attending")
         if data.get("creator_attending"):
-            event.attending.append(creator)
+            event.attendees.append(creator)
 
+        logger.info("Commiting database changes")
         db.session.commit()
 
         return {"message": "Event created successfully"}, 201
@@ -173,6 +199,8 @@ class EventInfo(Resource):
 class EventAttendees(Resource):
     from .events_models import AddAttendeeRequest, AttendingQuery, EventsResponse
 
+
+    # add attendee
     @require_auth()
     @api.expect(AddAttendeeRequest)
     @api.doc(description="""
@@ -210,6 +238,8 @@ class EventAttendees(Resource):
 
         return {"message": "User added to event successfully"}, 201
 
+
+    # get attending
     @require_auth()
     @api.expect(AttendingQuery)
     @api.doc(description="""Returns Event IDs of all events to be attended/already attended by the provided user id)
@@ -258,11 +288,12 @@ class EventAttendees(Resource):
 class RemoveAttendee(Resource):
     from .events_models import RemoveAttendeeRequest
 
+    # remove attendee
     @require_auth()
     @api.expect(RemoveAttendeeRequest)
     @api.doc(description="Remove a user from an event's attendees list")
-    @api.response(201, "Success")
-    def post(self):
+    @api.response(204, "Success")
+    def delete(self):
         from app.models import User, Event, db
 
         data = request.json
@@ -288,7 +319,7 @@ class RemoveAttendee(Resource):
         event.attending.remove(attendee)
         db.session.commit()
 
-        return {"message": "User removed from event successfully"}, 201
+        return {"message": "User removed from event successfully"}, 204
 
 @api.route("/created_events")
 class CreatedEvents(Resource):
@@ -343,5 +374,19 @@ class CreatedEvents(Resource):
 
 
     # to do:
+    #
     # put to edit event data
     # add image functionality
+    # address verification
+    # delete event functionality
+    # better commenting
+
+
+    # testing with postman:
+    #
+    # get event ids - untested
+    # get event info - tested - ok - needs some more error handling for requests with incorrect ids
+    # create new event - untested
+    # add attendee - untested
+    # get attending - untested
+    # remove attendee - untested
