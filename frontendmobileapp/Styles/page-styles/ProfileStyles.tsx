@@ -335,7 +335,6 @@ settingsNavItem: {
 
 settingsNavItemContainer: {
   width: '100%',
-  
   borderTopWidth: 0.5,
   borderBlockColor: theme.colors.footerBdColor,
   marginVertical: 5,
