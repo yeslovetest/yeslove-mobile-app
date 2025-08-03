@@ -27,3 +27,11 @@ typing-extensions
 Docker 
 
 authlib 
+
+email-validator
+
+Flask-Admin
+
+python-dateutil
+
+openai

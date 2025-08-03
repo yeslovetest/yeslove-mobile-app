@@ -1,0 +1,41 @@
+{
+  "realm" : "YesLove_Auth",
+  "users" : [ {
+    "id" : "fedd51c2-8fbc-4d75-a728-fb3ed40f41d7",
+    "username" : "service-account-yeslove",
+    "emailVerified" : false,
+    "createdTimestamp" : 1738275631091,
+    "enabled" : true,
+    "totp" : false,
+    "serviceAccountClientId" : "yeslove",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "3c99982d-56f4-49e4-901f-0704211be1df",
+    "username" : "test-user",
+    "firstName" : "",
+    "lastName" : "",
+    "email" : "test-user@yelove.co.uk",
+    "emailVerified" : true,
+    "createdTimestamp" : 1740926904011,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "b3e39b70-a211-420c-b04c-a317379c7c8e",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1740932650315,
+      "secretData" : "{\"value\":\"TejzQuHyteEaBp2xD3SO+I1Y5jTQ9Pe+eLpSOmVXnXtbkRBTjcTVy/lZuaWQS7ggfLVbzymbR0L9Toj4iI7Fmg==\",\"salt\":\"coLTVeGUE0OW8HwRYnHPvQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
