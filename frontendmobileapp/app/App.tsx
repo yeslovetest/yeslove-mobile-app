@@ -8,7 +8,6 @@ import HomeScreen from "./tabs/home";
 import GetHelpPage from "./tabs/gethelp";
 import LoginScreen from "./login-screen/LoginScreen";
 import SignUpScreen from "./signup-screen/SignUpScreen";
-//import GetEducatedPage from "./tabs/getEducated"
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
@@ -20,6 +19,7 @@ import EventsPage from "./tabs/events";
 import IndividualEvent from "@/components/events-components/IndividualEvent";
 import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
 import IndividualPost from "@/components/home-components/IndividualPost";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -62,6 +62,9 @@ const App = () => {
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
             }[currentActiveTab?.type ?? TabType.HOME]
+          }
+          {currentActiveTab?.type === TabType.HOME && 
+              <ScrollToTop></ScrollToTop>
           }
           <Footer></Footer>
         </View>

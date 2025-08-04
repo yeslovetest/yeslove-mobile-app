@@ -209,21 +209,34 @@ export interface EducationInfo {
 /**
  * 
  * @export
- * @interface EmailNotificationSettings
+ * @interface EmailNotification
  */
-export interface EmailNotificationSettings {
+export interface EmailNotification {
     /**
      * Unique ID for the setting
      * @type {string}
-     * @memberof EmailNotificationSettings
+     * @memberof EmailNotification
      */
     'setting_id': string;
     /**
      * Notification enabled (true/false)
      * @type {boolean}
-     * @memberof EmailNotificationSettings
+     * @memberof EmailNotification
      */
     'value': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface EmailNotificationSettings
+ */
+export interface EmailNotificationSettings {
+    /**
+     * list containing all email notification settings
+     * @type {Array<EmailNotification>}
+     * @memberof EmailNotificationSettings
+     */
+    'settings'?: Array<EmailNotification>;
 }
 /**
  * 
@@ -282,6 +295,19 @@ export interface LoginRequest {
      * @memberof LoginRequest
      */
     'password': string;
+}
+/**
+ * 
+ * @export
+ * @interface LogoutRequest
+ */
+export interface LogoutRequest {
+    /**
+     * User\'s refresh token
+     * @type {string}
+     * @memberof LogoutRequest
+     */
+    'refresh_token': string;
 }
 /**
  * 
@@ -366,27 +392,40 @@ export interface PostResponse {
 /**
  * 
  * @export
- * @interface ProfileVisibilitySettings
+ * @interface ProfileVisibility
  */
-export interface ProfileVisibilitySettings {
+export interface ProfileVisibility {
     /**
      * Unique ID for the setting
      * @type {string}
-     * @memberof ProfileVisibilitySettings
+     * @memberof ProfileVisibility
      */
     'setting_id': string;
     /**
      * Visibility value (visible/hidden)
      * @type {string}
-     * @memberof ProfileVisibilitySettings
+     * @memberof ProfileVisibility
      */
     'value': string;
     /**
      * Category: \'Contact\' or \'Education And Other Information\'
      * @type {string}
-     * @memberof ProfileVisibilitySettings
+     * @memberof ProfileVisibility
      */
     'category': string;
+}
+/**
+ * 
+ * @export
+ * @interface ProfileVisibilitySettings
+ */
+export interface ProfileVisibilitySettings {
+    /**
+     * list containing all profile visibility settings
+     * @type {Array<ProfileVisibility>}
+     * @memberof ProfileVisibilitySettings
+     */
+    'settings'?: Array<ProfileVisibility>;
 }
 /**
  * 
@@ -844,11 +883,11 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {object} payload 
+         * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postLogout: async (payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postLogout: async (payload: LogoutRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'payload' is not null or undefined
             assertParamExists('postLogout', 'payload', payload)
             const localVarPath = `/api/auth/logout`;
@@ -1070,11 +1109,11 @@ export const AuthApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {object} payload 
+         * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postLogout(payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postLogout(payload: LogoutRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postLogout(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postLogout']?.[localVarOperationServerIndex]?.url;
@@ -1175,11 +1214,11 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {object} payload 
+         * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postLogout(payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        postLogout(payload: LogoutRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postLogout(payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1271,12 +1310,12 @@ export class AuthApi extends BaseAPI {
     /**
      * 
      * @summary Logout user from Keycloak
-     * @param {object} payload 
+     * @param {LogoutRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthApi
      */
-    public postLogout(payload: object, options?: RawAxiosRequestConfig) {
+    public postLogout(payload: LogoutRequest, options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).postLogout(payload, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -2598,7 +2637,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getEmailNotifications(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getEmailNotifications(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EmailNotificationSettings>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getEmailNotifications(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.getEmailNotifications']?.[localVarOperationServerIndex]?.url;
@@ -2610,7 +2649,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProfileVisibility(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getProfileVisibility(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProfileVisibilitySettings>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getProfileVisibility(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.getProfileVisibility']?.[localVarOperationServerIndex]?.url;
@@ -2707,7 +2746,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getEmailNotifications(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getEmailNotifications(options?: RawAxiosRequestConfig): AxiosPromise<EmailNotificationSettings> {
             return localVarFp.getEmailNotifications(options).then((request) => request(axios, basePath));
         },
         /**
@@ -2716,7 +2755,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfileVisibility(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getProfileVisibility(options?: RawAxiosRequestConfig): AxiosPromise<ProfileVisibilitySettings> {
             return localVarFp.getProfileVisibility(options).then((request) => request(axios, basePath));
         },
         /**

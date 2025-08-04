@@ -2,6 +2,7 @@ import React from 'react'
 import { Text, View } from 'react-native';
 import styles from "../../Styles/page-styles/ProfileStyles";
 import AboutSection from "./AboutSection"
+import SettingSection from './SettingSection';
 import { useAppSelector } from '@/app/store/hooks';
 
 const ProfileContent = () => {
@@ -13,7 +14,7 @@ const ProfileContent = () => {
       {activeTab === "Videos" && <Text>Videos Page Content</Text>}
       {activeTab === "Notifications" && <Text>Notifications Page Content</Text>}
       {activeTab === "Photos" && <Text>Photos Page Content</Text>}
-      {activeTab === "Settings" && <Text>Settings Page Content</Text>}
+      {activeTab === "Settings" && <SettingSection/>}
       {activeTab === "Messages" && <Text>Messages Page Content</Text>}
       {activeTab === "Invitations" && <Text>Invitations Page Content</Text>}
     </View>

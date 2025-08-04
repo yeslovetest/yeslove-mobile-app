@@ -2,7 +2,7 @@ import React from 'react'
 import { ImageBackground, Text, View, Image } from 'react-native';
 import styles from "../../Styles/page-styles/ProfileStyles";
 import { useFocusEffect } from "@react-navigation/native";
-import { setProfileInformationAction } from "../../app/store/profileSlice";
+import { getEmailNotificationSettings, getProfileVisibilitySettings, setProfileInformationAction } from "../../app/store/profileSlice";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { ProfileApiFactory } from '@/generated-api';
 
@@ -21,6 +21,11 @@ const ProfileHeader = () => {
         dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
       });
   }, [tabStack]));
+
+  useFocusEffect(React.useCallback(() => {
+    dispatch(getEmailNotificationSettings());
+    dispatch(getProfileVisibilitySettings());
+  }, []));
 
 
 

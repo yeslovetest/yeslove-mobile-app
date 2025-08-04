@@ -3,12 +3,15 @@ import styles from "../../Styles/page-styles/HomeStyles";
 import { useAppSelector, useAppDispatch } from '../../app/store/hooks';
 import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
-import { setPostReactionTab } from '@/app/store/feedSlice';
+import { setPostReactionTab, postReactionToPost } from '@/app/store/feedSlice';
 import { openTabOnTopAction, TabType } from '@/app/store/navigationSlice';
 import dayjs from 'dayjs';
 import PostComment from './PostComment';
 import PostCommentField from './PostCommentField';
 import PostReaction from './PostReaction';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import AntDesign from '@expo/vector-icons/AntDesign';
 const image = {
   uri: "https://images.unsplash.com/vector-1741103791953-12eca7b8e3c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAwfHxibHVlJTIwYWJzdHJhY3QlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D"
 };
@@ -27,7 +30,19 @@ export interface Post{
 }
 
 const IndividualPost = () => {
-     const [ contentDisplay, setContentDisplay ] = useState("hide");
+
+    const dispatch = useAppDispatch();
+    const individualPost: Post = useAppSelector(state => state.navigation.tabStack.at(-1)?.data) as Post;
+
+    const reactionTypeTab = useAppSelector(state => state.feed.postReactionTab);
+    const userId = useAppSelector(state => state.user.id);
+    const profilePic = useAppSelector(state => state.profile.profiles[Number(userId)]?.profile_pic ?? '');
+    const comments = useAppSelector(state => state.feed.userPosts.comments);  
+    const reactions = useAppSelector(state => state.feed.userPosts.reactions);
+
+    const [ contentDisplay, setContentDisplay ] = useState("hide");
+    const [reactionType, setReactionType] = useState(individualPost.current_user_reaction ?? 'default');
+    const [popUpState, setPopUpState] = useState('hidden');
   
     const showComment = () => {
       setContentDisplay('show');
@@ -40,28 +55,40 @@ const IndividualPost = () => {
       return () => clearTimeout(timer);
      }, []));
    
-  
-    
-      
-
-  const individualPost: Post = useAppSelector(state => state.navigation.tabStack.at(-1)?.data) as Post;
 
   
-  const reactionTypeTab = useAppSelector(state => state.feed.postReactionTab);
-  const userId = useAppSelector(state => state.user.id);
-  const profilePic = useAppSelector(state => state.profile.profiles[Number(userId)]?.profile_pic ?? '');
-
-
-  const dispatch = useAppDispatch();
-
-
-  const comments = useAppSelector(state => state.feed.userPosts.comments);  
-  const reactions = useAppSelector(state => state.feed.userPosts.reactions);
-  
-    
-  const openProfile = () => {
+    const openProfile = () => {
           dispatch(openTabOnTopAction({type: TabType.PROFILE, data: {"userId": individualPost.author_id}}))
       }
+     
+  
+    const changeReaction= (reaction: string) => {
+        if (reaction === 'reverseReaction' && reactionType === 'default'){
+            dispatch(postReactionToPost({postId: individualPost.id ?? 0, reactionType: 'like'}));
+            setReactionType('like');
+        }
+        else if (reaction === 'reverseReaction' && reactionType !== 'default'){
+            dispatch(postReactionToPost({postId: individualPost.id ?? 0, reactionType: reactionType}));
+            setReactionType('default');
+            
+        }
+        else if (reactionType !== reaction) {
+            dispatch(postReactionToPost({postId: individualPost.id ?? 0, reactionType: reaction}));
+            setReactionType(reaction);
+            setPopUpState('hidden')
+        
+        } 
+        else  {
+            dispatch(postReactionToPost({postId: individualPost.id ?? 0, reactionType: reactionType}));
+            setReactionType('default');
+            setPopUpState('hidden')
+        } 
+    }       
+  
+  
+    const displayReactions = () => {
+        setPopUpState('visible')
+    };    
       
   return (
       <View style={[styles.container, styles.containerIndPost]}>
@@ -79,6 +106,42 @@ const IndividualPost = () => {
               <Text style={styles.postContent}>
               {individualPost.content}
               </Text>
+
+                <View style={{...styles.seeLessAndLikeContainer, borderTopWidth: 0}} onPointerLeave={() => setPopUpState('hidden')}>
+                <View style={{...styles.likeButtonContainer, backgroundColor: 'white'}} >
+                    
+                    <View style={{...styles.reactionPopUp, visibility: popUpState}}
+                          onPointerLeave={() => setPopUpState('hidden')}>
+                        <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('like')} >
+                            <Ionicons name="thumbs-up-sharp" size={24} color='blue' />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('love')} >
+                            <AntDesign  name="heart" size={24} color="red" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('laugh')} >
+                            <FontAwesome6   name="laugh" size={24} color="black" />
+                        </TouchableOpacity>
+                    </View>
+
+                    
+                    <TouchableOpacity style={[styles.likeIcon, styles.reactionIcon]} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
+                        {(reactionType === 'default') && 
+                            (<Ionicons   name="thumbs-up-outline" size={24} color='black' />)
+                        }
+                        {reactionType === 'like' && 
+                            (<Ionicons name="thumbs-up-sharp" size={24} color='blue' />)
+                        }
+                        {reactionType === 'love' && 
+                            (<AntDesign  name="heart" size={24} color="red" />)
+                        }
+                        {reactionType === 'laugh' && 
+                            (<FontAwesome6  name="laugh" size={24} color="black" />)
+                        }
+                          
+                        
+                    </TouchableOpacity>
+                </View>
+            </View>
           </View>
     
           <View style={[styles.homeNavBarContainer, styles.indPostNavBarContainer]}>

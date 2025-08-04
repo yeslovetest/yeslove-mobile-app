@@ -8,6 +8,8 @@ const feedSlice = createSlice({
     name: "feed",
     initialState: {
         view: { activeHomeTab: FeedTabs.ALL_UPDATES },
+        scrollViewPosition: 0,
+        scrollToTopAction: true,   // trigger for performing Scroll to Top action
         feed: { posts: [] as Post[] },
         postReactionTab: 'comments',
         userPosts: { comments: [] as Comment[], reactions: [] as Reaction[] }
@@ -15,6 +17,12 @@ const feedSlice = createSlice({
     reducers: {
         setActiveHomeTabAction: (state, action: PayloadAction<FeedTabs>) => {
             state.view.activeHomeTab = action.payload;
+        },
+        setScrollViewPosition: (state, action: PayloadAction<number>) => {
+            state.scrollViewPosition = action.payload;
+        },
+        triggerScrollToTopAction: (state, action: PayloadAction<number>) => {
+            state.scrollToTopAction = !state.scrollToTopAction;
         },
         setFeedDataAction: (state, action: PayloadAction<Post[]>) => {
             state.feed.posts = action.payload
@@ -42,5 +50,5 @@ const feedSlice = createSlice({
 export const { setActiveHomeTabAction, setFeedDataAction, updatePostsForFeedAction, 
     postNewPostAction, postComment, setPostReactionTab, 
     postLikePost, postReactionToPost, setComments, 
-    setReactions, retrievePostReactions } = feedSlice.actions;
+    setReactions, retrievePostReactions, setScrollViewPosition, triggerScrollToTopAction } = feedSlice.actions;
 export default feedSlice.reducer;
