@@ -411,7 +411,11 @@ class ChangePassword(Resource):
             "value": new_password,
             "temporary": False
         }
-        headers = {"Authorization": f"Bearer {request.headers.get('Authorization').split()[1]}"}
+
+        auth_header = request.headers.get("Authorization", "")
+        # To allow for two different formats (Bearer <Token> and <Token>)
+        token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
+        headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.put(keycloak_admin_url, json=payload, headers=headers)
 
@@ -473,7 +477,11 @@ class DeleteAccount(Resource):
             return {"message": "User not found"}, 404
 
         keycloak_delete_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user_id}"
-        headers = {"Authorization": f"Bearer {request.headers.get('Authorization').split()[1]}"}
+        
+        auth_header = request.headers.get("Authorization", "")
+        # To allow for two different formats (Bearer <Token> and <Token>)
+        token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
+        headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.delete(keycloak_delete_url, headers=headers)
 
