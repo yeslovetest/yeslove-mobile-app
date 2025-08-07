@@ -1,148 +1,148 @@
 ```mermaid
 %% System Architecture Diagram
 graph TD
-    39["User<br>External Actor"]
-    9["User<br>External Actor"]
+    user1["User<br>External Actor"]
+    user2["User<br>External Actor"]
 
-    subgraph 1["KeyCloak Service<br>Keycloak, Docker"]
-        30["KeyCloak Instance<br>Keycloak"]
+    subgraph keycloak1["KeyCloak Service<br>Keycloak, Docker"]
+        kc1["KeyCloak Instance<br>Keycloak"]
     end
 
-    subgraph 2["Frontend Web App System<br>React, JavaScript"]
-        29["React Application Structure<br>React"]
+    subgraph frontendWeb1["Frontend Web App System<br>React, JavaScript"]
+        reactWeb1["React Application Structure<br>React"]
     end
 
-    subgraph 3["Frontend Mobile App System<br>React Native, Expo"]
-        21["Application Entry Point & Navigation<br>React Native, Expo Router"]
-        25["State Management<br>Redux Toolkit"]
-        26["API Integration<br>TypeScript, OpenAPI"]
-        27["Hooks<br>React"]
-        28["Styling<br>TypeScript, React Native"]
-        subgraph 4["UI Components<br>React Native"]
-            22["Login & Signup Screens<br>React Native"]
-            23["Tab Navigation<br>React Native, Expo Router"]
-            24["Feature-Specific Components<br>React Native"]
-            4["UI Components<br>React Native"] -->|Includes| 22
-            4 -->|Includes| 23
-            4 -->|Includes| 24
+    subgraph frontendMobile1["Frontend Mobile App System<br>React Native, Expo"]
+        entry1["Application Entry Point & Navigation<br>React Native, Expo Router"]
+        state1["State Management<br>Redux Toolkit"]
+        api1["API Integration<br>TypeScript, OpenAPI"]
+        hooks1["Hooks<br>React"]
+        styling1["Styling<br>TypeScript, React Native"]
+        subgraph ui1["UI Components<br>React Native"]
+            login1["Login & Signup Screens<br>React Native"]
+            tabs1["Tab Navigation<br>React Native, Expo Router"]
+            features1["Feature-Specific Components<br>React Native"]
+            uiComp1["UI Components<br>React Native"] -->|Includes| login1
+            uiComp1 -->|Includes| tabs1
+            uiComp1 -->|Includes| features1
         end
-        21 -->|Uses| 4
-        21 -->|Manages state with| 25
-        21 -->|Uses| 26
-        21 -->|Uses| 27
-        21 -->|Applies| 28
+        entry1 -->|Uses| uiComp1
+        entry1 -->|Manages state with| state1
+        entry1 -->|Uses| api1
+        entry1 -->|Uses| hooks1
+        entry1 -->|Applies| styling1
     end
 
-    subgraph 31["KeyCloak Service<br>Keycloak, Docker"]
-        60["KeyCloak Instance<br>Keycloak"]
+    subgraph keycloak2["KeyCloak Service<br>Keycloak, Docker"]
+        kc2["KeyCloak Instance<br>Keycloak"]
     end
 
-    subgraph 32["Frontend Web App System<br>React, JavaScript"]
-        59["React Application Structure<br>React"]
+    subgraph frontendWeb2["Frontend Web App System<br>React, JavaScript"]
+        reactWeb2["React Application Structure<br>React"]
     end
 
-    subgraph 33["Frontend Mobile App System<br>React Native, Expo"]
-        51["Application Entry Point & Navigation<br>React Native, Expo Router"]
-        55["State Management<br>Redux Toolkit"]
-        56["API Integration<br>TypeScript, OpenAPI"]
-        57["Hooks<br>React"]
-        58["Styling<br>TypeScript, React Native"]
-        subgraph 34["UI Components<br>React Native"]
-            52["Login & Signup Screens<br>React Native"]
-            53["Tab Navigation<br>React Native, Expo Router"]
-            54["Feature-Specific Components<br>React Native"]
-            34 -->|Includes| 52
-            34 -->|Includes| 53
-            34 -->|Includes| 54
+    subgraph frontendMobile2["Frontend Mobile App System<br>React Native, Expo"]
+        entry2["Application Entry Point & Navigation<br>React Native, Expo Router"]
+        state2["State Management<br>Redux Toolkit"]
+        api2["API Integration<br>TypeScript, OpenAPI"]
+        hooks2["Hooks<br>React"]
+        styling2["Styling<br>TypeScript, React Native"]
+        subgraph ui2["UI Components<br>React Native"]
+            login2["Login & Signup Screens<br>React Native"]
+            tabs2["Tab Navigation<br>React Native, Expo Router"]
+            features2["Feature-Specific Components<br>React Native"]
+            uiComp2["UI Components<br>React Native"] -->|Includes| login2
+            uiComp2 -->|Includes| tabs2
+            uiComp2 -->|Includes| features2
         end
-        51 -->|Uses| 34
-        51 -->|Manages state with| 55
-        51 -->|Uses| 56
-        51 -->|Uses| 57
-        51 -->|Applies| 58
+        entry2 -->|Uses| uiComp2
+        entry2 -->|Manages state with| state2
+        entry2 -->|Uses| api2
+        entry2 -->|Uses| hooks2
+        entry2 -->|Applies| styling2
     end
 
-    subgraph 35["Backend System<br>Flask, Python"]
-        50["Database Migrations<br>Alembic"]
-        subgraph 36["Flask Application Core<br>Python, Flask"]
-            40["Database Models<br>SQLAlchemy"]
-            subgraph 37["Chatbot Package<br>Python"]
-                48["Knowledge Base<br>Markdown, Text"]
-                49["Vector Store<br>Python"]
-                37 -->|Uses| 48
-                37 -->|Uses| 49
+    subgraph backend2["Backend System<br>Flask, Python"]
+        migrations2["Database Migrations<br>Alembic"]
+        subgraph core2["Flask Application Core<br>Python, Flask"]
+            models2["Database Models<br>SQLAlchemy"]
+            subgraph chatbot2["Chatbot Package<br>Python"]
+                kb2["Knowledge Base<br>Markdown, Text"]
+                vector2["Vector Store<br>Python"]
+                chatbot2 -->|Uses| kb2
+                chatbot2 -->|Uses| vector2
             end
-            subgraph 38["API Endpoints<br>Flask-RESTful"]
-                41["Authentication API<br>Flask"]
-                42["Blog API<br>Flask"]
-                43["Chat API<br>Flask"]
-                44["Chatbot API<br>Flask"]
-                45["Device Token API<br>Flask"]
-                46["Feed API<br>Flask"]
-                47["Profile API<br>Flask"]
-                38 -->|Uses| 41
-                38 -->|Uses| 42
-                38 -->|Uses| 43
-                38 -->|Uses| 44
-                38 -->|Uses| 45
-                38 -->|Uses| 46
-                38 -->|Uses| 47
+            subgraph apis2["API Endpoints<br>Flask-RESTful"]
+                auth2["Authentication API<br>Flask"]
+                blog2["Blog API<br>Flask"]
+                chat2["Chat API<br>Flask"]
+                chatbotAPI2["Chatbot API<br>Flask"]
+                device2["Device Token API<br>Flask"]
+                feed2["Feed API<br>Flask"]
+                profile2["Profile API<br>Flask"]
+                apis2 -->|Uses| auth2
+                apis2 -->|Uses| blog2
+                apis2 -->|Uses| chat2
+                apis2 -->|Uses| chatbotAPI2
+                apis2 -->|Uses| device2
+                apis2 -->|Uses| feed2
+                apis2 -->|Uses| profile2
             end
-            36 -->|Integrates with| 37
-            36 -->|Exposes| 38
-            36 -->|Uses| 40
+            core2 -->|Integrates with| chatbot2
+            core2 -->|Exposes| apis2
+            core2 -->|Uses| models2
         end
-        36 -->|Manages schema with| 50
+        core2 -->|Manages schema with| migrations2
     end
 
-    subgraph 5["Backend System<br>Flask, Python"]
-        20["Database Migrations<br>Alembic"]
-        subgraph 6["Flask Application Core<br>Python, Flask"]
-            10["Database Models<br>SQLAlchemy"]
-            subgraph 7["Chatbot Package<br>Python"]
-                18["Knowledge Base<br>Markdown, Text"]
-                19["Vector Store<br>Python"]
-                7 -->|Uses| 18
-                7 -->|Uses| 19
+    subgraph backend1["Backend System<br>Flask, Python"]
+        migrations1["Database Migrations<br>Alembic"]
+        subgraph core1["Flask Application Core<br>Python, Flask"]
+            models1["Database Models<br>SQLAlchemy"]
+            subgraph chatbot1["Chatbot Package<br>Python"]
+                kb1["Knowledge Base<br>Markdown, Text"]
+                vector1["Vector Store<br>Python"]
+                chatbot1 -->|Uses| kb1
+                chatbot1 -->|Uses| vector1
             end
-            subgraph 8["API Endpoints<br>Flask-RESTful"]
-                11["Authentication API<br>Flask"]
-                12["Blog API<br>Flask"]
-                13["Chat API<br>Flask"]
-                14["Chatbot API<br>Flask"]
-                15["Device Token API<br>Flask"]
-                16["Feed API<br>Flask"]
-                17["Profile API<br>Flask"]
-                8 -->|Uses| 11
-                8 -->|Uses| 12
-                8 -->|Uses| 13
-                8 -->|Uses| 14
-                8 -->|Uses| 15
-                8 -->|Uses| 16
-                8 -->|Uses| 17
+            subgraph apis1["API Endpoints<br>Flask-RESTful"]
+                auth1["Authentication API<br>Flask"]
+                blog1["Blog API<br>Flask"]
+                chat1["Chat API<br>Flask"]
+                chatbotAPI1["Chatbot API<br>Flask"]
+                device1["Device Token API<br>Flask"]
+                feed1["Feed API<br>Flask"]
+                profile1["Profile API<br>Flask"]
+                apis1 -->|Uses| auth1
+                apis1 -->|Uses| blog1
+                apis1 -->|Uses| chat1
+                apis1 -->|Uses| chatbotAPI1
+                apis1 -->|Uses| device1
+                apis1 -->|Uses| feed1
+                apis1 -->|Uses| profile1
             end
-            6 -->|Integrates with| 7
-            6 -->|Exposes| 8
-            6 -->|Uses| 10
+            core1 -->|Integrates with| chatbot1
+            core1 -->|Exposes| apis1
+            core1 -->|Uses| models1
         end
-        6 -->|Manages schema with| 20
+        core1 -->|Manages schema with| migrations1
     end
 
-    2["Frontend Web App System<br>React, JavaScript"] -->|Authenticates via| 1
-    2 -->|Consumes API| 5
-    3["Frontend Mobile App System<br>React Native, Expo"] -->|Authenticates via| 1
-    3 -->|Consumes API| 5
-    5 -->|Validates tokens from| 1
-    9 -->|Interacts with| 2
-    9 -->|Interacts with| 3
-    26 -->|Calls| 5
+    %% Connections
+    frontendWeb1 -->|Authenticates via| keycloak1
+    frontendWeb1 -->|Consumes API| backend1
+    frontendMobile1 -->|Authenticates via| keycloak1
+    frontendMobile1 -->|Consumes API| backend1
+    backend1 -->|Validates tokens from| keycloak1
+    user1 -->|Interacts with| frontendWeb1
+    user1 -->|Interacts with| frontendMobile1
+    api1 -->|Calls| backend1
 
-    32["Frontend Web App System<br>React, JavaScript"] -->|Authenticates via| 31
-    32 -->|Consumes API| 35
-    33["Frontend Mobile App System<br>React Native, Expo"] -->|Authenticates via| 31
-    33 -->|Consumes API| 35
-    35 -->|Validates tokens from| 31
-    39 -->|Interacts with| 32
-    39 -->|Interacts with| 33
-    56 -->|Calls| 35
-```
+    frontendWeb2 -->|Authenticates via| keycloak2
+    frontendWeb2 -->|Consumes API| backend2
+    frontendMobile2 -->|Authenticates via| keycloak2
+    frontendMobile2 -->|Consumes API| backend2
+    backend2 -->|Validates tokens from| keycloak2
+    user2 -->|Interacts with| frontendWeb2
+    user2 -->|Interacts with| frontendMobile2
+    api2 -->|Calls| backend2
