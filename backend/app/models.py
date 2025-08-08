@@ -149,6 +149,7 @@ class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     followed_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    follow_type = db.Column(db.String(10), default="basic")  # basic or friend
 
     # ✅ Unique Constraint (Prevent duplicate follows)
     __table_args__ = (db.UniqueConstraint("follower_id", "followed_id", name="unique_follow"),)

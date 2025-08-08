@@ -263,6 +263,100 @@ export interface FollowUserRequest {
      * @memberof FollowUserRequest
      */
     'action': string;
+    /**
+     * \Type of follow request: basic or friend
+     * @type {string}
+     * @memberof FollowUserRequest
+     */
+    'follow_type'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface FollowedUser
+ */
+export interface FollowedUser {
+    /**
+     * followed user keycloak id 
+     * @type {number}
+     * @memberof FollowedUser
+     */
+    'id': string;
+    /**
+     * follow type 'basic' or 'friend'  
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'follow_type': string;
+    /**
+     * name of followed user 
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'username': string;
+    /**
+     * profile of followed user 
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'profile_pic': string;
+}
+/**
+ * 
+ * @export
+ * @interface GetFollowingResponse
+ */
+export interface GetFollowingResponse {
+    /**
+     * All users followed by current user 
+     * @type {Array<FollowedUser>}
+     * @memberof GetFollowingResponse
+     */
+    'following'?: Array<FollowedUser>;
+}
+/**
+ * 
+ * @export
+ * @interface ChatMessage
+ */
+export interface ChatMessage {
+    /**
+     * message sender 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'sender': string;
+    /**
+     * message receiver 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'receiver': string;
+    /**
+     * content of message 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'message': string;
+    /**
+     * timestamp of a message 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'timestamp': string;
+}
+/**
+ * 
+ * @export
+ * @interface GetMessagesResponse
+ */
+export interface GetMessagesResponse {
+    /**
+     * All chat messages between current user and target user 
+     * @type {Array<ChatMessage>}
+     * @memberof GetMessagesResponse
+     */
+    'messages'?: Array<ChatMessage>;
 }
 /**
  * 
@@ -1470,7 +1564,7 @@ export const ChatApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetMessages']?.[localVarOperationServerIndex]?.url;
@@ -1507,7 +1601,7 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
             return localVarFp.getGetMessages(receiverId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1586,14 +1680,13 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            Object.assign(localVarQueryParameter, payload);
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+            
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2012,7 +2105,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFollowingResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFollowing(keycloakId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFollowing']?.[localVarOperationServerIndex]?.url;
@@ -2146,7 +2239,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetFollowingResponse> {
             return localVarFp.getGetFollowing(keycloakId, payload, options).then((request) => request(axios, basePath));
         },
         /**

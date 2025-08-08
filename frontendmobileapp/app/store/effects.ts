@@ -6,7 +6,8 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   ChangePasswordRequest,
   DeleteAccountRequest,
   EmailNotificationSettings,
-  ProfileVisibilitySettings} from "@/generated-api";
+  ProfileVisibilitySettings,
+  GetFollowingResponse} from "@/generated-api";
 import { appSelect } from "./hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -19,7 +20,10 @@ import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { setUserId, setName, setPassword  } from "./userSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postComment, 
-   setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost
+   setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost,
+   setFollowing,
+   fetchFollowedUsers,
+   SendFollowUser
  } from "./feedSlice";
 import { changeTabAction, TabType } from "./navigationSlice";
 
@@ -72,25 +76,42 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
 
 function* updateFeed(action: PayloadAction<string>){
   const posts = ((yield call(FeedApiFactory().getFeed, {feed_type: action.payload})) as AxiosResponse<PostResponse>).data as PostResponse;
-  yield put(setFeedDataAction(posts.posts ?? []));
+  yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload}));
 }
 
 function* postNewPost(action: PayloadAction<{content: string}>){
   yield call(FeedApiFactory().postCreatePost, {content: action.payload.content});
   yield put(updatePostsForFeedAction('all'));
+  yield put(updatePostsForFeedAction('friends'));
 }
 
 function* postNewComment(action: PayloadAction<{postId: number, content: string}>){
   yield call(FeedApiFactory().postAddComment, action.payload.postId,  {content: action.payload.content});
   yield put(retrievePostReactions({postId: action.payload.postId}));
   yield put(updatePostsForFeedAction('all'));
-  
+  yield put(updatePostsForFeedAction('friends'));
+}
+
+function* handleGetFollowing(action: PayloadAction<void>){
+  let userId = (((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string);
+  const users = ((yield call(FeedApiFactory().getGetFollowing, userId, {})) as AxiosResponse<GetFollowingResponse>).data as GetFollowingResponse;
+  yield put(setFollowing(users.following ?? []));
+}
+
+function* handlePostFollowUser(action: PayloadAction<{keycloakId: string, action: string, type: string}>) {
+  try{
+    yield call(FeedApiFactory().postFollowUser, action.payload.keycloakId, 
+    {action: action.payload.action, follow_type: action.payload.type});
+    yield put(fetchFollowedUsers());
+  }catch (error) {
+    console.error('password change failed', error);   
+  }
 }
 
 function* handleLikePost(action: PayloadAction<{postId: number}>){
   yield call(FeedApiFactory().postLikePost, action.payload.postId,  {post_id: action.payload.postId});
 }
-
+ 
 function* handleReactionToPost(action: PayloadAction<{postId: number, reactionType: string}>){
   const response = ((yield call(FeedApiFactory().postReactToPost, action.payload.postId, {reaction_type: action.payload.reactionType})) as AxiosResponse<PostReactionToPostResponse>).data as PostReactionToPostResponse;
   if (response?.message?.includes('Removed') || response?.message?.includes('Added')) {
@@ -98,6 +119,7 @@ function* handleReactionToPost(action: PayloadAction<{postId: number, reactionTy
   }
   yield put(retrievePostReactions({postId: action.payload.postId}));
   yield put(updatePostsForFeedAction('all'));
+  yield put(updatePostsForFeedAction('friends'));
   
 }
 
@@ -224,7 +246,8 @@ function* appSaga() {
   yield takeEvery(updateEmailNotificationSettings.type, updateEmailSettings);
   yield takeEvery(getProfileVisibilitySettings.type, fetchProfileVisiblitySettings);
   yield takeEvery(updateProfileVisibilitySettings.type, updateProfileSettings);
-
+  yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
+  yield takeEvery(SendFollowUser.type, handlePostFollowUser);
 }
 
 export default appSaga;

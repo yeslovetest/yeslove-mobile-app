@@ -62,7 +62,7 @@ class GetMessages(Resource):
             | ((Chat.sender_id == receiver_id) & (Chat.receiver_id == user.id))
         ).order_by(Chat.timestamp.asc()).all()
 
-        return [
+        return {"messages": [
             {
                 "sender": msg.sender.username,
                 "receiver": msg.receiver.username,
@@ -70,4 +70,4 @@ class GetMessages(Resource):
                 "timestamp": msg.timestamp.isoformat(),
             }
             for msg in messages
-        ], 200
+        ]}, 200
