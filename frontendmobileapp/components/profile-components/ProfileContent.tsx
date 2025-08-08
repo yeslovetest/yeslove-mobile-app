@@ -4,6 +4,7 @@ import styles from "../../Styles/page-styles/ProfileStyles";
 import AboutSection from "./AboutSection"
 import SettingSection from './SettingSection';
 import { useAppSelector } from '@/app/store/hooks';
+import MessageSection from './MessageSection';
 
 const ProfileContent = () => {
   let activeTab = useAppSelector(state => state.profile.view.activeTab);
@@ -15,7 +16,7 @@ const ProfileContent = () => {
       {activeTab === "Notifications" && <Text>Notifications Page Content</Text>}
       {activeTab === "Photos" && <Text>Photos Page Content</Text>}
       {activeTab === "Settings" && <SettingSection/>}
-      {activeTab === "Messages" && <Text>Messages Page Content</Text>}
+      {activeTab === "Messages" && <MessageSection/>}
       {activeTab === "Invitations" && <Text>Invitations Page Content</Text>}
     </View>
   )

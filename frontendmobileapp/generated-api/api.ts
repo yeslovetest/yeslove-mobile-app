@@ -321,13 +321,13 @@ export interface GetFollowingResponse {
  */
 export interface ChatMessage {
     /**
-     * message sender 
+     * message sender username
      * @type {string}
      * @memberof ChatMessage
      */
     'sender': string;
     /**
-     * message receiver 
+     * message receiver username
      * @type {string}
      * @memberof ChatMessage
      */

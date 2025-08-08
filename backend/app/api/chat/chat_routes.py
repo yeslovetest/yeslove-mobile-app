@@ -54,12 +54,14 @@ class GetMessages(Resource):
         """Fetch chat messages between two users."""
         from app.models import User, Chat
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        if not user:
+        receiver = User.query.filter_by(Keycloak_id=receiver_id).first()
+
+        if not user or not receiver:
             return {"message": "User not found"}, 404
 
         messages = Chat.query.filter(
-            ((Chat.sender_id == user.id) & (Chat.receiver_id == receiver_id))
-            | ((Chat.sender_id == receiver_id) & (Chat.receiver_id == user.id))
+            ((Chat.sender_id == user.id) & (Chat.receiver_id == receiver.id))
+            | ((Chat.sender_id == receiver.id) & (Chat.receiver_id == user.id))
         ).order_by(Chat.timestamp.asc()).all()
 
         return {"messages": [

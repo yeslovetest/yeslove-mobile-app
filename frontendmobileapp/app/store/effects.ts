@@ -7,7 +7,9 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   DeleteAccountRequest,
   EmailNotificationSettings,
   ProfileVisibilitySettings,
-  GetFollowingResponse} from "@/generated-api";
+  GetFollowingResponse,
+  ChatApiFactory,
+  GetMessagesResponse} from "@/generated-api";
 import { appSelect } from "./hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -26,6 +28,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    SendFollowUser
  } from "./feedSlice";
 import { changeTabAction, TabType } from "./navigationSlice";
+import { fetchChatMessages, setChatMessages } from "./chatSlice";
 
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* saveProfileInfoEffect(action: any) {
@@ -226,6 +229,11 @@ function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>
   }
 }
 
+function* handleGetMessages(action: PayloadAction<number>){
+  const messages = ((yield call(ChatApiFactory().getGetMessages, action.payload, {})) as AxiosResponse<GetMessagesResponse>).data as GetMessagesResponse;
+  yield put(setChatMessages(messages.messages ?? []));
+}
+
 
 function* appSaga() {
   yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);
@@ -248,6 +256,7 @@ function* appSaga() {
   yield takeEvery(updateProfileVisibilitySettings.type, updateProfileSettings);
   yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
   yield takeEvery(SendFollowUser.type, handlePostFollowUser);
+  yield takeEvery(fetchChatMessages.type, handleGetMessages);
 }
 
 export default appSaga;

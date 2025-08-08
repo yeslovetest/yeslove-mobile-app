@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
-import { TextInput, TouchableOpacity, View, Text } from "react-native"
-import { logoutAction, setDeleteConfirmation, setUserPassword } from "@/app/store/authSlice";
+import { TouchableOpacity, View, Text, Image } from "react-native"
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import styles from "@/Styles/page-styles/ProfileStyles"
-import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
-import { useMsgToggle } from "@/hooks/messageToggle";
-import { TabType } from "@/app/store/navigationSlice";
+import { openTabOnTopAction, TabType } from "@/app/store/navigationSlice";
+import { fetchChatMessages } from "@/app/store/chatSlice";
 
 export interface Friend {
     username: string,
@@ -20,32 +17,21 @@ interface Props {
 
 const MessageInbox = (props: Props) => {
     const dispatch = useAppDispatch();
-    const [changePasswordSection, setChangePasswordSection] = useState(false);
-    const [deleteAccountSection, setDeleteAccountSection] = useState(false);
-    const [password, setPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const msgToggle = useMsgToggle();
-    const currentPassword = useAppSelector(state => state.user.password);
-    const msg = useAppSelector(state => state.auth.message);
 
-    useEffect(() => {   //make the message appear for 3s
-        msgToggle.toggleMsg(msg)
-      }, [msgToggle.errorMsg, msg]);
     
     const displayChatSection = () => {
-        dispatch(retrievePostReactions({postId: props.post.id ?? 0}));
-        dispatch(openTabOnTopAction({ type: TabType.Chat_Section, data: props.friend}));
-        dispatch(setPostReactionTab(tab))   
+        dispatch(fetchChatMessages(Number(props.friend?.userId)));
+        dispatch(openTabOnTopAction({ type: TabType.Chat_Section, data: props.friend}));      
     }
       
     
     return (
-        <View style={styles.settingsNavItemContainer} key={props?.key ?? ''}>  
-            <TouchableOpacity style={styles.settingsNavItemContent} 
-            onPress={displayChatSection}>
-                <Image style={styles.profileImage} source={{ uri: props?.friend?.profilePic }} />
-                <Text style={styles.sectionText}>{props?.friend?.username}</Text>
+        <View style={styles.messageContainer} key={props?.key ?? ''}>  
+            <TouchableOpacity onPress={displayChatSection}>
+                <View style={styles.messageContent}>
+                    <Image style={styles.messageImageIcon} source={{ uri: props?.friend?.profilePic }} />
+                    <Text style={styles.messageHeaderText}>{props?.friend?.username}</Text>
+                </View>
             </TouchableOpacity>
         </View>
     )
