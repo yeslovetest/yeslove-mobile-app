@@ -7,15 +7,16 @@ const chatSlice = createSlice({
         messages: [] as ChatMessage[],
     },
     reducers: {
-        fetchChatMessages: (state, action: PayloadAction<number>) => {},
+        fetchChatMessages: (state, action: PayloadAction<string>) => {},
         setChatMessages: (state, action: PayloadAction<ChatMessage[]>) => {
             state.messages = action.payload
-        }
+        },
+        sendChatMessage: (state, action: PayloadAction<{id: string, message: string}>) => {}
     }    
 })
 
 export const {
-    fetchChatMessages, setChatMessages
+    fetchChatMessages, setChatMessages, sendChatMessage
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

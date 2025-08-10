@@ -624,11 +624,11 @@ export interface ResetPasswordRequest {
  */
 export interface SendMessageRequest {
     /**
-     * ID of the recipient user
-     * @type {number}
+     * keycloak ID of the recipient user
+     * @type {string}
      * @memberof SendMessageRequest
      */
-    'receiver_id': number;
+    'receiver_id': string;
     /**
      * Message content
      * @type {string}
@@ -1463,7 +1463,6 @@ export class AuthApi extends BaseAPI {
 }
 
 
-
 /**
  * ChatApi - axios parameter creator
  * @export
@@ -1473,12 +1472,12 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @summary Fetch chat messages between two users
-         * @param {number} receiverId 
+         * @param {string} receiverId 
          * @param {object} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages: async (receiverId: number, payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getGetMessages: async (receiverId: string, payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'receiverId' is not null or undefined
             assertParamExists('getGetMessages', 'receiverId', receiverId)
             // verify required parameter 'payload' is not null or undefined
@@ -1559,12 +1558,12 @@ export const ChatApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Fetch chat messages between two users
-         * @param {number} receiverId 
+         * @param {string} receiverId 
          * @param {object} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
+        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetMessages']?.[localVarOperationServerIndex]?.url;
@@ -1596,12 +1595,12 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Fetch chat messages between two users
-         * @param {number} receiverId 
+         * @param {string} receiverId 
          * @param {object} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
+        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
             return localVarFp.getGetMessages(receiverId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1627,13 +1626,13 @@ export class ChatApi extends BaseAPI {
     /**
      * 
      * @summary Fetch chat messages between two users
-     * @param {number} receiverId 
+     * @param {string} receiverId 
      * @param {object} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ChatApi
      */
-    public getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig) {
+    public getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig) {
         return ChatApiFp(this.configuration).getGetMessages(receiverId, payload, options).then((request) => request(this.axios, this.basePath));
     }
 

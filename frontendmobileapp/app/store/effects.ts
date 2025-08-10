@@ -28,17 +28,12 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    SendFollowUser
  } from "./feedSlice";
 import { changeTabAction, TabType } from "./navigationSlice";
-import { fetchChatMessages, setChatMessages } from "./chatSlice";
+import { fetchChatMessages, sendChatMessage, setChatMessages } from "./chatSlice";
 
-// worker Saga: will be fired on USER_FETCH_REQUESTED actions
-function* saveProfileInfoEffect(action: any) {
-  let userId: string = yield appSelect(state => state.user.id);
-  let info: UserProfile = yield appSelect(state => state.profile.profiles[userId]);
-  ProfileApiFactory()
-    .putUpdateProfile(info)
-    .catch((reason) => console.log("Failed to update user profile: " + reason));
-}
 
+/** 
+ * Auth Api 
+ * */
 function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   let request = action.payload;
 
@@ -77,6 +72,53 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
   }
 }
 
+function* handleLogout(action: PayloadAction<string>) {
+  try {
+    yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
+
+    // Stop the refresh token polling synchronously
+    TOKEN_REFRESH_SERVICE.stopRefreshingToken();
+    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, '');
+    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, '');
+    yield put(changeTabAction({ type: TabType.HOME }));
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+    yield put(setFeedDataAction([]));
+    yield put(setEmailNotificationSettings([]));
+    yield put(setProfileVisibilitySettings([]));
+    yield put(setChatMessages([]));
+  } catch (error) {
+    console.error('Logout Failed!', error);
+  }
+}
+
+function* handlePasswordChange(action: PayloadAction<ChangePasswordRequest>) {
+  let request = action.payload;
+
+  try{
+    yield call(AuthApiFactory().postChangePassword, request);
+    yield put(setMessage('Password change successful!'));
+    yield put(setPassword(request.new_password));
+    
+  }catch (error) {
+    console.error('password change failed', error);
+    
+  }
+}
+
+function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
+  const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string;
+  try{
+    yield call(AuthApiFactory().deleteDeleteAccount, action.payload);
+    yield put(logoutAction(refreshToken || ''));
+  }
+  catch (error) {
+    console.error('Delete action failed', error);
+  }
+}
+
+/** 
+ * Feed Api 
+ * */
 function* updateFeed(action: PayloadAction<string>){
   const posts = ((yield call(FeedApiFactory().getFeed, {feed_type: action.payload})) as AxiosResponse<PostResponse>).data as PostResponse;
   yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload}));
@@ -156,47 +198,16 @@ function* fetchPostReactions (action: PayloadAction<{postId: number}>){
   yield put(setReactions(reactions.reactions ?? []));
 }
 
-function* handleLogout(action: PayloadAction<string>) {
-  try {
-    yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
-
-    // Stop the refresh token polling synchronously
-    TOKEN_REFRESH_SERVICE.stopRefreshingToken();
-    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, '');
-    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, '');
-    yield put(changeTabAction({ type: TabType.HOME }));
-    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
-    yield put(setFeedDataAction([]));
-    yield put(setEmailNotificationSettings([]));
-    yield put(setProfileVisibilitySettings([]));
-  } catch (error) {
-    console.error('Logout Failed!', error);
-  }
-}
-
-function* handlePasswordChange(action: PayloadAction<ChangePasswordRequest>) {
-  let request = action.payload;
-
-  try{
-    yield call(AuthApiFactory().postChangePassword, request);
-    yield put(setMessage('Password change successful!'));
-    yield put(setPassword(request.new_password));
-    
-  }catch (error) {
-    console.error('password change failed', error);
-    
-  }
-}
-
-function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
-  const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string;
-  try{
-    yield call(AuthApiFactory().deleteDeleteAccount, action.payload);
-    yield put(logoutAction(refreshToken || ''));
-  }
-  catch (error) {
-    console.error('Delete action failed', error);
-  }
+/** 
+ * Profile Api 
+ * */
+// worker Saga: will be fired on USER_FETCH_REQUESTED actions
+function* saveProfileInfoEffect(action: any) {
+  let userId: string = yield appSelect(state => state.user.id);
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[userId]);
+  ProfileApiFactory()
+    .putUpdateProfile(info)
+    .catch((reason) => console.log("Failed to update user profile: " + reason));
 }
 
 function* fetchEmailNotificationSettings(action: PayloadAction<void>){
@@ -229,34 +240,51 @@ function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>
   }
 }
 
-function* handleGetMessages(action: PayloadAction<number>){
+/** 
+ * Chat Api 
+ * */
+function* handleGetMessages(action: PayloadAction<string>){
   const messages = ((yield call(ChatApiFactory().getGetMessages, action.payload, {})) as AxiosResponse<GetMessagesResponse>).data as GetMessagesResponse;
   yield put(setChatMessages(messages.messages ?? []));
 }
 
+function* handlePostSendMessage(action: PayloadAction<{id: string, message: string}>) {
+  try{
+    yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, message: action.payload.message});
+    yield put(fetchChatMessages(action.payload.id));
+  }catch (error) {
+    console.error('failed to send message', error);  
+  }
+}
+
 
 function* appSaga() {
-  yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);
+/**Auth Api saga */
   yield takeEvery(logInAction.type, handleLoginRequest);
   yield takeEvery(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
+  yield takeEvery(signupAction.type, handleSignupRequest);
+  yield takeEvery(setUserPassword.type, handlePasswordChange);
+  yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
+/**Feed Api saga */
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
-  yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
-  yield takeEvery(signupAction.type, handleSignupRequest);
   yield takeEvery(postComment.type, postNewComment);
   yield takeEvery(retrievePostReactions.type, fetchPostReactions);
   yield takeEvery(postReactionToPost.type, handleReactionToPost);
   yield takeEvery(postLikePost.type, handleLikePost);
   yield takeEvery(logoutAction.type, handleLogout);
-  yield takeEvery(setUserPassword.type, handlePasswordChange);
-  yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
+  yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
+  yield takeEvery(SendFollowUser.type, handlePostFollowUser);
+/**Profile Api saga */
+  yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
+  yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);
   yield takeEvery(getEmailNotificationSettings.type, fetchEmailNotificationSettings);
   yield takeEvery(updateEmailNotificationSettings.type, updateEmailSettings);
   yield takeEvery(getProfileVisibilitySettings.type, fetchProfileVisiblitySettings);
   yield takeEvery(updateProfileVisibilitySettings.type, updateProfileSettings);
-  yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
-  yield takeEvery(SendFollowUser.type, handlePostFollowUser);
+/**Chat Api saga */
   yield takeEvery(fetchChatMessages.type, handleGetMessages);
+  yield takeEvery(sendChatMessage.type, handlePostSendMessage);
 }
 
 export default appSaga;

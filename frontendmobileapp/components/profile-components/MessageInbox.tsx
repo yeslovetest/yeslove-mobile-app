@@ -1,5 +1,5 @@
 import { TouchableOpacity, View, Text, Image } from "react-native"
-import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { useAppDispatch } from "@/app/store/hooks";
 import styles from "@/Styles/page-styles/ProfileStyles"
 import { openTabOnTopAction, TabType } from "@/app/store/navigationSlice";
 import { fetchChatMessages } from "@/app/store/chatSlice";
@@ -20,7 +20,7 @@ const MessageInbox = (props: Props) => {
 
     
     const displayChatSection = () => {
-        dispatch(fetchChatMessages(Number(props.friend?.userId)));
+        dispatch(fetchChatMessages(props.friend?.userId ?? ''));
         dispatch(openTabOnTopAction({ type: TabType.Chat_Section, data: props.friend}));      
     }
       

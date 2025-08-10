@@ -163,6 +163,8 @@ class Chat(db.Model):
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     message = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    sender = db.relationship("User", foreign_keys=[sender_id])
+    receiver = db.relationship("User", foreign_keys=[receiver_id])
 
     # ✅ Prevent users from messaging themselves
     __table_args__ = (db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),)
