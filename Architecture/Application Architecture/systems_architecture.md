@@ -12,6 +12,7 @@ graph TD
         29["React Application Structure<br>React"]
     end
 
+
     subgraph 3["Frontend Mobile App System<br>React Native, Expo"]
         21["Application Entry Point & Navigation<br>React Native, Expo Router"]
         25["State Management<br>Redux Toolkit"]

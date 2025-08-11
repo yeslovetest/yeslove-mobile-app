@@ -12,7 +12,7 @@ from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
-from app.api.blog.blog_routes import api as blog_api
+from app.api.Blog.blog_routes import api as blog_api
 from app.api.deviceToken.device_token_routes import api as device_token_api
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot

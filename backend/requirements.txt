@@ -35,3 +35,11 @@ Flask-Admin
 python-dateutil
 
 openai
+
+# Vector DB requirements
+
+tiktoken
+
+pgvector
+
+psycopg2-binary
