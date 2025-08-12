@@ -7,6 +7,7 @@ import { setActiveGetHelpTabAction } from '@/app/store/getHelpSlice';
 import Blogs from "./Blogs";
 import GetHelpHeader from "./GetHelpHeader";
 import BlogsHeader from "./BlogsHeader";
+import OrangeBanner from "../universal-components/OrangeBanner";
 
 const navBarItems = ["Professionals", "Blogs"]
 
@@ -30,7 +31,7 @@ const GetHelpNavbar = () => {
 
                 {activeTab === "Professionals" && (
                     <View>
-                        <GetHelpHeader />
+                        <OrangeBanner icon="users" mainTitle="Our Professionals" description="Browse the list of professionals" />
                         <GetHelpSearchBar />
                         <GetHelpProfessionals />
                     </View>
@@ -38,7 +39,7 @@ const GetHelpNavbar = () => {
 
                 {activeTab === "Blogs" && (
                     <View>
-                        <BlogsHeader />
+                        <OrangeBanner icon="book-open-reader" mainTitle="Our Blogs" description="Browse the list of blogs"/>
                         <Blogs />
                     </View>
                 )}

@@ -20,6 +20,7 @@ import IndividualEvent from "@/components/events-components/IndividualEvent";
 import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
 import IndividualPost from "@/components/home-components/IndividualPost";
 import ScrollToTop from "@/components/ScrollToTop";
+import NotificationsPage from "./tabs/notifications";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -58,6 +59,7 @@ const App = () => {
               GET_HELP: <GetHelpPage></GetHelpPage>,
               EVENTS: <EventsPage></EventsPage>,
               PROFILE: <ProfilePage></ProfilePage>,
+              NOTIFICATIONS: <NotificationsPage></NotificationsPage>,
               INDIVIDUAL_EVENT: <IndividualEvent />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,

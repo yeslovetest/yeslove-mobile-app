@@ -7,6 +7,7 @@ import styles from "../../Styles/page-styles/HomeStyles"
 import HomeNavBar from '@/components/home-components/HomeNavBar';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setScrollViewPosition } from '../store/feedSlice';
+import OrangeBanner from '@/components/universal-components/OrangeBanner';
 
 export default function HomeScreen() {
 
@@ -38,7 +39,7 @@ useEffect (() => {
       <ScrollView ref={scrollViewRef} contentContainerStyle={styles.contentContainer} style={styles.container}
       onScroll={event => {dispatch(setScrollViewPosition(event.nativeEvent.contentOffset.y))}}
       scrollEventThrottle={16}>
-        <FeedHeader />
+        <OrangeBanner icon="newspaper" mainTitle="Newsfeed" description="Share and hear stories" />
         <UserPostBox />
         <HomeNavBar />
       </ScrollView>

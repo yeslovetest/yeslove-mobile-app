@@ -3,6 +3,7 @@ import styles from "@/Styles/page-styles/EventsStyles";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setActiveEventsTabAction } from '@/app/store/eventsSlice';
 import Event from "./EventsList";
+import OrangeBanner from "../universal-components/OrangeBanner";
 
 const navBarItems = ["Upcoming", "Attending", "Attended"]
 
@@ -25,13 +26,21 @@ const EventNavbar = () => {
 
       {activeTab === "Upcoming" && (
         <View>
+          <OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
           <Event />
         </View>
       )}
 
       {activeTab === "Attending" && (
-        <View />
+        <View>
+        <OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
+        </View>
       )}
+
+      {activeTab === "Attended" && (
+      <View>
+<OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
+      </View>)}
     </View>
   )
 }

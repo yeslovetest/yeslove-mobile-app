@@ -12,62 +12,6 @@ const styles = StyleSheet.create({
         width: theme.spacing.standardPageContentWidth
     },
 
-    containerIndPost: {
-      marginTop: 0,
-      width: '100%',
-    },
-
-    contentContainer: {
-        justifyContent: "flex-start",
-        alignItems: "center",
-        paddingBottom: 50
-      },
-
-    feedHeaderContainer: {
-        width: theme.spacing.postWidth,
-        height: 115,
-        marginTop: vw(5),
-        borderRadius: 15,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: theme.colors.bannerOrange,
-    },
-
-    contentRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 30,
-    },
-    textContainer: {
-        justifyContent: "center",
-        alignItems: "flex-start",
-        borderLeftWidth: 5,
-        borderLeftColor: "#fff",
-        paddingHorizontal: 10
-    },
-
-    imageBackground: {
-        position: "absolute",  
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0, 
-        width: "100%",  
-        height: "100%", 
-    },
-
-    feedHeaderText: {
-        fontSize: 23,
-        color: "#fff",
-        fontWeight: "bold",
-    },
-
-    feedHeaderCaption: {
-        fontSize: 15,
-        color: "#fff",
-        fontWeight: "600",
-    },
 
     /*User post box*/
 
