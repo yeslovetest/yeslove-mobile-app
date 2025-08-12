@@ -52,7 +52,6 @@ const App = () => {
       )}
       {loginState == LoginState.LOGGED_IN && (
         <View style={styles.container}>
-          <Header ></Header>
           {
             {
               HOME: <HomeScreen></HomeScreen>,

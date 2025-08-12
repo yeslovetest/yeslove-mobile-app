@@ -1,23 +1,84 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import styles from "../Styles/component-styles/HeaderStyles"
+import styles from "../Styles/component-styles/HeaderStyles";
 import { useAppDispatch, useAppSelector } from './store/hooks';
-import { goBackToPreviousTabAction } from './store/navigationSlice';
+import { goBackToPreviousTabAction, TabType } from './store/navigationSlice';
+import PostModal from '@/Styles/component-styles/PostModal';
 
-export default function Header() {
+export interface Props {
+  mainTitle?: string;
+  icon?: string;
+}
+
+export default function Header(props: Props) {
+  const tabStack = useAppSelector(state => state.navigation.tabStack);
   const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
   const dispatch = useAppDispatch();
+  const currentTab = tabStack[tabStack.length - 1]?.type;
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const openPostModal = () => setModalVisible(true);
+  const closePostModal = () => setModalVisible(false);
+
   const returnToPreviousTab = () => {
-    dispatch(goBackToPreviousTabAction())
-  }
+    dispatch(goBackToPreviousTabAction());
+  };
+
   return (
     <View style={styles.header}>
-      {!hasTabToGoBackTo && <Text style={styles.title}>Yeslove!</Text>}
-      {hasTabToGoBackTo && <FontAwesome5 onClick={returnToPreviousTab} name="chevron-left" />}
-      <FontAwesome5 onClick={() => {throw Error("Not Implemented")}} style={styles.profile} size={24} name="user-alt" />
+      {hasTabToGoBackTo && (
+        <View style={styles.headerDistribution}>
+          <FontAwesome5 onPress={returnToPreviousTab} name="chevron-left" size={20} />
+          <View />
+        </View>
+      )}
+
+      {!hasTabToGoBackTo && currentTab === TabType.HOME && (
+        <View style={styles.headerDistribution}>
+          <TouchableOpacity onPress={openPostModal}>
+            <FontAwesome5 name="plus" size={20} />
+          </TouchableOpacity>
+          <Text style={styles.title}>{props.mainTitle}</Text>
+          <View />
+        </View>
+      )}
+
+      {!hasTabToGoBackTo && currentTab === TabType.PROFILE && (
+        <View style={styles.headerDistribution}>
+          <View />
+          <Text style={styles.title}>{props.mainTitle}</Text>
+          <View />
+        </View>
+      )}
+
+      {!hasTabToGoBackTo && currentTab === TabType.EVENTS && (
+        <View style={styles.headerDistribution}>
+          <View />
+          <Text style={styles.title}>{props.mainTitle}</Text>
+          <View />
+        </View>
+      )}
+
+      {!hasTabToGoBackTo && currentTab === TabType.NOTIFICATIONS && (
+        <View style={styles.headerDistribution}>
+          <View />
+          <Text style={styles.title}>{props.mainTitle}</Text>
+          <FontAwesome5 name="comment-alt" size={20} />
+        </View>
+      )}
+
+      {!hasTabToGoBackTo && currentTab === TabType.GET_HELP && (
+        <View style={styles.headerDistribution}>
+          <View />
+          <Text style={styles.title}>{props.mainTitle}</Text>
+          <View />
+        </View>
+      )}
+
+      {/* post modal */}
+      <PostModal visible={modalVisible} onClose={closePostModal} />
     </View>
   );
 }
-
-

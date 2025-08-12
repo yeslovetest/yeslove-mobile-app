@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
       justifyContent: "flex-start",
       alignItems: "center",
       marginTop: vw(5),
+          marginBottom: vw(5),
     },
 
 
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
       /* */
 
   postContainer: {
-    marginTop: vw(5),
+    marginBottom: vw(5),
     width: theme.spacing.postWidth,
     backgroundColor: "#fff",
     justifyContent: "center",

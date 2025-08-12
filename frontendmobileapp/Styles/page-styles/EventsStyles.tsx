@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import theme from "../Variables";
+import { vw } from "@/ts/viewport-units";
 
 const styles = StyleSheet.create({
     container: {
@@ -23,7 +24,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "flex-start",
         alignItems: "center",
-        marginTop: 10,
+        marginTop: vw(5),
+        marginBottom: vw(5),
     },
     navBar: {
         flexDirection: "row",
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         backgroundColor: "#fff",
         paddingVertical: 10,
-        borderRadius: 10,
+        borderRadius: 15,
         elevation: 3,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -71,7 +73,6 @@ const styles = StyleSheet.create({
         display: "flex",
         justifyContent: "flex-start",
         alignItems: "center",
-        marginTop: 20,
     },
 
     eventContainer: {
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         backgroundColor: theme.colors.eventTextBackground,
         marginBottom: 30,
-        borderRadius: 10,
+        borderRadius: 15,
 
     },
 

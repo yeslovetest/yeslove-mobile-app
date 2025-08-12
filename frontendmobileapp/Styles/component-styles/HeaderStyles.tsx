@@ -2,25 +2,28 @@ import { StyleSheet } from "react-native";
 import theme from "../Variables";
 
 const styles = StyleSheet.create({
+  headerDistribution: {
+    flexDirection: "row", 
+    width: "100%", 
+    paddingHorizontal: 20, 
+    justifyContent: "space-between", 
+    alignItems: "center"
+  },
     header: {
         width: '100%',
         height: 60,
         backgroundColor: '#fff', 
         flexDirection: 'row', 
+        justifyContent: "center",
         alignItems: 'center', 
-        paddingLeft: 20, 
-        paddingTop: 5,
         marginTop: 0,
-        justifyContent: 'space-between', 
       },
       title: {
-        color: theme.colors.primaryBlue,
-        fontSize: 20,
+        color: theme.colors.blackText,
+        fontSize: 24,
         fontWeight: 'bold',
+        alignSelf: "center",
       },
-      profile: {
-        marginRight: 15,
-      }
 })
 
 export default styles 

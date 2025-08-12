@@ -26,20 +26,17 @@ const EventNavbar = () => {
 
       {activeTab === "Upcoming" && (
         <View>
-          <OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
           <Event />
         </View>
       )}
 
       {activeTab === "Attending" && (
         <View>
-        <OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
         </View>
       )}
 
       {activeTab === "Attended" && (
       <View>
-<OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
       </View>)}
     </View>
   )
