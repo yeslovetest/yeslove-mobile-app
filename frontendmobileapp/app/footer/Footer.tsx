@@ -15,6 +15,8 @@ const Footer = () => {
     <View style={styles.footer}>
       <FooterButton tab={{ type: TabType.HOME }} icon='house' title='Home'></FooterButton>
       <FooterButton tab={{ type: TabType.GET_HELP }} icon='hand-holding-heart' title='Get help'></FooterButton>
+      <FooterButton tab={{ type: TabType.NOTIFICATIONS, data: { userId: userId} }} icon='at' title='Notifications'>
+      </FooterButton>
       <FooterButton tab={{ type: TabType.EVENTS }} icon='martini-glass-citrus' title='Events'></FooterButton>
       <FooterButton tab={{ type: TabType.PROFILE, data: { userId: userId} }} icon='circle-user' title='Profile'>
       </FooterButton>
