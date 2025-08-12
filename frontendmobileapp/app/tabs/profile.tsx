@@ -1,11 +1,11 @@
 import { ScrollView } from 'react-native';
-import styles from "../../Styles/page-styles/ProfileStyles";
+import styles from '../pages/Profile/Profile-styles/ProfileStyles';
 
 /*components */
-import ProfileHeader from "../../components/profile-components/ProfileHeader";
-import ProfileNavBar from "../../components/profile-components/ProfileNavBar";
-import ProfileContent from "../../components/profile-components/ProfileContent";
-import Header from '../Header';
+import ProfileHeader from "../pages/Profile/Profile-components/ProfileHeader";
+import ProfileNavBar from "../pages/Profile/Profile-components/ProfileNavBar";
+import ProfileContent from "../pages/Profile/Profile-components/ProfileContent";
+import Header from '../Universal-components/Header/Header';
 import { useAppSelector } from '../store/hooks';
 
 

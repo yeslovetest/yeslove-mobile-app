@@ -1,8 +1,8 @@
 import { ScrollView, Text } from 'react-native';
-import styles from "../../Styles/page-styles/EventsStyles";
-import EventNavbar from '@/components/events-components/EventNavbar';
-import Header from '../Header';
-import OrangeBanner from '@/components/universal-components/OrangeBanner';
+import styles from '../pages/Events/Events-styles/EventsStyles';
+import EventNavbar from '../pages/Events/Events-components/EventNavbar';
+import Header from '../Universal-components/Header/Header';
+import OrangeBanner from '@/app/Universal-components/Orange-banner/OrangeBanner';
 
 
 export default function EventsPage() {

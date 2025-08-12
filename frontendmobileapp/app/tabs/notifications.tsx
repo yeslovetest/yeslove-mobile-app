@@ -1,10 +1,10 @@
 
 import React, { useRef } from 'react'
 import { ScrollView } from 'react-native'
-import Header from '../Header'
+import Header from '../Universal-components/Header/Header'
 import { useAppSelector } from '../store/hooks'
 import { useFocusEffect } from 'expo-router'
-import styles from '@/Styles/page-styles/NotificationsStyles'
+import styles from '@/app/pages/Notifications/Notifications-styles/NotificationsStyles'
 
 const NotificationsPage = () => {
  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);

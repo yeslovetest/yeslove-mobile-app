@@ -1,13 +1,13 @@
 import React, { useRef, useEffect } from 'react';
 import { ScrollView } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import styles from "../../Styles/page-styles/HomeStyles"
-import HomeNavBar from '@/components/home-components/HomeNavBar';
+import styles from "../pages/Home/Home-styles/HomeStyles"
+import HomeNavBar from '@/app/pages/Home/Home-components/HomeNavBar';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setScrollViewPosition } from '../store/feedSlice';
-import OrangeBanner from '@/components/universal-components/OrangeBanner';
-import Header from '../Header';
-import ScrollToTop from '@/components/ScrollToTop';
+import { setScrollViewPosition } from '../store/Home-store/feedSlice';
+import OrangeBanner from '@/app/Universal-components/Orange-banner/OrangeBanner';
+import Header from '../Universal-components/Header/Header';
+import ScrollToTop from '@/app/pages/Home/Home-components/ScrollToTop';
 
 export default function HomeScreen() {
 
