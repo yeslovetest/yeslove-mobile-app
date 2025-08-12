@@ -4,7 +4,8 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import styles from "../Styles/component-styles/HeaderStyles";
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { goBackToPreviousTabAction, TabType } from './store/navigationSlice';
-import PostModal from '@/Styles/component-styles/PostModal';
+import PostModal from '@/components/home-components/PostModal';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export interface Props {
   mainTitle?: string;
@@ -73,7 +74,8 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <View />
+          {/*bot icon that will later direct to the chatbot */}
+          <MaterialCommunityIcons name="robot-love" size={25} color="black" />
         </View>
       )}
 

@@ -1,7 +1,6 @@
-// app/components/PostModal.tsx
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Modal, TouchableOpacity, Animated, StyleSheet } from 'react-native';
-import UserPostBox from '@/components/home-components/UserPostBox';
+import UserPostBox from './UserPostBox';
 
 interface PostModalProps {
   visible: boolean;
@@ -10,9 +9,11 @@ interface PostModalProps {
 
 const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const slideAnim = useRef(new Animated.Value(300)).current;
+  const [isRendered, setIsRendered] = useState(visible);
 
   useEffect(() => {
     if (visible) {
+       setIsRendered(true);
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
@@ -23,17 +24,20 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
         toValue: 300,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        setIsRendered(false);
+      });
     }
   }, [visible]);
+   if (!isRendered) return null;
+
+    const handleClose = () => {
+    onClose();
+  };
 
   return (
-    <Modal transparent visible={visible} animationType="none">
-      <TouchableOpacity
-        style={styles.backdrop}
-        activeOpacity={1}
-        onPress={onClose}
-      >
+    <Modal transparent visible={isRendered} animationType="none">
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleClose}>
         <TouchableOpacity activeOpacity={1}>
           <Animated.View
             style={[
@@ -41,7 +45,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
-            <UserPostBox />
+            <UserPostBox onPost={handleClose} />
           </Animated.View>
         </TouchableOpacity>
       </TouchableOpacity>

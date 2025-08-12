@@ -1,7 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import Footer from "./footer/Footer";
-import Header from "./Header";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfilePage from "./tabs/profile";
 import HomeScreen from "./tabs/home";
@@ -19,7 +18,6 @@ import EventsPage from "./tabs/events";
 import IndividualEvent from "@/components/events-components/IndividualEvent";
 import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
 import IndividualPost from "@/components/home-components/IndividualPost";
-import ScrollToTop from "@/components/ScrollToTop";
 import NotificationsPage from "./tabs/notifications";
 
 const App = () => {
@@ -63,9 +61,6 @@ const App = () => {
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
             }[currentActiveTab?.type ?? TabType.HOME]
-          }
-          {currentActiveTab?.type === TabType.HOME && 
-              <ScrollToTop></ScrollToTop>
           }
           <Footer></Footer>
         </View>

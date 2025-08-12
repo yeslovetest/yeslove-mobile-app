@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setScrollViewPosition } from '../store/feedSlice';
 import OrangeBanner from '@/components/universal-components/OrangeBanner';
 import Header from '../Header';
+import ScrollToTop from '@/components/ScrollToTop';
 
 export default function HomeScreen() {
 
@@ -41,6 +42,7 @@ useEffect (() => {
                 <OrangeBanner icon="newspaper" mainTitle="Newsfeed" description="Share and hear stories" />
         <HomeNavBar />
       </ScrollView>
+      {scrollViewPosition > 0 && <ScrollToTop />}
    </>
   );
 }

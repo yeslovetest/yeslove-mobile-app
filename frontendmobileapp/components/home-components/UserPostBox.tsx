@@ -8,7 +8,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAppDispatch } from '@/app/store/hooks'
 import { postNewPostAction } from '@/app/store/feedSlice';
 
-const UserPostBox = () => {
+interface UserPostBoxProps {
+  onPost?: () => void; 
+}
+
+const UserPostBox: React.FC<UserPostBoxProps> = ({ onPost }) => {
 const dispatch = useAppDispatch()
 const [userPost, setUserPost] = useState("")
 
@@ -19,6 +23,9 @@ const handleUserPost = (input: React.SetStateAction<string>) => {
 const handleUserPostButton = () => {
    dispatch(postNewPostAction({content: userPost}));
    setUserPost("")
+      if (onPost) {
+      onPost(); 
+    }
 }
 
   return (
