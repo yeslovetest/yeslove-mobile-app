@@ -33,3 +33,5 @@ email-validator
 Flask-Admin
 
 python-dateutil
+
+openai

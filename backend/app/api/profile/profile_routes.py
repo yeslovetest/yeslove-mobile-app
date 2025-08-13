@@ -161,7 +161,10 @@ class ProfileVisibility(Resource):
         from app.models import ProfileVisibilitySettings
         user_id = request.user["keycloak_id"]
         settings = ProfileVisibilitySettings.query.filter_by(user_id=user_id).all()
-        return [{"setting_id": s.setting_id, "value": s.value, "category": s.category} for s in settings], 200
+        return {'settings' :
+                [{"setting_id": s.setting_id, 
+                  "value": s.value, 
+                  "category": s.category} for s in settings]}, 200
 
     from app.api.profile.profile_models import ProfileVisibilitySettings
     @require_auth()
@@ -199,7 +202,7 @@ class EmailNotifications(Resource):
         from app.models import EmailNotificationSettings
         user_id = request.user["keycloak_id"]
         settings = EmailNotificationSettings.query.filter_by(user_id=user_id).all()
-        return [{"setting_id": s.setting_id, "value": s.value} for s in settings], 200
+        return {'settings': [{"setting_id": s.setting_id, "value": s.value} for s in settings]}, 200
 
     from app.api.profile.profile_models import EmailNotificationSettings
     @require_auth()

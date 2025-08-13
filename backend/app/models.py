@@ -139,6 +139,8 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    user = db.relationship('User', backref='comments')
+
 
 # -------------------------
 # 🚀 Like Model (Prevent Duplicate Likes)
@@ -265,4 +267,15 @@ class BlogPost(db.Model):
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+<<<<<<< HEAD
     image_url = db.Column(db.String(500))  # Optional image
+=======
+    image_url = db.Column(db.String(500))  # Optional image
+    
+class DeviceToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    token = db.Column(db.String(255), unique=True, nullable=False)
+    platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+>>>>>>> origin/main
