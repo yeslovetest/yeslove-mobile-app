@@ -1,12 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
-import styles from '../Get-help-styles/GetHelpStyles'; 
-import theme from "../../../../assets/variables/Variables"
 
-const GetHelpProfessionals = () => {
-  const [expanded, setExpanded] = useState(null); 
 
-  const professionals = [
+const PlaceholderProfessionals = [
     {
         name: 'Jael Kay',
         image: 'https://yeslove.co.uk/wp-content/uploads/avatars/73/1716058150-bpfull.jpg',
@@ -24,29 +18,5 @@ const GetHelpProfessionals = () => {
     }
   ];
 
-  const handleToggle = (index) => {
-    setExpanded(expanded === index ? null : index); // Toggle the expansion
-  };
-
-  return (
-    <View>
-      {professionals.map((professional, index) => (
-        <View key={index} style={styles.professionalProfileContainer}>
-          <Image style={styles.profileImage} source={{ uri: professional.image }} />
-          <Text style={styles.professionalProfileName}>{professional.name}</Text>
-          <Text style={styles.professionalDescription}>
-            {expanded === index ? professional.description : `${professional.description.substring(0, 300)}...`}
-          </Text>
-          <TouchableOpacity onPress={() => handleToggle(index)}>
-            <Text style={{ color: theme.colors.primaryBlue , marginTop: 10 }}>
-              {expanded === index ? 'See Less' : 'See More'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
-  );
-};
-
-export default GetHelpProfessionals;
+  export default PlaceholderProfessionals
 

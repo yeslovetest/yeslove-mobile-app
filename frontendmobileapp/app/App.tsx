@@ -4,7 +4,7 @@ import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfilePage from "./tabs/profile";
 import HomeScreen from "./tabs/home";
-import GetHelpPage from "./tabs/gethelp";
+import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
 import LoginScreen from "./pages/Login/Login-components/LoginScreen";
 import SignUpScreen from "./pages/Sign-up/Sign-up-components/SignUpScreen";
 import { useFocusEffect } from "expo-router";
@@ -16,7 +16,7 @@ import LoginLoadingScreen from "./pages/Login/Login-components/LoginLoadingScree
 import { TabType } from "./store/Navigation/navigationSlice";
 import EventsRoot from "./pages/Events/Events-root/EventsRoot";
 import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
-import IndividualBlog from "@/app/pages/Get-help/Get-help-components/IndividualBlog";
+import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
 import IndividualPost from "@/app/pages/Home/Home-components/IndividualPost";
 import NotificationsPage from "./tabs/notifications";
 
@@ -53,7 +53,7 @@ const App = () => {
           {
             {
               HOME: <HomeScreen></HomeScreen>,
-              GET_HELP: <GetHelpPage></GetHelpPage>,
+              GET_HELP: <GetHelpRoot />,
               EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfilePage></ProfilePage>,
               NOTIFICATIONS: <NotificationsPage></NotificationsPage>,

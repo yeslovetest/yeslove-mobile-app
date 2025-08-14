@@ -1,6 +1,6 @@
 import { View, ImageBackground, Text } from "react-native";
-import styles from "@/app/pages/Get-help/Get-help-styles/GetHelpStyles";
-import blogPlaceholders, { Blog } from "./placeholderBlogs";
+import styles from "./OneBlogStyles";
+import blogPlaceholders, { Blog } from "../Blogs-list/PlaceholderBlogs"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAppDispatch } from "@/app/store/hooks"
