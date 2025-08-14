@@ -1,9 +1,9 @@
 
 import { useAppDispatch } from "@/app/store/hooks"
 import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSlice"
-import styles from "../Events-styles/EventsStyles";
+import styles from "./OneEventStyles";
 import { View, Text, ImageBackground, TouchableOpacity } from "react-native";
-import eventPlaceholders, { Event } from "./placeholderEvents";
+import eventPlaceholders, { Event } from "../Events-list/placeholderEvents";
 
 export interface Props {
     event: Event

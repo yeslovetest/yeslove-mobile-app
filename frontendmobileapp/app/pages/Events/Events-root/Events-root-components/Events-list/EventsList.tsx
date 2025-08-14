@@ -1,7 +1,7 @@
 import { View } from "react-native";
-import OneEvent from "./OneEvent";
+import OneEvent from "../One-event/OneEvent";
 import eventPlaceholders from "./placeholderEvents";
-import styles from "../Events-styles/EventsStyles";
+import styles from "./EventsListStyles";
 
 const EventsList = () => {
 

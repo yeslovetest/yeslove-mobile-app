@@ -1,6 +1,6 @@
-import eventImg1 from "../../../../assets/images/eventimg1.jpg"
-import eventImg2 from "../../../../assets/images/eventimg2.jpg"
-import eventImg3 from "../../../../assets/images/eventimg3.jpg"
+import eventImg1 from "../../../../../../assets/images/eventimg1.jpg"
+import eventImg2 from "../../../../../../assets/images/eventimg2.jpg"
+import eventImg3 from "../../../../../../assets/images/eventimg3.jpg"
 
 export interface Event{
     name: string;

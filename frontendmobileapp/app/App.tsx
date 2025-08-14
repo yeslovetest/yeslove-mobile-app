@@ -14,8 +14,8 @@ import {
 } from "./store/Auth-store/authSlice";
 import LoginLoadingScreen from "./pages/Login/Login-components/LoginLoadingScreen";
 import { TabType } from "./store/Navigation/navigationSlice";
-import EventsPage from "./tabs/events";
-import IndividualEventPage from "./pages/Events/Events-components/IndividualEventPage";
+import EventsRoot from "./pages/Events/Events-root/EventsRoot";
+import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
 import IndividualBlog from "@/app/pages/Get-help/Get-help-components/IndividualBlog";
 import IndividualPost from "@/app/pages/Home/Home-components/IndividualPost";
 import NotificationsPage from "./tabs/notifications";
@@ -54,10 +54,10 @@ const App = () => {
             {
               HOME: <HomeScreen></HomeScreen>,
               GET_HELP: <GetHelpPage></GetHelpPage>,
-              EVENTS: <EventsPage></EventsPage>,
+              EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfilePage></ProfilePage>,
               NOTIFICATIONS: <NotificationsPage></NotificationsPage>,
-              INDIVIDUAL_EVENT: <IndividualEventPage />,
+              INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
             }[currentActiveTab?.type ?? TabType.HOME]

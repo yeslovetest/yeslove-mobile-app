@@ -1,11 +1,11 @@
 
 import { View, Text } from 'react-native';
-import styles from '../Events-styles/EventsStyles';
-import { Event } from './placeholderEvents';
+import styles from './EventsInfoDetailsStyles';
+import { Event } from '../../../Events-root/Events-root-components/Events-list/placeholderEvents';
 import { useAppSelector } from '@/app/store/hooks';
 
 
-const EventInfo = () => {
+const EventInfoDetails = () => {
     const event: Event = useAppSelector(state => state.navigation.tabStack.at(-1)?.data) as Event;
     return (
         <View>
@@ -34,4 +34,4 @@ const EventInfo = () => {
     )
 }
 
-export default EventInfo
+export default EventInfoDetails

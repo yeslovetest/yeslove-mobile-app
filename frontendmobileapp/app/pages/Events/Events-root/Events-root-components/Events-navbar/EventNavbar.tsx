@@ -1,8 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import styles from "../Events-styles/EventsStyles";
+import styles from "./EventsNavbarStyles";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setActiveEventsTabAction } from '@/app/store/Events-store/eventsSlice';
-import Event from "./EventsList";
 const navBarItems = ["Upcoming", "Attending", "Attended"]
 
 const EventNavbar = () => {
@@ -21,21 +20,6 @@ const EventNavbar = () => {
           ))}
         </View>
       </View>
-
-      {activeTab === "Upcoming" && (
-        <View>
-          <Event />
-        </View>
-      )}
-
-      {activeTab === "Attending" && (
-        <View>
-        </View>
-      )}
-
-      {activeTab === "Attended" && (
-      <View>
-      </View>)}
     </View>
   )
 }

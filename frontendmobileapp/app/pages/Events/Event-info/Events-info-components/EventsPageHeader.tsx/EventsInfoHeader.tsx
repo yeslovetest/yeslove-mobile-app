@@ -1,11 +1,11 @@
 import { View, ImageBackground, Pressable, Text } from "react-native";
 import React, { useState } from 'react'
-import { Event } from './placeholderEvents';
-import styles from "../Events-styles/EventsStyles";
+import { Event } from '../../../Events-root/Events-root-components/Events-list/placeholderEvents';
+import styles from "./EventsInfoHeaderStyles";
 import { useAppSelector } from '@/app/store/hooks';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
-const IndividualEventHeader = () => {
+const EventsInfoHeader = () => {
   const [isFavourite, setIsFavourite] = useState(false)
 
   const toggleFavourite = () => {
@@ -35,4 +35,4 @@ const IndividualEventHeader = () => {
   )
 }
 
-export default IndividualEventHeader
+export default EventsInfoHeader
