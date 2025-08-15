@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { TextInput, TouchableOpacity, View, Text } from "react-native"
 import { logoutAction, setDeleteConfirmation, setUserPassword } from "@/app/store/Auth-store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import styles from "../Profile-styles/ProfileStyles";
+import styles from "./GeneralContentStyles";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { useMsgToggle } from "@/hooks/messageToggle";
 
-const GeneralSetting = () => {
+const GeneralContent = () => {
     const dispatch = useAppDispatch();
     const [changePasswordSection, setChangePasswordSection] = useState(false);
     const [deleteAccountSection, setDeleteAccountSection] = useState(false);
@@ -115,4 +115,4 @@ const GeneralSetting = () => {
     )
 };
 
-export default GeneralSetting;
+export default GeneralContent;

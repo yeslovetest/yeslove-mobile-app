@@ -1,13 +1,13 @@
 import React from 'react'
 import { ImageBackground, Text, View, Image } from 'react-native';
-import styles from '../Profile-styles/ProfileStyles';
+import styles from './ProfileHeaderAndBioStyles';
 import { useFocusEffect } from "@react-navigation/native";
-import { getEmailNotificationSettings, getProfileVisibilitySettings, setProfileInformationAction } from "../../../store/Profile-store/profileSlice";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { ProfileApiFactory } from '@/generated-api';
+import { setProfileInformationAction, getEmailNotificationSettings, getProfileVisibilitySettings } from '@/app/store/Profile-store/profileSlice';
 
 
-const ProfileHeader = () => {
+const ProfileHeaderAndBio = () => {
   const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
   const tabStack = useAppSelector((state) => state.navigation.tabStack);
   const userName = useAppSelector((state) => state.profile.profiles[userId]?.username ?? "");
@@ -55,4 +55,4 @@ const ProfileHeader = () => {
   )
 }
 
-export default ProfileHeader
+export default ProfileHeaderAndBio

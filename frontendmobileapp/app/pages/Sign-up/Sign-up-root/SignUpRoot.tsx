@@ -4,7 +4,7 @@ import Page2 from '../Page-2/Page2';
 import Page3 from '../Page-3/Page3';
 
 
-const SignUpScreen = () => {
+const SignUpRoot = () => {
   const pageNumber = useAppSelector((state) => state.auth.SignupPageNo );
 
   return (
@@ -25,4 +25,4 @@ const SignUpScreen = () => {
   );
 };
 
-export default SignUpScreen;
+export default SignUpRoot;

@@ -1,9 +1,9 @@
 import React from 'react'
 import { Text, View,TextInput } from 'react-native';
-import styles from '../Profile-styles/ProfileStyles';
+import styles from './TextInputFieldStyles';
 
 
-function EditableField({ label, value, onChange }: {label: string, value: string, onChange: (text: string) => void}) {
+function TextInputField({ label, value, onChange }: {label: string, value: string, onChange: (text: string) => void}) {
 
   return (
     <View style={styles.editItemContainer}>
@@ -15,4 +15,4 @@ function EditableField({ label, value, onChange }: {label: string, value: string
   );
 }
 
-export default EditableField
+export default TextInputField

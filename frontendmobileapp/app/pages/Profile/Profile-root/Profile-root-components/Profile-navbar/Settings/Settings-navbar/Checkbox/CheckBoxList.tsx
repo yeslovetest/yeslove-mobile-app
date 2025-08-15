@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import styles from "../Profile-styles/ProfileStyles";
+import styles from "./CheckBoxStyles";
 import CheckBox from "./CheckBox";
 
 interface Item {

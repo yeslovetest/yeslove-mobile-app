@@ -2,11 +2,11 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import ProfilePage from "./tabs/profile";
+import ProfileRoot from "./pages/Profile/Profile-root/ProfileRoot";
 import HomeRoot from "./pages/Home/Home-root/HomeRoot";
 import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
 import LoginPage from "./pages/Login/LoginPage/LoginPage";
-import SignUpScreen from "./pages/Sign-up/Sign-up-root/SignUpRoot";
+import SignUpRoot from "./pages/Sign-up/Sign-up-root/SignUpRoot";
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
@@ -45,7 +45,7 @@ const App = () => {
       )}
        {loginState == LoginState.SIGN_UP && (
         <View style={styles.container}>
-          <SignUpScreen></SignUpScreen>
+          <SignUpRoot></SignUpRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_IN && (
@@ -55,7 +55,7 @@ const App = () => {
               HOME: <HomeRoot></HomeRoot>,
               GET_HELP: <GetHelpRoot />,
               EVENTS: <EventsRoot></EventsRoot>,
-              PROFILE: <ProfilePage></ProfilePage>,
+              PROFILE: <ProfileRoot></ProfileRoot>,
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,

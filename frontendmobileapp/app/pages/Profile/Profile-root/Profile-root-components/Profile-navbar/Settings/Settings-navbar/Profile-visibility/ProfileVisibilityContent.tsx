@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import CheckBoxList from "./CheckBoxList";
-import styles from "../Profile-styles/ProfileStyles";
+import CheckBoxList from "../Checkbox/CheckBoxList";
+import styles from "./ProfileVisibilityContentStyles";
 import { useMsgToggle } from "@/hooks/messageToggle";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { setProfileVisibility, updateProfileVisibilitySettings} from "@/app/store/Profile-store/profileSlice";
@@ -10,7 +10,7 @@ interface Props {
     settings?: string[][];  
  }
 
-const ProfileVisSetting = (props: Props) => {
+const ProfileVisibilityContent = (props: Props) => {
     const dispatch = useAppDispatch();
     const currentSettings = props?.settings ?? [];
     const msgToggle = useMsgToggle();
@@ -65,7 +65,7 @@ const ProfileVisSetting = (props: Props) => {
 
     return (
         <View style={styles.settingsNavItemContainer}>
-            <Text style={styles.headerText}>Make your profile information visible to others</Text>
+            <Text style={styles.mainHeaderText}>Make your profile information visible to others</Text>
             
             <CheckBoxList header="Contact" items={checkBoxList1} 
             state={[currentSettings[0][0]==='visible', currentSettings[1][0]==='visible', 
@@ -90,4 +90,4 @@ const ProfileVisSetting = (props: Props) => {
     )
 };
 
-export default ProfileVisSetting;
+export default ProfileVisibilityContent

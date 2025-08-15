@@ -1,4 +1,4 @@
-import styles from "../Profile-styles/ProfileStyles";
+import styles from "./SettingsNavbarStyles";
 import { useState } from "react";
 import { TouchableOpacity, View, Text } from "react-native";
 
@@ -8,7 +8,7 @@ interface Props {
     onChangeTab?: (current: string) => void;
 }
 
-const SectionNavBar = (props: Props) => {
+const SettingsNavbar = (props: Props) => {
     const tabItems = props?.tabItems ?? [];
     const defaultTab = props?.defaultTab ?? tabItems[0];
     const [activeTab, setActiveTab] = useState(defaultTab ?? '');
@@ -20,11 +20,11 @@ const SectionNavBar = (props: Props) => {
     }
 
     return (
-        <View style={{...styles.aboutNavBar, justifyContent: 'space-evenly'}}>
+        <View style={{...styles.settingsNavBar, justifyContent: 'space-evenly'}}>
             {tabItems.map((tab) => (
-                <TouchableOpacity key={tab} style={[styles.settingsNavItem, activeTab === tab && styles.activeAboutItem]} 
+                <TouchableOpacity key={tab} style={[styles.settingsNavItem, activeTab === tab && styles.activeSettingsItem]} 
                 onPress={() => changeTab(tab)}>
-                <Text style={[styles.navText, activeTab === tab && styles.activeAboutNavText]}>{tab}</Text>
+                <Text style={[styles.navText, activeTab === tab && styles.activeSettingsNavText]}>{tab}</Text>
                 {activeTab === tab && <View style={styles.activeIndicator} />}
                 </TouchableOpacity>
             ))}
@@ -32,4 +32,4 @@ const SectionNavBar = (props: Props) => {
     )
 }
 
-export default SectionNavBar;
+export default SettingsNavbar

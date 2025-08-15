@@ -1,12 +1,14 @@
 import React from 'react'
 import { Text, View, TouchableOpacity } from 'react-native';
-import styles from '../Profile-styles/ProfileStyles';
+import styles from './ProfileNavbarStyles';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setActiveTabAction } from '@/app/store/Profile-store/profileSlice';
 
 const navBarItems = ["Timeline", "About", "Videos", "Notifications", "Photos", "Settings", "Messages", "Invitations"]
 
-const ProfileNavBar = () => {
+
+
+const ProfileNavbar = () => {
   let activeTab = useAppSelector(state => state.profile.view.activeTab);
   let dispatch = useAppDispatch();
     return (
@@ -23,4 +25,4 @@ const ProfileNavBar = () => {
       );
 }
 
-export default ProfileNavBar
+export default ProfileNavbar

@@ -1,5 +1,5 @@
 import { TouchableOpacity, View, Text } from "react-native";
-import styles from "@/app/pages/Profile/Profile-styles/CheckBoxStyles";
+import styles from "./CheckBoxStyles";
 import { useState } from "react";
 
 interface Props {

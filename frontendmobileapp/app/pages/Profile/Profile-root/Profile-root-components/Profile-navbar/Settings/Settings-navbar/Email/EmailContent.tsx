@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import CheckBoxList from "./CheckBoxList";
-import styles from "../Profile-styles/ProfileStyles";
+import CheckBoxList from "../Checkbox/CheckBoxList";
+import styles from "./EmailContentStyles";
 import { useMsgToggle } from "@/hooks/messageToggle";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { setEmailNotification, updateEmailNotificationSettings } from "@/app/store/Profile-store/profileSlice";
@@ -10,7 +10,7 @@ interface Props {
     settings?: boolean[];  
  }
 
-const EmailNtfnSetting = (props: Props) => {
+const EmailContent = (props: Props) => {
     const dispatch = useAppDispatch();
     const currentSettings = props?.settings ?? [];
     const msgToggle = useMsgToggle();
@@ -77,7 +77,7 @@ const EmailNtfnSetting = (props: Props) => {
 
     return (
         <View style={styles.settingsNavItemContainer}>
-            <Text style={styles.headerText}>receive email notifications for</Text>
+            <Text style={styles.mainHeaderText}>receive email notifications for</Text>
             
             <CheckBoxList header="Activity" items={checkBoxList1} 
             state={[currentSettings[0], currentSettings[1]]}/>         
@@ -96,7 +96,7 @@ const EmailNtfnSetting = (props: Props) => {
             currentSettings[9],currentSettings[10]]}/>
             
             {msgToggle.msg && (
-                <View style={{...styles.settingsNavItemContent, alignItems: 'flex-start'}} >  
+                <View style={styles.settingsNavItemContent}>
                     <Text style={{...styles.sectionText, color: 'blue', alignSelf: 'center'}}> 
                         {msgToggle.msg}
                     </Text>
@@ -110,4 +110,4 @@ const EmailNtfnSetting = (props: Props) => {
     )
 };
 
-export default EmailNtfnSetting;
+export default EmailContent;
