@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { View, TouchableOpacity, TextInput, Text, Image } from "react-native";
-import styles from '../Home-styles/HomeStyles';
+import styles from './PostCommentFieldStyles';
 import { postComment, retrievePostReactions } from '@/app/store/Home-store/feedSlice';
 import { useAppDispatch } from '@/app/store/hooks';
 

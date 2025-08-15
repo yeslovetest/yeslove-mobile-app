@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Modal, TouchableOpacity, Animated, StyleSheet } from 'react-native';
-import UserPostBox from './UserPostBox';
+import UserPostBox from './Post-modal-components/User-post-box/UserPostBox';
 
 interface PostModalProps {
   visible: boolean;

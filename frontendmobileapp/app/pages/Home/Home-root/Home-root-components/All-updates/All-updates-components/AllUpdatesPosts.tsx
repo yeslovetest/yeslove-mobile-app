@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import Post from './Post';
+import Post from '../../Post/One-post/OnePost';
 import {  updatePostsForFeedAction } from '@/app/store/Home-store/feedSlice';
 import { useFocusEffect } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';

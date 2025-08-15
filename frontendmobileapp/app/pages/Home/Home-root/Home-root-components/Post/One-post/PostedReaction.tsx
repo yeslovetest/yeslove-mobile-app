@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import styles from '../Home-styles/HomeStyles';
+import styles from './OnePostStyles';
 import { Reaction } from '@/generated-api';  
 
  interface Props {

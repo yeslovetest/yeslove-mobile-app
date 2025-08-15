@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import styles from '../Home-styles/HomeStyles';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
+import styles from './PostedCommentStyles';
 import { Comment } from '@/generated-api';  
 import dayjs from 'dayjs'; 
 
@@ -9,12 +9,12 @@ import dayjs from 'dayjs';
     comment: Comment;
   }
 
-const PostComment = (props: Props) => {
+const PostedComment = (props: Props) => {
 
     return (
         <View style={[styles.postContainer, styles.indCommentContainer]}>
             <View style={styles.profileImageContainer}>
-                
+                <Image style={styles.profileImage}/>  
                 <View style={styles.profileInfoContainer}>
                     <TouchableOpacity style={styles.profileName}>
                         <Text>{props.comment.author}</Text>
@@ -31,5 +31,5 @@ const PostComment = (props: Props) => {
     );
 };
 
-export default PostComment;
+export default PostedComment;
 

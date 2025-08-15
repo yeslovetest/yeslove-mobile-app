@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfilePage from "./tabs/profile";
-import HomeScreen from "./tabs/home";
+import HomeRoot from "./pages/Home/Home-root/HomeRoot";
 import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
 import LoginScreen from "./pages/Login/Login-components/LoginScreen";
 import SignUpScreen from "./pages/Sign-up/Sign-up-components/SignUpScreen";
@@ -17,7 +17,7 @@ import { TabType } from "./store/Navigation/navigationSlice";
 import EventsRoot from "./pages/Events/Events-root/EventsRoot";
 import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
 import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
-import IndividualPost from "@/app/pages/Home/Home-components/IndividualPost";
+import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndReactionsPage";
 import NotificationsPage from "./tabs/notifications";
 
 const App = () => {
@@ -52,7 +52,7 @@ const App = () => {
         <View style={styles.container}>
           {
             {
-              HOME: <HomeScreen></HomeScreen>,
+              HOME: <HomeRoot></HomeRoot>,
               GET_HELP: <GetHelpRoot />,
               EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfilePage></ProfilePage>,

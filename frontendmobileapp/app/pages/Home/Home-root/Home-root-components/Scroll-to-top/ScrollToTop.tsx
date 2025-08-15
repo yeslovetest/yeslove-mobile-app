@@ -1,6 +1,6 @@
 
 import { TouchableOpacity, View } from "react-native";
-import styles from "../Home-styles/ScrollToTopStyles";
+import styles from "./ScrollToTopStyles";
 import { useAppDispatch } from "@/app/store/hooks";
 import { triggerScrollToTopAction } from "@/app/store/Home-store/feedSlice";
 import Entypo from '@expo/vector-icons/Entypo';

@@ -1,13 +1,11 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from "react-native";
-import styles from "../Home-styles/HomeStyles";
-import AllUpdatesPosts from './AllUpdatesPosts';
-import FriendsPosts from './FriendsPosts';
-import { FeedTabs, setActiveHomeTabAction } from "../../../store/Home-store/feedSlice";
+import styles from './HomeNavbarStyles';
+import { FeedTabs, setActiveHomeTabAction } from "../../../../../store/Home-store/feedSlice";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 
 
-const HomeNavBar = () => {
+const HomeNavbar = () => {
     const activeHomeTab = useAppSelector(state => state.feed.view.activeHomeTab);
     const dispatch = useAppDispatch();
 
@@ -27,23 +25,8 @@ const HomeNavBar = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-
-            {/* all updates*/}
-            {activeHomeTab === FeedTabs.ALL_UPDATES && (
-                <View>
-                    <AllUpdatesPosts />
-                </View>
-            )}
-
-
-            {/* friends*/}
-            {activeHomeTab === FeedTabs.FRIENDS && (
-                <View>
-                    <FriendsPosts />
-                </View>
-            )}
         </View>
     )
 }
 
-export default HomeNavBar
+export default HomeNavbar

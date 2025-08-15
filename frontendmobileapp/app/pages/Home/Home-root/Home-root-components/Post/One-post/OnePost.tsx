@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
-import styles from '../Home-styles/HomeStyles';
+import styles from './OnePostStyles';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -15,7 +15,7 @@ export interface Props {
     post: PostData
 }
 
-const Post = (props: Props) => {
+const OnePost = (props: Props) => {
     const dispatch = useAppDispatch();
     
     const [expanded, setExpanded] = useState(false);
@@ -145,4 +145,4 @@ const Post = (props: Props) => {
     );
 }
 
-export default Post
+export default OnePost
