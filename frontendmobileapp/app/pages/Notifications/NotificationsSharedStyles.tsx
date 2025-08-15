@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
-import theme from "../../../../assets/variables/Variables";
+import theme from "../../../assets/variables/Variables";
 
-const styles = StyleSheet.create({
+const sharedStyles = StyleSheet.create({
      container: {
         flex: 1,
         marginTop: 10,
@@ -10,4 +10,4 @@ const styles = StyleSheet.create({
 
 })
 
-export default styles 
+export default sharedStyles

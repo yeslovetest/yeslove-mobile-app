@@ -18,7 +18,7 @@ import EventsRoot from "./pages/Events/Events-root/EventsRoot";
 import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
 import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
 import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndReactionsPage";
-import NotificationsPage from "./tabs/notifications";
+import NotificationsRoot from "./pages/Notifications/Notifications-root/NotificationsRoot";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -56,7 +56,7 @@ const App = () => {
               GET_HELP: <GetHelpRoot />,
               EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfilePage></ProfilePage>,
-              NOTIFICATIONS: <NotificationsPage></NotificationsPage>,
+              NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,

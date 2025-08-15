@@ -1,12 +1,12 @@
 
 import React, { useRef } from 'react'
 import { ScrollView } from 'react-native'
-import Header from '../Universal-components/Header/Header'
-import { useAppSelector } from '../store/hooks'
+import Header from '../../../Universal-components/Header/Header'
+import { useAppSelector } from '../../../store/hooks'
 import { useFocusEffect } from 'expo-router'
-import styles from '@/app/pages/Notifications/Notifications-styles/NotificationsStyles'
+import sharedStyles from '@/app/pages/Notifications/NotificationsSharedStyles'
 
-const NotificationsPage = () => {
+const NotificationsRoot = () => {
  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
  const userName = useAppSelector((state) => state.profile.profiles[userId]?.username ?? "");
  const scrollViewRef = useRef<ScrollView>(null);
@@ -26,10 +26,10 @@ useFocusEffect(
   return (
     <>
     <Header mainTitle={userName}></Header>
-    <ScrollView ref={scrollViewRef} contentContainerStyle={styles.contentContainer} style={styles.container}></ScrollView>
+    <ScrollView ref={scrollViewRef} contentContainerStyle={sharedStyles.contentContainer} style={sharedStyles.container}></ScrollView>
       
     </>
   )
 }
 
-export default NotificationsPage
+export default NotificationsRoot
