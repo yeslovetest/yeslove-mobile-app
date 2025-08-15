@@ -1,5 +1,5 @@
 import { ScrollView } from 'react-native';
-import EventsInfoHeader from './Events-info-components/EventsPageHeader.tsx/EventsInfoHeader';
+import EventsInfoHeader from './Events-info-components/EventsPageHeader/EventsInfoHeader';
 import sharedStyles from '../EventsSharedStyles';
 import styles from './EventsInfoPageStyles';
 import EventsInfoDetails from './Events-info-components/Events-info-details/EventInfoDetails';
