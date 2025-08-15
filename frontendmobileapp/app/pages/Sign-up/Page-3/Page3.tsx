@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ImageBackground, } from 'react-native';
 import { useAppSelector } from '../../../store/hooks';
 import { useSignup } from '@/hooks/signUpLogic';
 import LoginLoadingScreen from "../../Login/Login-components/LoginLoadingScreen";
-import styles from "../Sign-up-styles/ResponseStyles"
+import styles from "./Page3Styles"
 
 
 const image = {

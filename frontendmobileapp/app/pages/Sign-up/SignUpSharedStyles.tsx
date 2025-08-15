@@ -1,8 +1,8 @@
-import { StyleSheet,  Dimensions  } from "react-native";
-import theme from "../../../../assets/variables/Variables"
+import theme from "@/assets/variables/Variables";
+import { Dimensions, StyleSheet } from "react-native";
 
-const styles = StyleSheet.create({
-  container: {
+const sharedStyles = StyleSheet.create({
+     container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -104,6 +104,6 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryBlue,
     fontWeight: 'bold',
   },
-});
+})
 
-export default styles;
+export default sharedStyles 

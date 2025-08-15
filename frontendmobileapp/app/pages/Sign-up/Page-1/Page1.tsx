@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
-import Input from './Input';
+import Input from '../Sign-up-root/Sign-up-components/Input/Input';
 import { useSignup } from '@/hooks/signUpLogic';
-import styles from "../Sign-up-styles/SignupStyles"
+import sharedStyles from '../SignUpSharedStyles';
 import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { setErrorMessage } from '../../../store/Auth-store/authSlice';
@@ -40,12 +40,12 @@ const Page1 = () => {
   }, [emailBdColor, passwordBdColor, errorMessage]);
 
   return (
-    <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
-        <View style={styles.innerContainer}>
-        <Text style={styles.title}>SIGN UP TO YESLOVE!</Text>
+    <ImageBackground source={image} style={sharedStyles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
+        <View style={sharedStyles.innerContainer}>
+        <Text style={sharedStyles.title}>SIGN UP TO YESLOVE!</Text>
 
-            <Text style={{...styles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
-            <Text style={styles.label}>Email</Text>
+            <Text style={{...sharedStyles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
+            <Text style={sharedStyles.label}>Email</Text>
             <Input
             placeholder="Enter email"
             keyboardType='email-address'
@@ -54,7 +54,7 @@ const Page1 = () => {
             onChangeText={signupAction.handleEmailChange}
             /> 
 
-            <Text style={styles.label}>Password</Text>
+            <Text style={sharedStyles.label}>Password</Text>
             <Input
             placeholder="Enter password"
             borderColor={passwordBdColor[0]}
@@ -63,7 +63,7 @@ const Page1 = () => {
             secureTextEntry = {true}
             />
 
-            <Text style={styles.label}>Confirm Password</Text>
+            <Text style={sharedStyles.label}>Confirm Password</Text>
             <Input
             placeholder="Confirm password"
             borderColor={passwordBdColor[0]}
@@ -72,14 +72,14 @@ const Page1 = () => {
             secureTextEntry = {true}
             />
 
-            <TouchableOpacity style={styles.buttonNext} onPress={signupAction.moveToNext}>
-            <Text style={styles.buttonText}><Text style={styles.greyText}>Let's get to know you more!.</Text> Next</Text>
+            <TouchableOpacity style={sharedStyles.buttonNext} onPress={signupAction.moveToNext}>
+            <Text style={sharedStyles.buttonText}><Text style={sharedStyles.greyText}>Let's get to know you more!.</Text> Next</Text>
             </TouchableOpacity> 
 
     
-        <Text style={styles.containerFooter}>
+        <Text style={sharedStyles.containerFooter}>
         Already have an account?
-            <Text style={styles.footerLink} onPress={() => signupAction.handleLoginStateChange('login')}> Login</Text>
+            <Text style={sharedStyles.footerLink} onPress={() => signupAction.handleLoginStateChange('login')}> Login</Text>
         </Text>
         </View>
     </ImageBackground>

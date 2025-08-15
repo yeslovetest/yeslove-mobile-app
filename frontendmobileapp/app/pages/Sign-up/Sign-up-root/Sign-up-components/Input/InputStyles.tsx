@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import theme from "../../../../assets/variables/Variables"
+import theme from "@/assets/variables/Variables";
 
 const styles = StyleSheet.create({
   input: {

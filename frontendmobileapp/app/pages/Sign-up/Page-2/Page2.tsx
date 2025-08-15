@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
-import Input from './Input';
+import Input from '../Sign-up-root/Sign-up-components/Input/Input';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { useSignup } from '@/hooks/signUpLogic';
-import styles from "../Sign-up-styles/SignupStyles"
+import sharedStyles from '../SignUpSharedStyles';
 import theme from '@/assets/variables/Variables';
 import { setErrorMessage } from '../../../store/Auth-store/authSlice';
 import { useEffect, useState } from 'react';
@@ -49,12 +49,12 @@ const Page2 = () => {
 
   return (
     
-    <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
-    <View style={styles.innerContainer}>
-        <Text style={styles.title}>SIGN UP TO YESLOVE!</Text>
+    <ImageBackground source={image} style={sharedStyles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
+    <View style={sharedStyles.innerContainer}>
+        <Text style={sharedStyles.title}>SIGN UP TO YESLOVE!</Text>
 
-        <Text style={{...styles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
-        <Text style={styles.label}>First Name</Text>
+        <Text style={{...sharedStyles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
+        <Text style={sharedStyles.label}>First Name</Text>
         <Input
         placeholder="Enter first name"
         borderColor={firstNameBdColor[0]}
@@ -62,7 +62,7 @@ const Page2 = () => {
         onChangeText={signupAction.handleFirstNameChange}
         />
 
-        <Text style={styles.label}>Last Name</Text>
+        <Text style={sharedStyles.label}>Last Name</Text>
         <Input
         placeholder="Enter last name"
         borderColor={lastNameBdColor[0]}
@@ -70,7 +70,7 @@ const Page2 = () => {
         onChangeText={signupAction.handleLastNameChange}
         />
 
-        <Text style={styles.label}>Phone Number</Text>
+        <Text style={sharedStyles.label}>Phone Number</Text>
         <Input
         placeholder="Enter phone number"
         borderColor={phoneBdColor[0]}
@@ -78,7 +78,7 @@ const Page2 = () => {
         onChangeText={signupAction.handlePhoneNumberChange}
         />
 
-        <Text style={styles.label}>Username</Text>
+        <Text style={sharedStyles.label}>Username</Text>
         <Input
         placeholder="Enter username"
         borderColor={usernameBdColor[0]}
@@ -86,14 +86,14 @@ const Page2 = () => {
         onChangeText={signupAction.handleUsernameChange}
         />
 
-        <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => signupAction.handleSignup(signupEmail, signupPassword, signupConfirmPassword)}>
-            <Text style={styles.buttonText}>SIGN UP</Text>
+        <View style={sharedStyles.buttonContainer}>
+            <TouchableOpacity style={sharedStyles.button} onPress={() => signupAction.handleSignup(signupEmail, signupPassword, signupConfirmPassword)}>
+            <Text style={sharedStyles.buttonText}>SIGN UP</Text>
             </TouchableOpacity>  
         </View>
     
-        <Text style={styles.containerFooter}>
-        Go  <Text style={{...styles.footerLink, color: theme.colors.footerFontColor, textDecorationLine: 'underline'}} onPress={signupAction.moveToPrevious}>Back  </Text> 
+        <Text style={sharedStyles.containerFooter}>
+        Go  <Text style={{...sharedStyles.footerLink, color: theme.colors.footerFontColor, textDecorationLine: 'underline'}} onPress={signupAction.moveToPrevious}>Back  </Text> 
             to  previous  page
         </Text>
     </View>

@@ -6,7 +6,7 @@ import ProfilePage from "./tabs/profile";
 import HomeRoot from "./pages/Home/Home-root/HomeRoot";
 import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
 import LoginScreen from "./pages/Login/Login-components/LoginScreen";
-import SignUpScreen from "./pages/Sign-up/Sign-up-components/SignUpScreen";
+import SignUpScreen from "./pages/Sign-up/Sign-up-root/SignUpRoot";
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
