@@ -4,7 +4,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import styles from './HeaderStyles';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { goBackToPreviousTabAction, TabType } from '../../store/Navigation/navigationSlice';
-import PostModal from '@/app/pages/Home/Home-components/PostModal';
+import PostModal from '@/app/pages/Home/Post-modal/PostModal';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export interface Props {
