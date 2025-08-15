@@ -5,14 +5,14 @@ import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfilePage from "./tabs/profile";
 import HomeRoot from "./pages/Home/Home-root/HomeRoot";
 import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
-import LoginScreen from "./pages/Login/Login-components/LoginScreen";
+import LoginPage from "./pages/Login/LoginPage/LoginPage";
 import SignUpScreen from "./pages/Sign-up/Sign-up-root/SignUpRoot";
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
   LoginState,
 } from "./store/Auth-store/authSlice";
-import LoginLoadingScreen from "./pages/Login/Login-components/LoginLoadingScreen";
+import LoginRoot from "./pages/Login/Login-root/LoginRoot";
 import { TabType } from "./store/Navigation/navigationSlice";
 import EventsRoot from "./pages/Events/Events-root/EventsRoot";
 import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
@@ -35,12 +35,12 @@ const App = () => {
     <>
       {loginState == LoginState.LOADING && (
         <View style={styles.container}>
-          <LoginLoadingScreen></LoginLoadingScreen>
+          <LoginRoot></LoginRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_OUT && (
         <View style={styles.container}>
-          <LoginScreen></LoginScreen>
+          <LoginPage></LoginPage>
         </View>
       )}
        {loginState == LoginState.SIGN_UP && (

@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, ImageBackground, } from 'react-native';
 import { useAppSelector } from '../../../store/hooks';
 import { useSignup } from '@/hooks/signUpLogic';
-import LoginLoadingScreen from "../../Login/Login-components/LoginLoadingScreen";
+import LoginLoadingScreen from "../../Login/Login-root/LoginRoot";
 import styles from "./Page3Styles"
 
 
