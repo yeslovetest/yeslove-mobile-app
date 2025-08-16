@@ -6,10 +6,10 @@ import { useFocusEffect } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 
 const AllUpdatesPosts = () => {
-const dispatch = useAppDispatch();
-useFocusEffect(React.useCallback(() => {
-    dispatch(updatePostsForFeedAction('all'));
-    dispatch(fetchFollowedUsers());
+  const dispatch = useAppDispatch();
+    useFocusEffect(React.useCallback(() => {
+        dispatch(updatePostsForFeedAction('all'));
+        dispatch(fetchFollowedUsers());
   }, []));
   
   const posts = useAppSelector(state => state.feed.feed.posts)

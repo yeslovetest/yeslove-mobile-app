@@ -9,7 +9,9 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   ProfileVisibilitySettings,
   GetFollowingResponse,
   ChatApiFactory,
-  GetMessagesResponse} from "@/generated-api";
+  GetMessagesResponse,
+  BlogPostApiFactory,
+  GetBlogPostsResponse} from "@/generated-api";
 import { appSelect } from "./hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -29,6 +31,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
  } from "./feedSlice";
 import { changeTabAction, TabType } from "./navigationSlice";
 import { fetchChatMessages, sendChatMessage, setChatMessages } from "./chatSlice";
+import { fetchBlogPosts, setBlogPosts } from "./getHelpSlice";
 
 
 /** 
@@ -113,6 +116,31 @@ function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
   }
   catch (error) {
     console.error('Delete action failed', error);
+  }
+}
+
+/** 
+ * BlogPost Api 
+ * */
+function* handleGetBlogPost(action: PayloadAction<void>){
+  const blogs = ((yield call(BlogPostApiFactory().getBlogPosts)) as AxiosResponse<GetBlogPostsResponse>).data as GetBlogPostsResponse;
+  yield put(setBlogPosts({blogs: blogs.blogs ?? []}));
+}
+
+/** 
+ * Chat Api 
+ * */
+function* handleGetMessages(action: PayloadAction<string>){
+  const messages = ((yield call(ChatApiFactory().getGetMessages, action.payload, {})) as AxiosResponse<GetMessagesResponse>).data as GetMessagesResponse;
+  yield put(setChatMessages(messages.messages ?? []));
+}
+
+function* handlePostSendMessage(action: PayloadAction<{id: string, message: string}>) {
+  try{
+    yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, message: action.payload.message});
+    yield put(fetchChatMessages(action.payload.id));
+  }catch (error) {
+    console.error('failed to send message', error);  
   }
 }
 
@@ -240,22 +268,7 @@ function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>
   }
 }
 
-/** 
- * Chat Api 
- * */
-function* handleGetMessages(action: PayloadAction<string>){
-  const messages = ((yield call(ChatApiFactory().getGetMessages, action.payload, {})) as AxiosResponse<GetMessagesResponse>).data as GetMessagesResponse;
-  yield put(setChatMessages(messages.messages ?? []));
-}
 
-function* handlePostSendMessage(action: PayloadAction<{id: string, message: string}>) {
-  try{
-    yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, message: action.payload.message});
-    yield put(fetchChatMessages(action.payload.id));
-  }catch (error) {
-    console.error('failed to send message', error);  
-  }
-}
 
 
 function* appSaga() {
@@ -265,6 +278,11 @@ function* appSaga() {
   yield takeEvery(signupAction.type, handleSignupRequest);
   yield takeEvery(setUserPassword.type, handlePasswordChange);
   yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
+/**Chat Api saga */
+  yield takeEvery(fetchChatMessages.type, handleGetMessages);
+  yield takeEvery(sendChatMessage.type, handlePostSendMessage);
+/**BlogPost APi saga */  
+  yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
 /**Feed Api saga */
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
@@ -282,9 +300,6 @@ function* appSaga() {
   yield takeEvery(updateEmailNotificationSettings.type, updateEmailSettings);
   yield takeEvery(getProfileVisibilitySettings.type, fetchProfileVisiblitySettings);
   yield takeEvery(updateProfileVisibilitySettings.type, updateProfileSettings);
-/**Chat Api saga */
-  yield takeEvery(fetchChatMessages.type, handleGetMessages);
-  yield takeEvery(sendChatMessage.type, handlePostSendMessage);
 }
 
 export default appSaga;

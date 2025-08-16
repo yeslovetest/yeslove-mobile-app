@@ -12,13 +12,13 @@
  * Do not edit the class manually.
  */
 
-
 import type { Configuration } from './configuration';
 import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
+import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, 
+    setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
 import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
@@ -55,6 +55,69 @@ export interface AddCommentRequest {
      */
     'content': string;
 }
+/**
+ * 
+ * @export
+ * @interface BlogPost
+ */
+export interface BlogPost {
+    /**
+     * Optional image URL for the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'image_url'?: string;
+
+    /**
+     * ISO 8601 timestamp of when the blog was posted
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'timestamp': string;
+
+    /**
+     * Name of the author of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'author': string;
+
+    /**
+     * Title of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'title': string;
+
+    /**
+     * Main content of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'content': string;
+
+    /**
+     * Summary of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'summary'?: string;
+}
+
+/**
+ * 
+ * @export
+ * @interface GetBlogPostsResponse
+ */
+export interface GetBlogPostsResponse {
+    /**
+     * List of blog posts
+     * @type {Array<BlogPost>}
+     * @memberof GetBlogPostsResponse
+     */
+    'blogs'?: Array<BlogPost>;
+}
+
 /**
  * 
  * @export
@@ -1461,6 +1524,102 @@ export class AuthApi extends BaseAPI {
         return AuthApiFp(this.configuration).postSignup(payload, options).then((request) => request(this.axios, this.basePath));
     }
 }
+
+
+/**
+ * BlogPostApiAxiosParamCreator
+ * @export
+ */
+export const BlogPostApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * Retrieve all blog posts
+         * @param {*} [options] Override http request option.
+         */
+        getBlogPosts: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/blog/blog-post`;
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
+            const localVarHeaderParameter: any = {};
+            const localVarQueryParameter: any = {};
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            const headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    };
+};
+
+/**
+ * BlogPostApiFp - functional programming interface
+ * @export
+ */
+export const BlogPostApiFp = function (configuration?: Configuration) {
+    const localVarAxiosParamCreator = BlogPostApiAxiosParamCreator(configuration);
+    return {
+        /**
+         * Retrieve all blog posts
+         * @param {*} [options] Override http request option.
+         */
+        getBlogPosts: async (options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetBlogPostsResponse>> => {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlogPosts(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BlogPostApi.getBlogPosts']?.[localVarOperationServerIndex]?.url;
+
+            return (axios, basePath) =>
+                createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(
+                    axios,
+                    localVarOperationServerBasePath || basePath
+                );
+        },
+    };
+};
+
+/**
+ * BlogPostApiFactory - factory interface
+ * @export
+ */
+export const BlogPostApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = BlogPostApiFp(configuration);
+    return {
+        /**
+         * Retrieve all blog posts
+         * @param {*} [options] Override http request option.
+         */
+        getBlogPosts(options?: RawAxiosRequestConfig): AxiosPromise<GetBlogPostsResponse> {
+            return localVarFp.getBlogPosts(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * BlogPostApi - object-oriented interface
+ * @export
+ * @class BlogPostApi
+ * @extends {BaseAPI}
+ */
+export class BlogPostApi extends BaseAPI {
+    /**
+     * Retrieve all blog posts
+     * @param {*} [options] Override http request option.
+     */
+    public getBlogPosts(options?: RawAxiosRequestConfig) {
+        return BlogPostApiFp(this.configuration)
+            .getBlogPosts(options)
+            .then((request) => request(this.axios, this.basePath));
+    }
+}
+
 
 
 /**

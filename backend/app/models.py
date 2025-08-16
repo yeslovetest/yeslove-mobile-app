@@ -191,7 +191,7 @@ class Reaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     reaction_type = db.Column(db.String(50), nullable=False)  # like, love, laugh, angry, etc.
-     
+    # Relationships 
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
@@ -204,6 +204,9 @@ class BlogPost(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     image_url = db.Column(db.String(500))  # Optional image
+    summary = db.Column(db.String(1000))
+    # Relationships 
+    author = db.relationship("User", backref="blogs")
     
 class DeviceToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
