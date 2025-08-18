@@ -8,7 +8,11 @@ import { useAppSelector } from '../../store/hooks';
 
 const Footer = () => {
   const userId = useAppSelector(state => state.user.id);
+ const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
 
+  if (hasTabToGoBackTo) {
+    return null;
+  }
   
   
   return (
