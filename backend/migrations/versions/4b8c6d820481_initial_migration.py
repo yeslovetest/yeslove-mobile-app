@@ -1,8 +1,8 @@
-"""Initial schema with professional and phone_number
+"""Initial migration
 
-Revision ID: 41ea1a12874c
+Revision ID: 4b8c6d820481
 Revises: 
-Create Date: 2025-06-29 22:10:05.312105
+Create Date: 2025-08-18 23:30:40.606961
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '41ea1a12874c'
+revision = '4b8c6d820481'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,6 +38,17 @@ def upgrade():
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_user_keycloak_id'), ['keycloak_id'], unique=True)
 
+    op.create_table('blog_posts',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=255), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('author_id', sa.Integer(), nullable=False),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.Column('image_url', sa.String(length=500), nullable=True),
+    sa.Column('summary', sa.String(length=1000), nullable=True),
+    sa.ForeignKeyConstraint(['author_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('chat',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('sender_id', sa.Integer(), nullable=False),
@@ -53,6 +64,16 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_chat_receiver_id'), ['receiver_id'], unique=False)
         batch_op.create_index(batch_op.f('ix_chat_sender_id'), ['sender_id'], unique=False)
 
+    op.create_table('device_token',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('token', sa.String(length=255), nullable=False),
+    sa.Column('platform', sa.String(length=50), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('token')
+    )
     op.create_table('email_notification_settings',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
@@ -65,6 +86,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('follower_id', sa.Integer(), nullable=False),
     sa.Column('followed_id', sa.Integer(), nullable=False),
+    sa.Column('follow_type', sa.String(length=10), nullable=True),
     sa.ForeignKeyConstraint(['followed_id'], ['user.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['follower_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
@@ -174,11 +196,13 @@ def downgrade():
 
     op.drop_table('follow')
     op.drop_table('email_notification_settings')
+    op.drop_table('device_token')
     with op.batch_alter_table('chat', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_chat_sender_id'))
         batch_op.drop_index(batch_op.f('ix_chat_receiver_id'))
 
     op.drop_table('chat')
+    op.drop_table('blog_posts')
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_user_keycloak_id'))
 

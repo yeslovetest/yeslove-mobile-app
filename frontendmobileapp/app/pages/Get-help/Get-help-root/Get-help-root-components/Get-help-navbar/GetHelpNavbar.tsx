@@ -6,8 +6,9 @@ import { setActiveGetHelpTabAction } from '@/app/store/Get-help-store/getHelpSli
 const navBarItems = ["Professionals", "Blogs"]
 
 const GetHelpNavbar = () => {
-    let activeTab = useAppSelector(state => state.getHelp.view.activeTab);
-    let dispatch = useAppDispatch();
+    const activeTab = useAppSelector(state => state.getHelp.view.activeTab);
+    const dispatch = useAppDispatch();
+    
 
     return (
         <View>

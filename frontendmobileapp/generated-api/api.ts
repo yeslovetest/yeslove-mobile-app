@@ -12,13 +12,13 @@
  * Do not edit the class manually.
  */
 
-
 import type { Configuration } from './configuration';
 import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
+import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, 
+    setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
 import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
@@ -55,6 +55,69 @@ export interface AddCommentRequest {
      */
     'content': string;
 }
+/**
+ * 
+ * @export
+ * @interface BlogPost
+ */
+export interface BlogPost {
+    /**
+     * Optional image URL for the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'image_url'?: string;
+
+    /**
+     * ISO 8601 timestamp of when the blog was posted
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'timestamp': string;
+
+    /**
+     * Name of the author of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'author': string;
+
+    /**
+     * Title of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'title': string;
+
+    /**
+     * Main content of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'content': string;
+
+    /**
+     * Summary of the blog post
+     * @type {string}
+     * @memberof BlogPost
+     */
+    'summary'?: string;
+}
+
+/**
+ * 
+ * @export
+ * @interface GetBlogPostsResponse
+ */
+export interface GetBlogPostsResponse {
+    /**
+     * List of blog posts
+     * @type {Array<BlogPost>}
+     * @memberof GetBlogPostsResponse
+     */
+    'blogs'?: Array<BlogPost>;
+}
+
 /**
  * 
  * @export
@@ -263,6 +326,100 @@ export interface FollowUserRequest {
      * @memberof FollowUserRequest
      */
     'action': string;
+    /**
+     * \Type of follow request: basic or friend
+     * @type {string}
+     * @memberof FollowUserRequest
+     */
+    'follow_type'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface FollowedUser
+ */
+export interface FollowedUser {
+    /**
+     * followed user keycloak id 
+     * @type {number}
+     * @memberof FollowedUser
+     */
+    'id': string;
+    /**
+     * follow type 'basic' or 'friend'  
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'follow_type': string;
+    /**
+     * name of followed user 
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'username': string;
+    /**
+     * profile of followed user 
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'profile_pic': string;
+}
+/**
+ * 
+ * @export
+ * @interface GetFollowingResponse
+ */
+export interface GetFollowingResponse {
+    /**
+     * All users followed by current user 
+     * @type {Array<FollowedUser>}
+     * @memberof GetFollowingResponse
+     */
+    'following'?: Array<FollowedUser>;
+}
+/**
+ * 
+ * @export
+ * @interface ChatMessage
+ */
+export interface ChatMessage {
+    /**
+     * message sender username
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'sender': string;
+    /**
+     * message receiver username
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'receiver': string;
+    /**
+     * content of message 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'message': string;
+    /**
+     * timestamp of a message 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'timestamp': string;
+}
+/**
+ * 
+ * @export
+ * @interface GetMessagesResponse
+ */
+export interface GetMessagesResponse {
+    /**
+     * All chat messages between current user and target user 
+     * @type {Array<ChatMessage>}
+     * @memberof GetMessagesResponse
+     */
+    'messages'?: Array<ChatMessage>;
 }
 /**
  * 
@@ -530,11 +687,11 @@ export interface ResetPasswordRequest {
  */
 export interface SendMessageRequest {
     /**
-     * ID of the recipient user
-     * @type {number}
+     * keycloak ID of the recipient user
+     * @type {string}
      * @memberof SendMessageRequest
      */
-    'receiver_id': number;
+    'receiver_id': string;
     /**
      * Message content
      * @type {string}
@@ -1369,6 +1526,101 @@ export class AuthApi extends BaseAPI {
 }
 
 
+/**
+ * BlogPostApiAxiosParamCreator
+ * @export
+ */
+export const BlogPostApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * Retrieve all blog posts
+         * @param {*} [options] Override http request option.
+         */
+        getBlogPosts: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/blog/blog-post`;
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
+            const localVarHeaderParameter: any = {};
+            const localVarQueryParameter: any = {};
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            const headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    };
+};
+
+/**
+ * BlogPostApiFp - functional programming interface
+ * @export
+ */
+export const BlogPostApiFp = function (configuration?: Configuration) {
+    const localVarAxiosParamCreator = BlogPostApiAxiosParamCreator(configuration);
+    return {
+        /**
+         * Retrieve all blog posts
+         * @param {*} [options] Override http request option.
+         */
+        getBlogPosts: async (options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetBlogPostsResponse>> => {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlogPosts(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BlogPostApi.getBlogPosts']?.[localVarOperationServerIndex]?.url;
+
+            return (axios, basePath) =>
+                createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(
+                    axios,
+                    localVarOperationServerBasePath || basePath
+                );
+        },
+    };
+};
+
+/**
+ * BlogPostApiFactory - factory interface
+ * @export
+ */
+export const BlogPostApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = BlogPostApiFp(configuration);
+    return {
+        /**
+         * Retrieve all blog posts
+         * @param {*} [options] Override http request option.
+         */
+        getBlogPosts(options?: RawAxiosRequestConfig): AxiosPromise<GetBlogPostsResponse> {
+            return localVarFp.getBlogPosts(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * BlogPostApi - object-oriented interface
+ * @export
+ * @class BlogPostApi
+ * @extends {BaseAPI}
+ */
+export class BlogPostApi extends BaseAPI {
+    /**
+     * Retrieve all blog posts
+     * @param {*} [options] Override http request option.
+     */
+    public getBlogPosts(options?: RawAxiosRequestConfig) {
+        return BlogPostApiFp(this.configuration)
+            .getBlogPosts(options)
+            .then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
 
 /**
  * ChatApi - axios parameter creator
@@ -1379,12 +1631,12 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @summary Fetch chat messages between two users
-         * @param {number} receiverId 
+         * @param {string} receiverId 
          * @param {object} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages: async (receiverId: number, payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getGetMessages: async (receiverId: string, payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'receiverId' is not null or undefined
             assertParamExists('getGetMessages', 'receiverId', receiverId)
             // verify required parameter 'payload' is not null or undefined
@@ -1465,12 +1717,12 @@ export const ChatApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Fetch chat messages between two users
-         * @param {number} receiverId 
+         * @param {string} receiverId 
          * @param {object} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetMessages']?.[localVarOperationServerIndex]?.url;
@@ -1502,12 +1754,12 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Fetch chat messages between two users
-         * @param {number} receiverId 
+         * @param {string} receiverId 
          * @param {object} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
             return localVarFp.getGetMessages(receiverId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1533,13 +1785,13 @@ export class ChatApi extends BaseAPI {
     /**
      * 
      * @summary Fetch chat messages between two users
-     * @param {number} receiverId 
+     * @param {string} receiverId 
      * @param {object} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ChatApi
      */
-    public getGetMessages(receiverId: number, payload: object, options?: RawAxiosRequestConfig) {
+    public getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig) {
         return ChatApiFp(this.configuration).getGetMessages(receiverId, payload, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -1586,14 +1838,13 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            Object.assign(localVarQueryParameter, payload);
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+            
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2012,7 +2263,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFollowingResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFollowing(keycloakId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFollowing']?.[localVarOperationServerIndex]?.url;
@@ -2146,7 +2397,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetFollowingResponse> {
             return localVarFp.getGetFollowing(keycloakId, payload, options).then((request) => request(axios, basePath));
         },
         /**

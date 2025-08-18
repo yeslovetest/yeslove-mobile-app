@@ -35,7 +35,8 @@ AddCommentRequest = api.model("AddCommentRequest", {
     })
 
 FollowUserRequest = api.model("FollowUserRequest", {
-        "action": fields.String(required=True, description="'follow' to follow, 'unfollow' to unfollow")
+        "action": fields.String(required=True, description="'follow' to follow, 'unfollow' to unfollow"),
+        "follow_type": fields.String(required=False, description="Basic follow or follow as a friend")
     })
 
 
