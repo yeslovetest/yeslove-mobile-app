@@ -1,16 +1,22 @@
 import Header from '@/app/Universal-components/Header/Header'
 import React from 'react'
-import { View, Text } from 'react-native'
+import { ScrollView } from 'react-native'
+import messagesSharedStyles from './MessagesSharedStyles'
+import OneMessage from './Messages-components/OneMessage'
+import PlaceholderMessages from './Messages-components/PlaceholderMessages'
 
 const Messages = () => {
-  return (
-    <>
-    <Header></Header>
-    <View>
-      <Text>This is the messages page</Text>
-    </View>
-    </>
-  )
+    return (
+        <>
+            <Header></Header>
+            <ScrollView contentContainerStyle={messagesSharedStyles.contentContainer} style={messagesSharedStyles.container}>
+                {PlaceholderMessages.map((MessagePlaceholder, index) => (
+                    <OneMessage message={MessagePlaceholder} key={index} ></OneMessage>
+                ))}
+        
+            </ScrollView>
+        </>
+    )
 }
 
 export default Messages
