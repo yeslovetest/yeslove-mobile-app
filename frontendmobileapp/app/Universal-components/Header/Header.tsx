@@ -25,7 +25,11 @@ export default function Header(props: Props) {
   const closePostModal = () => setModalVisible(false);
 
   const openSettings = () => {
-    dispatch(openTabOnTopAction({ type: TabType.SETTINGS}))
+    dispatch(openTabOnTopAction({ type: TabType.SETTINGS }))
+  }
+
+  const openMessages = () => {
+    dispatch(openTabOnTopAction({ type: TabType.MESSAGES }))
   }
 
 
@@ -58,7 +62,7 @@ export default function Header(props: Props) {
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
           <TouchableOpacity onPress={openSettings}>
-          <Ionicons name="settings-outline" size={28} color="black" />
+            <Ionicons name="settings-outline" size={28} color="black" />
           </TouchableOpacity>
         </View>
       )}
@@ -75,7 +79,9 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <FontAwesome5 name="comment-alt" size={20} />
+          <TouchableOpacity onPress={openMessages}>
+            <FontAwesome5 name="comment-alt" size={20} />
+          </TouchableOpacity>
         </View>
       )}
 
