@@ -1,4 +1,3 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
 const messagesSharedStyles = StyleSheet.create({

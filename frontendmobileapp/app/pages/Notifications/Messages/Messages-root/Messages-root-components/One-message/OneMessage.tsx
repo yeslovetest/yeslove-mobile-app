@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Image, Text } from 'react-native'
 import styles from './OneMessageStyles'
-import { Message } from './PlaceholderMessages'
+import { Message } from '../PlaceholderMessages'
 
 export interface Props {
   message: Message
