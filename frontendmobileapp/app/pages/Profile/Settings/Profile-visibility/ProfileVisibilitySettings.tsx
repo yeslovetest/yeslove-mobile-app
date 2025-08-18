@@ -1,4 +1,4 @@
-import ProfileVisibilityContent from '@/app/pages/Profile/Profile-root/Profile-root-components/Profile-navbar/Settings/Settings-navbar/Profile-visibility/ProfileVisibilityContent'
+import ProfileVisibility from './ProfileVisibility';
 import { useAppSelector } from '@/app/store/hooks';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from 'react'
@@ -22,7 +22,7 @@ const ProfileVisibilitySettings = () => {
     );
     const [currentProfileVisibilitySettings, setCurrentProfileVisibilitySettings] = useState(initialVisibilityValues);
     return (
-        <ProfileVisibilityContent settings={currentProfileVisibilitySettings || []} />
+        <ProfileVisibility settings={currentProfileVisibilitySettings || []} />
     )
 }
 
