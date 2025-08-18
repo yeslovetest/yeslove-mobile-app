@@ -3,9 +3,10 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import styles from './HeaderStyles';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { goBackToPreviousTabAction, TabType } from '../../store/Navigation/navigationSlice';
+import { goBackToPreviousTabAction, openTabOnTopAction, TabData, TabType } from '../../store/Navigation/navigationSlice';
 import PostModal from '@/app/pages/Home/Post-modal/PostModal';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export interface Props {
   mainTitle?: string;
@@ -23,9 +24,15 @@ export default function Header(props: Props) {
   const openPostModal = () => setModalVisible(true);
   const closePostModal = () => setModalVisible(false);
 
+  const openSettings = () => {
+    dispatch(openTabOnTopAction({ type: TabType.SETTINGS}))
+  }
+
+
   const returnToPreviousTab = () => {
     dispatch(goBackToPreviousTabAction());
   };
+
 
   return (
     <View style={styles.header}>
@@ -50,7 +57,9 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <View />
+          <TouchableOpacity onPress={openSettings}>
+          <Ionicons name="settings-outline" size={28} color="black" />
+          </TouchableOpacity>
         </View>
       )}
 

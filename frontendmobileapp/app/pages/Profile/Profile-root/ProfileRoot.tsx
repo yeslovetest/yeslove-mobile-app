@@ -5,7 +5,6 @@ import Header from '@/app/Universal-components/Header/Header';
 import ProfileHeaderAndBio from './Profile-root-components/Header-and-bio/ProfileHeaderAndBio';
 import ProfileNavbar from './Profile-root-components/Profile-navbar/ProfileNavbar';
 import { useState } from 'react';
-import GeneralContent from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/General/GeneralContent';
 import SettingsNavbar from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/SettingsNavbar';
 import EmailContent from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/Email/EmailNtfnSetting';
 import ProfileVisibilityContent from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/Profile-visibility/ProfileVisibilitySettings';
@@ -16,7 +15,7 @@ import EditContent from './Profile-root-components/Profile-navbar/About/About-na
 import TimelineContent from './Profile-root-components/Profile-navbar/Timeline/TimelineContent';
 import VideosContent from './Profile-root-components/Profile-navbar/Videos/VideosContent';
 
-const settingsItems = ["General", "Email", "Profile Visibility", "Export Data"];
+const settingsItems = ["Email", "Profile Visibility", "Export Data"];
 const aboutItems = ["View", "Edit"]
 
 export default function ProfileRoot() {
@@ -33,7 +32,7 @@ export default function ProfileRoot() {
 
   const [activeAboutTab, setActiveAboutTab] = useState("View");
 
-  const [activeSettingsTab, setActiveSettingsTab] = useState("General");
+  const [activeSettingsTab, setActiveSettingsTab] = useState("Email");
 
   return (
     <>
@@ -82,8 +81,6 @@ export default function ProfileRoot() {
               defaultTab={activeSettingsTab}
               onChangeTab={setActiveSettingsTab}
             />
-
-            {activeSettingsTab === "General" && <GeneralContent />}
             {activeSettingsTab === "Email" && <EmailContent />}
             {activeSettingsTab === "Profile Visibility" && <ProfileVisibilityContent />}
             {activeSettingsTab === "Export Data" && <ExportDataContent />}
