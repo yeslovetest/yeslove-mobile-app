@@ -13,7 +13,7 @@ import LogoutModal from './Logout/LogoutModal'
 const General = () => {
     const [changePasswordSection, setChangePasswordSection] = useState(false);
     const [deleteAccountSection, setDeleteAccountSection] = useState(false);
-    const [logoutSection, setLogoutSection] = useState(true)
+    const [logoutSection, setLogoutSection] = useState(false)
 
 
 
