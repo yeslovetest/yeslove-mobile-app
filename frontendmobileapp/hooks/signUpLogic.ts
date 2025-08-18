@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/store/hooks';
 import { setLoginStateAction, LoginState, increasePageNo, decreasePageNo, signupAction,
-   setSignupEmail, setSignupPassword, setSignupConfirmPassword, setSignupMessage, setErrorMessage } from '../app/store/Auth-store/authSlice';
-import theme from '@/assets/variables/Variables';
+   setSignupEmail, setSignupPassword, setSignupConfirmPassword, setSignupMessage, setErrorMessage } from '../app/store/authSlice';
+import theme from '@/Styles/Variables';
 
 export const useSignup = () => {
   const dispatch = useAppDispatch();

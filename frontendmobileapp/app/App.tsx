@@ -1,24 +1,25 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Footer from "./Universal-components/Footer/Footer";
+import Footer from "./footer/Footer";
+import Header from "./Header";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfilePage from "./tabs/profile";
 import HomeScreen from "./tabs/home";
 import GetHelpPage from "./tabs/gethelp";
-import LoginScreen from "./pages/Login/Login-components/LoginScreen";
-import SignUpScreen from "./pages/Sign-up/Sign-up-components/SignUpScreen";
+import LoginScreen from "./login-screen/LoginScreen";
+import SignUpScreen from "./signup-screen/SignUpScreen";
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
   LoginState,
-} from "./store/Auth-store/authSlice";
-import LoginLoadingScreen from "./pages/Login/Login-components/LoginLoadingScreen";
-import { TabType } from "./store/Navigation/navigationSlice";
+} from "./store/authSlice";
+import LoginLoadingScreen from "./login-screen/LoginLoadingScreen";
+import { TabType } from "./store/navigationSlice";
 import EventsPage from "./tabs/events";
-import IndividualEventPage from "./pages/Events/Events-components/IndividualEventPage";
-import IndividualBlog from "@/app/pages/Get-help/Get-help-components/IndividualBlog";
-import IndividualPost from "@/app/pages/Home/Home-components/IndividualPost";
-import NotificationsPage from "./tabs/notifications";
+import IndividualEvent from "@/components/events-components/IndividualEvent";
+import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
+import IndividualPost from "@/components/home-components/IndividualPost";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -50,17 +51,20 @@ const App = () => {
       )}
       {loginState == LoginState.LOGGED_IN && (
         <View style={styles.container}>
+          <Header ></Header>
           {
             {
               HOME: <HomeScreen></HomeScreen>,
               GET_HELP: <GetHelpPage></GetHelpPage>,
               EVENTS: <EventsPage></EventsPage>,
               PROFILE: <ProfilePage></ProfilePage>,
-              NOTIFICATIONS: <NotificationsPage></NotificationsPage>,
-              INDIVIDUAL_EVENT: <IndividualEventPage />,
+              INDIVIDUAL_EVENT: <IndividualEvent />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
             }[currentActiveTab?.type ?? TabType.HOME]
+          }
+          {currentActiveTab?.type === TabType.HOME && 
+              <ScrollToTop></ScrollToTop>
           }
           <Footer></Footer>
         </View>
