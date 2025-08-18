@@ -29,6 +29,7 @@ class CreateBlog(Resource):
             data = request.get_json()
             title = data.get("title")
             content = data.get("content")
+            summary = data.get("summary")
             image_url = data.get("image_url")
 
             # ✅ Basic validation
@@ -45,6 +46,7 @@ class CreateBlog(Resource):
                 content=content,
                 author_id=user.id,
                 image_url=image_url,
+                summary=summary,
                 timestamp=datetime.utcnow()
             )
             db.session.add(post)

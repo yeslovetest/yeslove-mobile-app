@@ -2,16 +2,19 @@ import { View } from "react-native"
 import OneBlog from "./OneBlog"
 import BlogSearchBar from "./BlogSearchBar"
 import styles from "@/Styles/page-styles/GetHelpStyles"
-import blogPlaceholders from "./placeholderBlogs"
+import { useAppSelector } from "@/app/store/hooks"
 
 const Blogs = () => {
+
+  const blogs = useAppSelector(state => state.getHelp.blogs);
+
   return (
     <View >
-      <BlogSearchBar />
+      <BlogSearchBar /> 
       <View style={styles.blogsContainer}>
-        {blogPlaceholders.map((blogPlaceholder, index) => (
-      <OneBlog blog={blogPlaceholder} key={index} />
-      ))}
+        {blogs.map((blog, index) => (
+          <OneBlog blog={blog} key={index} />
+        ))}
       </View>
     </View>
   )

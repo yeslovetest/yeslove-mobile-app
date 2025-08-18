@@ -19,6 +19,7 @@ import EventsPage from "./tabs/events";
 import IndividualEvent from "@/components/events-components/IndividualEvent";
 import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
 import IndividualPost from "@/components/home-components/IndividualPost";
+import ChatSection from "@/components/profile-components/ChatSection";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const App = () => {
@@ -61,6 +62,7 @@ const App = () => {
               INDIVIDUAL_EVENT: <IndividualEvent />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
+              Chat_Section: <ChatSection/>,
             }[currentActiveTab?.type ?? TabType.HOME]
           }
           {currentActiveTab?.type === TabType.HOME && 

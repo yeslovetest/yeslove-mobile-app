@@ -1,8 +1,17 @@
 import { View, ImageBackground, Text } from "react-native";
 import styles from "@/Styles/page-styles/GetHelpStyles";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { fetchBlogPosts } from "@/app/store/getHelpSlice";
+import { useFocusEffect } from "expo-router";
+import { useAppDispatch } from "@/app/store/hooks";
+import React from "react";
 
 const BlogsHeader = () => {
+    const dispatch = useAppDispatch();
+        useFocusEffect(React.useCallback(() => {
+            dispatch(fetchBlogPosts());
+    }, []));
+
     return (
         <View>
             <View style={styles.ourProfessionalsContainer}>

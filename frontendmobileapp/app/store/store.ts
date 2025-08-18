@@ -4,7 +4,8 @@ import profileReducer from "./profileSlice";
 import feedReducer from "./feedSlice";
 import authReducer from "./authSlice";
 import eventsReducer from "./eventsSlice";
-import getHelpReducer from "./getHelpSlice"
+import getHelpReducer from "./getHelpSlice";
+import chatReducer from "./chatSlice";
 import createSagaMiddleWare from "redux-saga"
 import appSaga from "./effects";
 import { navigationReducer } from "./navigationSlice";
@@ -20,7 +21,8 @@ export const store = configureStore({
         navigation: navigationReducer,
         auth: authReducer,
         events: eventsReducer,
-        getHelp: getHelpReducer
+        getHelp: getHelpReducer,
+        chat: chatReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleWare)
