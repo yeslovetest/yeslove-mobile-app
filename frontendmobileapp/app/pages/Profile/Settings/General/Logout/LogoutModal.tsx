@@ -1,23 +1,29 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Modal, TouchableOpacity, Animated, Text, View } from 'react-native';
-import styles from '../../GeneralStyles';
+import styles from '../GeneralStyles';
 import { useAppDispatch } from '@/app/store/hooks';
-import { setDeleteConfirmation } from '@/app/store/Auth-store/authSlice';
+import { logoutAction } from '@/app/store/Auth-store/authSlice';
+import { TOKEN_REFRESH_SERVICE } from '@/ts/token-service';
 
-interface DeleteAccountModalProps {
+interface LogoutModalProps {
     visible: boolean;
     onClose: () => void;
 }
 
-const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible, onClose }) => {
+const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose }) => {
     const slideAnim = useRef(new Animated.Value(300)).current;
     const [isRendered, setIsRendered] = useState(visible);
     const dispatch = useAppDispatch()
 
 
-    const deleteAccount = () => {
-        dispatch(setDeleteConfirmation({ 'confirmation': true }));
-    }
+       const logOut = async () => {
+        try {
+            const refreshToken = await TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage();
+            dispatch(logoutAction(refreshToken || ''));
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
 
     useEffect(() => {
         if (visible) {
@@ -52,9 +58,9 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible, onClos
                         ]}
                     >
                         <View style={styles.settingsSubSection}>
-                            <Text style={styles.modalText}>Are you sure you want to delete this account? </Text>
-                            <TouchableOpacity style={styles.saveChangesButton} onPress={deleteAccount}>
-                                <Text style={styles.saveChangesButtonText}>Delete Account</Text>
+                            <Text style={styles.modalText}>Are you sure you want to log out of this account? </Text>
+                            <TouchableOpacity style={styles.saveChangesButton} onPress={logOut}>
+                                <Text style={styles.saveChangesButtonText}>Log out</Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
@@ -65,4 +71,4 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible, onClos
 };
 
 
-export default DeleteAccountModal;
+export default LogoutModal;

@@ -6,7 +6,6 @@ import ProfileHeaderAndBio from './Profile-root-components/Header-and-bio/Profil
 import ProfileNavbar from './Profile-root-components/Profile-navbar/ProfileNavbar';
 import { useState } from 'react';
 import SettingsNavbar from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/SettingsNavbar';
-import EmailContent from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/Email/EmailNtfnSetting';
 import ProfileVisibilityContent from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/Profile-visibility/ProfileVisibilitySettings';
 import ExportDataContent from './Profile-root-components/Profile-navbar/Settings/Settings-navbar/Export-data/ExportDataContent';
 import AboutNavbar from './Profile-root-components/Profile-navbar/About/About-navbar/AboutNavbar';
@@ -15,7 +14,7 @@ import EditContent from './Profile-root-components/Profile-navbar/About/About-na
 import TimelineContent from './Profile-root-components/Profile-navbar/Timeline/TimelineContent';
 import VideosContent from './Profile-root-components/Profile-navbar/Videos/VideosContent';
 
-const settingsItems = ["Email", "Profile Visibility", "Export Data"];
+const settingsItems = [ "Profile Visibility", "Export Data"];
 const aboutItems = ["View", "Edit"]
 
 export default function ProfileRoot() {
@@ -32,7 +31,7 @@ export default function ProfileRoot() {
 
   const [activeAboutTab, setActiveAboutTab] = useState("View");
 
-  const [activeSettingsTab, setActiveSettingsTab] = useState("Email");
+  const [activeSettingsTab, setActiveSettingsTab] = useState("Profile Visibility");
 
   return (
     <>
@@ -81,7 +80,6 @@ export default function ProfileRoot() {
               defaultTab={activeSettingsTab}
               onChangeTab={setActiveSettingsTab}
             />
-            {activeSettingsTab === "Email" && <EmailContent />}
             {activeSettingsTab === "Profile Visibility" && <ProfileVisibilityContent />}
             {activeSettingsTab === "Export Data" && <ExportDataContent />}
           </>
