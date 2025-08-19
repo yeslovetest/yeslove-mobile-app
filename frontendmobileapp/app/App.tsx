@@ -26,6 +26,7 @@ import ProfileVisibility from "./pages/Profile/Settings/Profile-visibility/Profi
 import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
 import Messages from "./pages/Notifications/Messages/Messages-root/Messages";
 import Conversation from "./pages/Notifications/Messages/Conversation/Conversation";
+import ChatSection from "./pages/Notifications/ChatSection";
 
 const App = () => {
   const dispatch = useAppDispatch();

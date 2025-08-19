@@ -1,12 +1,22 @@
 import React from 'react'
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
+import MediaPlaceholders from './Media-components/MediaPlaceholders'
+import styles from './MediaContentStyles'
+import OneMedium from './Media-components/One-medium/OneMedium'
 
 const MediaContent = () => {
-    return (
-        <View>
-            <Text>This is the media section</Text>
-        </View>
-    )
+  return (
+    <View
+      style={[
+        styles.container,
+        { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }
+      ]}
+    >
+      {MediaPlaceholders.map((media, index) => (
+        <OneMedium image={media.image} key={index} />
+      ))}
+    </View>
+  )
 }
 
 export default MediaContent
