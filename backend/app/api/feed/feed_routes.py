@@ -1,13 +1,33 @@
 from flask import request
-from flask_restx import Namespace, Resource, reqparse
+from flask_restx import Namespace, Resource
 
 from app.logging_setup import logger
-
 from app.utils import require_auth
 
 
 
 api = Namespace("feed", description="API Endpoints")
+
+@api.route('/user/<string:user_id>/posts')
+class UserPosts(Resource):
+    @api.marshal_with(FeedResponse)
+    def get(self, user_id):
+        """Get all posts by a specific user"""
+        posts = Post.query.filter_by(user_id=user_id).order_by(Post.timestamp.desc()).all()
+        return {"posts": [
+            {
+                "id": post.id,
+                "author": post.author.username if post.author else "",
+                "author_id": post.author.keycloak_id if post.author else "",
+                "author_pic": getattr(post.author, "profile_pic", None),
+                "content": post.content,
+                "image": post.image,
+                "timestamp": post.timestamp.isoformat() if post.timestamp else None,
+                "likes": len(post.likes) if hasattr(post, "likes") else 0,
+                "comments": len(post.comments) if hasattr(post, "comments") else 0
+            }
+            for post in posts
+        ]}
 
 @api.route("/feed")
 class Feed(Resource):
