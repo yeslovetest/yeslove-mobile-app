@@ -19,8 +19,13 @@ import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
 import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
 import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndReactionsPage";
 import NotificationsRoot from "./pages/Notifications/Notifications-root/NotificationsRoot";
-import ChatSection from "./pages/Notifications/ChatSection";
-
+import SettingsPage from "./pages/Profile/Settings/SettingsPage";
+import General from "./pages/Profile/Settings/General/General";
+import Email from "./pages/Profile/Settings/Email/Email";
+import ProfileVisibility from "./pages/Profile/Settings/Profile-visibility/ProfileVisibility";
+import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
+import Messages from "./pages/Notifications/Messages/Messages-root/Messages";
+import Conversation from "./pages/Notifications/Messages/Conversation/Conversation";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -58,11 +63,20 @@ const App = () => {
               GET_HELP: <GetHelpRoot />,
               EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfileRoot></ProfileRoot>,
+              SETTINGS: <SettingsPage></SettingsPage>,
+
+              /*settings folders pages */
+                 GENERAL: <General></General>,
+                 EMAIL: <Email></Email>,
+                 PROFILE_VISIBILITY: <ProfileVisibility></ProfileVisibility>,
+                 EXPORT_DATA: <ExportData></ExportData>,
+
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
+                 MESSAGES: <Messages></Messages>,
+                    CONVERSATION: <Conversation></Conversation>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
-              Chat_Section: <ChatSection/>,
             }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>

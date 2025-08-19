@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAppSelector } from '@/app/store/hooks';
 import MessageInbox from './MessageInbox';
-import SettingsNavbar from '../Profile/Profile-root/Profile-root-components/Profile-navbar/Settings/Settings-navbar/SettingsNavbar';
 import styles from './MessageSectionStyles';
 
 const MessageSection = () => { 
@@ -30,8 +29,6 @@ const MessageSection = () => {
   
   return (
     <View style={styles.aboutNavBarContainer}>
-      <SettingsNavbar tabItems={items} defaultTab={activeTab}
-      onChangeTab={(currentTab) => setActiveTab(currentTab)}/>
 
       {/**Messages (Inbox) */}
       {activeTab === "Inbox" && (
