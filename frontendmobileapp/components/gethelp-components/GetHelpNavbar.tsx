@@ -11,9 +11,8 @@ import BlogsHeader from "./BlogsHeader";
 const navBarItems = ["Professionals", "Blogs"]
 
 const GetHelpNavbar = () => {
-    const activeTab = useAppSelector(state => state.getHelp.view.activeTab);
-    const dispatch = useAppDispatch();
-    
+    let activeTab = useAppSelector(state => state.getHelp.view.activeTab);
+    let dispatch = useAppDispatch();
 
     return (
         <View>

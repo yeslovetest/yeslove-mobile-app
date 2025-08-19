@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
         bottom: -2, 
       },
     
-      /* Post */
+      /* */
 
   postContainer: {
     marginTop: vw(5),
@@ -246,19 +246,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  postHeaderContent: {
-    width: '100%',
-    justifyContent: 'space-between',
-    flexDirection: 'row'
-  }, 
-
   profileImageContainer: {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
     alignSelf: "flex-start",
-    flexDirection: "row",
-
+    flexDirection: "row"
   },
 
   profileInfoContainer: {
@@ -391,48 +384,8 @@ const styles = StyleSheet.create({
 
   emoji: {
     fontSize: 24,
-  },
+  }
 
-   /* follow user styles */ 
-     followUser: {
-    alignItems: 'flex-end',
-    paddingRight: 120,
-    
-  },
-
-  followUserText: {
-    color: theme.colors.primaryBlue,
-    fontSize: 16,
-    textAlign: 'left',
-    fontWeight: '300',
-    borderColor: theme.colors.primaryBlue,
-    padding: 5,
-    borderWidth: 1,
-    borderRadius: 5,
-  },
-
-    followMenuPopUp :{
-    flexDirection: 'column', 
-    alignItems: 'center',
-    left: -4, 
-    bottom: 10, 
-    zIndex: 1000, 
-    shadowOffset: {width: 3, height: -2}, 
-    shadowOpacity: 0.1, 
-    elevation: 2,
-  },
-    followMenuPopUpText :{
-    color: theme.colors.blackText,
-    textAlign: 'left',
-    fontSize: 16,
-    fontWeight: '400',
-    width: '100%',
-    padding: 12,
-  },
-  followMenuOptions: {
-    width: '100%',
-    
-  },
 })
 
 export default styles

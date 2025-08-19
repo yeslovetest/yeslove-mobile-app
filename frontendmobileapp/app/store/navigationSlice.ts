@@ -7,8 +7,7 @@ export enum TabType {
   PROFILE = "PROFILE",
   INDIVIDUAL_EVENT = "INDIVIDUAL_EVENT",
   INDIVIDUAL_BLOG = "INDIVIDUAL_BLOG",
-  INDIVIDUAL_POST = "INDIVIDUAL_POST",
-  Chat_Section = "Chat_Section",
+  INDIVIDUAL_POST = "INDIVIDUAL_POST"
 }
 
 export class TabData {

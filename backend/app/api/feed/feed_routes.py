@@ -27,7 +27,6 @@ class Feed(Resource):
         per_page = int(request.args.get("per_page", 10))
 
         # Build query based on feed type
-        
         if feed_type == "mentions":
             query = Post.query.filter(Post.content.contains(f"@{user.username}")).order_by(Post.timestamp.desc())
         elif feed_type == "favorites":
@@ -37,10 +36,10 @@ class Feed(Resource):
             query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc())
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
-        else:
+        else:  # "all"
             following = [follow.followed_id for follow in user.following]
             following.append(user.id)
-            query = Post.query.order_by(Post.timestamp.desc())    
+            query = Post.query.order_by(Post.timestamp.desc())
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
 
@@ -257,101 +256,59 @@ class FollowUser(Resource):
     from .feed_models import FollowUserRequest
     @require_auth()
     @api.expect(FollowUserRequest)  # ✅ Attach model
-    def post(self, keycloak_id):
+    def post(self, user_id):
         """Follow or unfollow a user."""
         from app.models import User, Follow, db
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        target_user = User.query.filter_by(keycloak_id=keycloak_id).first()
+        target_user = User.query.get(user_id)
 
         if not user or not target_user:
             return {"message": "User not found"}, 404
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
-        follow_type = request.json.get("follow_type", "basic")
-        
-        # Get existing follow relationships (both directions)
-        follows = Follow.query.filter(
-            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) | 
-            ((Follow.follower_id == target_user.id) & (Follow.followed_id == user.id))
-        ).all()
-        existing = {(f.follower_id, f.followed_id): f for f in follows}
 
-        followby_current_user = existing.get((user.id, target_user.id))
-        followby_target_user = existing.get((target_user.id, user.id))
-
-        # Unfollow
         if follow_action == "unfollow":
-            if followby_current_user:
-                db.session.delete(followby_current_user)
-                if follow_type == "friend" and followby_target_user:
-                   db.session.delete(followby_target_user) 
+            existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
+            if existing_follow:
+                db.session.delete(existing_follow)
                 db.session.commit()
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
-        
-        # Follow
-        if followby_current_user:
-            # Already following
-            if follow_type == "basic":
-                return {"message": "Already following"}, 400
-            if follow_type == "friend":
-                followby_current_user.follow_type = "friend" 
-                # Add reverse record if not exists  (send frienship request by email, To be done later)
-                if not followby_target_user:
-                    new_follow = Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend")
-                    db.session.add(new_follow)
-                    db.session.commit()
-                    return {"message": "Connected as friend"}, 201
-                # Otherwise just update both
-                followby_target_user.follow_type = "friend"
-                db.session.commit()
-                return {"message": "Follow type updated"}, 201
 
-        # Create new follows
-        records = []
-        if follow_type == "friend": # send frienship request by email, To be done later
-            records.append(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
-            records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
-            db.session.add_all(records)
-            db.session.commit()
-            return {"message": "Connected as friend"}, 201
+        # Follow the user
+        existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
+        if existing_follow:
+            return {"message": "Already following"}, 400
 
-        # Basic follow
-        db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
+        new_follow = Follow(follower_id=user.id, followed_id=user_id)
+        db.session.add(new_follow)
         db.session.commit()
-        return {"message": "Following Successfully"}, 201
+        return {"message": "Followed successfully"}, 201
 
 
 @api.route("/followers/<string:keycloak_id>")
 class GetFollowers(Resource):
     from .feed_models import GetFollowersRequest
-    @require_auth()
     @api.expect(GetFollowersRequest)  # ✅ Attach model
-    def get(self, keycloak_id):
+    def get(self, user_id):
         """Fetch all followers of a user."""
-        from app.models import Follow, User
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        followers = Follow.query.filter_by(followed_id=user.id).all()
-        return {
-           "followers": [
+        from app.models import Follow
+        followers = Follow.query.filter_by(followed_id=user_id).all()
+        return [
             {"id": follow.follower_id, "username": follow.follower.username}
             for follow in followers
-        ]}, 200
+        ], 200
 
 
 @api.route("/following/<string:keycloak_id>")
 class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest
-    @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
-    def get(self, keycloak_id):
+    def get(self, user_id):
         """Fetch all users the current user is following."""
-        from app.models import Follow, User
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        following = Follow.query.filter_by(follower_id=user.id).all()
-        return {'following':
-                [
-                    {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
-                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic}
-                    for follow in following
-                ]}, 200
+        from app.models import Follow
+        following = Follow.query.filter_by(follower_id=user_id).all()
+        return [
+            {"id": follow.followed_id, "username": follow.followed.username}
+            for follow in following
+        ], 200

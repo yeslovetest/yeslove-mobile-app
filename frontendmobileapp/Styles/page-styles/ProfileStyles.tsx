@@ -399,34 +399,11 @@ headerText: {
   fontWeight: 'bold'
 },
 headerText2: {
+
   paddingVertical: 10,
   fontSize: 17,
   paddingHorizontal: 0,
 },
-/** Messages view */
-messageContainer: {
-  width: '100%',
-  backgroundColor: theme.colors.mainBkgColor,
-  padding: 10,
-},
-messageContent: {
-  width: '100%',
-  flexDirection: 'row',
-  alignItems: 'center'
-},
-messageImageIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 60, 
-    borderWidth: 1,
-    borderColor: "#ccc",
-},
-messageHeaderText : {
-    fontSize: 15,
-    fontWeight: '500',
-    marginHorizontal: 20,
-},
-
 });
 
 
