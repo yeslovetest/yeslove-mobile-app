@@ -19,6 +19,8 @@ import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
 import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
 import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndReactionsPage";
 import NotificationsRoot from "./pages/Notifications/Notifications-root/NotificationsRoot";
+import ChatSection from "./pages/Notifications/ChatSection";
+
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -60,6 +62,7 @@ const App = () => {
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
+              Chat_Section: <ChatSection/>,
             }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>
