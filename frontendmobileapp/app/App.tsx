@@ -1,26 +1,26 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Footer from "./footer/Footer";
-import Header from "./Header";
+import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import ProfilePage from "./tabs/profile";
-import HomeScreen from "./tabs/home";
-import GetHelpPage from "./tabs/gethelp";
-import LoginScreen from "./login-screen/LoginScreen";
-import SignUpScreen from "./signup-screen/SignUpScreen";
+import ProfileRoot from "./pages/Profile/Profile-root/ProfileRoot";
+import HomeRoot from "./pages/Home/Home-root/HomeRoot";
+import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
+import LoginPage from "./pages/Login/LoginPage/LoginPage";
+import SignUpRoot from "./pages/Sign-up/Sign-up-root/SignUpRoot";
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
   LoginState,
-} from "./store/authSlice";
-import LoginLoadingScreen from "./login-screen/LoginLoadingScreen";
-import { TabType } from "./store/navigationSlice";
-import EventsPage from "./tabs/events";
-import IndividualEvent from "@/components/events-components/IndividualEvent";
-import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
-import IndividualPost from "@/components/home-components/IndividualPost";
-import ChatSection from "@/components/profile-components/ChatSection";
-import ScrollToTop from "@/components/ScrollToTop";
+} from "./store/Auth-store/authSlice";
+import LoginRoot from "./pages/Login/Login-root/LoginRoot";
+import { TabType } from "./store/Navigation/navigationSlice";
+import EventsRoot from "./pages/Events/Events-root/EventsRoot";
+import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
+import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
+import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndReactionsPage";
+import NotificationsRoot from "./pages/Notifications/Notifications-root/NotificationsRoot";
+import ChatSection from "./pages/Notifications/ChatSection";
+
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -37,36 +37,33 @@ const App = () => {
     <>
       {loginState == LoginState.LOADING && (
         <View style={styles.container}>
-          <LoginLoadingScreen></LoginLoadingScreen>
+          <LoginRoot></LoginRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_OUT && (
         <View style={styles.container}>
-          <LoginScreen></LoginScreen>
+          <LoginPage></LoginPage>
         </View>
       )}
        {loginState == LoginState.SIGN_UP && (
         <View style={styles.container}>
-          <SignUpScreen></SignUpScreen>
+          <SignUpRoot></SignUpRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_IN && (
         <View style={styles.container}>
-          <Header ></Header>
           {
             {
-              HOME: <HomeScreen></HomeScreen>,
-              GET_HELP: <GetHelpPage></GetHelpPage>,
-              EVENTS: <EventsPage></EventsPage>,
-              PROFILE: <ProfilePage></ProfilePage>,
-              INDIVIDUAL_EVENT: <IndividualEvent />,
+              HOME: <HomeRoot></HomeRoot>,
+              GET_HELP: <GetHelpRoot />,
+              EVENTS: <EventsRoot></EventsRoot>,
+              PROFILE: <ProfileRoot></ProfileRoot>,
+              NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
+              INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
               Chat_Section: <ChatSection/>,
             }[currentActiveTab?.type ?? TabType.HOME]
-          }
-          {currentActiveTab?.type === TabType.HOME && 
-              <ScrollToTop></ScrollToTop>
           }
           <Footer></Footer>
         </View>
