@@ -207,6 +207,9 @@ class Reaction(db.Model):
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
+# ------------------
+# Event Model
+# ------------------
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -236,7 +239,9 @@ class Event(db.Model):
             "attendees": [user.id for user in self.attendees]
         }
 
-
+# -------------------------------
+# Address model (used for event locations)
+# -------------------------------
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(100), nullable=False)  # str to support house names
@@ -267,9 +272,6 @@ class BlogPost(db.Model):
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-<<<<<<< HEAD
-    image_url = db.Column(db.String(500))  # Optional image
-=======
     image_url = db.Column(db.String(500))  # Optional image
     
 class DeviceToken(db.Model):
@@ -278,4 +280,3 @@ class DeviceToken(db.Model):
     token = db.Column(db.String(255), unique=True, nullable=False)
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
->>>>>>> origin/main
