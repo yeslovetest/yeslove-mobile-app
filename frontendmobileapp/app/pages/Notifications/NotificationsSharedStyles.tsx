@@ -5,7 +5,11 @@ const sharedStyles = StyleSheet.create({
      container: {
         flex: 1,
         marginTop: 10,
-        width: theme.spacing.standardPageContentWidth
+        width:"100%",
+    },
+        contentContainer: {
+        justifyContent: "flex-start",
+        alignItems: "center",
     },
 
 })
