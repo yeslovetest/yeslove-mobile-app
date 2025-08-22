@@ -3,10 +3,11 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import styles from './HeaderStyles';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { goBackToPreviousTabAction, openTabOnTopAction, TabData, TabType } from '../../store/Navigation/navigationSlice';
+import { goBackToPreviousTabAction, openTabOnTopAction, TabType } from '../../store/Navigation/navigationSlice';
 import PostModal from '@/app/pages/Home/Post-modal/PostModal';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 
 export interface Props {
   mainTitle?: string;
@@ -43,17 +44,23 @@ export default function Header(props: Props) {
       {hasTabToGoBackTo && (
         <View style={styles.headerDistribution}>
           <FontAwesome5 onPress={returnToPreviousTab} name="chevron-left" size={20} />
+          {hasTabToGoBackTo && currentTab === TabType.MESSAGES && (
+            <Text style={styles.title}>{props.mainTitle}</Text>
+          )}
           <View />
         </View>
       )}
 
+
+
+
       {!hasTabToGoBackTo && currentTab === TabType.HOME && (
         <View style={styles.headerDistribution}>
           <TouchableOpacity onPress={openPostModal}>
-            <FontAwesome5 name="plus" size={20} />
+            <Ionicons name="add" size={25} color="black" />
           </TouchableOpacity>
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <View />
+          <SimpleLineIcons onPress={openMessages} name="bubbles" size={24} color="black" />
         </View>
       )}
 
@@ -79,9 +86,7 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <TouchableOpacity onPress={openMessages}>
-            <FontAwesome5 name="comment-alt" size={20} />
-          </TouchableOpacity>
+          <View></View>
         </View>
       )}
 

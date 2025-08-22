@@ -1,15 +1,17 @@
-import React from "react";
-import { TouchableOpacity, Text } from "react-native";
+import React, { ReactNode } from "react";
+import { TouchableOpacity, Text, View } from "react-native";
 import { useAppDispatch, useAppSelector } from "../../../app/store/hooks";
 import { changeTabAction, TabData, TabType } from "../../store/Navigation/navigationSlice";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import styles from "./FooterStyles";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface Props {
   tab: TabData;
   title: string;
   icon: string;
+  selectedIcon: string;
   clicked?: () => void;
+  children?: ReactNode;
   selectionCondition?: () => boolean;
 }
 
@@ -26,9 +28,16 @@ const FooterButton = (props: Props) => {
   };
 
   return (
-    <TouchableOpacity onPress={handlePress}>
-      <FontAwesome6 style={[styles.icon, isSelected && styles.activeIcon]} name={props.icon}></FontAwesome6>
-      <Text>{props.title}</Text>
+    <TouchableOpacity style={styles.iconContainer} onPress={handlePress}>
+     <View style={{ position: "relative" }}>
+    <Ionicons
+      name={isSelected ? props.selectedIcon : props.icon}
+      size={24}
+      style={[styles.icon, isSelected && styles.activeIcon]}
+    />
+    {!isSelected && props.children}
+  </View>
+      <Text style={[styles.footerText, isSelected && styles.activeText]}>{props.title}</Text>
     </TouchableOpacity>
   );
 };

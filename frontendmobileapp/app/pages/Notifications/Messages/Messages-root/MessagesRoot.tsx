@@ -4,26 +4,32 @@ import { ScrollView, TouchableOpacity } from 'react-native'
 import messagesSharedStyles from '../MessagesSharedStyles'
 import OneMessage from './Messages-root-components/One-message/OneMessage'
 import PlaceholderMessages from './Messages-root-components/PlaceholderMessages'
-import { useAppDispatch } from '@/app/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
 
 const Messages = () => {
-const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch()
+    const userId = useAppSelector(
+        (state) => state.navigation.tabStack.at(-1)?.data?.userId
+    );
+    const userName = useAppSelector(
+        (state) => state.profile.profiles[userId]?.username ?? ""
+    );
 
     const openConversation = () => {
-    dispatch(openTabOnTopAction({type: TabType.CONVERSATION}))
+        dispatch(openTabOnTopAction({ type: TabType.CONVERSATION }))
     }
 
 
     return (
         <>
-            <Header></Header>
+            <Header mainTitle="test-user"></Header>
             <ScrollView contentContainerStyle={messagesSharedStyles.contentContainer} style={messagesSharedStyles.container}>
                 <TouchableOpacity onPress={openConversation}>
-                {PlaceholderMessages.map((MessagePlaceholder, index) => (
-                    <OneMessage message={MessagePlaceholder} key={index} ></OneMessage>
-                ))}
-             </TouchableOpacity>
+                    {PlaceholderMessages.map((MessagePlaceholder, index) => (
+                        <OneMessage message={MessagePlaceholder} key={index} ></OneMessage>
+                    ))}
+                </TouchableOpacity>
             </ScrollView>
         </>
     )

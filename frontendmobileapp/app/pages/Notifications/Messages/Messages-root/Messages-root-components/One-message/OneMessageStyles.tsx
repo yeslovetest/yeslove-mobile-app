@@ -9,8 +9,7 @@ const styles = StyleSheet.create({
         width: "100%",
         paddingHorizontal: 10,
         height: 100,
-        borderBottomColor: "#878787",
-        borderBottomWidth: 1
+        
     },
 
     activeIndicator: {

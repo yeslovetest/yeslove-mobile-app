@@ -24,7 +24,7 @@ import General from "./pages/Profile/Settings/General/General";
 import Email from "./pages/Profile/Settings/Email/Email";
 import ProfileVisibility from "./pages/Profile/Settings/Profile-visibility/ProfileVisibility";
 import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
-import Messages from "./pages/Notifications/Messages/Messages-root/Messages";
+import MessagesRoot from "./pages/Notifications/Messages/Messages-root/MessagesRoot";
 import Conversation from "./pages/Notifications/Messages/Conversation/Conversation";
 import ChatSection from "./pages/Notifications/ChatSection";
 
@@ -73,7 +73,7 @@ const App = () => {
                  EXPORT_DATA: <ExportData></ExportData>,
 
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
-                 MESSAGES: <Messages></Messages>,
+                 MESSAGES: <MessagesRoot></MessagesRoot>,
                     CONVERSATION: <Conversation></Conversation>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,

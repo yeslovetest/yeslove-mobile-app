@@ -12,7 +12,7 @@ const NotificationsRoot = () => {
     (state) => state.navigation.tabStack.at(-1)?.data?.userId
   );
   const userName = useAppSelector(
-    (state) => state.profile.profiles[userId]?.username ?? ''
+    (state) => state.profile.profiles[userId]?.username ?? ""
   );
 
   return (
