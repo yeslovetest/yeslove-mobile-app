@@ -36,6 +36,15 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryBlue,
     fontWeight: 600,
   },
+  newNotification: {
+    position: "absolute",
+    top: -2,     
+    left: 12, 
+    width: 12,
+    height: 12, 
+    borderRadius: "50%",
+    backgroundColor: theme.colors.primaryBlue
+  }
 })
 
 export default styles 

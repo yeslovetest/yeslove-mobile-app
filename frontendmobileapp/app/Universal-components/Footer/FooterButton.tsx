@@ -1,5 +1,5 @@
-import React from "react";
-import { TouchableOpacity, Text } from "react-native";
+import React, { ReactNode } from "react";
+import { TouchableOpacity, Text, View } from "react-native";
 import { useAppDispatch, useAppSelector } from "../../../app/store/hooks";
 import { changeTabAction, TabData, TabType } from "../../store/Navigation/navigationSlice";
 import styles from "./FooterStyles";
@@ -11,6 +11,7 @@ interface Props {
   icon: string;
   selectedIcon: string;
   clicked?: () => void;
+  children?: ReactNode;
   selectionCondition?: () => boolean;
 }
 
@@ -28,11 +29,14 @@ const FooterButton = (props: Props) => {
 
   return (
     <TouchableOpacity style={styles.iconContainer} onPress={handlePress}>
-      <Ionicons
-        name={isSelected ? props.selectedIcon : props.icon}
-        size={24}
-        style={[styles.icon, isSelected && styles.activeIcon]}
-      />
+     <View style={{ position: "relative" }}>
+    <Ionicons
+      name={isSelected ? props.selectedIcon : props.icon}
+      size={24}
+      style={[styles.icon, isSelected && styles.activeIcon]}
+    />
+    {!isSelected && props.children}
+  </View>
       <Text style={[styles.footerText, isSelected && styles.activeText]}>{props.title}</Text>
     </TouchableOpacity>
   );

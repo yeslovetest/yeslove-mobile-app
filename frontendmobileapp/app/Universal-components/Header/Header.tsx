@@ -87,9 +87,7 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <TouchableOpacity>
-            <FontAwesome5 name="comment-alt" size={20} />
-          </TouchableOpacity>
+          <View></View>
         </View>
       )}
 
