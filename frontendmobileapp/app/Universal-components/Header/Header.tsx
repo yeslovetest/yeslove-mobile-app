@@ -3,11 +3,10 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import styles from './HeaderStyles';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { goBackToPreviousTabAction, openTabOnTopAction, TabData, TabType } from '../../store/Navigation/navigationSlice';
+import { goBackToPreviousTabAction, openTabOnTopAction, TabType } from '../../store/Navigation/navigationSlice';
 import PostModal from '@/app/pages/Home/Post-modal/PostModal';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 
 export interface Props {
@@ -58,7 +57,7 @@ export default function Header(props: Props) {
       {!hasTabToGoBackTo && currentTab === TabType.HOME && (
         <View style={styles.headerDistribution}>
           <TouchableOpacity onPress={openPostModal}>
-            <AntDesign name="pluscircleo" size={24} color="black" />
+            <Ionicons name="add" size={25} color="black" />
           </TouchableOpacity>
           <Text style={styles.title}>{props.mainTitle}</Text>
           <SimpleLineIcons onPress={openMessages} name="bubbles" size={24} color="black" />
