@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        color: '#1a1a1a',
+        color: theme.colors.blackText,
     },
     noOfNotifications: {
         width: "100%",

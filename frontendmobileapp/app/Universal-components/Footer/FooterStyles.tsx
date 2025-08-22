@@ -2,27 +2,40 @@ import { StyleSheet } from "react-native";
 import theme from "../../../assets/variables/Variables"
 
 const styles = StyleSheet.create({
-    footer: {
-        width: '100%',
-        height: 60,
-        backgroundColor: '#fff', 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        marginTop: 0,
-        padding: 15,
-        justifyContent: 'space-between', 
-      },
-      activeIcon: {
-        color: theme.colors.primaryBlue
-    },
+  footer: {
+    width: '100%',
+    height: 65,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 0,
+    justifyContent: 'space-between',
+  },
+  iconContainer: {
+   width: "20%",
+   height: "100%",
+   justifyContent: "flex-end",
+   paddingBottom: 5,
+   alignItems: "center"
+  },
+  activeIcon: {
+    color: theme.colors.primaryBlue,
+    fontSize: 24
+  },
   icon: {
-    color: theme.colors.iconNotActive,
-    fontSize: 20,
+    color: theme.colors.blackText,
+    fontSize: 23,
     display: "flex",
     paddingBottom: 3,
-    justifyContent: "center",
-    alignItems: "center"
-}
+  },
+  footerText: {
+    fontSize: 12,
+    marginTop: 3
+  },
+    activeText: {
+    color: theme.colors.primaryBlue,
+    fontWeight: 600,
+  },
 })
 
 export default styles 
