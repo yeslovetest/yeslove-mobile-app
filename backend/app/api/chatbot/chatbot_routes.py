@@ -6,7 +6,7 @@ from app.logging_setup import logger
 api = Namespace("chatbot", description="API Endpoints")
 
 @api.route("/message")
-class SendMessage(Resource):
+class SendChatbotMessage(Resource):
     from .chatbot_models import MessageRequest
     # all commented lines is to allow testing API without having to login
     #@require_auth()  
