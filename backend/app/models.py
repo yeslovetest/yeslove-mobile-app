@@ -2,12 +2,19 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from app import db  # ✅ Import the same db instance
 
-
-#db = SQLAlchemy()
+# db = SQLAlchemy()
 
 # -------------------------
 # 🚀 User Model (Keycloak Integrated)
 # -------------------------
+
+# association table for event attendees
+event_attendees = db.Table('attendees',
+                           db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+                           db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+                           )
+
+
 class User(db.Model):
     id              = db.Column(db.Integer, primary_key=True)
     keycloak_id     = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
@@ -24,14 +31,19 @@ class User(db.Model):
 
 
     # ✅ Relationships
-    posts       = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
-    followers   = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
-    following   = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
+    posts = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
+    followers = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
+    following = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
+    created_events = db.relationship("Event", foreign_keys="[Event.creator_id]", back_populates="creator", lazy=True)
 
     # ✅ One-to-One Relationship with ProfessionalDetails
     professional_details = db.relationship(
         "ProfessionalDetails", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
+
+    # Many-to-Many with Events via association table above
+    attending_events = db.relationship("Event", secondary=event_attendees, back_populates="attendees")
+
 
 # -------------------------
 # 🚀 Professional Details Model (One-to-One Relationship with User..)
@@ -169,6 +181,7 @@ class Chat(db.Model):
     # ✅ Prevent users from messaging themselves
     __table_args__ = (db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),)
 
+
 class EmailNotificationSettings(db.Model):
     __tablename__ = "email_notification_settings"
 
@@ -176,6 +189,7 @@ class EmailNotificationSettings(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.keycloak_id"), nullable=False)
     setting_id = db.Column(db.String, nullable=False)
     value = db.Column(db.Boolean, default=True)
+
 
 class ProfileVisibilitySettings(db.Model):
     __tablename__ = "profile_visibility_settings"
@@ -186,14 +200,73 @@ class ProfileVisibilitySettings(db.Model):
     value = db.Column(db.String, nullable=False)  # e.g., "visible", "hidden"
     category = db.Column(db.String, nullable=False)  # "Contact" or "Education And Other Information"
 
+
 class Reaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     reaction_type = db.Column(db.String(50), nullable=False)  # like, love, laugh, angry, etc.
+
     # Relationships 
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
+
+# ------------------
+# Event Model
+# ------------------
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+
+    location = db.Column(db.String(100), nullable=False)
+    event_time = db.Column(db.DateTime, nullable=False)
+
+    # relationships
+    creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    creator = db.relationship('User', back_populates='created_events')
+    address_id = db.Column(db.Integer, db.ForeignKey("address.id", ondelete='SET NULL'))  # nullable as could be online?
+    address = db.relationship('Address', back_populates='events')
+
+    # Attendees many-many relationship
+    attendees = db.relationship('User', secondary=event_attendees, back_populates="attending_events")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "location": self.location,
+            "event_time": self.event_time.isoformat(),
+            "creator_id": self.creator_id,
+            "address": self.address.to_dict() if self.address else None,
+            "attendees": [user.id for user in self.attendees]
+        }
+
+# -------------------------------
+# Address model (used for event locations)
+# -------------------------------
+class Address(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(100), nullable=False)  # str to support house names
+    street = db.Column(db.String, nullable=False)
+    city = db.Column(db.String, nullable=False)
+    county = db.Column(db.String)  # doesn't really need to be specified
+    country = db.Column(db.String)  # if left blank assume UK
+    post_code = db.Column(db.String, nullable=False)
+
+    events = db.relationship('Event', back_populates='address', lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "number": self.number,
+            "street": self.street,
+            "city": self.city,
+            "county": self.county,
+            "country": self.country,
+            "post_code": self.post_code
+        }
 
 # ------------------------- Create BlogPost Model -------------------------
 class BlogPost(db.Model):
