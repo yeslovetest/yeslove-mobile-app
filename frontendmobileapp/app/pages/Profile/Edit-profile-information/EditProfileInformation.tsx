@@ -4,7 +4,7 @@ import styles from './EditProfileInformationStyles'
 import Header from '@/app/Universal-components/Header/Header'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { setProfileInformationAction, persistUserInfoAction, setActiveAboutTabAction } from '@/app/store/Profile-store/profileSlice'
-import TextInputField from '../Profile-root/Profile-root-components/Profile-navbar/About/TextInputField/TextInputField'
+import TextInputField from './TextInputField/TextInputField'
 
 const EditProfileInformation = () => {
   const dispatch = useAppDispatch()
