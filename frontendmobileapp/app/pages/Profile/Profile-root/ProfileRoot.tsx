@@ -10,6 +10,7 @@ import ViewContent from './Profile-root-components/Profile-navbar/About/About-na
 import EditContent from './Profile-root-components/Profile-navbar/About/About-navbar/Edit/EditContent';
 import TimelineContent from './Profile-root-components/Profile-navbar/Timeline/TimelineContent';
 import MediaContent from './Profile-root-components/Profile-navbar/Media/MediaContent';
+import Details from './Profile-root-components/Details/Details';
 
 const aboutItems = ["View", "Edit"]
 
@@ -36,6 +37,7 @@ export default function ProfileRoot() {
         style={sharedStyles.container}
       >
         <ProfileHeaderAndBio />
+        <Details />
 
         <ProfileNavbar />
 

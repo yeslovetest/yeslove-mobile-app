@@ -27,6 +27,8 @@ import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
 import MessagesRoot from "./pages/Notifications/Messages/Messages-root/MessagesRoot";
 import Conversation from "./pages/Notifications/Messages/Conversation/Conversation";
 import ChatSection from "./pages/Notifications/ChatSection";
+import EditProfileInformation from "./pages/Profile/Edit-profile-information/EditProfileInformation";
+import ProfileInformation from "./pages/Profile/Profile-information/ProfileInformation";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -65,6 +67,8 @@ const App = () => {
               EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfileRoot></ProfileRoot>,
               SETTINGS: <SettingsPage></SettingsPage>,
+              EDIT_PROFILE_INFORMATION: <EditProfileInformation></EditProfileInformation>,
+              PROFILE_INFORMATION: <ProfileInformation></ProfileInformation>,
 
               /*settings folders pages */
                  GENERAL: <General></General>,

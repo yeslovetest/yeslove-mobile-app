@@ -12,13 +12,13 @@
  * Do not edit the class manually.
  */
 
+
 import type { Configuration } from './configuration';
 import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, 
-    setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
+import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './common';
 import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
@@ -58,69 +58,6 @@ export interface AddCommentRequest {
 /**
  * 
  * @export
- * @interface BlogPost
- */
-export interface BlogPost {
-    /**
-     * Optional image URL for the blog post
-     * @type {string}
-     * @memberof BlogPost
-     */
-    'image_url'?: string;
-
-    /**
-     * ISO 8601 timestamp of when the blog was posted
-     * @type {string}
-     * @memberof BlogPost
-     */
-    'timestamp': string;
-
-    /**
-     * Name of the author of the blog post
-     * @type {string}
-     * @memberof BlogPost
-     */
-    'author': string;
-
-    /**
-     * Title of the blog post
-     * @type {string}
-     * @memberof BlogPost
-     */
-    'title': string;
-
-    /**
-     * Main content of the blog post
-     * @type {string}
-     * @memberof BlogPost
-     */
-    'content': string;
-
-    /**
-     * Summary of the blog post
-     * @type {string}
-     * @memberof BlogPost
-     */
-    'summary'?: string;
-}
-
-/**
- * 
- * @export
- * @interface GetBlogPostsResponse
- */
-export interface GetBlogPostsResponse {
-    /**
-     * List of blog posts
-     * @type {Array<BlogPost>}
-     * @memberof GetBlogPostsResponse
-     */
-    'blogs'?: Array<BlogPost>;
-}
-
-/**
- * 
- * @export
  * @interface ChangePasswordRequest
  */
 export interface ChangePasswordRequest {
@@ -130,50 +67,6 @@ export interface ChangePasswordRequest {
      * @memberof ChangePasswordRequest
      */
     'new_password': string;
-}
-/**
- * 
- * @export
- * @interface Comment
- */
-export interface Comment {
-    /**
-     * Comment ID
-     * @type {number}
-     * @memberof Comment
-     */
-    'id'?: number;
-    /**
-     * content of the comment
-     * @type {string}
-     * @memberof Comment
-     */
-    'content'?: string;
-    /**
-     * Username of the author
-     * @type {string}
-     * @memberof Comment
-     */
-    'author'?: string;
-    /**
-     * Timestamp of the Comment in ISO format
-     * @type {string}
-     * @memberof Comment
-     */
-    'timestamp'?: string;
-}
-/**
- * 
- * @export
- * @interface CommentResponse
- */
-export interface CommentResponse {
-    /**
-     * list containing all comments to a Post
-     * @type {Array<Comment>}
-     * @memberof CommentResponse
-     */
-    'comments'?: Array<Comment>;
 }
 /**
  * 
@@ -215,6 +108,37 @@ export interface ContactInfo {
 /**
  * 
  * @export
+ * @interface CreateBlogPost
+ */
+export interface CreateBlogPost {
+    /**
+     * Title of the blog post
+     * @type {string}
+     * @memberof CreateBlogPost
+     */
+    'title': string;
+    /**
+     * Blog post content
+     * @type {string}
+     * @memberof CreateBlogPost
+     */
+    'content': string;
+    /**
+     * Blog post Summary /short intro to Blog
+     * @type {string}
+     * @memberof CreateBlogPost
+     */
+    'summary'?: string;
+    /**
+     * Optional image URL
+     * @type {string}
+     * @memberof CreateBlogPost
+     */
+    'image_url'?: string;
+}
+/**
+ * 
+ * @export
  * @interface CreatePostRequest
  */
 export interface CreatePostRequest {
@@ -237,6 +161,50 @@ export interface DeleteAccountRequest {
      * @memberof DeleteAccountRequest
      */
     'confirmation': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface DeviceToken
+ */
+export interface DeviceToken {
+    /**
+     * Token ID
+     * @type {number}
+     * @memberof DeviceToken
+     */
+    'id'?: number;
+    /**
+     * Device push token
+     * @type {string}
+     * @memberof DeviceToken
+     */
+    'token'?: string;
+    /**
+     * Device platform
+     * @type {string}
+     * @memberof DeviceToken
+     */
+    'platform'?: string;
+    /**
+     * Token registration date/time (ISO format)
+     * @type {string}
+     * @memberof DeviceToken
+     */
+    'created_at'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface DeviceTokenList
+ */
+export interface DeviceTokenList {
+    /**
+     * 
+     * @type {Array<DeviceToken>}
+     * @memberof DeviceTokenList
+     */
+    'device_tokens'?: Array<DeviceToken>;
 }
 /**
  * 
@@ -272,34 +240,21 @@ export interface EducationInfo {
 /**
  * 
  * @export
- * @interface EmailNotification
+ * @interface EmailNotificationSettings
  */
-export interface EmailNotification {
+export interface EmailNotificationSettings {
     /**
      * Unique ID for the setting
      * @type {string}
-     * @memberof EmailNotification
+     * @memberof EmailNotificationSettings
      */
     'setting_id': string;
     /**
      * Notification enabled (true/false)
      * @type {boolean}
-     * @memberof EmailNotification
-     */
-    'value': boolean;
-}
-/**
- * 
- * @export
- * @interface EmailNotificationSettings
- */
-export interface EmailNotificationSettings {
-    /**
-     * list containing all email notification settings
-     * @type {Array<EmailNotification>}
      * @memberof EmailNotificationSettings
      */
-    'settings'?: Array<EmailNotification>;
+    'value': boolean;
 }
 /**
  * 
@@ -327,99 +282,11 @@ export interface FollowUserRequest {
      */
     'action': string;
     /**
-     * \Type of follow request: basic or friend
+     * Basic follow or follow as a friend
      * @type {string}
      * @memberof FollowUserRequest
      */
     'follow_type'?: string;
-}
-/**
- * 
- * @export
- * @interface FollowedUser
- */
-export interface FollowedUser {
-    /**
-     * followed user keycloak id 
-     * @type {number}
-     * @memberof FollowedUser
-     */
-    'id': string;
-    /**
-     * follow type 'basic' or 'friend'  
-     * @type {string}
-     * @memberof FollowedUser
-     */
-    'follow_type': string;
-    /**
-     * name of followed user 
-     * @type {string}
-     * @memberof FollowedUser
-     */
-    'username': string;
-    /**
-     * profile of followed user 
-     * @type {string}
-     * @memberof FollowedUser
-     */
-    'profile_pic': string;
-}
-/**
- * 
- * @export
- * @interface GetFollowingResponse
- */
-export interface GetFollowingResponse {
-    /**
-     * All users followed by current user 
-     * @type {Array<FollowedUser>}
-     * @memberof GetFollowingResponse
-     */
-    'following'?: Array<FollowedUser>;
-}
-/**
- * 
- * @export
- * @interface ChatMessage
- */
-export interface ChatMessage {
-    /**
-     * message sender username
-     * @type {string}
-     * @memberof ChatMessage
-     */
-    'sender': string;
-    /**
-     * message receiver username
-     * @type {string}
-     * @memberof ChatMessage
-     */
-    'receiver': string;
-    /**
-     * content of message 
-     * @type {string}
-     * @memberof ChatMessage
-     */
-    'message': string;
-    /**
-     * timestamp of a message 
-     * @type {string}
-     * @memberof ChatMessage
-     */
-    'timestamp': string;
-}
-/**
- * 
- * @export
- * @interface GetMessagesResponse
- */
-export interface GetMessagesResponse {
-    /**
-     * All chat messages between current user and target user 
-     * @type {Array<ChatMessage>}
-     * @memberof GetMessagesResponse
-     */
-    'messages'?: Array<ChatMessage>;
 }
 /**
  * 
@@ -460,11 +327,37 @@ export interface LoginRequest {
  */
 export interface LogoutRequest {
     /**
-     * User\'s refresh token
+     * Users refresh token
      * @type {string}
      * @memberof LogoutRequest
      */
-    'refresh_token': string;
+    'refresh_token'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface Message
+ */
+export interface Message {
+    /**
+     * Response message
+     * @type {string}
+     * @memberof Message
+     */
+    'message'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface MessageRequest
+ */
+export interface MessageRequest {
+    /**
+     * Message content
+     * @type {string}
+     * @memberof MessageRequest
+     */
+    'message': string;
 }
 /**
  * 
@@ -526,12 +419,6 @@ export interface Post {
      * @memberof Post
      */
     'comments'?: number;
-    /**
-     * current user reaction to post
-     * @type {string}
-     * @memberof Post
-     */
-    'current_user_reaction'?: string;
 }
 /**
  * 
@@ -549,97 +436,27 @@ export interface PostResponse {
 /**
  * 
  * @export
- * @interface ProfileVisibility
+ * @interface ProfileVisibilitySettings
  */
-export interface ProfileVisibility {
+export interface ProfileVisibilitySettings {
     /**
      * Unique ID for the setting
      * @type {string}
-     * @memberof ProfileVisibility
+     * @memberof ProfileVisibilitySettings
      */
     'setting_id': string;
     /**
      * Visibility value (visible/hidden)
      * @type {string}
-     * @memberof ProfileVisibility
+     * @memberof ProfileVisibilitySettings
      */
     'value': string;
     /**
      * Category: \'Contact\' or \'Education And Other Information\'
      * @type {string}
-     * @memberof ProfileVisibility
-     */
-    'category': string;
-}
-/**
- * 
- * @export
- * @interface ProfileVisibilitySettings
- */
-export interface ProfileVisibilitySettings {
-    /**
-     * list containing all profile visibility settings
-     * @type {Array<ProfileVisibility>}
      * @memberof ProfileVisibilitySettings
      */
-    'settings'?: Array<ProfileVisibility>;
-}
-/**
- * 
- * @export
- * @interface Reaction
- */
-export interface Reaction {
-    /**
-     * Reaction ID
-     * @type {number}
-     * @memberof Reaction
-     */
-    'id'?: number;
-    /**
-     * Reaction type
-     * @type {string}
-     * @memberof Reaction
-     */
-    'type'?: string;
-    /**
-     * the name of the user who reacted
-     * @type {string}
-     * @memberof Reaction
-     */
-    'author'?: string;
-    /**
-     * the profile pic of the user who reacted
-     * @type {string}
-     * @memberof Reaction
-     */
-    'picture'?: string;
-}
-/**
- * 
- * @export
- * @interface ReactionResponse
- */
-export interface ReactionResponse {
-    /**
-     * list containing all reactions to a Post
-     * @type {Array<Reaction>}
-     * @memberof ReactionResponse
-     */
-    'reactions'?: Array<Reaction>;
-}
-/**
- * 
- * @export
- * @interface PostReactionToPostResponse
- */
-export interface PostReactionToPostResponse{
-    /**
-     * response after posting a reaction
-     * @type {string}
-     * @memberof PostReactionToPostResponse
-     */
-    'message'?: string;
+    'category': string;
 }
 /**
  * 
@@ -666,6 +483,25 @@ export interface RefreshTokenRequest {
      * @memberof RefreshTokenRequest
      */
     'refresh_token': string;
+}
+/**
+ * 
+ * @export
+ * @interface RegisterDeviceToken
+ */
+export interface RegisterDeviceToken {
+    /**
+     * Device push token
+     * @type {string}
+     * @memberof RegisterDeviceToken
+     */
+    'token': string;
+    /**
+     * Device platform (ios/android)
+     * @type {string}
+     * @memberof RegisterDeviceToken
+     */
+    'platform': string;
 }
 /**
  * 
@@ -731,61 +567,93 @@ export interface SetUserTypeRequest {
  */
 export interface SignupRequest {
     /**
-     * User\'s  email
+     * User email
      * @type {string}
      * @memberof SignupRequest
      */
     'email': string;
     /**
-     * User\'s password
+     * User email confirmation
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'confirm_email': string;
+    /**
+     * User password
      * @type {string}
      * @memberof SignupRequest
      */
     'password': string;
     /**
-     * User\'s password
+     * Confirm your password
      * @type {string}
      * @memberof SignupRequest
      */
     'confirm_password': string;
     /**
-     * User\'s first name
+     * Users first name
      * @type {string}
      * @memberof SignupRequest
      */
     'first_name': string;
     /**
-     * User\'s last name
+     * Users last name
      * @type {string}
      * @memberof SignupRequest
      */
     'last_name': string;
     /**
-     * User\'s phone number
+     * Users phone number
      * @type {string}
      * @memberof SignupRequest
      */
     'phone_number': string;
     /**
-     * User\'s username
+     * Desired username
      * @type {string}
      * @memberof SignupRequest
      */
     'username': string;
-}    
-/**
- * 
- * @export
- * @interface SignupResponse
- */
-export interface SignupResponse{
     /**
-     * Sign up response message
+     * Standard or Professional
      * @type {string}
-     * @memberof SignupResponse
+     * @memberof SignupRequest
      */
-    'message'?: string;
+    'user_type'?: SignupRequestUserTypeEnum;
+    /**
+     * License body (HCPC, BACP, UKCP)
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'license_body'?: SignupRequestLicenseBodyEnum;
+    /**
+     * Professional license/registration number
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'license_number'?: string;
+    /**
+     * Consent to use and display license data
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'consent_license_data'?: string;
 }
+
+export const SignupRequestUserTypeEnum = {
+    Standard: 'Standard',
+    Professional: 'Professional'
+} as const;
+
+export type SignupRequestUserTypeEnum = typeof SignupRequestUserTypeEnum[keyof typeof SignupRequestUserTypeEnum];
+export const SignupRequestLicenseBodyEnum = {
+    Hcpc: 'HCPC',
+    Bacp: 'BACP',
+    Ukcp: 'UKCP'
+} as const;
+
+export type SignupRequestLicenseBodyEnum = typeof SignupRequestLicenseBodyEnum[keyof typeof SignupRequestLicenseBodyEnum];
+
 /**
  * 
  * @export
@@ -1183,12 +1051,13 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Send new user credentials to Keycloak for user registration
-         * @param {SignupRequest} payload
+         * @summary Creates a new KeyCloak user via Admin API
+         * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         postSignup: async (payload: SignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
             assertParamExists('postSignup', 'payload', payload)
             const localVarPath = `/api/auth/signup`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1202,12 +1071,14 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+
+    
             localVarHeaderParameter['Content-Type'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration);
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1266,7 +1137,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Logout user from Keycloak
-         * @param {LoginRequest} payload 
+         * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1317,12 +1188,12 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Register new user on Keycloak
-         * @param {SignupRequest} payload
+         * @summary Creates a new KeyCloak user via Admin API
+         * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
+        async postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postSignup(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postSignup']?.[localVarOperationServerIndex]?.url;
@@ -1410,12 +1281,12 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Send new user credentials to Keycloak for user registration
-         * @param {SignupRequest} payload
+         * @summary Creates a new KeyCloak user via Admin API
+         * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
+        postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postSignup(payload, options).then((request) => request(axios, basePath));
         },
     };
@@ -1514,8 +1385,8 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Send new user credentials to Keycloak for user registration
-     * @param {SignupRequest} payload
+     * @summary Creates a new KeyCloak user via Admin API
+     * @param {SignupRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthApi
@@ -1526,97 +1397,112 @@ export class AuthApi extends BaseAPI {
 }
 
 
+
 /**
- * BlogPostApiAxiosParamCreator
+ * BlogApi - axios parameter creator
  * @export
  */
-export const BlogPostApiAxiosParamCreator = function (configuration?: Configuration) {
+export const BlogApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Retrieve all blog posts
+         * 
+         * @summary Create a blog post for the Get Educated page (Admins only)
+         * @param {CreateBlogPost} payload 
          * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
          */
-        getBlogPosts: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postCreateBlog: async (payload: CreateBlogPost, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('postCreateBlog', 'payload', payload)
             const localVarPath = `/api/blog/blog-post`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
             if (configuration) {
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
-            const localVarHeaderParameter: any = {};
-            const localVarQueryParameter: any = {};
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
-            const headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
                 options: localVarRequestOptions,
             };
         },
-    };
+    }
 };
 
 /**
- * BlogPostApiFp - functional programming interface
+ * BlogApi - functional programming interface
  * @export
  */
-export const BlogPostApiFp = function (configuration?: Configuration) {
-    const localVarAxiosParamCreator = BlogPostApiAxiosParamCreator(configuration);
+export const BlogApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = BlogApiAxiosParamCreator(configuration)
     return {
         /**
-         * Retrieve all blog posts
+         * 
+         * @summary Create a blog post for the Get Educated page (Admins only)
+         * @param {CreateBlogPost} payload 
          * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
          */
-        getBlogPosts: async (options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetBlogPostsResponse>> => {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlogPosts(options);
+        async postCreateBlog(payload: CreateBlogPost, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreateBlog(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlogPostApi.getBlogPosts']?.[localVarOperationServerIndex]?.url;
-
-            return (axios, basePath) =>
-                createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(
-                    axios,
-                    localVarOperationServerBasePath || basePath
-                );
+            const localVarOperationServerBasePath = operationServerMap['BlogApi.postCreateBlog']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
-    };
+    }
 };
 
 /**
- * BlogPostApiFactory - factory interface
+ * BlogApi - factory interface
  * @export
  */
-export const BlogPostApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = BlogPostApiFp(configuration);
+export const BlogApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = BlogApiFp(configuration)
     return {
         /**
-         * Retrieve all blog posts
+         * 
+         * @summary Create a blog post for the Get Educated page (Admins only)
+         * @param {CreateBlogPost} payload 
          * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
          */
-        getBlogPosts(options?: RawAxiosRequestConfig): AxiosPromise<GetBlogPostsResponse> {
-            return localVarFp.getBlogPosts(options).then((request) => request(axios, basePath));
+        postCreateBlog(payload: CreateBlogPost, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postCreateBlog(payload, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * BlogPostApi - object-oriented interface
+ * BlogApi - object-oriented interface
  * @export
- * @class BlogPostApi
+ * @class BlogApi
  * @extends {BaseAPI}
  */
-export class BlogPostApi extends BaseAPI {
+export class BlogApi extends BaseAPI {
     /**
-     * Retrieve all blog posts
+     * 
+     * @summary Create a blog post for the Get Educated page (Admins only)
+     * @param {CreateBlogPost} payload 
      * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof BlogApi
      */
-    public getBlogPosts(options?: RawAxiosRequestConfig) {
-        return BlogPostApiFp(this.configuration)
-            .getBlogPosts(options)
-            .then((request) => request(this.axios, this.basePath));
+    public postCreateBlog(payload: CreateBlogPost, options?: RawAxiosRequestConfig) {
+        return BlogApiFp(this.configuration).postCreateBlog(payload, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1722,7 +1608,7 @@ export const ChatApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
+        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetMessages']?.[localVarOperationServerIndex]?.url;
@@ -1759,7 +1645,7 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
+        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getGetMessages(receiverId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1811,6 +1697,366 @@ export class ChatApi extends BaseAPI {
 
 
 /**
+ * ChatbotApi - axios parameter creator
+ * @export
+ */
+export const ChatbotApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Send a message to chatbot
+         * @param {MessageRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postSendChatbotMessage: async (payload: MessageRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('postSendChatbotMessage', 'payload', payload)
+            const localVarPath = `/api/chatbot/message`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * ChatbotApi - functional programming interface
+ * @export
+ */
+export const ChatbotApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ChatbotApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Send a message to chatbot
+         * @param {MessageRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postSendChatbotMessage(payload: MessageRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postSendChatbotMessage(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatbotApi.postSendChatbotMessage']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * ChatbotApi - factory interface
+ * @export
+ */
+export const ChatbotApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ChatbotApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Send a message to chatbot
+         * @param {MessageRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postSendChatbotMessage(payload: MessageRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postSendChatbotMessage(payload, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * ChatbotApi - object-oriented interface
+ * @export
+ * @class ChatbotApi
+ * @extends {BaseAPI}
+ */
+export class ChatbotApi extends BaseAPI {
+    /**
+     * 
+     * @summary Send a message to chatbot
+     * @param {MessageRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatbotApi
+     */
+    public postSendChatbotMessage(payload: MessageRequest, options?: RawAxiosRequestConfig) {
+        return ChatbotApiFp(this.configuration).postSendChatbotMessage(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * DeviceApi - axios parameter creator
+ * @export
+ */
+export const DeviceApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} tokenId 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteDeleteDeviceToken: async (tokenId: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'tokenId' is not null or undefined
+            assertParamExists('deleteDeleteDeviceToken', 'tokenId', tokenId)
+            const localVarPath = `/api/device/delete-device-token/{token_id}`
+                .replace(`{${"token_id"}}`, encodeURIComponent(String(tokenId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getListDeviceTokens: async (xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/device/my-device-tokens`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {RegisterDeviceToken} payload 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postRegisterDeviceToken: async (payload: RegisterDeviceToken, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('postRegisterDeviceToken', 'payload', payload)
+            const localVarPath = `/api/device/register-device-token`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * DeviceApi - functional programming interface
+ * @export
+ */
+export const DeviceApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = DeviceApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} tokenId 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteDeleteDeviceToken(tokenId: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Message>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteDeleteDeviceToken(tokenId, xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DeviceApi.deleteDeleteDeviceToken']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getListDeviceTokens(xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceTokenList>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getListDeviceTokens(xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DeviceApi.getListDeviceTokens']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {RegisterDeviceToken} payload 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postRegisterDeviceToken(payload: RegisterDeviceToken, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Message>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postRegisterDeviceToken(payload, xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DeviceApi.postRegisterDeviceToken']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * DeviceApi - factory interface
+ * @export
+ */
+export const DeviceApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = DeviceApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} tokenId 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteDeleteDeviceToken(tokenId: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<Message> {
+            return localVarFp.deleteDeleteDeviceToken(tokenId, xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getListDeviceTokens(xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<DeviceTokenList> {
+            return localVarFp.getListDeviceTokens(xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {RegisterDeviceToken} payload 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postRegisterDeviceToken(payload: RegisterDeviceToken, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<Message> {
+            return localVarFp.postRegisterDeviceToken(payload, xFields, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * DeviceApi - object-oriented interface
+ * @export
+ * @class DeviceApi
+ * @extends {BaseAPI}
+ */
+export class DeviceApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} tokenId 
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DeviceApi
+     */
+    public deleteDeleteDeviceToken(tokenId: number, xFields?: string, options?: RawAxiosRequestConfig) {
+        return DeviceApiFp(this.configuration).deleteDeleteDeviceToken(tokenId, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DeviceApi
+     */
+    public getListDeviceTokens(xFields?: string, options?: RawAxiosRequestConfig) {
+        return DeviceApiFp(this.configuration).getListDeviceTokens(xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {RegisterDeviceToken} payload 
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DeviceApi
+     */
+    public postRegisterDeviceToken(payload: RegisterDeviceToken, xFields?: string, options?: RawAxiosRequestConfig) {
+        return DeviceApiFp(this.configuration).postRegisterDeviceToken(payload, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
  * FeedApi - axios parameter creator
  * @export
  */
@@ -1838,13 +2084,14 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+
+    
             localVarHeaderParameter['Content-Type'] = 'application/json';
-            Object.assign(localVarQueryParameter, payload);
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1876,37 +2123,6 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
 
 
     
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Fetch all reactions for a post
-         * @param {number} postId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getReactions: async (postId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'postId' is not null or undefined
-            assertParamExists('getReactions', 'postId', postId)
-            const localVarPath = `/api/feed/post/{post_id}/reactions`
-                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1990,6 +2206,40 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Fetch all reactions for a post
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetReactions: async (postId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('getGetReactions', 'postId', postId)
+            const localVarPath = `/api/feed/post/{post_id}/reactions`
+                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2222,23 +2472,10 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetComments(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommentResponse>> {
+        async getGetComments(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetComments(postId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetComments']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary Fetch all reactions for a post
-         * @param {number} postId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getReactions(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ReactionResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getReactions(postId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['FeedApi.getReactions']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2263,10 +2500,23 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFollowingResponse>> {
+        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFollowing(keycloakId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFollowing']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Fetch all reactions for a post
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetReactions(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetReactions(postId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetReactions']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2332,7 +2582,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PostReactionToPostResponse>> {
+        async postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postReactToPost(postId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postReactToPost']?.[localVarOperationServerIndex]?.url;
@@ -2365,18 +2615,8 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetComments(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<CommentResponse> {
+        getGetComments(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getGetComments(postId, options).then((request) => request(axios, basePath));
-        },
-         /**
-         * 
-         * @summary Fetch all reactions for a post
-         * @param {number} postId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getReactions(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<ReactionResponse> {
-            return localVarFp.getReactions(postId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2397,8 +2637,18 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetFollowingResponse> {
+        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getGetFollowing(keycloakId, payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Fetch all reactions for a post
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetReactions(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getGetReactions(postId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2451,7 +2701,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<PostReactionToPostResponse> {
+        postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postReactToPost(postId, payload, options).then((request) => request(axios, basePath));
         },
     };
@@ -2512,6 +2762,18 @@ export class FeedApi extends BaseAPI {
      */
     public getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig) {
         return FeedApiFp(this.configuration).getGetFollowing(keycloakId, payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Fetch all reactions for a post
+     * @param {number} postId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FeedApi
+     */
+    public getGetReactions(postId: number, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).getGetReactions(postId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2888,7 +3150,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getEmailNotifications(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EmailNotificationSettings>> {
+        async getEmailNotifications(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getEmailNotifications(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.getEmailNotifications']?.[localVarOperationServerIndex]?.url;
@@ -2900,7 +3162,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProfileVisibility(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProfileVisibilitySettings>> {
+        async getProfileVisibility(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getProfileVisibility(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.getProfileVisibility']?.[localVarOperationServerIndex]?.url;
@@ -2997,7 +3259,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getEmailNotifications(options?: RawAxiosRequestConfig): AxiosPromise<EmailNotificationSettings> {
+        getEmailNotifications(options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getEmailNotifications(options).then((request) => request(axios, basePath));
         },
         /**
@@ -3006,7 +3268,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfileVisibility(options?: RawAxiosRequestConfig): AxiosPromise<ProfileVisibilitySettings> {
+        getProfileVisibility(options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getProfileVisibility(options).then((request) => request(axios, basePath));
         },
         /**
