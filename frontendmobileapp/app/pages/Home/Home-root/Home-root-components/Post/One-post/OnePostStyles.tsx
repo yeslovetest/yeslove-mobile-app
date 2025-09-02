@@ -11,6 +11,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     padding: 20,
     borderRadius: 15,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
 
   postHeaderContent: {
@@ -90,8 +95,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    flex: 1,
-    marginTop: 15
+    width: "45%",
+    marginTop: 15,
   },
   reactionPopUp: {
     visibility: 'hidden',
@@ -110,7 +115,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     elevation: 2
   },
+  likeIcon: {
+    color: theme.colors.blackText
+  },
+  numberOfLikesAndComments: {
+    color: theme.colors.blackText
+  },
 
+  likeAndCommentContainer: {
+    flexDirection: "row",
+    height: "100%",
+    width: "30%",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
 
   emoji: {
     fontSize: 24,
@@ -119,14 +137,13 @@ const styles = StyleSheet.create({
   /* follow user styles */
 
   followUserText: {
-    width: 85,
     color: theme.colors.primaryBlue,
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '300',
     borderColor: theme.colors.primaryBlue,
     paddingVertical: 4,
-    paddingHorizontal: 4,
+    paddingHorizontal: 14,
     borderWidth: 1,
     borderRadius: 5,
   },
@@ -171,7 +188,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  
+
 })
 
 export default styles

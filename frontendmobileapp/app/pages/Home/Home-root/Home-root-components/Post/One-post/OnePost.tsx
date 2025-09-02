@@ -148,7 +148,7 @@ const OnePost = (props: Props) => {
                             {(props?.follow !== undefined) &&
                                 (
                                     <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('unfollow')} >
-                                        <Text style={styles.followMenuPopUpText}>unfollow</Text>
+                                        <Text style={styles.followMenuPopUpText}>Unfollow</Text>
                                     </TouchableOpacity>
                                 )}
                         </View>
@@ -176,10 +176,10 @@ const OnePost = (props: Props) => {
                         </TouchableOpacity>
                     </View>
 
-
+        <View style={styles.likeAndCommentContainer}>
                     <TouchableOpacity style={[styles.likeIcon, styles.reactionIcon]} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
                         {(reactionType === 'default') &&
-                            (<Ionicons name="thumbs-up-outline" size={24} color='black' />)
+                            (<Ionicons name="thumbs-up-outline" size={24} style={styles.likeIcon} />)
                         }
                         {reactionType === 'like' &&
                             (<Ionicons name="thumbs-up-sharp" size={24} color='blue' />)
@@ -193,15 +193,12 @@ const OnePost = (props: Props) => {
 
 
                     </TouchableOpacity>
-                    <View  >
-                        <Pressable style={{ ...styles.commentIcon, flexDirection: 'row' }} onPress={() => displayIndividualPost('reactions')}>
-                            <Ionicons name="thumbs-up-outline" size={24} color="gray" />
-                            <FontAwesome6 name="laugh" size={24} color="gray" />
-                        </Pressable>
-                    </View>
                     <Text>{props.post.likes}</Text>
-                    <FontAwesome6 onPress={() => displayIndividualPost('comments')} style={styles.commentIcon} name="comment-dots" size={24} color="gray" />
-                    <Text>{props.post.comments} </Text>
+                    </View>
+                    <View style={styles.likeAndCommentContainer}>
+                    <FontAwesome6 onPress={() => displayIndividualPost('comments')} name="comment-dots" size={24} style={styles.likeIcon} />
+                    <Text style={styles.numberOfLikesAndComments}>{props.post.comments} </Text>
+                    </View>
                 </View>
                 {isLongText && (
                     <TouchableOpacity onPress={handleToggle}>
