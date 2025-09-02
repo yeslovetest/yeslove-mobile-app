@@ -19,7 +19,7 @@ const Footer = () => {
 
   return (
     <View style={styles.footer}>
-      <FooterButton tab={{ type: TabType.HOME }}
+      <FooterButton tab={{ type: TabType.HOME, data: { userId: userId }  }}
         icon="home-outline"
         selectedIcon="home"
         title="Home"></FooterButton>

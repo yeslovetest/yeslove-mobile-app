@@ -10,6 +10,14 @@ const messagesSharedStyles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
     },
+    messagesText: {
+        width: "95%",
+        textAlign: "left",
+        fontSize: 25,
+        fontWeight: '700',
+        paddingVertical: 12,
+        color: theme.colors.blackText,
+    },
     filterBar: {
         flexDirection: 'row',
         justifyContent: 'flex-start',

@@ -15,6 +15,7 @@ export interface Props {
 }
 
 export default function Header(props: Props) {
+   const userId = useAppSelector(state => state.user.id);
   const tabStack = useAppSelector(state => state.navigation.tabStack);
   const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
   const dispatch = useAppDispatch();
@@ -30,7 +31,7 @@ export default function Header(props: Props) {
   }
 
   const openMessages = () => {
-    dispatch(openTabOnTopAction({ type: TabType.MESSAGES }))
+    dispatch(openTabOnTopAction({ type: TabType.MESSAGES,  data: { userId: userId }  }))
   }
 
 

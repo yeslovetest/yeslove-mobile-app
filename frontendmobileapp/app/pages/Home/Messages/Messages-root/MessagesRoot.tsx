@@ -6,6 +6,7 @@ import OneMessage from './Messages-root-components/One-message/OneMessage'
 import PlaceholderMessages from './Messages-root-components/PlaceholderMessages'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
+import AskChatbotButton from './Messages-root-components/Ask-chatbot-button/AskChatbotButton'
 
 const Messages = () => {
     const dispatch = useAppDispatch()
@@ -31,7 +32,9 @@ const Messages = () => {
 
     return (
         <>
-            <Header mainTitle="test-user"></Header>
+            <Header mainTitle={userName}></Header>
+            <Text style={messagesSharedStyles.messagesText}>Messages</Text>
+            <AskChatbotButton />
             <View style={messagesSharedStyles.filterBar}>
                 <TouchableOpacity onPress={() => setFilter('all')}>
                     <View style={[
