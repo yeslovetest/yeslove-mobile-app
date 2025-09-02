@@ -38,11 +38,12 @@ const styles = StyleSheet.create({
   profileName: {
     marginBottom: 7,
     fontWeight: "600",
+    color: theme.colors.blackText,
     fontSize: 16,
   },
 
   postContent: {
-    color: "#555",
+    color: theme.colors.blackText,
     paddingHorizontal: 3,
     paddingBottom: 10,
     width: "100%",
