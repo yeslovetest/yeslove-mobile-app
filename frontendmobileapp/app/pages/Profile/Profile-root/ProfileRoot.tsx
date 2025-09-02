@@ -23,7 +23,6 @@ export default function ProfileRoot() {
     (state) => state.profile.view.activeTab
   );
 
-  const [activeAboutTab, setActiveAboutTab] = useState("View");
 
 
   return (
