@@ -2844,6 +2844,168 @@ export class FeedApi extends BaseAPI {
 
 
 /**
+ * MediaApi - axios parameter creator
+ * @export
+ */
+export const MediaApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetMedia: async (mediaId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'mediaId' is not null or undefined
+            assertParamExists('getGetMedia', 'mediaId', mediaId)
+            const localVarPath = `/api/media/{media_id}`
+                .replace(`{${"media_id"}}`, encodeURIComponent(String(mediaId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUploadMedia: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/media/upload`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * MediaApi - functional programming interface
+ * @export
+ */
+export const MediaApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = MediaApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetMedia(mediaId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMedia(mediaId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.getGetMedia']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postUploadMedia(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postUploadMedia(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.postUploadMedia']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * MediaApi - factory interface
+ * @export
+ */
+export const MediaApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = MediaApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetMedia(mediaId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getGetMedia(mediaId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUploadMedia(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postUploadMedia(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * MediaApi - object-oriented interface
+ * @export
+ * @class MediaApi
+ * @extends {BaseAPI}
+ */
+export class MediaApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} mediaId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
+    public getGetMedia(mediaId: string, options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).getGetMedia(mediaId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
+    public postUploadMedia(options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).postUploadMedia(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
  * ProfileApi - axios parameter creator
  * @export
  */

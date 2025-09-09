@@ -683,6 +683,40 @@
                 ]
             }
         },
+        "/api/media/upload": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_upload_media",
+                "tags": [
+                    "media"
+                ]
+            }
+        },
+        "/api/media/{media_id}": {
+            "parameters": [
+                {
+                    "name": "media_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_get_media",
+                "tags": [
+                    "media"
+                ]
+            }
+        },
         "/api/profile/about/{keycloak_id}": {
             "parameters": [
                 {
@@ -894,6 +928,10 @@
         },
         {
             "name": "chatbot",
+            "description": "API Endpoints"
+        },
+        {
+            "name": "media",
             "description": "API Endpoints"
         }
     ],
