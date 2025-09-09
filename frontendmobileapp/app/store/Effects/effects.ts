@@ -67,8 +67,13 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshResponse.refresh_token ?? "");
       yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshResponse.refresh_token ?? "");
       yield put(setUserId(((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string | null));
+      let userId: string = yield appSelect(state => state.user.id);
+      const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
+      yield put(setName(profile.username));
+      yield put(storeUserDataAction({id: userId, profile: profile}))
       yield put(setLoginStateAction(LoginState.LOGGED_IN));
     }catch (error){
+      console.log(error)
       yield put(setLoginStateAction(LoginState.LOGGED_OUT));
     }
   }else {
