@@ -183,10 +183,44 @@
                         "description": "Success"
                     }
                 },
-                "summary": "Keycloak handles user registration",
+                "summary": "Creates a new KeyCloak user via Admin API",
                 "operationId": "post_signup",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/SignupRequest"
+                        }
+                    }
+                ],
                 "tags": [
                     "auth"
+                ]
+            }
+        },
+        "/api/blog/blog-post": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Create a blog post for the Get Educated page (Admins only)",
+                "operationId": "post_create_blog",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/CreateBlogPost"
+                        }
+                    }
+                ],
+                "tags": [
+                    "blog"
                 ]
             }
         },
@@ -196,7 +230,7 @@
                     "name": "receiver_id",
                     "in": "path",
                     "required": true,
-                    "type": "integer"
+                    "type": "string"
                 }
             ],
             "get": {
@@ -243,6 +277,121 @@
                 ],
                 "tags": [
                     "chat"
+                ]
+            }
+        },
+        "/api/chatbot/message": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Send a message to chatbot",
+                "operationId": "post_send_chatbot_message",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/MessageRequest"
+                        }
+                    }
+                ],
+                "tags": [
+                    "chatbot"
+                ]
+            }
+        },
+        "/api/device/delete-device-token/{token_id}": {
+            "parameters": [
+                {
+                    "name": "token_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Message"
+                        }
+                    }
+                },
+                "operationId": "delete_delete_device_token",
+                "parameters": [
+                    {
+                        "name": "X-Fields",
+                        "in": "header",
+                        "type": "string",
+                        "format": "mask",
+                        "description": "An optional fields mask"
+                    }
+                ],
+                "tags": [
+                    "device"
+                ]
+            }
+        },
+        "/api/device/my-device-tokens": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/DeviceTokenList"
+                        }
+                    }
+                },
+                "operationId": "get_list_device_tokens",
+                "parameters": [
+                    {
+                        "name": "X-Fields",
+                        "in": "header",
+                        "type": "string",
+                        "format": "mask",
+                        "description": "An optional fields mask"
+                    }
+                ],
+                "tags": [
+                    "device"
+                ]
+            }
+        },
+        "/api/device/register-device-token": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Message"
+                        }
+                    }
+                },
+                "operationId": "post_register_device_token",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/RegisterDeviceToken"
+                        }
+                    },
+                    {
+                        "name": "X-Fields",
+                        "in": "header",
+                        "type": "string",
+                        "format": "mask",
+                        "description": "An optional fields mask"
+                    }
+                ],
+                "tags": [
+                    "device"
                 ]
             }
         },
@@ -512,6 +661,62 @@
                 ]
             }
         },
+        "/api/feed/post/{post_id}/reactions": {
+            "parameters": [
+                {
+                    "name": "post_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Fetch all reactions for a post",
+                "operationId": "get_get_reactions",
+                "tags": [
+                    "feed"
+                ]
+            }
+        },
+        "/api/media/upload": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_upload_media",
+                "tags": [
+                    "media"
+                ]
+            }
+        },
+        "/api/media/{media_id}": {
+            "parameters": [
+                {
+                    "name": "media_id",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }
+            ],
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_get_media",
+                "tags": [
+                    "media"
+                ]
+            }
+        },
         "/api/profile/about/{keycloak_id}": {
             "parameters": [
                 {
@@ -538,18 +743,6 @@
             }
         },
         "/api/profile/email_notifications": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Get email notification settings",
-                "operationId": "get_email_notifications",
-                "tags": [
-                    "profile"
-                ]
-            },
             "post": {
                 "responses": {
                     "200": {
@@ -568,6 +761,18 @@
                         }
                     }
                 ],
+                "tags": [
+                    "profile"
+                ]
+            },
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get email notification settings",
+                "operationId": "get_email_notifications",
                 "tags": [
                     "profile"
                 ]
@@ -599,18 +804,6 @@
             }
         },
         "/api/profile/profile_visibility": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Get profile visibility settings",
-                "operationId": "get_profile_visibility",
-                "tags": [
-                    "profile"
-                ]
-            },
             "post": {
                 "responses": {
                     "200": {
@@ -629,6 +822,18 @@
                         }
                     }
                 ],
+                "tags": [
+                    "profile"
+                ]
+            },
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get profile visibility settings",
+                "operationId": "get_profile_visibility",
                 "tags": [
                     "profile"
                 ]
@@ -711,6 +916,22 @@
         },
         {
             "name": "chat",
+            "description": "API Endpoints"
+        },
+        {
+            "name": "blog",
+            "description": "API Endpoints"
+        },
+        {
+            "name": "device",
+            "description": "Device Token Endpoints"
+        },
+        {
+            "name": "chatbot",
+            "description": "API Endpoints"
+        },
+        {
+            "name": "media",
             "description": "API Endpoints"
         }
     ],
@@ -920,8 +1141,87 @@
             },
             "type": "object"
         },
+        "SignupRequest": {
+            "required": [
+                "confirm_email",
+                "confirm_password",
+                "email",
+                "first_name",
+                "last_name",
+                "password",
+                "phone_number",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "description": "User email"
+                },
+                "confirm_email": {
+                    "type": "string",
+                    "description": "User email confirmation"
+                },
+                "password": {
+                    "type": "string",
+                    "description": "User password"
+                },
+                "confirm_password": {
+                    "type": "string",
+                    "description": "Confirm your password"
+                },
+                "first_name": {
+                    "type": "string",
+                    "description": "Users first name"
+                },
+                "last_name": {
+                    "type": "string",
+                    "description": "Users last name"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "description": "Users phone number"
+                },
+                "username": {
+                    "type": "string",
+                    "description": "Desired username"
+                },
+                "user_type": {
+                    "type": "string",
+                    "description": "Standard or Professional",
+                    "example": "Standard",
+                    "enum": [
+                        "Standard",
+                        "Professional"
+                    ]
+                },
+                "license_body": {
+                    "type": "string",
+                    "description": "License body (HCPC, BACP, UKCP)",
+                    "example": "HCPC",
+                    "enum": [
+                        "HCPC",
+                        "BACP",
+                        "UKCP"
+                    ]
+                },
+                "license_number": {
+                    "type": "string",
+                    "description": "Professional license/registration number"
+                },
+                "consent_license_data": {
+                    "type": "string",
+                    "description": "Consent to use and display license data"
+                }
+            },
+            "type": "object"
+        },
         "LogoutRequest": {
-            "properties": {},
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "description": "Users refresh token"
+                }
+            },
             "type": "object"
         },
         "RefreshTokenRequest": {
@@ -1109,6 +1409,10 @@
                 "action": {
                     "type": "string",
                     "description": "'follow' to follow, 'unfollow' to unfollow"
+                },
+                "follow_type": {
+                    "type": "string",
+                    "description": "Basic follow or follow as a friend"
                 }
             },
             "type": "object"
@@ -1128,8 +1432,8 @@
             ],
             "properties": {
                 "receiver_id": {
-                    "type": "integer",
-                    "description": "ID of the recipient user"
+                    "type": "string",
+                    "description": "keycloak ID of the recipient user"
                 },
                 "message": {
                     "type": "string",
@@ -1140,6 +1444,101 @@
         },
         "GetMessagesRequest": {
             "properties": {},
+            "type": "object"
+        },
+        "CreateBlogPost": {
+            "required": [
+                "content",
+                "title"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "Title of the blog post"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Blog post content"
+                },
+                "summary": {
+                    "type": "string",
+                    "description": "Blog post Summary /short intro to Blog"
+                },
+                "image_url": {
+                    "type": "string",
+                    "description": "Optional image URL"
+                }
+            },
+            "type": "object"
+        },
+        "RegisterDeviceToken": {
+            "required": [
+                "platform",
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "description": "Device push token"
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "Device platform (ios/android)"
+                }
+            },
+            "type": "object"
+        },
+        "Message": {
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "description": "Response message"
+                }
+            },
+            "type": "object"
+        },
+        "DeviceTokenList": {
+            "properties": {
+                "device_tokens": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DeviceToken"
+                    }
+                }
+            },
+            "type": "object"
+        },
+        "DeviceToken": {
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "description": "Token ID"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "Device push token"
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "Device platform"
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Token registration date/time (ISO format)"
+                }
+            },
+            "type": "object"
+        },
+        "MessageRequest": {
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "description": "Message content"
+                }
+            },
             "type": "object"
         }
     },
