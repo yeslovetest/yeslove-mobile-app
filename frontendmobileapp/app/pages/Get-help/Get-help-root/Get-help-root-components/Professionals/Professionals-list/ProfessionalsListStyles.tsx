@@ -31,6 +31,19 @@ const styles = StyleSheet.create({
       borderColor: "#fff",
       marginBottom: 10,
     },
+    viewProfile: {
+    backgroundColor: "#7296ED",
+    width: 100,
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderRadius: 10
+   },
+   buttonText: {
+    color: "#ffffff",
+    fontSize: 14,
+   }
 })
 
 export default styles

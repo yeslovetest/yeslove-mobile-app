@@ -19,17 +19,17 @@ const Footer = () => {
 
   return (
     <View style={styles.footer}>
-      <FooterButton tab={{ type: TabType.HOME }}
+      <FooterButton tab={{ type: TabType.HOME, data: { userId: userId }  }}
         icon="home-outline"
         selectedIcon="home"
         title="Home"></FooterButton>
-      <FooterButton tab={{ type: TabType.GET_HELP }} icon='bulb-outline' selectedIcon="bulb-sharp" title='Get help'>
+      <FooterButton tab={{ type: TabType.GET_HELP }} icon='bulb-outline' selectedIcon="bulb" title='Get help'>
       </FooterButton>
-      <FooterButton tab={{ type: TabType.NOTIFICATIONS, data: { userId: userId } }} icon="notifications-outline"
+      <FooterButton tab={{ type: TabType.NOTIFICATIONS }} icon="notifications-outline"
         selectedIcon="notifications" title='Notifications'>
         <View style={styles.newNotification}></View>
       </FooterButton>
-      <FooterButton tab={{ type: TabType.EVENTS }} icon='calendar-outline' selectedIcon="calendar-sharp" title='Events'></FooterButton>
+      <FooterButton tab={{ type: TabType.EVENTS }} icon='calendar-outline' selectedIcon="calendar" title='Events'></FooterButton>
       <FooterButton tab={{ type: TabType.PROFILE, data: { userId: userId } }} icon='person-outline' selectedIcon='person' title='Profile'>
       </FooterButton>
     </View>

@@ -1,9 +1,10 @@
 import React from 'react'
 import { View, Text, Image } from 'react-native'
-import styles from './ViewContentStyles';
-import { useAppSelector } from '@/app/store/hooks';
+import styles from './ProfileInformationStyles'
+import Header from '@/app/Universal-components/Header/Header'
+import { useAppSelector } from '@/app/store/hooks'
 
-const ViewContent = () => {
+const ProfileInformation = () => {
   const userId = useAppSelector(state => state.navigation.tabStack.at(-1)?.data?.userId);
   const name = useAppSelector(state => state.profile.profiles[userId].contact_info?.name ?? "");
   const email = useAppSelector(state => state.profile.profiles[userId].contact_info?.email ?? "");
@@ -12,7 +13,9 @@ const ViewContent = () => {
   const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? "");
 
   return (
-    <View>
+    <>
+    <Header></Header>
+    <View style={styles.container}>
           <View style={styles.viewItemContainer}>
             <Text style={styles.viewItemText}>Name</Text>
             <Text style={styles.viewItemInfo}>{name}</Text>
@@ -59,8 +62,8 @@ const ViewContent = () => {
             </View>
           </View>
         </View>
-      )}
+    </>
+  )
+}
 
-  
-
-export default ViewContent
+export default ProfileInformation

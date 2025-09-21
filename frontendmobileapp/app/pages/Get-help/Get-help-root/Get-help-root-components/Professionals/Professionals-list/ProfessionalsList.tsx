@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import styles from './ProfessionalsListStyles';
-import theme from "../../../../../../../assets/variables/Variables"
 import PlaceholderProfessionals from './PlaceholderProfessionals';
 
 const ProfessionalsList = () => {
@@ -22,9 +21,9 @@ const ProfessionalsList = () => {
             {expanded === index ? professional.description : `${professional.description.substring(0, 300)}...`}
           </Text>
           <TouchableOpacity onPress={() => handleToggle(index)}>
-            <Text style={{ color: theme.colors.primaryBlue , marginTop: 10 }}>
-              {expanded === index ? 'See Less' : 'See More'}
-            </Text>
+            <TouchableOpacity style={styles.viewProfile}>
+              <Text style={styles.buttonText}>View Profile</Text>
+            </TouchableOpacity>
           </TouchableOpacity>
         </View>
       ))}

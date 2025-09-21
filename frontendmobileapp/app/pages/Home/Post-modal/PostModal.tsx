@@ -25,6 +25,10 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const [isRendered, setIsRendered] = useState(visible);
   const [userPost, setUserPost] = useState("");
 
+  const userName = useAppSelector(
+    (state) => state.user.name ?? ""
+  );
+
 
   useEffect(() => {
     if (visible) {
@@ -81,8 +85,8 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
             </TouchableOpacity>
           </View>
           <View style={{ flex: 1 }}>
-          <PostingUserProfile username="Test-user" profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
-         <PostInput userPost={userPost} setUserPost={setUserPost} />
+            <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
+            <PostInput userPost={userPost} setUserPost={setUserPost} />
           </View>
         </Animated.View>
       </View>

@@ -8,11 +8,9 @@ import NotificationsPlaceholders from './Notifications-root-components/Notificat
 import styles from './NotificationsRootStyles';
 
 const NotificationsRoot = () => {
-  const userId = useAppSelector(
-    (state) => state.navigation.tabStack.at(-1)?.data?.userId
-  );
+
   const userName = useAppSelector(
-    (state) => state.profile.profiles[userId]?.username ?? ""
+    (state) => state.user.name ?? ""
   );
 
   return (
