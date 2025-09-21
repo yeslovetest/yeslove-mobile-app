@@ -155,6 +155,8 @@ class GetUserKeycloakIDFlexible(Resource):
 
 @api.route("/profile_visibility")
 class ProfileVisibility(Resource):
+    from app.api.profile.profile_models import ProfileVisibilitySettings
+    @api.response(200, "Success", ProfileVisibilitySettings)  
     @require_auth()
     def get(self):
         """Get profile visibility settings."""
@@ -196,6 +198,8 @@ class ProfileVisibility(Resource):
 
 @api.route("/email_notifications")
 class EmailNotifications(Resource):
+    from app.api.profile.profile_models import EmailNotificationSettings
+    @api.response(200, "Success", EmailNotificationSettings)
     @require_auth()
     def get(self):
         """Get email notification settings."""

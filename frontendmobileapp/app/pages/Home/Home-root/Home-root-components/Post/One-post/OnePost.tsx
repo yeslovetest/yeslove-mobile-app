@@ -30,8 +30,7 @@ const OnePost = (props: Props) => {
         // runs when a user selects a reaction from the pop up
         if (reaction === 'reverseReaction' && reactionType === 'default'){
             dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: 'like'}));
-            setReactionType('like');
-            
+            setReactionType('like'); 
         }
         else if (reaction === 'reverseReaction' && reactionType !== 'default'){
             dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: reactionType}));
@@ -44,7 +43,6 @@ const OnePost = (props: Props) => {
             setPopUpState('hidden')
           
         }
-        
         else  {
             dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: reactionType}));
             setReactionType('default');

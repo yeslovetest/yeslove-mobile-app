@@ -48,9 +48,10 @@ class SendMessage(Resource):
 
 @api.route("/get_messages/<string:receiver_id>")
 class GetMessages(Resource):
-    from .chat_models import GetMessagesRequest
+    from .chat_models import GetMessagesRequest, GetMessagesResponse
     @require_auth()
     @api.expect(GetMessagesRequest)  # ✅ Attach model
+    @api.response(200, 'Success', GetMessagesResponse) 
     def get(self, receiver_id):
         """Fetch chat messages between two users."""
         from app.models import User, Chat
@@ -69,7 +70,7 @@ class GetMessages(Resource):
             {
                 "sender": msg.sender.username,
                 "receiver": msg.receiver.username,
-                "message": msg.message,
+                "content": msg.message,
                 "timestamp": msg.timestamp.isoformat(),
             }
             for msg in messages

@@ -101,6 +101,9 @@ class Login(Resource):
 
 @api.route("/signup")
 class Signup(Resource):
+    from .auth_models import SignupRequest, SignupResponse
+    @api.expect(SignupRequest) 
+    @api.response(201, "Success", SignupResponse)
     def post(self):
         "Creates a new KeyCloak user via Admin API"
         data = request.json or {}

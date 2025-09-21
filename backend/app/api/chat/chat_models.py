@@ -7,3 +7,12 @@ SendMessageRequest = api.model("SendMessageRequest", {
     })
 
 GetMessagesRequest = api.model("GetMessagesRequest", {})
+
+Chat = api.model("Chat", {
+        "sender": fields.String(description="Sender Username"),
+        "receiver": fields.String(description="Receiver Username"),
+        "content": fields.String(description="Message content"),
+        "timestamp": fields.String(description="Timestamp of the message ISO format")})
+
+GetMessagesResponse = api.model("GetMessagesResponse", {
+        "messages": fields.List(fields.Nested(Chat), description="List of chat messages")})
