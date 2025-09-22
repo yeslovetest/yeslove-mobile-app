@@ -1,0 +1,29 @@
+// Register device token after login/signup in React Native
+
+const registerDeviceToken = async (accessToken, deviceToken, platform) => {
+  try {
+    const response = await fetch('https://your-api.com/api/device/register-device-token', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: deviceToken,
+        platform: platform, // 'ios' or 'android'
+      }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      console.log('Device token registered:', data.message);
+    } else {
+      console.warn('Failed to register device token:', data.message);
+    }
+  } catch (error) {
+    console.error('Error registering device token:', error);
+  }
+};
+
+// Usage example after login/signup:
+registerDeviceToken(accessToken, deviceToken, Platform.OS);

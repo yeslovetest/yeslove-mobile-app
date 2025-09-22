@@ -108,8 +108,6 @@ class Login(Resource):
 
 @api.route("/signup")
 class Signup(Resource):
-    from .auth_models import SignupRequest
-    @api.expect(SignupRequest)
     def post(self):
         "Creates a new KeyCloak user via Admin API"
         data = request.json or {}
@@ -309,24 +307,17 @@ class Signup(Resource):
 @api.route("/logout")
 class Logout(Resource):
     from .auth_models import LogoutRequest
+    @require_auth()
     @api.expect(LogoutRequest)  # ✅ Attach model
     def post(self):
         """Logout user from Keycloak."""
-        data = request.get_json(silent=True)
-        refresh_token = data.get("refresh_token")
-
-        if not refresh_token:
-            return {"message": "Missing refresh token in request body"}, 400
-        
+        token = request.headers.get("Authorization").split(" ")[1]
         keycloak_logout_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/logout"
 
-        payload = {
-            "client_id" : current_app.config["KEYCLOAK_CLIENT_ID"],
-            "client_secret" : current_app.config["KEYCLOAK_CLIENT_SECRET"],
-            "refresh_token" : refresh_token
-        }
-
-        response = requests.post(keycloak_logout_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        response = requests.post(
+            keycloak_logout_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
 
         logger.info("User logout attempt via refresh token")
 
@@ -336,6 +327,7 @@ class Logout(Resource):
         logger.error(f"Logout failed : {response.text}")
         return {"message" : "Logout failed", "details" : response.text}, response.status_code
     
+
 @api.route("/refresh_token")
 class RefreshToken(Resource):
     from .auth_models import RefreshTokenRequest, TokenResponse
@@ -442,7 +434,11 @@ class ChangePassword(Resource):
             "value": new_password,
             "temporary": False
         }
-        headers = {"Authorization": f"Bearer {request.headers.get('Authorization').split()[1]}"}
+
+        auth_header = request.headers.get("Authorization", "")
+        # To allow for two different formats (Bearer <Token> and <Token>)
+        token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
+        headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.put(keycloak_admin_url, json=payload, headers=headers)
 
@@ -510,19 +506,24 @@ class DeleteAccount(Resource):
             return {"message": "User not found"}, 404
 
         keycloak_delete_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user_id}"
-        headers = {"Authorization": f"Bearer {request.headers.get('Authorization').split()[1]}"}
+        
+        auth_header = request.headers.get("Authorization", "")
+        # To allow for two different formats (Bearer <Token> and <Token>)
+        token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
+        headers = {"Authorization": f"Bearer {token}"}
 
         response = requests.delete(keycloak_delete_url, headers=headers)
 
         logger.info(f"Account deletion requested for user {user.username}")
 
         if response.status_code == 204:
-            logger.info(f"Account deleted successfully for {user.username}")
+            return {"message": "Account delete successful"}, 200
             db.session.delete(user)
             db.session.commit()
+            logger.info(f"Account deleted successfully for {user.username}")
         else:
             logger.error(f"Account deletion failed: {response.status_code} - {response.text}")
-
+        return {"message": "Failed to delete account"}, response.status_code
 
 
 
