@@ -34,4 +34,6 @@ Flask-Admin
 
 python-dateutil
 
+prometheus-flask-exporter
+
 openai

@@ -5,6 +5,8 @@ import os
 from flask_restx import Api
 from flask_cors import CORS
 from flask_migrate import Migrate
+from prometheus_flask_exporter import PrometheusMetrics
+
 from dotenv import load_dotenv
 from app.config import DevelopmentConfig
 from app.utils import get_keycloak_public_keys
@@ -30,6 +32,10 @@ migrate = Migrate()
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
+
+    # Initialising of monitoring stack 
+    PrometheusMetrics(app)
+
     app.config.from_object(config_class)
     # app.config['SQLALCHEMY_DATABASE_URI'] = config_class.SQLALCHEMY_DATABASE_URI
 
