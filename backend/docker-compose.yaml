@@ -29,5 +29,22 @@ services:
       - postgres
     restart: unless-stopped
 
+  postgres_vector:
+    image: ankane/pgvector:latest
+    container_name: postgres_vector
+    environment:
+      POSTGRES_USER: ${VECTOR_DB_USER}
+      POSTGRES_PASSWORD: ${VECTOR_DB_PASSWORD}
+      POSTGRES_DB: ${VECTOR_DB_NAME}
+
+    volumes:
+      - postgres_vector_data:/var/lib/postgresql/data
+    ports: 
+      - "5433:5432"
+    restart: unless-stopped
+
+
+
 volumes:
   postgres_data:
+  postgres_vector_data:

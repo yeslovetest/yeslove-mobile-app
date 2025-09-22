@@ -37,3 +37,11 @@ python-dateutil
 prometheus-flask-exporter
 
 openai
+
+# Vector DB requirements
+
+tiktoken
+
+pgvector
+
+psycopg2-binary
