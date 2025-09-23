@@ -26,7 +26,7 @@ const CheckBoxList = (props: Props) => {
             {itemList && 
                 (itemList.map((checkBox, indx) => 
                     <CheckBox text={checkBox?.label ?? ''} 
-                    value={itemStateValues?.[indx] ?? true}
+                    value={itemStateValues?.[indx] ?? false}
                     key={checkBox?.label ?? ''}
                     btnPress={checkBox?.onPress}/>   
                 ))

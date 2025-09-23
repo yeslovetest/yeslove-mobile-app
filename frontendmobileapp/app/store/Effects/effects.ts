@@ -230,7 +230,7 @@ function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
 
 function* fetchPostReactions (action: PayloadAction<{postId: number}>){
   const comments = ((yield call(FeedApiFactory().getGetComments, action.payload.postId)) as AxiosResponse<GetCommentResponse>).data as GetCommentResponse;
-  const reactions = ((yield call(FeedApiFactory().getReactions, action.payload.postId)) as AxiosResponse<GetReactionsResponse>).data as GetReactionsResponse;
+  const reactions = ((yield call(FeedApiFactory().getGetReactions , action.payload.postId)) as AxiosResponse<GetReactionsResponse>).data as GetReactionsResponse;
   yield put(setComments(comments.comments ?? []));
   yield put(setReactions(reactions.reactions ?? []));
 }
@@ -287,6 +287,7 @@ function* appSaga() {
   yield takeEvery(signupAction.type, handleSignupRequest);
   yield takeEvery(setUserPassword.type, handlePasswordChange);
   yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
+  yield takeEvery(logoutAction.type, handleLogout);
 /**Chat Api saga */
   yield takeEvery(fetchChatMessages.type, handleGetMessages);
   yield takeEvery(sendChatMessage.type, handlePostSendMessage);
@@ -299,7 +300,6 @@ function* appSaga() {
   yield takeEvery(retrievePostReactions.type, fetchPostReactions);
   yield takeEvery(postReactionToPost.type, handleReactionToPost);
   yield takeEvery(postLikePost.type, handleLikePost);
-  yield takeEvery(logoutAction.type, handleLogout);
   yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
   yield takeEvery(SendFollowUser.type, handlePostFollowUser);
 /**Profile Api saga */
