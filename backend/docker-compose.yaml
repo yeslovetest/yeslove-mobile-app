@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   postgres:
@@ -11,6 +11,36 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+  neo4j:
+    image: neo4j:5.19
+    container_name: neo4j
+    environment:
+      NEO4J_AUTH: neo4j/testpassword
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: testpassword
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
@@ -47,4 +77,6 @@ services:
 
 volumes:
   postgres_data:
-  postgres_vector_data:
+  neo4j_data:
+  redis_data:
+  rabbitmq_data:
