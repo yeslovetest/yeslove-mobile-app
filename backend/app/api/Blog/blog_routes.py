@@ -3,7 +3,6 @@ from flask_restx import Namespace, Resource
 from app.logging_setup import logger
 from app.utils import require_auth
 from datetime import datetime
-from app.notifications import send_push_notification_to_all_users
 
 api = Namespace("blog", description="API Endpoints")
 
@@ -29,7 +28,6 @@ class CreateBlog(Resource):
             data = request.get_json()
             title = data.get("title")
             content = data.get("content")
-            summary = data.get("summary")
             image_url = data.get("image_url")
 
             # ✅ Basic validation
@@ -46,23 +44,12 @@ class CreateBlog(Resource):
                 content=content,
                 author_id=user.id,
                 image_url=image_url,
-                summary=summary,
                 timestamp=datetime.utcnow()
             )
             db.session.add(post)
             db.session.commit()
 
             logger.info(f"Blog post created by user {user.id}: {post.id}")
-
-            # Send push notification to all users
-            try:
-                send_push_notification_to_all_users(
-                    title="New Blog Post",
-                    message=f"{title}",
-                    data={"post_id": post.id}
-                )
-            except Exception as notify_err:
-                logger.error(f"Failed to send push notification for blog post {post.id}: {notify_err}")
 
             return {
                 "message": "Blog post created successfully",

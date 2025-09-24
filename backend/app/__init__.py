@@ -5,15 +5,24 @@ import os
 from flask_restx import Api
 from flask_cors import CORS
 from flask_migrate import Migrate
+from prometheus_flask_exporter import PrometheusMetrics
+
 from dotenv import load_dotenv
 from app.config import DevelopmentConfig
 from app.utils import get_keycloak_public_keys
+from app.graph.neo4j_client import create_driver, close_driver, create_constraints
 from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
+
 from app.api.events.events_routes import api as events_api
+<<<<<<< Updated upstream
 from app.api.blog.blog_routes import api as blog_api
+
+=======
+from app.api.Blog.blog_routes import api as blog_api
+>>>>>>> Stashed changes
 from app.api.deviceToken.device_token_routes import api as device_token_api
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
@@ -30,6 +39,10 @@ migrate = Migrate()
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
+
+    # Initialising of monitoring stack 
+    PrometheusMetrics(app)
+
     app.config.from_object(config_class)
     # app.config['SQLALCHEMY_DATABASE_URI'] = config_class.SQLALCHEMY_DATABASE_URI
 
@@ -67,6 +80,23 @@ def create_app(config_class=DevelopmentConfig):
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     with app.app_context():
         get_keycloak_public_keys()
+
+    # --- Initialize Neo4j driver (optional) ---
+    try:
+        app.neo4j_driver = create_driver(app.config.get('NEO4J_URI'), app.config.get('NEO4J_USER'), app.config.get('NEO4J_PASS'))
+        # create basic constraints if possible (idempotent)
+        create_constraints(app.neo4j_driver)
+    except Exception:
+        app.logger.exception('Failed to initialize Neo4j driver')
+
+    @app.teardown_appcontext
+    def shutdown_neo4j(exception=None):
+        driver = getattr(app, 'neo4j_driver', None)
+        if driver:
+            try:
+                close_driver(driver)
+            except Exception:
+                app.logger.exception('Error closing Neo4j driver')
 
     app.chatbot = Chatbot() #initializing the chatbot
     
