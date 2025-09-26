@@ -66,10 +66,9 @@ services:
       POSTGRES_USER: ${VECTOR_DB_USER}
       POSTGRES_PASSWORD: ${VECTOR_DB_PASSWORD}
       POSTGRES_DB: ${VECTOR_DB_NAME}
-
     volumes:
       - postgres_vector_data:/var/lib/postgresql/data
-    ports: 
+    ports:
       - "5433:5432"
     restart: unless-stopped
 
