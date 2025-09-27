@@ -30,7 +30,8 @@ class MediaService:
         
         # Upload to S3 (optional)
         s3_url = None
-        if hasattr(MediaService, '_use_s3') and MediaService._use_s3:
+        from flask import current_app
+        if current_app.config.get('USE_S3_STORAGE', False):
             s3 = S3Storage()
             key = f"media/{uuid.uuid4()}/{file.filename}"
             s3_url = s3.upload_file(content, key, file.content_type)

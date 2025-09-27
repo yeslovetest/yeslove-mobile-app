@@ -45,17 +45,23 @@ class S3Storage:
         )
         self.bucket = os.getenv('S3_BUCKET_NAME')
     
-    def upload_file(self, content, key, content_type):
+    def upload_file(self, content, key, content_type, is_public=True):
         """Upload file to S3"""
         try:
-            self.s3.put_object(
-                Bucket=self.bucket,
-                Key=key,
-                Body=content,
-                ContentType=content_type,
-                ACL='public-read'
-            )
-            return f"https://{self.bucket}.s3.amazonaws.com/{key}"
+            params = {
+                'Bucket': self.bucket,
+                'Key': key,
+                'Body': content,
+                'ContentType': content_type
+            }
+            
+            # Don't use ACL, rely on bucket policy instead
+            self.s3.put_object(**params)
+            
+            if is_public:
+                return f"https://{self.bucket}.s3.amazonaws.com/{key}"
+            else:
+                return key  # Return key for private files
         except Exception as e:
             print(f"S3 upload error: {e}")
             return None
