@@ -1,0 +1,101 @@
+@startuml Device Token & Push Notification Flow
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam handwritten false
+
+actor User as U
+participant "Mobile App" as MA
+participant "Auth API" as AUTH
+participant "Social API" as SOCIAL
+participant "Device Token Service" as DTS
+participant "Push Notification Service" as PNS
+participant "Notification Settings" as NS
+database "Database" as DB
+participant "Firebase FCM" as FCM
+
+== Device Token Registration ==
+
+U -> MA: Login/Signup
+MA -> AUTH: POST /auth/login\n{username, password, device_token, platform}
+AUTH -> DTS: register_device_token(user_id, token, platform)
+DTS -> DB: Store/Update DeviceToken
+AUTH --> MA: Login Success
+MA --> U: Logged In
+
+== Social Interaction with Push Notification ==
+
+U -> MA: Create Post
+MA -> SOCIAL: POST /feed/post\n{content}
+SOCIAL -> DB: Save Post
+SOCIAL -> DB: Get Followers
+SOCIAL -> PNS: send_to_multiple_users(follower_ids, "New Post", body, "posts")
+
+loop For each follower
+    PNS -> NS: Check notification preferences
+    NS -> DB: Query NotificationSettings
+    alt Notifications Enabled
+        PNS -> DB: Get DeviceTokens for user
+        PNS -> FCM: Send Push Notification
+        FCM --> MA: Push Notification Received
+        MA --> U: Show Notification
+    else Notifications Disabled
+        PNS -> PNS: Skip notification
+    end
+end
+
+SOCIAL --> MA: Post Created
+MA --> U: Success
+
+== Notification Preferences Management ==
+
+U -> MA: Open Settings
+MA -> SOCIAL: GET /notifications/preferences
+SOCIAL -> DB: Query NotificationSettings
+SOCIAL --> MA: Current preferences
+MA --> U: Show Settings
+
+U -> MA: Update Preferences
+MA -> SOCIAL: PUT /notifications/preferences\n{posts: false, likes: true, ...}
+SOCIAL -> DB: Update NotificationSettings
+SOCIAL --> MA: Updated
+MA --> U: Settings Saved
+
+== Event Creation Flow ==
+
+U -> MA: Create Event
+MA -> SOCIAL: POST /events/event_info
+SOCIAL -> DB: Save Event
+SOCIAL -> DB: Get Creator's Followers
+SOCIAL -> PNS: send_to_multiple_users(follower_ids, "New Event", body, "events")
+PNS -> NS: Check "events" preference for each user
+alt Events Enabled
+    PNS -> FCM: Send Notification
+    FCM --> MA: Event Notification
+end
+SOCIAL --> MA: Event Created
+
+== Like/Comment Flow ==
+
+U -> MA: Like Post
+MA -> SOCIAL: POST /feed/post/{id}/like
+SOCIAL -> DB: Save Like
+SOCIAL -> DB: Get Post Author
+SOCIAL -> PNS: send_to_user(author_id, "New Like", body, "likes")
+PNS -> NS: Check "likes" preference
+alt Likes Enabled
+    PNS -> FCM: Send Notification
+    FCM --> MA: Like Notification
+end
+
+== Logout (Token Persistence) ==
+
+U -> MA: Logout
+MA -> AUTH: POST /auth/logout
+note right: Device tokens are NOT removed
+AUTH --> MA: Logged Out
+MA --> U: Logged Out
+
+note over DTS, FCM: Tokens remain active for re-engagement notifications
+
+@enduml

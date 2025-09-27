@@ -51,6 +51,25 @@ class CreateBlog(Resource):
             )
             db.session.add(post)
             db.session.commit()
+            
+            # Send push notification to all users about new blog post
+            from app.models import User as AllUsers
+            from app.services.push_notification_service import PushNotificationService
+            
+            # Get all user IDs (or you could target specific user groups)
+            all_user_ids = [u.id for u in AllUsers.query.all()]
+            
+            if all_user_ids:
+                try:
+                    PushNotificationService.send_to_multiple_users(
+                        user_ids=all_user_ids,
+                        title="New Blog Post",
+                        body=f"New article: {title[:50]}...",
+                        data={"type": "new_blog", "blog_id": post.id},
+                        notification_type="blogs"
+                    )
+                except Exception as e:
+                    logger.error(f"Blog notification failed: {e}")
 
             logger.info(f"Blog post created by user {user.id}: {post.id}")
 

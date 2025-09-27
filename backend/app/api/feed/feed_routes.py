@@ -100,18 +100,22 @@ class CreatePost(Resource):
         db.session.add(post)
         db.session.commit()
 
-        # --- Send notification to all followers ---
+        # Send push notification to followers
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
-        try:
-            send_push_notification_to_users(
-                user_ids=follower_user_ids,
-                title="New Post",
-                message=f"{user.username} just posted: {data['content'][:50]}",
-                data={"post_id": post.id}
-            )
-        except Exception as notify_err:
-            logger.error(f"Failed to send push notification for post {post.id}: {notify_err}")
+        
+        if follower_user_ids:
+            from app.services.push_notification_service import PushNotificationService
+            try:
+                PushNotificationService.send_to_multiple_users(
+                    user_ids=follower_user_ids,
+                    title="New Post",
+                    body=f"{user.username}: {data['content'][:50]}...",
+                    data={"type": "new_post", "post_id": post.id},
+                    notification_type="posts"
+                )
+            except Exception as e:
+                logger.error(f"Push notification failed: {e}")
 
         return {"message": "Post created successfully"}, 201
     
@@ -204,6 +208,20 @@ class LikePost(Resource):
         new_like = Like(user_id=user.id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
+        
+        # Notify post author about like
+        from app.models import Post
+        post = Post.query.get(post_id)
+        if post and post.user_id != user.id:
+            from app.services.push_notification_service import PushNotificationService
+            PushNotificationService.send_to_user(
+                user_id=post.user_id,
+                title="New Like",
+                body=f"{user.username} liked your post",
+                data={"type": "like", "post_id": post_id},
+                notification_type="likes"
+            )
+        
         logger.info(f"✅ User {user.username} liked post {post_id}")
         return {"message": "Post liked"}, 201
 
@@ -232,6 +250,20 @@ class AddComment(Resource):
         comment = Comment(content=content, user_id=user.id, post_id=post_id)
         db.session.add(comment)
         db.session.commit()
+        
+        # Notify post author about comment
+        from app.models import Post
+        post = Post.query.get(post_id)
+        if post and post.user_id != user.id:
+            from app.services.push_notification_service import PushNotificationService
+            PushNotificationService.send_to_user(
+                user_id=post.user_id,
+                title="New Comment",
+                body=f"{user.username} commented on your post",
+                data={"type": "comment", "post_id": post_id},
+                notification_type="comments"
+            )
+        
         return {"message": "Comment added"}, 201
 
 

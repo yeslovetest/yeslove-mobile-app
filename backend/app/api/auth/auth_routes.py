@@ -97,6 +97,14 @@ class Login(Resource):
                         "set_professional_details_required": True
                     }, 200
 
+            # Auto-register device token if provided
+            device_token = data.get("device_token")
+            platform = data.get("platform")
+            if device_token:
+                from app.services.device_token_service import DeviceTokenService
+                DeviceTokenService.register_device_token(user.id, device_token, platform)
+                logger.info(f"Device token registered for user {user.username}")
+            
             logger.info(f"✅ User {user.username} logged in successfully.")
             return token_data, 200
         
@@ -299,6 +307,14 @@ class Signup(Resource):
                 logger.error(f"❌ Database error when saving user {username}: {e}")
                 return {"message" : "Username already exist"}, 409
 
+            # Auto-register device token if provided during signup
+            device_token = data.get("device_token")
+            platform = data.get("platform")
+            if device_token:
+                from app.services.device_token_service import DeviceTokenService
+                DeviceTokenService.register_device_token(new_user.id, device_token, platform)
+                logger.info(f"Device token registered for new user {username}")
+            
             return {"message":"User created in Keycloak and email verification sent"},201
         
         elif response.status_code == 409:

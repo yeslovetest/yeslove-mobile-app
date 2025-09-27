@@ -291,6 +291,15 @@ class DeviceToken(db.Model):
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class NotificationSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    posts_enabled = db.Column(db.Boolean, default=True)
+    likes_enabled = db.Column(db.Boolean, default=True)
+    comments_enabled = db.Column(db.Boolean, default=True)
+    events_enabled = db.Column(db.Boolean, default=True)
+    blogs_enabled = db.Column(db.Boolean, default=True)
+
 
 # ------------------------- Create Vector DB Model -------------------------
 
@@ -321,4 +330,4 @@ class Media(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
->>>>>>> 8da11a0b2088c9c65a359c262307b680226dddef
+

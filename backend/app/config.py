@@ -35,6 +35,9 @@ class DevelopmentConfig(Config):
     """Development Configuration"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI", "sqlite:///dev.db")
+    
+    # Media Service Configuration
+    USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "true"
 
     # ✅ Keycloak Configuration
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")

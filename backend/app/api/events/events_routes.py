@@ -194,6 +194,25 @@ class EventInfo(Resource):
 
         logger.info("Commiting database changes")
         db.session.commit()
+        
+        # Send push notification to all followers about new event
+        from app.models import Follow
+        from app.services.push_notification_service import PushNotificationService
+        
+        follower_links = Follow.query.filter_by(followed_id=creator.id).all()
+        follower_user_ids = [f.follower_id for f in follower_links]
+        
+        if follower_user_ids:
+            try:
+                PushNotificationService.send_to_multiple_users(
+                    user_ids=follower_user_ids,
+                    title="New Event",
+                    body=f"{creator.username} created: {event.name}",
+                    data={"type": "new_event", "event_id": event.id},
+                    notification_type="events"
+                )
+            except Exception as e:
+                logger.error(f"Event notification failed: {e}")
 
         return {"message": "Event created successfully"}, 201
 
