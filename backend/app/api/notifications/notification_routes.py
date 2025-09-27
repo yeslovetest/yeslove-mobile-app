@@ -1,7 +1,6 @@
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app.utils import require_auth
-from app.models import db
 
 api = Namespace("notifications", description="Notification Settings")
 
@@ -18,7 +17,7 @@ class NotificationPreferencesResource(Resource):
     @require_auth()
     def get(self):
         """Get user's notification preferences"""
-        from app.models import User, NotificationSettings
+        from app.models import User, NotificationSettings, db
         
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
@@ -43,7 +42,7 @@ class NotificationPreferencesResource(Resource):
     @api.expect(NotificationPreferences)
     def put(self):
         """Update user's notification preferences"""
-        from app.models import User, NotificationSettings
+        from app.models import User, NotificationSettings, db
         
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
