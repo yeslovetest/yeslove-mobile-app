@@ -59,7 +59,11 @@ class S3Storage:
             self.s3.put_object(**params)
             
             if is_public:
-                return f"https://{self.bucket}.s3.amazonaws.com/{key}"
+                cloudfront_domain = os.getenv('CLOUDFRONT_DOMAIN')
+                if cloudfront_domain:
+                    return f"https://{cloudfront_domain}/{key}"
+                else:
+                    return f"https://{self.bucket}.s3.amazonaws.com/{key}"
             else:
                 return key  # Return key for private files
         except Exception as e:
