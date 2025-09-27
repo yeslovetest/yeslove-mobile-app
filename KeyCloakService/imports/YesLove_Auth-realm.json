@@ -32,7 +32,7 @@
   "registrationAllowed" : false,
   "registrationEmailAsUsername" : false,
   "rememberMe" : false,
-  "verifyEmail" : false,
+  "verifyEmail" : true,
   "loginWithEmailAllowed" : true,
   "duplicateEmailsAllowed" : false,
   "resetPasswordAllowed" : false,
@@ -1471,7 +1471,14 @@
     "xXSSProtection" : "1; mode=block",
     "strictTransportSecurity" : "max-age=31536000; includeSubDomains"
   },
-  "smtpServer" : { },
+  "smtpServer" : {
+    "host" : "smtp.gmail.com",
+    "port" : "587",
+    "from" : "authyeslove@gmail.com",
+    "auth" : "true",
+    "user" : "authyeslove@gmail.com",
+    "password" : "jrgd lhpv lxxs whxd"
+   },
   "eventsEnabled" : false,
   "eventsListeners" : [ "jboss-logging" ],
   "enabledEventTypes" : [ ],

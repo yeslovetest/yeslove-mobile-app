@@ -16,7 +16,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose }) => {
     const dispatch = useAppDispatch()
 
 
-       const logOut = async () => {
+    const logOut = async () => {
         try {
             const refreshToken = await TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage();
             dispatch(logoutAction(refreshToken || ''));

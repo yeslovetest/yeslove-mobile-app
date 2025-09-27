@@ -1,8 +1,11 @@
 from flask import request
 from flask_restx import Namespace, Resource
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
 from app.utils import require_auth
 from datetime import datetime
+
+# create a logger instance 
+logger = setup_logger()
 
 api = Namespace("blog", description="API Endpoints")
 

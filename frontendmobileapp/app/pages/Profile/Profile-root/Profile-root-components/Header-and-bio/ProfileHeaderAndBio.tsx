@@ -24,10 +24,7 @@ const ProfileHeaderAndBio = () => {
       });
   }, [tabStack]));
 
-  useFocusEffect(React.useCallback(() => {
-    dispatch(getEmailNotificationSettings());
-    dispatch(getProfileVisibilitySettings());
-  }, []));
+ 
 
 
 

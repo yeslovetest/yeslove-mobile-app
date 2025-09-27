@@ -21,12 +21,14 @@ import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndR
 import NotificationsRoot from "./pages/Notifications/Notifications-root/NotificationsRoot";
 import SettingsPage from "./pages/Profile/Settings/SettingsPage";
 import General from "./pages/Profile/Settings/General/General";
-import Email from "./pages/Profile/Settings/Email/Email";
-import ProfileVisibility from "./pages/Profile/Settings/Profile-visibility/ProfileVisibility";
 import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
-import MessagesRoot from "./pages/Notifications/Messages/Messages-root/MessagesRoot";
-import Conversation from "./pages/Notifications/Messages/Conversation/Conversation";
+import MessagesRoot from "./pages/Home/Messages/Messages-root/MessagesRoot";
+import Conversation from "./pages/Home/Messages/Conversation/Conversation";
 import ChatSection from "./pages/Notifications/ChatSection";
+import EditProfileInformation from "./pages/Profile/Edit-profile-information/EditProfileInformation";
+import ProfileInformation from "./pages/Profile/Profile-information/ProfileInformation";
+import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
+import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -65,11 +67,13 @@ const App = () => {
               EVENTS: <EventsRoot></EventsRoot>,
               PROFILE: <ProfileRoot></ProfileRoot>,
               SETTINGS: <SettingsPage></SettingsPage>,
+              EDIT_PROFILE_INFORMATION: <EditProfileInformation></EditProfileInformation>,
+              PROFILE_INFORMATION: <ProfileInformation></ProfileInformation>,
 
               /*settings folders pages */
                  GENERAL: <General></General>,
-                 EMAIL: <Email></Email>,
-                 PROFILE_VISIBILITY: <ProfileVisibility></ProfileVisibility>,
+                 EMAIL: <EmailNtfnSettings></EmailNtfnSettings>,
+                 PROFILE_VISIBILITY: <ProfileVisibilitySettings></ProfileVisibilitySettings>,
                  EXPORT_DATA: <ExportData></ExportData>,
 
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,

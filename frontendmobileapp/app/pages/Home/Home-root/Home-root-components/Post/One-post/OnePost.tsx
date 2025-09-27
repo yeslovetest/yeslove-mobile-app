@@ -18,43 +18,42 @@ export interface Props {
 
 const OnePost = (props: Props) => {
     const dispatch = useAppDispatch();
-    
+
     const [expanded, setExpanded] = useState(false);
     const [reactionType, setReactionType] = useState(props.post.current_user_reaction ?? 'default');
-    const [popUpState, setPopUpState] = useState('hidden'); 
+    const [popUpState, setPopUpState] = useState('hidden');
     const [followMenu, setFollowMenu] = useState('hidden');
     const currentUserId = useAppSelector(state => state.user.id);
-    
 
-    const changeReaction= (reaction: string) => {
+
+    const changeReaction = (reaction: string) => {
         // runs when a user selects a reaction from the pop up
         if (reaction === 'reverseReaction' && reactionType === 'default'){
             dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: 'like'}));
-            setReactionType('like');
-            
+            setReactionType('like'); 
         }
-        else if (reaction === 'reverseReaction' && reactionType !== 'default'){
-            dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: reactionType}));
+        else if (reaction === 'reverseReaction' && reactionType !== 'default') {
+            dispatch(postReactionToPost({ postId: props.post.id ?? 0, reactionType: reactionType }));
             setReactionType('default');
-            
+
         }
         else if (reactionType !== reaction) {
-            dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: reaction}));
+            dispatch(postReactionToPost({ postId: props.post.id ?? 0, reactionType: reaction }));
             setReactionType(reaction);
             setPopUpState('hidden')
-          
+
         }
         
         else  {
             dispatch(postReactionToPost({postId: props.post.id ?? 0, reactionType: reactionType}));
             setReactionType('default');
             setPopUpState('hidden');
-        }   
-    }       
+        }
+    }
 
 
     const displayReactions = () => {
-       setPopUpState('visible')
+        setPopUpState('visible')
     };
 
     const CHAR_LIMIT = 200;
@@ -65,31 +64,37 @@ const OnePost = (props: Props) => {
     };
 
     const openProfile = () => {
-        dispatch(openTabOnTopAction({type: TabType.PROFILE, data: {"userId": props.post.author_id}}))
+        dispatch(openTabOnTopAction({ type: TabType.PROFILE, data: { "userId": props.post.author_id } }))
     }
-    
+
     const displayIndividualPost = (tab: string) => {
-        dispatch(retrievePostReactions({postId: props.post.id ?? 0}));
-        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: props.post}));
-        dispatch(setPostReactionTab(tab))   
+        dispatch(retrievePostReactions({ postId: props.post.id ?? 0 }));
+        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: props.post }));
+        dispatch(setPostReactionTab(tab))
     }
 
 
     const sendFollowReq = (action: string) => {
         // runs when a user clicks 'follow' or 'unfollow' from the pop up
-        if (action === 'basic'){
-            dispatch(SendFollowUser({keycloakId: props.post.author_id ?? '', 
-                action: 'follow', type: 'basic'}));
-            setFollowMenu('hidden'); 
+        if (action === 'basic') {
+            dispatch(SendFollowUser({
+                keycloakId: props.post.author_id ?? '',
+                action: 'follow', type: 'basic'
+            }));
+            setFollowMenu('hidden');
         }
-        else if (action === 'friend'){
-            dispatch(SendFollowUser({keycloakId: props.post.author_id ?? '', 
-                action: 'follow', type: 'friend'}));
-            setFollowMenu('hidden');  
+        else if (action === 'friend') {
+            dispatch(SendFollowUser({
+                keycloakId: props.post.author_id ?? '',
+                action: 'follow', type: 'friend'
+            }));
+            setFollowMenu('hidden');
         }
         else if (action === 'unfollow') {
-            dispatch(SendFollowUser({keycloakId: props.post.author_id ?? '', 
-                action: 'unfollow', type: 'unfollow'}));
+            dispatch(SendFollowUser({
+                keycloakId: props.post.author_id ?? '',
+                action: 'unfollow', type: 'unfollow'
+            }));
             setFollowMenu('hidden');
         }
     }
@@ -105,83 +110,94 @@ const OnePost = (props: Props) => {
                         </TouchableOpacity>
                         <Text style={styles.timePosted}>{props.post.timestamp ? dayjs(props.post.timestamp).format('MMM D, YYYY h:mm A') : 'Unknown date'}</Text>
                     </View>
-                </View>  
+                </View>
                 {props.post.author_id !== currentUserId && (
                     <View style={styles.followUser}>
                         <TouchableOpacity onPress={() => setFollowMenu('visible')}>
-                            <Text style={styles.followUserText}>{props?.follow? 'following' : 'follow'}</Text>
+                            {props?.follow ? (
+                                <View style={styles.viewProfile}>
+                                    <Text style={styles.buttonText}>Following</Text>
+                                    <AntDesign
+                                        name="check"
+                                        size={16}
+                                        color="white"
+                                        style={{ marginLeft: 5 }}
+                                    />
+                                </View>
+                            ) : (
+                                <Text style={styles.followUserText}>Follow</Text>
+                            )}
                         </TouchableOpacity>
-                        <View style={{...styles.reactionPopUp, ...styles.followMenuPopUp, visibility: followMenu}}
+
+
+                        <View style={{ ...styles.reactionPopUp, ...styles.followMenuPopUp, visibility: followMenu }}
                             onPointerLeave={() => setFollowMenu('hidden')}>
-                            {(props?.follow === undefined) && 
-                            (
-                                <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('basic')} >
-                                    <Text style={styles.followMenuPopUpText}>follow</Text>
-                                </TouchableOpacity>
-                            )}
-                            {(props?.follow?.[1] !== 'friend') && 
-                            (
-                                <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('friend')} >
-                                    <Text style={styles.followMenuPopUpText}>follow as a friend</Text>
-                                </TouchableOpacity>
-                            )}
-                            {(props?.follow !== undefined) && 
-                            (
-                                <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('unfollow')} >
-                                    <Text style={styles.followMenuPopUpText}>unfollow</Text>
-                                </TouchableOpacity>
-                            )}  
+                            {(props?.follow === undefined) &&
+                                (
+                                    <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('basic')} >
+                                        <Text style={styles.followMenuPopUpText}>Follow</Text>
+                                    </TouchableOpacity>
+                                )}
+                            {(props?.follow?.[1] !== 'friend') &&
+                                (
+                                    <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('friend')} >
+                                        <Text style={styles.followMenuPopUpText}>follow as a friend</Text>
+                                    </TouchableOpacity>
+                                )}
+                            {(props?.follow !== undefined) &&
+                                (
+                                    <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('unfollow')} >
+                                        <Text style={styles.followMenuPopUpText}>Unfollow</Text>
+                                    </TouchableOpacity>
+                                )}
                         </View>
                     </View>
-                )}  
-                
+                )}
+
             </View>
             <Text style={styles.postContent}>
-            {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
+                {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
             </Text>
 
             <View style={styles.seeLessAndLikeContainer} onPointerLeave={() => setPopUpState('hidden')}>
-                <View style={{...styles.likeButtonContainer, backgroundColor: 'white'}} >
-                    
-                    <View style={{...styles.reactionPopUp, visibility: popUpState}}
-                          onPointerLeave={() => setPopUpState('hidden')}>
+                <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >
+
+                    <View style={{ ...styles.reactionPopUp, visibility: popUpState }}
+                        onPointerLeave={() => setPopUpState('hidden')}>
                         <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('like')} >
                             <Ionicons name="thumbs-up-sharp" size={24} color='blue' />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('love')} >
-                            <AntDesign  name="heart" size={24} color="red" />
+                            <AntDesign name="heart" size={24} color="red" />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('laugh')} >
-                            <FontAwesome6   name="laugh" size={24} color="black" />
+                            <FontAwesome6 name="laugh" size={24} color="black" />
                         </TouchableOpacity>
                     </View>
 
-                    
+        <View style={styles.likeAndCommentContainer}>
                     <TouchableOpacity style={[styles.likeIcon, styles.reactionIcon]} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
-                        {(reactionType === 'default') && 
-                            (<Ionicons   name="thumbs-up-outline" size={24} color='black' />)
+                        {(reactionType === 'default') &&
+                            (<Ionicons name="thumbs-up-outline" size={24} style={styles.likeIcon} />)
                         }
-                        {reactionType === 'like' && 
+                        {reactionType === 'like' &&
                             (<Ionicons name="thumbs-up-sharp" size={24} color='blue' />)
                         }
-                        {reactionType === 'love' && 
-                            (<AntDesign  name="heart" size={24} color="red" />)
+                        {reactionType === 'love' &&
+                            (<AntDesign name="heart" size={24} color="red" />)
                         }
-                        {reactionType === 'laugh' && 
-                            (<FontAwesome6  name="laugh" size={24} color="black" />)
+                        {reactionType === 'laugh' &&
+                            (<FontAwesome6 name="laugh" size={24} color="black" />)
                         }
-                          
-                        
+
+
                     </TouchableOpacity>
-                   <View  >
-                        <Pressable style={{...styles.commentIcon, flexDirection: 'row'}} onPress={() => displayIndividualPost('reactions')}>
-                            <Ionicons name="thumbs-up-outline" size={24} color="gray" />
-                            <FontAwesome6  name="laugh" size={24} color="gray" />
-                        </Pressable> 
-                   </View> 
                     <Text>{props.post.likes}</Text>
-                    <FontAwesome6 onPress={() => displayIndividualPost('comments')} style={styles.commentIcon} name="comment-dots" size={24} color="gray" />
-                    <Text>{props.post.comments} </Text>
+                    </View>
+                    <View style={styles.likeAndCommentContainer}>
+                    <FontAwesome6 onPress={() => displayIndividualPost('comments')} name="comment-dots" size={24} style={styles.likeIcon} />
+                    <Text style={styles.numberOfLikesAndComments}>{props.post.comments} </Text>
+                    </View>
                 </View>
                 {isLongText && (
                     <TouchableOpacity onPress={handleToggle}>

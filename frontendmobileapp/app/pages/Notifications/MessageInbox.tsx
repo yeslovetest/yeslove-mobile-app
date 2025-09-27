@@ -1,6 +1,6 @@
 import { TouchableOpacity, View, Text, Image } from "react-native"
 import { useAppDispatch } from "@/app/store/hooks";
-import { fetchChatMessages } from "@/app/store/chatSlice";
+import { fetchChatMessages } from "@/app/store/Chat/chatSlice";
 import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSlice";
 import styles from "./MessageInboxStyles"
 export interface Friend {

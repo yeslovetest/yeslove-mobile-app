@@ -1,11 +1,11 @@
 from flask import request
 from flask_restx import Namespace, Resource, reqparse
 
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
 
 from app.utils import require_auth
 
-
+logger = setup_logger()
 
 api = Namespace("feed", description="API Endpoints")
 
@@ -13,7 +13,7 @@ api = Namespace("feed", description="API Endpoints")
 class Feed(Resource):
     from .feed_models import FeedQuery, FeedResponse
     @require_auth()
-    @api.expect(FeedQuery)
+    @api.param("feed_type", "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'")
     @api.response(code=200, description="", model=FeedResponse)
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
@@ -34,7 +34,8 @@ class Feed(Resource):
             query = Post.query.join(Like).filter(Like.user_id == user.id).order_by(Post.timestamp.desc())
         elif feed_type == "friends":
             friend_ids = [follow.followed_id for follow in user.following]
-            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc())
+            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
+            
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
         else:
@@ -120,6 +121,8 @@ class CreatePost(Resource):
  
 @api.route("/post/<int:post_id>/reactions")
 class GetReactions(Resource):
+    from .feed_models import GetReactionsResponse
+    @api.response(code=200, description="List of reactions", model=GetReactionsResponse)
     def get(self, post_id):
         """Fetch all reactions for a post."""
         from app.models import Reaction
@@ -134,11 +137,13 @@ class GetReactions(Resource):
                 }
             for reaction in reactions]
             }, 200
+    
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
-    from .feed_models import ReactionRequest
+    from .feed_models import ReactionRequest, ReactToPostResponse
     @require_auth()
     @api.expect(ReactionRequest)  # ✅ Attach model
+    @api.response(code=200, description="success", model=ReactToPostResponse)
     def post(self, post_id):
         """Add or update a reaction to a post (like, love, laugh, etc.)."""
         from app.models import User, Post, Reaction, db
@@ -232,6 +237,8 @@ class AddComment(Resource):
 
 @api.route("/post/<int:post_id>/comments")
 class GetComments(Resource):
+    from .feed_models import GetCommentResponse
+    @api.response(code=200, description="List of comments", model=GetCommentResponse)
     def get(self, post_id):
         """Fetch all comments for a post."""
         from app.models import Comment
@@ -324,9 +331,10 @@ class FollowUser(Resource):
 
 @api.route("/followers/<string:keycloak_id>")
 class GetFollowers(Resource):
-    from .feed_models import GetFollowersRequest
+    from .feed_models import GetFollowersRequest, GetFollowersResponse
     @require_auth()
     @api.expect(GetFollowersRequest)  # ✅ Attach model
+    @api.response(code=200, description="List of followers", model=GetFollowersResponse)
     def get(self, keycloak_id):
         """Fetch all followers of a user."""
         from app.models import Follow, User
@@ -341,9 +349,10 @@ class GetFollowers(Resource):
 
 @api.route("/following/<string:keycloak_id>")
 class GetFollowing(Resource):
-    from .feed_models import GetFollowingRequest
+    from .feed_models import GetFollowingRequest, GetFollowingResponse
     @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
+    @api.response(code=200, description="List of following users", model=GetFollowingResponse)
     def get(self, keycloak_id):
         """Fetch all users the current user is following."""
         from app.models import Follow, User

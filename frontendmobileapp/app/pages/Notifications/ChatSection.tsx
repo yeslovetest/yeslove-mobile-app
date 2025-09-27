@@ -3,7 +3,7 @@ import styles from "./ChatSectionStyles";
 import React, { useState } from 'react';
 import { Friend } from './MessageInbox';
 import dayjs from 'dayjs';
-import { sendChatMessage } from '@/app/store/chatSlice';
+import { sendChatMessage } from '@/app/store/Chat/chatSlice';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 const image = {
   uri: "https://images.unsplash.com/vector-1741103791953-12eca7b8e3c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAwfHxibHVlJTIwYWJzdHJhY3QlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D"

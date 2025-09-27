@@ -1,5 +1,6 @@
 import uuid
 from flask_sqlalchemy import SQLAlchemy
+from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app import db  # ✅ Import the same db instance
 
@@ -176,6 +177,7 @@ class Chat(db.Model):
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     message = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    opened = db.Column(db.Boolean, default=False)
     sender = db.relationship("User", foreign_keys=[sender_id])
     receiver = db.relationship("User", foreign_keys=[receiver_id])
 
@@ -288,8 +290,19 @@ class DeviceToken(db.Model):
     token = db.Column(db.String(255), unique=True, nullable=False)
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-<<<<<<< HEAD
-=======
+
+
+# ------------------------- Create Vector DB Model -------------------------
+
+class Document(db.Model):
+    __tablename__ = "documents"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    source      = db.Column(db.Text, nullable=False)
+    chunk_index = db.Column(db.Integer, nullable=False)
+    content     = db.Column(db.Text, nullable=False)
+    embedding   = db.Column(Vector(1536), nullable=False)
+    created_at  = db.Column(db.DateTime, default=datetime.now)
 
     
 def generate_uuid():

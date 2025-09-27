@@ -42,15 +42,23 @@ UserQueryResponse = api.model("UserQueryResponse", {
         "keycloak_id": fields.String(description="User's Keycloak ID")
     })
 
-ProfileVisibilitySettings = api.model("ProfileVisibilitySettings", {
+ProfileVisibilitySetting = api.model("ProfileVisibilitySetting", {
         "setting_id": fields.String(required=True, description="Unique ID for the setting"),
         "value": fields.String(required=True, description="Visibility value (visible/hidden)"),
         "category": fields.String(required=True, description="Category: 'Contact' or 'Education And Other Information'")
     })
 
-EmailNotificationSettings = api.model("EmailNotificationSettings", {
+ProfileVisibilitySettings = api.model("ProfileVisibilitySettings", {
+        "settings": fields.List(fields.Nested(ProfileVisibilitySetting), description="List of profile visibility settings")
+    })
+
+EmailNotificationSetting = api.model("EmailNotificationSetting", {
         "setting_id": fields.String(required=True, description="Unique ID for the setting"),
         "value": fields.Boolean(required=True, description="Notification enabled (true/false)")
+    })
+
+EmailNotificationSettings = api.model("EmailNotificationSettings", {
+        "settings": fields.List(fields.Nested(EmailNotificationSetting), description="List of email notification settings")
     })
 
 

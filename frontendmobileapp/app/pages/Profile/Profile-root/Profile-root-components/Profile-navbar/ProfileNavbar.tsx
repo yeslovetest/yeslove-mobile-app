@@ -4,7 +4,7 @@ import styles from './ProfileNavbarStyles';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { setActiveTabAction } from '@/app/store/Profile-store/profileSlice';
 
-const navBarItems = ["Timeline", "About", "Media", "Invitations"]
+const navBarItems = ["Timeline", "Media"]
 
 
 

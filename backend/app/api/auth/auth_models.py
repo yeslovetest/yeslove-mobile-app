@@ -28,6 +28,9 @@ SignupRequest = api.model("SignupRequest", {
     "consent_license_data" : fields.String(description="Consent to use and display license data")
 })
 
+SignupResponse = api.model("SignupResponse", {
+    "message": fields.String(description="Response message indicating success or failure of signup")})
+
 LoginRequest = api.model("LoginRequest", {
         "username": fields.String(required=True, description="User's Keycloak username"),
         "password": fields.String(required=True, description="User's Keycloak password"),
