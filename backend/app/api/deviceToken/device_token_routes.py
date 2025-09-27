@@ -30,9 +30,11 @@ class RegisterDeviceToken(Resource):
         db.session.commit()
         return {"message": "Device token registered"}, 200
 
+
 @api.route("/my-device-tokens")
 class ListDeviceTokens(Resource):
     from .device_token_model import DeviceTokenListModel
+
     @require_auth()
     @api.marshal_with(DeviceTokenListModel)
     def get(self):
@@ -40,13 +42,25 @@ class ListDeviceTokens(Resource):
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
+
         tokens = DeviceToken.query.filter_by(user_id=user.id).all()
+
+        # Debug Logging
+        print(f"User ID: {user.id}")
+        print(f"Found {len(tokens)} tokens for user {user.id}")
+
         return {
             "device_tokens": [
-                {"id": t.id, "token": t.token, "platform": t.platform, "created_at": t.created_at.isoformat()}
+                {
+                    "id": t.id,
+                    "token": t.token,
+                    "platform": t.platform,
+                    "created_at": t.created_at.isoformat(),
+                }
                 for t in tokens
             ]
         }, 200
+
 
 @api.route("/delete-device-token/<int:token_id>")
 class DeleteDeviceToken(Resource):

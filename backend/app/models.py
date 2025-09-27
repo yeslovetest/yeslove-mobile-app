@@ -297,6 +297,15 @@ def generate_uuid():
 
 class Media(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
-    content = db.Column(db.LargeBinary, nullable=False)  # Store binary content
-    content_type = db.Column(db.String(50), nullable=False)  # e.g., 'image/jpeg', 'video/mp4'
+    content = db.Column(db.LargeBinary, nullable=True)  # Nullable if using S3
+    content_type = db.Column(db.String(50), nullable=False)
+    filename = db.Column(db.String(255))
+    file_size = db.Column(db.Integer)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    duration = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_public = db.Column(db.Boolean, default=True)
+    s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
 >>>>>>> 8da11a0b2088c9c65a359c262307b680226dddef
