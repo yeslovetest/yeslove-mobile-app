@@ -321,4 +321,4 @@ class Media(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
->>>>>>> 8da11a0b2088c9c65a359c262307b680226dddef
+
