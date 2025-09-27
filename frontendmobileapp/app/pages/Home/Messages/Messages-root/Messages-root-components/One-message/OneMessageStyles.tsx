@@ -6,12 +6,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        width: "100%",
+        width: "80%",
         paddingHorizontal: 10,
         height: 100,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
-        
+       
     },
 
     activeIndicator: {
@@ -28,12 +28,15 @@ const styles = StyleSheet.create({
         width: 70,
         height: 70,
         borderRadius: "50%",
-        marginRight: 10,
+        marginRight: 2,
+        borderWidth: 1,
     },
     messageContainer: {
-        width: "60%",
+        width: "70%",
         height: "80%",
-        justifyContent: "center"
+        justifyContent: "center",
+       
+
     },
     userUnopened: {
         fontSize: 18,

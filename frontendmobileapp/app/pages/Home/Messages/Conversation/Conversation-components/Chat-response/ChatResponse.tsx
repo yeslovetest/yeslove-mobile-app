@@ -5,13 +5,13 @@ import UserProfile from '../UserProfile/UserProfile';
 
 interface Props {
   text: string;
-  time: Date;
+  time: string;
 }
 
 const ChatResponse = ({ text, time }: Props) => {
-  const hhmm = time
+  /*const hhmm = time
     .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    .replace(/^0/, '');
+    .replace(/^0/, ''); */
 
   return (
     <View style={styles.chatResponseContainer}>
@@ -21,7 +21,7 @@ const ChatResponse = ({ text, time }: Props) => {
           <Text numberOfLines={3} ellipsizeMode="tail" style={styles.responseText}>
             {text}
           </Text>
-          <Text style={styles.timeSentResponse}>{hhmm}</Text>
+          <Text style={styles.timeSentResponse}>{time}</Text>
         </View>
       </View>
     </View>

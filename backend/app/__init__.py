@@ -17,12 +17,7 @@ from app.api.feed.feed_routes import api as feed_api
 from app.api.chat.chat_routes import api as chat_api
 
 from app.api.events.events_routes import api as events_api
-<<<<<<< Updated upstream
 from app.api.blog.blog_routes import api as blog_api
-
-=======
-from app.api.Blog.blog_routes import api as blog_api
->>>>>>> Stashed changes
 from app.api.deviceToken.device_token_routes import api as device_token_api
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
@@ -77,6 +72,16 @@ def create_app(config_class=DevelopmentConfig):
 
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
     
+    from sqlalchemy import event
+    from sqlalchemy.engine import Engine
+    import sqlite3
+    # ✅ Register least/greatest for SQLite
+    @event.listens_for(Engine, "connect")
+    def sqlite_add_functions(dbapi_connection, connection_record):
+        if isinstance(dbapi_connection, sqlite3.Connection):
+            dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
+            dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
+
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     with app.app_context():
         get_keycloak_public_keys()

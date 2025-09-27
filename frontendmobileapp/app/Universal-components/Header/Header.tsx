@@ -8,6 +8,7 @@ import PostModal from '@/app/pages/Home/Post-modal/PostModal';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import { fetchFriendList } from '@/app/store/Chat/chatSlice';
 
 export interface Props {
   mainTitle?: string;
@@ -15,7 +16,7 @@ export interface Props {
 }
 
 export default function Header(props: Props) {
-   const userId = useAppSelector(state => state.user.id);
+  const userId = useAppSelector(state => state.user.id);
   const tabStack = useAppSelector(state => state.navigation.tabStack);
   const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
   const dispatch = useAppDispatch();
@@ -31,14 +32,13 @@ export default function Header(props: Props) {
   }
 
   const openMessages = () => {
+    dispatch(fetchFriendList(userId || ''))
     dispatch(openTabOnTopAction({ type: TabType.MESSAGES,  data: { userId: userId }  }))
   }
-
 
   const returnToPreviousTab = () => {
     dispatch(goBackToPreviousTabAction());
   };
-
 
   return (
     <View style={styles.header}>
@@ -51,8 +51,6 @@ export default function Header(props: Props) {
           <View />
         </View>
       )}
-
-
 
 
       {!hasTabToGoBackTo && currentTab === TabType.HOME && (

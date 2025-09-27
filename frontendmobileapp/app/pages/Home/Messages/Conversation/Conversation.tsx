@@ -1,23 +1,51 @@
 import Header from '@/app/Universal-components/Header/Header';
-import React, { useState } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
 import ChatResponse from './Conversation-components/Chat-response/ChatResponse';
 import Message from './Conversation-components/Message/Message';
 import ConversationTextInput from './Conversation-components/Conversation-text-input/ConversationTextInput';
 import styles from './ConversationStyles';
+import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
+import { sendChatMessage, markChatOpened, setChatMessages, fetchFriendList } from '@/app/store/Chat/chatSlice';
+import { useFocusEffect } from '@react-navigation/native';
+import dayjs from 'dayjs';
 
 const Conversation = () => {
-  const [messages, setMessages] = useState([
-    { type: 'response', text: "Hi, how are you feeling today?", createdAt: new Date() },
-    { type: 'prompt', text: "I'm feeling a bit anxious.", createdAt: new Date() },
-    { type: 'response', text: "It's okay, take a deep breath. Let's do a short exercise.", createdAt: new Date() },
-  ]);
 
+  const dispatch = useAppDispatch();
+  const messages = useAppSelector(state => state.chat.messages ?? []);
+  const userName = useAppSelector(state => state.user.name ?? "");
+  const currentUserId = useAppSelector(state => state.user.id ?? "");
+  const otherUserId = useAppSelector(
+    (state) => state.navigation.tabStack.at(-1)?.data?.userId
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+
+      return () => {
+        // Runs when screen loses focus
+        dispatch(setChatMessages([]));  
+      };
+    }, [])
+  );
+  
+  
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+
+    // Only run if there’s a last message and it hasn’t been opened by the current user
+    if (lastMessage?.opened === false && lastMessage?.sender !== userName) {
+      dispatch(markChatOpened(otherUserId ?? ''));
+      dispatch(fetchFriendList(currentUserId ?? ''));  // Refresh friend list
+    }
+
+  // This effect will run once when messages become available
+  }, [messages.length]); 
+
+  
   const handleSend = (text: string) => {
-    setMessages(prev => [
-      ...prev,
-      { type: 'prompt', text, createdAt: new Date() }
-    ]);
+    dispatch(sendChatMessage({id: otherUserId, message: text}));
   };
 
   return (
@@ -28,19 +56,21 @@ const Conversation = () => {
     >
       <Header />
       <View style={styles.chatContainer}>
+       
         <FlatList
           data={messages}
           keyExtractor={(_, idx) => idx.toString()}
           renderItem={({ item }) =>
-            item.type === 'response' ? (
-              <ChatResponse text={item.text} time={item.createdAt} />
+            item?.sender !== userName ? (
+              <ChatResponse text={item?.content ?? ''} time={dayjs(item?.timestamp ?? '').format('MMM D, YYYY h:mm A')}/>
             ) : (
-              <Message prompt={item.text} time={item.createdAt} />
+              <Message prompt={item?.content ?? ''} time={dayjs(item?.timestamp ?? '').format('MMM D, YYYY h:mm A')} />
             )
           }
           contentContainerStyle={styles.contentContainer}
         />
-   <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
+       
+      <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
         <ConversationTextInput onSend={handleSend} />
         </View>
       </View>

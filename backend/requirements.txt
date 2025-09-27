@@ -36,18 +36,15 @@ prometheus-flask-exporter
 
 openai
 
-<<<<<<< Updated upstream
 # Vector DB requirements
 
 tiktoken
 
 pgvector
-=======
 neo4j
 
 redis
 
 celery
->>>>>>> Stashed changes
 
 psycopg2-binary

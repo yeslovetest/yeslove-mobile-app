@@ -11,7 +11,9 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   ChatApiFactory,
   GetMessagesResponse,
   BlogApiFactory,
-  GetBlogPostsResponse} from "@/generated-api";
+  GetBlogPostsResponse,
+  MarkChatOpenedResponse,
+  GetFriendsResponse} from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -30,7 +32,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    SendFollowUser
  } from "../Home-store/feedSlice";
 import { changeTabAction, TabType } from "../Navigation/navigationSlice";
-import { setChatMessages, fetchChatMessages, sendChatMessage } from "../Chat/chatSlice";
+import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList } from "../Chat/chatSlice";
 import { setBlogPosts, fetchBlogPosts } from "../Get-help-store/getHelpSlice";
 
 
@@ -110,6 +112,8 @@ function* handleLogout(action: PayloadAction<string>) {
     yield put(setEmailNotificationSettings([]));
     yield put(setProfileVisibilitySettings([]));
     yield put(setChatMessages([]));
+    yield put(setFriendList([]));
+
   } catch (error) {
     console.error('Logout Failed!', error);
   }
@@ -165,6 +169,21 @@ function* handlePostSendMessage(action: PayloadAction<{id: string, message: stri
   }catch (error) {
     console.error('failed to send message', error);  
   }
+}
+
+function* updateChatOpened(action: PayloadAction<string>){
+  try{
+    const response = ((yield call(ChatApiFactory().putMarkChatOpened, action.payload)) as AxiosResponse<MarkChatOpenedResponse>).data as MarkChatOpenedResponse;
+    console.log(response.message);
+  } catch (error) {
+    console.error('failed to mark chat opened', error);  
+  }
+  
+}
+
+function* handleGetFriendList(action: PayloadAction<string>){
+  const friends = ((yield call(ChatApiFactory().getGetFriends, action.payload, {'keycloak_id': action.payload})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
+  yield put(setFriendList(friends.friends ?? []));
 }
 
 /** 
@@ -291,6 +310,8 @@ function* appSaga() {
 /**Chat Api saga */
   yield takeEvery(fetchChatMessages.type, handleGetMessages);
   yield takeEvery(sendChatMessage.type, handlePostSendMessage);
+  yield takeEvery(markChatOpened.type, updateChatOpened);
+  yield takeEvery(fetchFriendList.type, handleGetFriendList);
 /**BlogPost APi saga */  
   yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
 /**Feed Api saga */

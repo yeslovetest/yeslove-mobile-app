@@ -4,13 +4,10 @@ import styles from './MessageStyles';
 
 interface Props {
     prompt: string;
-    time: Date;
+    time: string;
 }
 
 export default function Message({ prompt, time }: Props) {
-    const hhmm = time
-        .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        .replace(/^0/, '');
 
     return (
         <View style={styles.chatMessageContainer}>
@@ -19,7 +16,7 @@ export default function Message({ prompt, time }: Props) {
                     <Text numberOfLines={3} ellipsizeMode="tail" style={styles.messageText}>
                         {prompt}
                     </Text>
-                    <Text style={styles.timeSentMessage}>{hhmm}</Text>
+                    <Text style={styles.timeSentMessage}>{time}</Text>
                 </View>
             </View>
         </View>

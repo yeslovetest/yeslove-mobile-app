@@ -265,6 +265,12 @@ export interface Chat {
      */
     'content'?: string;
     /**
+     * Whether the message has been opened
+     * @type {boolean}
+     * @memberof Chat
+     */
+    'opened'?: boolean;
+    /**
      * Timestamp of the message ISO format
      * @type {string}
      * @memberof Chat
@@ -742,6 +748,49 @@ export interface Follower {
 /**
  * 
  * @export
+ * @interface FriendInfo
+ */
+export interface FriendInfo {
+    /**
+     * Keycloak ID of the friend
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'id'?: string;
+    /**
+     * Friend\'s username
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'username'?: string;
+    /**
+     * URL to profile picture
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'profile_pic'?: string;
+    /**
+     * Snippet of the last message
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'last_message'?: string;
+    /**
+     * Timestamp of last message (ISO 8601 format)
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'last_message_time'?: string;
+    /**
+     * True if last message is from friend and not opened, otherwise False
+     * @type {boolean}
+     * @memberof FriendInfo
+     */
+    'unread'?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface GetCommentResponse
  */
 export interface GetCommentResponse {
@@ -777,6 +826,32 @@ export interface GetFollowingResponse {
      * @memberof GetFollowingResponse
      */
     'following'?: Array<FollowedUser>;
+}
+/**
+ * 
+ * @export
+ * @interface GetFriendsRequest
+ */
+export interface GetFriendsRequest {
+    /**
+     * The Keycloak ID of the current user
+     * @type {string}
+     * @memberof GetFriendsRequest
+     */
+    'keycloak_id': string;
+}
+/**
+ * 
+ * @export
+ * @interface GetFriendsResponse
+ */
+export interface GetFriendsResponse {
+    /**
+     * List of friends with chat preview
+     * @type {Array<FriendInfo>}
+     * @memberof GetFriendsResponse
+     */
+    'friends'?: Array<FriendInfo>;
 }
 /**
  * 
@@ -848,6 +923,19 @@ export interface LogoutRequest {
      * @memberof LogoutRequest
      */
     'refresh_token'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface MarkChatOpenedResponse
+ */
+export interface MarkChatOpenedResponse {
+    /**
+     * Confirmation message with number of messages opened
+     * @type {string}
+     * @memberof MarkChatOpenedResponse
+     */
+    'message'?: string;
 }
 /**
  * 
@@ -2126,6 +2214,46 @@ export class BlogApi extends BaseAPI {
 export const ChatApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all friends of the current user along with
+         * @param {string} keycloakId 
+         * @param {GetFriendsRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriends: async (keycloakId: string, payload: GetFriendsRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'keycloakId' is not null or undefined
+            assertParamExists('getGetFriends', 'keycloakId', keycloakId)
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('getGetFriends', 'payload', payload)
+            const localVarPath = `/api/chat/friends/{keycloak_id}`
+                .replace(`{${"keycloak_id"}}`, encodeURIComponent(String(keycloakId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @summary Fetch chat messages between two users
          * @param {string} receiverId 
@@ -2201,6 +2329,40 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+         * @summary Mark all messages in the chat as opened
+         * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putMarkChatOpened: async (receiverId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'receiverId' is not null or undefined
+            assertParamExists('putMarkChatOpened', 'receiverId', receiverId)
+            const localVarPath = `/api/chat/mark_chat_opened/{receiver_id}`
+                .replace(`{${"receiver_id"}}`, encodeURIComponent(String(receiverId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -2211,6 +2373,21 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
 export const ChatApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ChatApiAxiosParamCreator(configuration)
     return {
+        /**
+         * This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - 
+         * Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all friends of the current user along with
+         * @param {string} keycloakId 
+         * @param {GetFriendsRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetFriends(keycloakId: string, payload: GetFriendsRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFriendsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFriends(keycloakId, payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetFriends']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
         /**
          * 
          * @summary Fetch chat messages between two users
@@ -2238,6 +2415,19 @@ export const ChatApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['ChatApi.postSendMessage']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+         * @summary Mark all messages in the chat as opened
+         * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async putMarkChatOpened(receiverId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MarkChatOpenedResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.putMarkChatOpened(receiverId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatApi.putMarkChatOpened']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -2248,6 +2438,17 @@ export const ChatApiFp = function(configuration?: Configuration) {
 export const ChatApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = ChatApiFp(configuration)
     return {
+        /**
+         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all friends of the current user along with
+         * @param {string} keycloakId 
+         * @param {GetFriendsRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriends(keycloakId: string, payload: GetFriendsRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetFriendsResponse> {
+            return localVarFp.getGetFriends(keycloakId, payload, options).then((request) => request(axios, basePath));
+        },
         /**
          * 
          * @summary Fetch chat messages between two users
@@ -2269,6 +2470,16 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
         postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postSendMessage(payload, options).then((request) => request(axios, basePath));
         },
+        /**
+         * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+         * @summary Mark all messages in the chat as opened
+         * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putMarkChatOpened(receiverId: string, options?: RawAxiosRequestConfig): AxiosPromise<MarkChatOpenedResponse> {
+            return localVarFp.putMarkChatOpened(receiverId, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -2279,6 +2490,19 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
  * @extends {BaseAPI}
  */
 export class ChatApi extends BaseAPI {
+    /**
+     * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+     * @summary Fetch all friends of the current user along with
+     * @param {string} keycloakId 
+     * @param {GetFriendsRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatApi
+     */
+    public getGetFriends(keycloakId: string, payload: GetFriendsRequest, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).getGetFriends(keycloakId, payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @summary Fetch chat messages between two users
@@ -2302,6 +2526,18 @@ export class ChatApi extends BaseAPI {
      */
     public postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig) {
         return ChatApiFp(this.configuration).postSendMessage(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+     * @summary Mark all messages in the chat as opened
+     * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatApi
+     */
+    public putMarkChatOpened(receiverId: string, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).putMarkChatOpened(receiverId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

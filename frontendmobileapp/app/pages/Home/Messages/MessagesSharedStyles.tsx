@@ -4,10 +4,10 @@ import { StyleSheet } from "react-native";
 const messagesSharedStyles = StyleSheet.create({
     container: {
         flex: 1,
-        width: "100%"
+        width: "95%",
     },
     contentContainer: {
-        justifyContent: "flex-start",
+        justifyContent: "center",
         alignItems: "center",
     },
     messagesText: {
@@ -23,10 +23,11 @@ const messagesSharedStyles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         marginLeft: 15,
-        width: "100%",
+        width: "95%",
         paddingVertical: 15,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
+        
     },
 
     filterButton: {

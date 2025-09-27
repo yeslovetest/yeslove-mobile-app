@@ -314,7 +314,9 @@ class Logout(Resource):
     @api.expect(LogoutRequest)  # ✅ Attach model
     def post(self):
         """Logout user from Keycloak."""
-        token = request.headers.get("Authorization").split(" ")[1]
+        auth_header = request.headers.get("Authorization", "")
+        # To allow for two different formats (Bearer <Token> and <Token>)
+        token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
         keycloak_logout_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/protocol/openid-connect/logout"
 
         response = requests.post(
@@ -356,9 +358,9 @@ class RefreshToken(Resource):
 
         logger.info(f"Token refresh requested")
         if response.status_code == 200:
-            logger.error(f"Token refresh failed : {response.status_code}, {response.text}")
             return response.json(), 200
         
+        logger.error(f"Token refresh failed : {response.status_code}, {response.text}")
         return {"message": "Failed to refresh token"}, response.status_code
     
     

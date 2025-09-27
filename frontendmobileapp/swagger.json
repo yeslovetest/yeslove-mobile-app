@@ -227,6 +227,45 @@
         ]
       }
     },
+    "/api/chat/friends/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "404": {
+            "description": "User not found"
+          },
+          "200": {
+            "description": "List of friends with last message",
+            "schema": {
+              "$ref": "#/definitions/GetFriendsResponse"
+            }
+          }
+        },
+        "summary": "Fetch all friends of the current user along with",
+        "description": "their last message and timestamp.\n\nThis endpoint returns a list of users where the follow type is \"friend\".\nEach entry includes:\n- Friend’s username and profile picture\n- Last message exchanged\n- Timestamp of the last message",
+        "operationId": "get_get_friends",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GetFriendsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
     "/api/chat/get_messages/{receiver_id}": {
       "parameters": [
         {
@@ -255,6 +294,36 @@
             "schema": {
               "$ref": "#/definitions/GetMessagesRequest"
             }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/chat/mark_chat_opened/{receiver_id}": {
+      "put": {
+        "responses": {
+          "404": {
+            "description": "User not found"
+          },
+          "200": {
+            "description": "Messages successfully marked as opened",
+            "schema": {
+              "$ref": "#/definitions/MarkChatOpenedResponse"
+            }
+          }
+        },
+        "summary": "Mark all messages in the chat as opened",
+        "description": "Mark all unread messages in a chat as opened when the current user opens the conversation.\nWhen the authenticated user opens the chat with another user,\nall messages sent by the other user to them that are currently\nunopened will be marked as opened.",
+        "operationId": "put_mark_chat_opened",
+        "parameters": [
+          {
+            "name": "receiver_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The Keycloak ID of the user on the other end of the chat"
           }
         ],
         "tags": [
@@ -429,27 +498,6 @@
       }
     },
     "/api/events/event_attendees": {
-      "post": {
-        "responses": {
-          "201": {
-            "description": "Success"
-          }
-        },
-        "operationId": "post_event_attendees",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/AddAttendeeRequest"
-            }
-          }
-        ],
-        "tags": [
-          "events"
-        ]
-      },
       "get": {
         "responses": {
           "200": {
@@ -468,6 +516,27 @@
             "in": "body",
             "schema": {
               "$ref": "#/definitions/AttendingQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "operationId": "post_event_attendees",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddAttendeeRequest"
             }
           }
         ],
@@ -528,28 +597,6 @@
       }
     },
     "/api/events/event_info": {
-      "post": {
-        "responses": {
-          "201": {
-            "description": "Success"
-          }
-        },
-        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.",
-        "operationId": "post_event_info",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/AddEventRequest"
-            }
-          }
-        ],
-        "tags": [
-          "events"
-        ]
-      },
       "get": {
         "responses": {
           "200": {
@@ -568,6 +615,28 @@
             "in": "body",
             "schema": {
               "$ref": "#/definitions/EventInfoQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.",
+        "operationId": "post_event_info",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddEventRequest"
             }
           }
         ],
@@ -937,6 +1006,21 @@
       }
     },
     "/api/profile/email_notifications": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EmailNotificationSettings"
+            }
+          }
+        },
+        "summary": "Get email notification settings",
+        "operationId": "get_email_notifications",
+        "tags": [
+          "profile"
+        ]
+      },
       "post": {
         "responses": {
           "200": {
@@ -955,21 +1039,6 @@
             }
           }
         ],
-        "tags": [
-          "profile"
-        ]
-      },
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/EmailNotificationSettings"
-            }
-          }
-        },
-        "summary": "Get email notification settings",
-        "operationId": "get_email_notifications",
         "tags": [
           "profile"
         ]
@@ -1001,6 +1070,21 @@
       }
     },
     "/api/profile/profile_visibility": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProfileVisibilitySettings"
+            }
+          }
+        },
+        "summary": "Get profile visibility settings",
+        "operationId": "get_profile_visibility",
+        "tags": [
+          "profile"
+        ]
+      },
       "post": {
         "responses": {
           "200": {
@@ -1019,21 +1103,6 @@
             }
           }
         ],
-        "tags": [
-          "profile"
-        ]
-      },
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ProfileVisibilitySettings"
-            }
-          }
-        },
-        "summary": "Get profile visibility settings",
-        "operationId": "get_profile_visibility",
         "tags": [
           "profile"
         ]
@@ -1839,9 +1908,76 @@
           "type": "string",
           "description": "Message content"
         },
+        "opened": {
+          "type": "boolean",
+          "description": "Whether the message has been opened"
+        },
         "timestamp": {
           "type": "string",
           "description": "Timestamp of the message ISO format"
+        }
+      },
+      "type": "object"
+    },
+    "MarkChatOpenedResponse": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Confirmation message with number of messages opened",
+          "example": "3 messages marked as opened"
+        }
+      },
+      "type": "object"
+    },
+    "GetFriendsRequest": {
+      "required": [
+        "keycloak_id"
+      ],
+      "properties": {
+        "keycloak_id": {
+          "type": "string",
+          "description": "The Keycloak ID of the current user"
+        }
+      },
+      "type": "object"
+    },
+    "GetFriendsResponse": {
+      "properties": {
+        "friends": {
+          "type": "array",
+          "description": "List of friends with chat preview",
+          "items": {
+            "$ref": "#/definitions/FriendInfo"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "FriendInfo": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Keycloak ID of the friend"
+        },
+        "username": {
+          "type": "string",
+          "description": "Friend's username"
+        },
+        "profile_pic": {
+          "type": "string",
+          "description": "URL to profile picture"
+        },
+        "last_message": {
+          "type": "string",
+          "description": "Snippet of the last message"
+        },
+        "last_message_time": {
+          "type": "string",
+          "description": "Timestamp of last message (ISO 8601 format)"
+        },
+        "unread": {
+          "type": "boolean",
+          "description": "True if last message is from friend and not opened, otherwise False"
         }
       },
       "type": "object"
@@ -1891,6 +2027,29 @@
         "per_page": {
           "type": "integer",
           "description": "number of events per page"
+        }
+      },
+      "type": "object"
+    },
+    "EventInfoQuery": {
+      "required": [
+        "event_ids"
+      ],
+      "properties": {
+        "event_ids": {
+          "type": "array",
+          "description": "takes list of Ids for event to be fetched",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
         }
       },
       "type": "object"
@@ -1947,29 +2106,6 @@
         "post_code": {
           "type": "string",
           "description": "post code"
-        }
-      },
-      "type": "object"
-    },
-    "EventInfoQuery": {
-      "required": [
-        "event_ids"
-      ],
-      "properties": {
-        "event_ids": {
-          "type": "array",
-          "description": "takes list of Ids for event to be fetched",
-          "items": {
-            "type": "integer"
-          }
-        },
-        "page": {
-          "type": "integer",
-          "description": "Page Number, default = 1"
-        },
-        "per_page": {
-          "type": "integer",
-          "description": "Number of Events per page, default = 20"
         }
       },
       "type": "object"
@@ -2048,22 +2184,6 @@
       },
       "type": "object"
     },
-    "AddAttendeeRequest": {
-      "required": [
-        "event_id"
-      ],
-      "properties": {
-        "user_id": {
-          "type": "integer",
-          "description": "User ID to be added, will default to user that made the request"
-        },
-        "event_id": {
-          "type": "integer",
-          "description": "ID of event to add attendee to"
-        }
-      },
-      "type": "object"
-    },
     "AttendingQuery": {
       "required": [
         "type"
@@ -2084,6 +2204,22 @@
         "per_page": {
           "type": "integer",
           "description": "Number of Events per page, default = 20"
+        }
+      },
+      "type": "object"
+    },
+    "AddAttendeeRequest": {
+      "required": [
+        "event_id"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "User ID to be added, will default to user that made the request"
+        },
+        "event_id": {
+          "type": "integer",
+          "description": "ID of event to add attendee to"
         }
       },
       "type": "object"

@@ -18,7 +18,7 @@ const ConversationTextInput = ({ onSend }: { onSend?: (text: string) => void }) 
     <View style={styles.textInputContainer}>
       <TextInput
         style={[styles.textInput, { outlineWidth: 0, outlineColor: 'transparent' }]}
-        placeholder="How are you feeling today?"
+        placeholder="Type message"
         placeholderTextColor="#c9c9c9"
         value={text}
         onChangeText={(t) => {
