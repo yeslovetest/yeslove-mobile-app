@@ -291,6 +291,15 @@ class DeviceToken(db.Model):
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class NotificationSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    posts_enabled = db.Column(db.Boolean, default=True)
+    likes_enabled = db.Column(db.Boolean, default=True)
+    comments_enabled = db.Column(db.Boolean, default=True)
+    events_enabled = db.Column(db.Boolean, default=True)
+    blogs_enabled = db.Column(db.Boolean, default=True)
+
 
 # ------------------------- Create Vector DB Model -------------------------
 
