@@ -1,11 +1,11 @@
 from flask import request
 from flask_restx import Namespace, Resource
 
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
 
 from app.utils import require_auth
 
-
+logger = setup_logger()
 
 api = Namespace("profile", description="API Endpoints")
 
@@ -155,13 +155,18 @@ class GetUserKeycloakIDFlexible(Resource):
 
 @api.route("/profile_visibility")
 class ProfileVisibility(Resource):
+    from app.api.profile.profile_models import ProfileVisibilitySettings
+    @api.response(200, "Success", ProfileVisibilitySettings)  
     @require_auth()
     def get(self):
         """Get profile visibility settings."""
         from app.models import ProfileVisibilitySettings
         user_id = request.user["keycloak_id"]
         settings = ProfileVisibilitySettings.query.filter_by(user_id=user_id).all()
-        return [{"setting_id": s.setting_id, "value": s.value, "category": s.category} for s in settings], 200
+        return {'settings' :
+                [{"setting_id": s.setting_id, 
+                  "value": s.value, 
+                  "category": s.category} for s in settings]}, 200
 
     from app.api.profile.profile_models import ProfileVisibilitySettings
     @require_auth()
@@ -193,13 +198,15 @@ class ProfileVisibility(Resource):
 
 @api.route("/email_notifications")
 class EmailNotifications(Resource):
+    from app.api.profile.profile_models import EmailNotificationSettings
+    @api.response(200, "Success", EmailNotificationSettings)
     @require_auth()
     def get(self):
         """Get email notification settings."""
         from app.models import EmailNotificationSettings
         user_id = request.user["keycloak_id"]
         settings = EmailNotificationSettings.query.filter_by(user_id=user_id).all()
-        return [{"setting_id": s.setting_id, "value": s.value} for s in settings], 200
+        return {'settings': [{"setting_id": s.setting_id, "value": s.value} for s in settings]}, 200
 
     from app.api.profile.profile_models import EmailNotificationSettings
     @require_auth()

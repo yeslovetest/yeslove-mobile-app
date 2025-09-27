@@ -24,8 +24,6 @@ Mako
 
 typing-extensions 
 
-Docker 
-
 authlib 
 
 email-validator
@@ -33,3 +31,20 @@ email-validator
 Flask-Admin
 
 python-dateutil
+
+prometheus-flask-exporter
+
+openai
+
+# Vector DB requirements
+
+tiktoken
+
+pgvector
+neo4j
+
+redis
+
+celery
+
+psycopg2-binary

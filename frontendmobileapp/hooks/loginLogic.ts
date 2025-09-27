@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useAppDispatch } from '../app/store/hooks';
-import { logInAction, setLoginStateAction, LoginState, setErrorMessage } from '../app/store/authSlice';
+import { logInAction, setLoginStateAction, LoginState, setErrorMessage } from '../app/store/Auth-store/authSlice';
 import axios from 'axios';
-import theme from '@/Styles/Variables';
+import theme from '@/assets/variables/Variables';
 
 axios.defaults.baseURL = "http://localhost:5000";
 

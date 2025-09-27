@@ -1,24 +1,34 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Footer from "./footer/Footer";
-import Header from "./Header";
+import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import ProfilePage from "./tabs/profile";
-import HomeScreen from "./tabs/home";
-import GetHelpPage from "./tabs/gethelp";
-import LoginScreen from "./login-screen/LoginScreen";
-import SignUpScreen from "./signup-screen/SignUpScreen";
-//import GetEducatedPage from "./tabs/getEducated"
+import ProfileRoot from "./pages/Profile/Profile-root/ProfileRoot";
+import HomeRoot from "./pages/Home/Home-root/HomeRoot";
+import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
+import LoginPage from "./pages/Login/LoginPage/LoginPage";
+import SignUpRoot from "./pages/Sign-up/Sign-up-root/SignUpRoot";
 import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
   LoginState,
-} from "./store/authSlice";
-import LoginLoadingScreen from "./login-screen/LoginLoadingScreen";
-import { TabType } from "./store/navigationSlice";
-import EventsPage from "./tabs/events";
-import IndividualEvent from "@/components/events-components/IndividualEvent";
-import IndividualBlog from "@/components/gethelp-components/IndividualBlog";
+} from "./store/Auth-store/authSlice";
+import LoginRoot from "./pages/Login/Login-root/LoginRoot";
+import { TabType } from "./store/Navigation/navigationSlice";
+import EventsRoot from "./pages/Events/Events-root/EventsRoot";
+import EventInfoPage from "./pages/Events/Event-info/EventInfoPage";
+import IndividualBlog from "@/app/pages/Get-help/Blog-info/BlogInfoPage";
+import IndividualPost from "@/app/pages/Home/Comments-and-reactions/CommentsAndReactionsPage";
+import NotificationsRoot from "./pages/Notifications/Notifications-root/NotificationsRoot";
+import SettingsPage from "./pages/Profile/Settings/SettingsPage";
+import General from "./pages/Profile/Settings/General/General";
+import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
+import MessagesRoot from "./pages/Home/Messages/Messages-root/MessagesRoot";
+import Conversation from "./pages/Home/Messages/Conversation/Conversation";
+import ChatSection from "./pages/Notifications/ChatSection";
+import EditProfileInformation from "./pages/Profile/Edit-profile-information/EditProfileInformation";
+import ProfileInformation from "./pages/Profile/Profile-information/ProfileInformation";
+import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
+import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -35,30 +45,43 @@ const App = () => {
     <>
       {loginState == LoginState.LOADING && (
         <View style={styles.container}>
-          <LoginLoadingScreen></LoginLoadingScreen>
+          <LoginRoot></LoginRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_OUT && (
         <View style={styles.container}>
-          <LoginScreen></LoginScreen>
+          <LoginPage></LoginPage>
         </View>
       )}
        {loginState == LoginState.SIGN_UP && (
         <View style={styles.container}>
-          <SignUpScreen></SignUpScreen>
+          <SignUpRoot></SignUpRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_IN && (
         <View style={styles.container}>
-          <Header ></Header>
           {
             {
-              HOME: <HomeScreen></HomeScreen>,
-              GET_HELP: <GetHelpPage></GetHelpPage>,
-              EVENTS: <EventsPage></EventsPage>,
-              PROFILE: <ProfilePage></ProfilePage>,
-              INDIVIDUAL_EVENT: <IndividualEvent />,
-              INDIVIDUAL_BLOG: <IndividualBlog />
+              HOME: <HomeRoot></HomeRoot>,
+              GET_HELP: <GetHelpRoot />,
+              EVENTS: <EventsRoot></EventsRoot>,
+              PROFILE: <ProfileRoot></ProfileRoot>,
+              SETTINGS: <SettingsPage></SettingsPage>,
+              EDIT_PROFILE_INFORMATION: <EditProfileInformation></EditProfileInformation>,
+              PROFILE_INFORMATION: <ProfileInformation></ProfileInformation>,
+
+              /*settings folders pages */
+                 GENERAL: <General></General>,
+                 EMAIL: <EmailNtfnSettings></EmailNtfnSettings>,
+                 PROFILE_VISIBILITY: <ProfileVisibilitySettings></ProfileVisibilitySettings>,
+                 EXPORT_DATA: <ExportData></ExportData>,
+
+              NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
+                 MESSAGES: <MessagesRoot></MessagesRoot>,
+                    CONVERSATION: <Conversation></Conversation>,
+              INDIVIDUAL_EVENT: <EventInfoPage />,
+              INDIVIDUAL_BLOG: <IndividualBlog />,
+              INDIVIDUAL_POST: <IndividualPost />,
             }[currentActiveTab?.type ?? TabType.HOME]
           }
           <Footer></Footer>
@@ -73,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fafafa",
   },
   title: {
     fontSize: 24,

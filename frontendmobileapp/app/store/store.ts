@@ -1,13 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "./userSlice";
-import profileReducer from "./profileSlice";
-import feedReducer from "./feedSlice";
-import authReducer from "./authSlice";
-import eventsReducer from "./eventsSlice";
-import getHelpReducer from "./getHelpSlice"
+import userReducer from "./Profile-store/userSlice";
+import profileReducer from "./Profile-store/profileSlice";
+import feedReducer from "./Home-store/feedSlice";
+import authReducer from "./Auth-store/authSlice";
+import eventsReducer from "./Events-store/eventsSlice";
+import getHelpReducer from "./Get-help-store/getHelpSlice";
+import chatReducer from "./Chat/chatSlice";
 import createSagaMiddleWare from "redux-saga"
-import appSaga from "./effects";
-import { navigationReducer } from "./navigationSlice";
+import appSaga from "./Effects/effects";
+import { navigationReducer } from "./Navigation/navigationSlice";
 
 //const createSagaMiddleWare = require('redux-saga').default;
 export const sagaMiddleWare = createSagaMiddleWare();
@@ -20,7 +21,8 @@ export const store = configureStore({
         navigation: navigationReducer,
         auth: authReducer,
         events: eventsReducer,
-        getHelp: getHelpReducer
+        getHelp: getHelpReducer,
+        chat: chatReducer,
     },
     devTools: process.env.NODE_ENV !== 'production',
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleWare)

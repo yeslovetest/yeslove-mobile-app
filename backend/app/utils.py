@@ -6,9 +6,10 @@ from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, jsonify
 from functools import wraps
-from app.logging_setup import logger  # ✅ Import the logger
+from app.logging_setup import setup_logger  # ✅ Import the logger
 from datetime import datetime
 
+logger = setup_logger()
 # -------------------------
 # 🔹 Keycloak Configuration
 # -------------------------
@@ -20,8 +21,8 @@ def get_keycloak_config():
     return {
         "server_url": server_url,
         "realm_name": realm_name,
-        "issuer_url": f"{server_url}/realms/{"YesLove_Auth"}",
-        "certs_url": f"{server_url}/realms/{"YesLove_Auth"}/protocol/openid-connect/certs"
+        "issuer_url": f"{server_url}/realms/{'YesLove_Auth'}",
+        "certs_url": f"{server_url}/realms/{'YesLove_Auth'}/protocol/openid-connect/certs"
     }
 
 
@@ -121,6 +122,7 @@ def require_auth():
                 "keycloak_id": keycloak_id,
                 "email": decoded_token.get("email"),
                 "username": decoded_token.get("preferred_username"),
+                "realm_access": decoded_token.get("realm_access", {})  # <-- Add this line
             }
 
             logger.info(f"🔹 User authenticated: {request.user['username']} ({request.user['keycloak_id']})")

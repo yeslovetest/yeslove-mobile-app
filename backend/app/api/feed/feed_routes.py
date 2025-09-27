@@ -1,11 +1,11 @@
 from flask import request
 from flask_restx import Namespace, Resource, reqparse
 
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
 
 from app.utils import require_auth
 
-
+logger = setup_logger()
 
 api = Namespace("feed", description="API Endpoints")
 
@@ -13,11 +13,11 @@ api = Namespace("feed", description="API Endpoints")
 class Feed(Resource):
     from .feed_models import FeedQuery, FeedResponse
     @require_auth()
-    @api.expect(FeedQuery)
+    @api.param("feed_type", "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'")
     @api.response(code=200, description="", model=FeedResponse)
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
-        from app.models import User, Post, Like
+        from app.models import User, Post, Like, Reaction
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
@@ -27,21 +27,30 @@ class Feed(Resource):
         per_page = int(request.args.get("per_page", 10))
 
         # Build query based on feed type
+        
         if feed_type == "mentions":
             query = Post.query.filter(Post.content.contains(f"@{user.username}")).order_by(Post.timestamp.desc())
         elif feed_type == "favorites":
             query = Post.query.join(Like).filter(Like.user_id == user.id).order_by(Post.timestamp.desc())
         elif feed_type == "friends":
             friend_ids = [follow.followed_id for follow in user.following]
-            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc())
+            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
+            
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
-        else:  # "all"
+        else:
             following = [follow.followed_id for follow in user.following]
             following.append(user.id)
-            query = Post.query.order_by(Post.timestamp.desc())
+            query = Post.query.order_by(Post.timestamp.desc())    
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
+
+        post_ids = [post.id for post in posts]
+
+        # Fetch all reactions by the current user for these posts and create map for quick lookup
+        reactions = Reaction.query.filter(
+            Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
+        reaction_map = {reaction.post_id: reaction for reaction in reactions}
 
         return {
             "posts": [{
@@ -53,7 +62,8 @@ class Feed(Resource):
                 "image": post.image,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
-                "comments": len(post.comments)
+                "comments": len(post.comments),
+                "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
                 "page": paginated_posts.page,
@@ -75,9 +85,11 @@ class CreatePost(Resource):
     @api.response(201, "Post created successfully")
     def post(self):
         """Create a new post."""
-        from app.models import User, Post, db
+        from app.models import User, Post, Follow, db
+        from app.notifications import send_push_notification_to_users
+
         data = request.json
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()  # ✅ Use Keycloak UUID
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
 
@@ -87,13 +99,55 @@ class CreatePost(Resource):
         post = Post(content=data["content"], user_id=user.id)
         db.session.add(post)
         db.session.commit()
-        return {"message": "Post created successfully"}, 201
 
+        # Send push notification to followers
+        follower_links = Follow.query.filter_by(followed_id=user.id).all()
+        follower_user_ids = [f.follower_id for f in follower_links]
+        
+        if follower_user_ids:
+            from app.services.push_notification_service import PushNotificationService
+            try:
+                PushNotificationService.send_to_multiple_users(
+                    user_ids=follower_user_ids,
+                    title="New Post",
+                    body=f"{user.username}: {data['content'][:50]}...",
+                    data={"type": "new_post", "post_id": post.id},
+                    notification_type="posts"
+                )
+            except Exception as e:
+                logger.error(f"Push notification failed: {e}")
+
+        return {"message": "Post created successfully"}, 201
+    
+# -------------------------
+# 🚀 Reaction ROUTES
+# -------------------------
+ 
+@api.route("/post/<int:post_id>/reactions")
+class GetReactions(Resource):
+    from .feed_models import GetReactionsResponse
+    @api.response(code=200, description="List of reactions", model=GetReactionsResponse)
+    def get(self, post_id):
+        """Fetch all reactions for a post."""
+        from app.models import Reaction
+        reactions = Reaction.query.filter_by(post_id=post_id).all()
+        return {
+            "reactions": [
+                {
+                    "id": reaction.id,
+                    "type": reaction.reaction_type,
+                    "author": reaction.user.username,
+                    "picture": reaction.user.profile_pic,
+                }
+            for reaction in reactions]
+            }, 200
+    
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
-    from .feed_models import ReactionRequest
+    from .feed_models import ReactionRequest, ReactToPostResponse
     @require_auth()
     @api.expect(ReactionRequest)  # ✅ Attach model
+    @api.response(code=200, description="success", model=ReactToPostResponse)
     def post(self, post_id):
         """Add or update a reaction to a post (like, love, laugh, etc.)."""
         from app.models import User, Post, Reaction, db
@@ -154,6 +208,20 @@ class LikePost(Resource):
         new_like = Like(user_id=user.id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
+        
+        # Notify post author about like
+        from app.models import Post
+        post = Post.query.get(post_id)
+        if post and post.user_id != user.id:
+            from app.services.push_notification_service import PushNotificationService
+            PushNotificationService.send_to_user(
+                user_id=post.user_id,
+                title="New Like",
+                body=f"{user.username} liked your post",
+                data={"type": "like", "post_id": post_id},
+                notification_type="likes"
+            )
+        
         logger.info(f"✅ User {user.username} liked post {post_id}")
         return {"message": "Post liked"}, 201
 
@@ -182,25 +250,42 @@ class AddComment(Resource):
         comment = Comment(content=content, user_id=user.id, post_id=post_id)
         db.session.add(comment)
         db.session.commit()
+        
+        # Notify post author about comment
+        from app.models import Post
+        post = Post.query.get(post_id)
+        if post and post.user_id != user.id:
+            from app.services.push_notification_service import PushNotificationService
+            PushNotificationService.send_to_user(
+                user_id=post.user_id,
+                title="New Comment",
+                body=f"{user.username} commented on your post",
+                data={"type": "comment", "post_id": post_id},
+                notification_type="comments"
+            )
+        
         return {"message": "Comment added"}, 201
 
 
 @api.route("/post/<int:post_id>/comments")
 class GetComments(Resource):
+    from .feed_models import GetCommentResponse
+    @api.response(code=200, description="List of comments", model=GetCommentResponse)
     def get(self, post_id):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
-        return [
-            {
-                "id": comment.id,
-                "content": comment.content,
-                "author": comment.user.username,
-                "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
-            }
-            for comment in comments
-        ], 200
-
+        return {
+            "comments": [
+                {
+                    "id": comment.id,
+                    "content": comment.content,
+                    "author": comment.user.username,
+                    "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
+                }
+            for comment in comments]
+            }, 200
+    
 
 # -------------------------
 # 🚀 FOLLOW ROUTES
@@ -211,59 +296,103 @@ class FollowUser(Resource):
     from .feed_models import FollowUserRequest
     @require_auth()
     @api.expect(FollowUserRequest)  # ✅ Attach model
-    def post(self, user_id):
+    def post(self, keycloak_id):
         """Follow or unfollow a user."""
         from app.models import User, Follow, db
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        target_user = User.query.get(user_id)
+        target_user = User.query.filter_by(keycloak_id=keycloak_id).first()
 
         if not user or not target_user:
             return {"message": "User not found"}, 404
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
+        follow_type = request.json.get("follow_type", "basic")
+        
+        # Get existing follow relationships (both directions)
+        follows = Follow.query.filter(
+            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) | 
+            ((Follow.follower_id == target_user.id) & (Follow.followed_id == user.id))
+        ).all()
+        existing = {(f.follower_id, f.followed_id): f for f in follows}
 
+        followby_current_user = existing.get((user.id, target_user.id))
+        followby_target_user = existing.get((target_user.id, user.id))
+
+        # Unfollow
         if follow_action == "unfollow":
-            existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
-            if existing_follow:
-                db.session.delete(existing_follow)
+            if followby_current_user:
+                db.session.delete(followby_current_user)
+                if follow_type == "friend" and followby_target_user:
+                   db.session.delete(followby_target_user) 
                 db.session.commit()
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
+        
+        # Follow
+        if followby_current_user:
+            # Already following
+            if follow_type == "basic":
+                return {"message": "Already following"}, 400
+            if follow_type == "friend":
+                followby_current_user.follow_type = "friend" 
+                # Add reverse record if not exists  (send frienship request by email, To be done later)
+                if not followby_target_user:
+                    new_follow = Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend")
+                    db.session.add(new_follow)
+                    db.session.commit()
+                    return {"message": "Connected as friend"}, 201
+                # Otherwise just update both
+                followby_target_user.follow_type = "friend"
+                db.session.commit()
+                return {"message": "Follow type updated"}, 201
 
-        # Follow the user
-        existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
-        if existing_follow:
-            return {"message": "Already following"}, 400
+        # Create new follows
+        records = []
+        if follow_type == "friend": # send frienship request by email, To be done later
+            records.append(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
+            records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
+            db.session.add_all(records)
+            db.session.commit()
+            return {"message": "Connected as friend"}, 201
 
-        new_follow = Follow(follower_id=user.id, followed_id=user_id)
-        db.session.add(new_follow)
+        # Basic follow
+        db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
         db.session.commit()
-        return {"message": "Followed successfully"}, 201
+        return {"message": "Following Successfully"}, 201
 
 
 @api.route("/followers/<string:keycloak_id>")
 class GetFollowers(Resource):
-    from .feed_models import GetFollowersRequest
+    from .feed_models import GetFollowersRequest, GetFollowersResponse
+    @require_auth()
     @api.expect(GetFollowersRequest)  # ✅ Attach model
-    def get(self, user_id):
+    @api.response(code=200, description="List of followers", model=GetFollowersResponse)
+    def get(self, keycloak_id):
         """Fetch all followers of a user."""
-        from app.models import Follow
-        followers = Follow.query.filter_by(followed_id=user_id).all()
-        return [
+        from app.models import Follow, User
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        followers = Follow.query.filter_by(followed_id=user.id).all()
+        return {
+           "followers": [
             {"id": follow.follower_id, "username": follow.follower.username}
             for follow in followers
-        ], 200
+        ]}, 200
 
 
 @api.route("/following/<string:keycloak_id>")
 class GetFollowing(Resource):
-    from .feed_models import GetFollowingRequest
+    from .feed_models import GetFollowingRequest, GetFollowingResponse
+    @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
-    def get(self, user_id):
+    @api.response(code=200, description="List of following users", model=GetFollowingResponse)
+    def get(self, keycloak_id):
         """Fetch all users the current user is following."""
-        from app.models import Follow
-        following = Follow.query.filter_by(follower_id=user_id).all()
-        return [
-            {"id": follow.followed_id, "username": follow.followed.username}
-            for follow in following
-        ], 200
+        from app.models import Follow, User
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        following = Follow.query.filter_by(follower_id=user.id).all()
+        return {'following':
+                [
+                    {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
+                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic}
+                    for follow in following
+                ]}, 200

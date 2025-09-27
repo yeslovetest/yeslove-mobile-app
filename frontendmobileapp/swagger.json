@@ -1,1154 +1,2343 @@
 {
-    "swagger": "2.0",
-    "basePath": "/",
-    "paths": {
-        "/api/auth/change_password": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Change user password via Keycloak API",
-                "operationId": "post_change_password",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/ChangePasswordRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
-            }
+  "swagger": "2.0",
+  "basePath": "/",
+  "paths": {
+    "/api/auth/change_password": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
         },
-        "/api/auth/delete_account": {
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Delete user account via Keycloak API",
-                "operationId": "delete_delete_account",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/DeleteAccountRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
+        "summary": "Change user password via Keycloak API",
+        "operationId": "post_change_password",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordRequest"
             }
-        },
-        "/api/auth/login": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/TokenResponse"
-                        }
-                    }
-                },
-                "summary": "Exchange user credentials for a Keycloak access token and check user type",
-                "operationId": "post_login",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/LoginRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
-            }
-        },
-        "/api/auth/logout": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Logout user from Keycloak",
-                "operationId": "post_logout",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/LogoutRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
-            }
-        },
-        "/api/auth/refresh_token": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/TokenResponse"
-                        }
-                    }
-                },
-                "summary": "Refresh expired access token using Keycloak refresh token",
-                "operationId": "post_refresh_token",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/RefreshTokenRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
-            }
-        },
-        "/api/auth/reset_password": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Send password reset email via Keycloak API",
-                "operationId": "post_reset_password",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/ResetPasswordRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
-            }
-        },
-        "/api/auth/set_user_type": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Set user type (professional or standard) for new users",
-                "operationId": "post_set_user_type",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/SetUserTypeRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "auth"
-                ]
-            }
-        },
-        "/api/auth/signup": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Keycloak handles user registration",
-                "operationId": "post_signup",
-                "tags": [
-                    "auth"
-                ]
-            }
-        },
-        "/api/chat/get_messages/{receiver_id}": {
-            "parameters": [
-                {
-                    "name": "receiver_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }
-            ],
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Fetch chat messages between two users",
-                "operationId": "get_get_messages",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/GetMessagesRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "chat"
-                ]
-            }
-        },
-        "/api/chat/send_message": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Send a private message",
-                "operationId": "post_send_message",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/SendMessageRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "chat"
-                ]
-            }
-        },
-        "/api/feed/feed": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/PostResponse"
-                        }
-                    }
-                },
-                "summary": "Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination",
-                "operationId": "get_feed",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/FeedQuery"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/follow/{keycloak_id}": {
-            "parameters": [
-                {
-                    "name": "keycloak_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Follow or unfollow a user",
-                "operationId": "post_follow_user",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/FollowUserRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/followers/{keycloak_id}": {
-            "parameters": [
-                {
-                    "name": "keycloak_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Fetch all followers of a user",
-                "operationId": "get_get_followers",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/GetFollowersRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/following/{keycloak_id}": {
-            "parameters": [
-                {
-                    "name": "keycloak_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Fetch all users the current user is following",
-                "operationId": "get_get_following",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/GetFollowingRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/post": {
-            "post": {
-                "responses": {
-                    "201": {
-                        "description": "Post created successfully"
-                    }
-                },
-                "summary": "Create a new post",
-                "operationId": "post_create_post",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/CreatePostRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/post/{post_id}/comment": {
-            "parameters": [
-                {
-                    "name": "post_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }
-            ],
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Add a comment to a post",
-                "operationId": "post_add_comment",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/AddCommentRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/post/{post_id}/comments": {
-            "parameters": [
-                {
-                    "name": "post_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }
-            ],
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Fetch all comments for a post",
-                "operationId": "get_get_comments",
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/post/{post_id}/like": {
-            "parameters": [
-                {
-                    "name": "post_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }
-            ],
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Like or unlike a post",
-                "operationId": "post_like_post",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/LikePostRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/feed/post/{post_id}/reaction": {
-            "parameters": [
-                {
-                    "name": "post_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }
-            ],
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Add or update a reaction to a post (like, love, laugh, etc",
-                "description": ").",
-                "operationId": "post_react_to_post",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/ReactionRequest"
-                        }
-                    }
-                ],
-                "tags": [
-                    "feed"
-                ]
-            }
-        },
-        "/api/profile/about/{keycloak_id}": {
-            "parameters": [
-                {
-                    "name": "keycloak_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/AboutResponse"
-                        }
-                    }
-                },
-                "summary": "Get user contact & education details for About section",
-                "operationId": "get_about",
-                "tags": [
-                    "profile"
-                ]
-            }
-        },
-        "/api/profile/email_notifications": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Get email notification settings",
-                "operationId": "get_email_notifications",
-                "tags": [
-                    "profile"
-                ]
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Update email notification settings",
-                "operationId": "post_email_notifications",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/EmailNotificationSettings"
-                        }
-                    }
-                ],
-                "tags": [
-                    "profile"
-                ]
-            }
-        },
-        "/api/profile/profile/{keycloak_id}": {
-            "parameters": [
-                {
-                    "name": "keycloak_id",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }
-            ],
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/UserProfile"
-                        }
-                    }
-                },
-                "summary": "Get user profile",
-                "operationId": "get_user_profile",
-                "tags": [
-                    "profile"
-                ]
-            }
-        },
-        "/api/profile/profile_visibility": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Get profile visibility settings",
-                "operationId": "get_profile_visibility",
-                "tags": [
-                    "profile"
-                ]
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Update profile visibility settings",
-                "operationId": "post_profile_visibility",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/ProfileVisibilitySettings"
-                        }
-                    }
-                ],
-                "tags": [
-                    "profile"
-                ]
-            }
-        },
-        "/api/profile/update_profile": {
-            "put": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "summary": "Update user profile",
-                "operationId": "put_update_profile",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/UserProfile"
-                        }
-                    }
-                ],
-                "tags": [
-                    "profile"
-                ]
-            }
-        },
-        "/api/profile/user/keycloak_id": {
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/UserQueryResponse"
-                        }
-                    }
-                },
-                "summary": "Retrieve a user's Keycloak ID by username (required), with optional email or user ID",
-                "operationId": "post_get_user_keycloak_id_flexible",
-                "parameters": [
-                    {
-                        "name": "payload",
-                        "required": true,
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/UserQuery"
-                        }
-                    }
-                ],
-                "tags": [
-                    "profile"
-                ]
-            }
-        }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
     },
-    "info": {
-        "title": "YesLove API",
-        "version": "1.0"
+    "/api/auth/delete_account": {
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Delete user account via Keycloak API",
+        "operationId": "delete_delete_account",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/DeleteAccountRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
     },
-    "produces": [
-        "application/json"
-    ],
-    "consumes": [
-        "application/json"
-    ],
-    "tags": [
-        {
-            "name": "profile",
-            "description": "API Endpoints"
+    "/api/auth/login": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TokenResponse"
+            }
+          }
         },
-        {
-            "name": "auth",
-            "description": "API Endpoints"
-        },
-        {
-            "name": "feed",
-            "description": "API Endpoints"
-        },
-        {
-            "name": "chat",
-            "description": "API Endpoints"
-        }
-    ],
-    "definitions": {
-        "UserProfile": {
-            "properties": {
-                "username": {
-                    "type": "string",
-                    "description": "User's username"
-                },
-                "bio": {
-                    "type": "string",
-                    "description": "User bio"
-                },
-                "profile_pic": {
-                    "type": "string",
-                    "description": "Profile picture URL"
-                },
-                "user_type": {
-                    "type": "string",
-                    "description": "User type: professional or standard"
-                },
-                "contact_info": {
-                    "$ref": "#/definitions/ContactInfo"
-                },
-                "education_info": {
-                    "$ref": "#/definitions/EducationInfo"
-                }
-            },
-            "type": "object"
-        },
-        "ContactInfo": {
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "User's full name"
-                },
-                "email": {
-                    "type": "string",
-                    "description": "Email address"
-                },
-                "phone": {
-                    "type": "string",
-                    "description": "Phone number"
-                },
-                "address": {
-                    "type": "string",
-                    "description": "User's address"
-                },
-                "website": {
-                    "type": "string",
-                    "description": "User's personal website"
-                }
-            },
-            "type": "object"
-        },
-        "EducationInfo": {
-            "properties": {
-                "birthday": {
-                    "type": "string",
-                    "description": "User's birthday"
-                },
-                "education": {
-                    "type": "string",
-                    "description": "Education details"
-                },
-                "institution": {
-                    "type": "string",
-                    "description": "Institution name"
-                },
-                "employment": {
-                    "type": "string",
-                    "description": "Current employment details"
-                }
-            },
-            "type": "object"
-        },
-        "AboutResponse": {
-            "properties": {
-                "contact": {
-                    "$ref": "#/definitions/ContactInfo"
-                },
-                "education_and_employment": {
-                    "$ref": "#/definitions/EducationInfo"
-                }
-            },
-            "type": "object"
-        },
-        "UserQuery": {
-            "required": [
-                "username"
-            ],
-            "properties": {
-                "username": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string",
-                    "description": "User's email (Optional)"
-                },
-                "user_id": {
-                    "type": "integer",
-                    "description": "User's database ID (Optional)"
-                }
-            },
-            "type": "object"
-        },
-        "UserQueryResponse": {
-            "properties": {
-                "keycloak_id": {
-                    "type": "string",
-                    "description": "User's Keycloak ID"
-                }
-            },
-            "type": "object"
-        },
-        "ProfileVisibilitySettings": {
-            "required": [
-                "category",
-                "setting_id",
-                "value"
-            ],
-            "properties": {
-                "setting_id": {
-                    "type": "string",
-                    "description": "Unique ID for the setting"
-                },
-                "value": {
-                    "type": "string",
-                    "description": "Visibility value (visible/hidden)"
-                },
-                "category": {
-                    "type": "string",
-                    "description": "Category: 'Contact' or 'Education And Other Information'"
-                }
-            },
-            "type": "object"
-        },
-        "EmailNotificationSettings": {
-            "required": [
-                "setting_id",
-                "value"
-            ],
-            "properties": {
-                "setting_id": {
-                    "type": "string",
-                    "description": "Unique ID for the setting"
-                },
-                "value": {
-                    "type": "boolean",
-                    "description": "Notification enabled (true/false)"
-                }
-            },
-            "type": "object"
-        },
-        "LoginRequest": {
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "username": {
-                    "type": "string",
-                    "description": "User's Keycloak username"
-                },
-                "password": {
-                    "type": "string",
-                    "description": "User's Keycloak password"
-                }
-            },
-            "type": "object"
-        },
-        "TokenResponse": {
-            "properties": {
-                "access_token": {
-                    "type": "string",
-                    "description": "JWT access token"
-                },
-                "expires_in": {
-                    "type": "integer",
-                    "description": "Access token expiration time in seconds"
-                },
-                "refresh_expires_in": {
-                    "type": "integer",
-                    "description": "Refresh token expiration time in seconds"
-                },
-                "refresh_token": {
-                    "type": "string",
-                    "description": "JWT refresh token"
-                },
-                "token_type": {
-                    "type": "string",
-                    "description": "Type of token, typically 'Bearer'"
-                },
-                "not-before-policy": {
-                    "type": "integer",
-                    "description": "Time before which the token is not valid"
-                },
-                "session_state": {
-                    "type": "string",
-                    "description": "Session identifier"
-                },
-                "scope": {
-                    "type": "string",
-                    "description": "Scopes associated with the token"
-                }
-            },
-            "type": "object"
-        },
-        "LogoutRequest": {
-            "properties": {},
-            "type": "object"
-        },
-        "RefreshTokenRequest": {
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "type": "string",
-                    "description": "Valid refresh token"
-                }
-            },
-            "type": "object"
-        },
-        "SetUserTypeRequest": {
-            "required": [
-                "user_type"
-            ],
-            "properties": {
-                "user_type": {
-                    "type": "string",
-                    "description": "Choose 'professional' or 'standard'"
-                },
-                "license": {
-                    "type": "string",
-                    "description": "License number (for professional users only)"
-                },
-                "specialization": {
-                    "type": "string",
-                    "description": "Specialization field (for professional users only)"
-                }
-            },
-            "type": "object"
-        },
-        "ChangePasswordRequest": {
-            "required": [
-                "new_password"
-            ],
-            "properties": {
-                "new_password": {
-                    "type": "string",
-                    "description": "New password for the user"
-                }
-            },
-            "type": "object"
-        },
-        "ResetPasswordRequest": {
-            "required": [
-                "email"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "description": "User's email for password reset"
-                }
-            },
-            "type": "object"
-        },
-        "DeleteAccountRequest": {
-            "required": [
-                "confirmation"
-            ],
-            "properties": {
-                "confirmation": {
-                    "type": "boolean",
-                    "description": "Confirmation required to delete the account"
-                }
-            },
-            "type": "object"
-        },
-        "FeedQuery": {
-            "properties": {
-                "feed_type": {
-                    "type": "string",
-                    "description": "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'"
-                }
-            },
-            "type": "object"
-        },
-        "PostResponse": {
-            "properties": {
-                "posts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Post"
-                    }
-                }
-            },
-            "type": "object"
-        },
-        "Post": {
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "description": "Post ID"
-                },
-                "author": {
-                    "type": "string",
-                    "description": "Username of the author"
-                },
-                "author_id": {
-                    "type": "string",
-                    "description": "The Keycloak-ID of the author"
-                },
-                "author_pic": {
-                    "type": "string",
-                    "description": "URL to author's profile picture"
-                },
-                "content": {
-                    "type": "string",
-                    "description": "Text content of the post"
-                },
-                "image": {
-                    "type": "string",
-                    "description": "URL to image in the post"
-                },
-                "timestamp": {
-                    "type": "string",
-                    "description": "Timestamp of the post in ISO format"
-                },
-                "likes": {
-                    "type": "integer",
-                    "description": "Number of likes"
-                },
-                "comments": {
-                    "type": "integer",
-                    "description": "Number of comments"
-                }
-            },
-            "type": "object"
-        },
-        "CreatePostRequest": {
-            "required": [
-                "content"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "description": "Content of the post"
-                }
-            },
-            "type": "object"
-        },
-        "ReactionRequest": {
-            "required": [
-                "reaction_type"
-            ],
-            "properties": {
-                "reaction_type": {
-                    "type": "string",
-                    "description": "Reaction type: 'like', 'love', 'laugh', 'angry', etc."
-                }
-            },
-            "type": "object"
-        },
-        "LikePostRequest": {
-            "required": [
-                "post_id"
-            ],
-            "properties": {
-                "post_id": {
-                    "type": "integer",
-                    "description": "ID of the post to like or unlike"
-                }
-            },
-            "type": "object"
-        },
-        "AddCommentRequest": {
-            "required": [
-                "content"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "description": "Content of the comment"
-                }
-            },
-            "type": "object"
-        },
-        "FollowUserRequest": {
-            "required": [
-                "action"
-            ],
-            "properties": {
-                "action": {
-                    "type": "string",
-                    "description": "'follow' to follow, 'unfollow' to unfollow"
-                }
-            },
-            "type": "object"
-        },
-        "GetFollowersRequest": {
-            "properties": {},
-            "type": "object"
-        },
-        "GetFollowingRequest": {
-            "properties": {},
-            "type": "object"
-        },
-        "SendMessageRequest": {
-            "required": [
-                "message",
-                "receiver_id"
-            ],
-            "properties": {
-                "receiver_id": {
-                    "type": "integer",
-                    "description": "ID of the recipient user"
-                },
-                "message": {
-                    "type": "string",
-                    "description": "Message content"
-                }
-            },
-            "type": "object"
-        },
-        "GetMessagesRequest": {
-            "properties": {},
-            "type": "object"
-        }
+        "summary": "Exchange user credentials for a Keycloak access token and check user type",
+        "operationId": "post_login",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/LoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
     },
-    "responses": {
-        "ParseError": {
-            "description": "When a mask can't be parsed"
+    "/api/auth/logout": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
         },
-        "MaskError": {
-            "description": "When any error occurs on mask"
+        "summary": "Logout user from Keycloak",
+        "operationId": "post_logout",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/LogoutRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/refresh_token": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TokenResponse"
+            }
+          }
+        },
+        "summary": "Refresh expired access token using Keycloak refresh token",
+        "operationId": "post_refresh_token",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RefreshTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/reset_password": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Send password reset email via Keycloak API",
+        "operationId": "post_reset_password",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/set_user_type": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Set user type (professional or standard) for new users",
+        "operationId": "post_set_user_type",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SetUserTypeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SignupResponse"
+            }
+          }
+        },
+        "summary": "Creates a new KeyCloak user via Admin API",
+        "operationId": "post_signup",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SignupRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/blog/blog-post": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Create a blog post for the Get Educated page (Admins only)",
+        "operationId": "post_create_blog",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateBlogPost"
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/chat/friends/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
         }
+      ],
+      "get": {
+        "responses": {
+          "404": {
+            "description": "User not found"
+          },
+          "200": {
+            "description": "List of friends with last message",
+            "schema": {
+              "$ref": "#/definitions/GetFriendsResponse"
+            }
+          }
+        },
+        "summary": "Fetch all friends of the current user along with",
+        "description": "their last message and timestamp.\n\nThis endpoint returns a list of users where the follow type is \"friend\".\nEach entry includes:\n- Friend’s username and profile picture\n- Last message exchanged\n- Timestamp of the last message",
+        "operationId": "get_get_friends",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GetFriendsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/chat/get_messages/{receiver_id}": {
+      "parameters": [
+        {
+          "name": "receiver_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/GetMessagesResponse"
+            }
+          }
+        },
+        "summary": "Fetch chat messages between two users",
+        "operationId": "get_get_messages",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GetMessagesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/chat/mark_chat_opened/{receiver_id}": {
+      "put": {
+        "responses": {
+          "404": {
+            "description": "User not found"
+          },
+          "200": {
+            "description": "Messages successfully marked as opened",
+            "schema": {
+              "$ref": "#/definitions/MarkChatOpenedResponse"
+            }
+          }
+        },
+        "summary": "Mark all messages in the chat as opened",
+        "description": "Mark all unread messages in a chat as opened when the current user opens the conversation.\nWhen the authenticated user opens the chat with another user,\nall messages sent by the other user to them that are currently\nunopened will be marked as opened.",
+        "operationId": "put_mark_chat_opened",
+        "parameters": [
+          {
+            "name": "receiver_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The Keycloak ID of the user on the other end of the chat"
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/chat/send_message": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Send a private message",
+        "operationId": "post_send_message",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SendMessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/chatbot/message": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Send a message to chatbot",
+        "operationId": "post_send_chatbot_message",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MessageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "chatbot"
+        ]
+      }
+    },
+    "/api/device/delete-device-token/{token_id}": {
+      "parameters": [
+        {
+          "name": "token_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          }
+        },
+        "operationId": "delete_delete_device_token",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "device"
+        ]
+      }
+    },
+    "/api/device/my-device-tokens": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/DeviceTokenList"
+            }
+          }
+        },
+        "operationId": "get_list_device_tokens",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "device"
+        ]
+      }
+    },
+    "/api/device/register-device-token": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          }
+        },
+        "operationId": "post_register_device_token",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RegisterDeviceToken"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "device"
+        ]
+      }
+    },
+    "/api/events/created_events": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EventsResponse"
+            }
+          }
+        },
+        "description": "Returns list of event ids created by the given user ID (defaults to account making the \n                            request). Can specify type as 'upcoming', 'past' and 'all'.",
+        "operationId": "get_created_events",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AttendingQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/event_attendees": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EventsResponse"
+            }
+          }
+        },
+        "description": "Returns Event IDs of all events to be attended/already attended by the provided user id)",
+        "operationId": "get_event_attendees",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AttendingQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "operationId": "post_event_attendees",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddAttendeeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/event_attendees/remove": {
+      "delete": {
+        "responses": {
+          "204": {
+            "description": "Success"
+          }
+        },
+        "description": "Remove a user from an event's attendees list",
+        "operationId": "delete_remove_attendee",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RemoveAttendeeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/event_ids": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EventsResponse"
+            }
+          }
+        },
+        "description": "Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.",
+        "operationId": "get_event_ids",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EventsQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/event_info": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EventInfoResponse"
+            }
+          }
+        },
+        "description": "Retrieve detailed info for one or more events by their IDs. Supports pagination.",
+        "operationId": "get_event_info",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EventInfoQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.",
+        "operationId": "post_event_info",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddEventRequest"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/feed/feed": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/PostResponse"
+            }
+          }
+        },
+        "summary": "Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination",
+        "operationId": "get_feed",
+        "parameters": [
+          {
+            "in": "query",
+            "description": "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'",
+            "name": "feed_type",
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/follow/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Follow or unfollow a user",
+        "operationId": "post_follow_user",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/FollowUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/followers/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of followers",
+            "schema": {
+              "$ref": "#/definitions/GetFollowersResponse"
+            }
+          }
+        },
+        "summary": "Fetch all followers of a user",
+        "operationId": "get_get_followers",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GetFollowersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/following/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of following users",
+            "schema": {
+              "$ref": "#/definitions/GetFollowingResponse"
+            }
+          }
+        },
+        "summary": "Fetch all users the current user is following",
+        "operationId": "get_get_following",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GetFollowingRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Post created successfully"
+          }
+        },
+        "summary": "Create a new post",
+        "operationId": "post_create_post",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreatePostRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post/{post_id}/comment": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Add a comment to a post",
+        "operationId": "post_add_comment",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddCommentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post/{post_id}/comments": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of comments",
+            "schema": {
+              "$ref": "#/definitions/GetCommentResponse"
+            }
+          }
+        },
+        "summary": "Fetch all comments for a post",
+        "operationId": "get_get_comments",
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post/{post_id}/like": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Like or unlike a post",
+        "operationId": "post_like_post",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/LikePostRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post/{post_id}/reaction": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/ReactToPostResponse"
+            }
+          }
+        },
+        "summary": "Add or update a reaction to a post (like, love, laugh, etc",
+        "description": ").",
+        "operationId": "post_react_to_post",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ReactionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post/{post_id}/reactions": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "List of reactions",
+            "schema": {
+              "$ref": "#/definitions/GetReactionsResponse"
+            }
+          }
+        },
+        "summary": "Fetch all reactions for a post",
+        "operationId": "get_get_reactions",
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/media/upload": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "post_upload_media",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/media/{media_id}": {
+      "parameters": [
+        {
+          "name": "media_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "get_get_media",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/profile/about/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AboutResponse"
+            }
+          }
+        },
+        "summary": "Get user contact & education details for About section",
+        "operationId": "get_about",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/profile/email_notifications": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EmailNotificationSettings"
+            }
+          }
+        },
+        "summary": "Get email notification settings",
+        "operationId": "get_email_notifications",
+        "tags": [
+          "profile"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Update email notification settings",
+        "operationId": "post_email_notifications",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EmailNotificationSettings"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/profile/profile/{keycloak_id}": {
+      "parameters": [
+        {
+          "name": "keycloak_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserProfile"
+            }
+          }
+        },
+        "summary": "Get user profile",
+        "operationId": "get_user_profile",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/profile/profile_visibility": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProfileVisibilitySettings"
+            }
+          }
+        },
+        "summary": "Get profile visibility settings",
+        "operationId": "get_profile_visibility",
+        "tags": [
+          "profile"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Update profile visibility settings",
+        "operationId": "post_profile_visibility",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ProfileVisibilitySettings"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/profile/update_profile": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Update user profile",
+        "operationId": "put_update_profile",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserProfile"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/profile/user/keycloak_id": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserQueryResponse"
+            }
+          }
+        },
+        "summary": "Retrieve a user's Keycloak ID by username (required), with optional email or user ID",
+        "operationId": "post_get_user_keycloak_id_flexible",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserQuery"
+            }
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
     }
+  },
+  "info": {
+    "title": "YesLove API",
+    "version": "1.0"
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "profile",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "auth",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "feed",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "chat",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "events",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "blog",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "device",
+      "description": "Device Token Endpoints"
+    },
+    {
+      "name": "chatbot",
+      "description": "API Endpoints"
+    },
+    {
+      "name": "media",
+      "description": "API Endpoints"
+    }
+  ],
+  "definitions": {
+    "UserProfile": {
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "User's username"
+        },
+        "bio": {
+          "type": "string",
+          "description": "User bio"
+        },
+        "profile_pic": {
+          "type": "string",
+          "description": "Profile picture URL"
+        },
+        "user_type": {
+          "type": "string",
+          "description": "User type: professional or standard"
+        },
+        "contact_info": {
+          "$ref": "#/definitions/ContactInfo"
+        },
+        "education_info": {
+          "$ref": "#/definitions/EducationInfo"
+        }
+      },
+      "type": "object"
+    },
+    "ContactInfo": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "User's full name"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number"
+        },
+        "address": {
+          "type": "string",
+          "description": "User's address"
+        },
+        "website": {
+          "type": "string",
+          "description": "User's personal website"
+        }
+      },
+      "type": "object"
+    },
+    "EducationInfo": {
+      "properties": {
+        "birthday": {
+          "type": "string",
+          "description": "User's birthday"
+        },
+        "education": {
+          "type": "string",
+          "description": "Education details"
+        },
+        "institution": {
+          "type": "string",
+          "description": "Institution name"
+        },
+        "employment": {
+          "type": "string",
+          "description": "Current employment details"
+        }
+      },
+      "type": "object"
+    },
+    "AboutResponse": {
+      "properties": {
+        "contact": {
+          "$ref": "#/definitions/ContactInfo"
+        },
+        "education_and_employment": {
+          "$ref": "#/definitions/EducationInfo"
+        }
+      },
+      "type": "object"
+    },
+    "UserQuery": {
+      "required": [
+        "username"
+      ],
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email (Optional)"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "User's database ID (Optional)"
+        }
+      },
+      "type": "object"
+    },
+    "UserQueryResponse": {
+      "properties": {
+        "keycloak_id": {
+          "type": "string",
+          "description": "User's Keycloak ID"
+        }
+      },
+      "type": "object"
+    },
+    "ProfileVisibilitySettings": {
+      "properties": {
+        "settings": {
+          "type": "array",
+          "description": "List of profile visibility settings",
+          "items": {
+            "$ref": "#/definitions/ProfileVisibilitySetting"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "ProfileVisibilitySetting": {
+      "required": [
+        "category",
+        "setting_id",
+        "value"
+      ],
+      "properties": {
+        "setting_id": {
+          "type": "string",
+          "description": "Unique ID for the setting"
+        },
+        "value": {
+          "type": "string",
+          "description": "Visibility value (visible/hidden)"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category: 'Contact' or 'Education And Other Information'"
+        }
+      },
+      "type": "object"
+    },
+    "EmailNotificationSettings": {
+      "properties": {
+        "settings": {
+          "type": "array",
+          "description": "List of email notification settings",
+          "items": {
+            "$ref": "#/definitions/EmailNotificationSetting"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "EmailNotificationSetting": {
+      "required": [
+        "setting_id",
+        "value"
+      ],
+      "properties": {
+        "setting_id": {
+          "type": "string",
+          "description": "Unique ID for the setting"
+        },
+        "value": {
+          "type": "boolean",
+          "description": "Notification enabled (true/false)"
+        }
+      },
+      "type": "object"
+    },
+    "LoginRequest": {
+      "required": [
+        "password",
+        "username"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "User's Keycloak username"
+        },
+        "password": {
+          "type": "string",
+          "description": "User's Keycloak password"
+        }
+      },
+      "type": "object"
+    },
+    "TokenResponse": {
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "JWT access token"
+        },
+        "expires_in": {
+          "type": "integer",
+          "description": "Access token expiration time in seconds"
+        },
+        "refresh_expires_in": {
+          "type": "integer",
+          "description": "Refresh token expiration time in seconds"
+        },
+        "refresh_token": {
+          "type": "string",
+          "description": "JWT refresh token"
+        },
+        "token_type": {
+          "type": "string",
+          "description": "Type of token, typically 'Bearer'"
+        },
+        "not-before-policy": {
+          "type": "integer",
+          "description": "Time before which the token is not valid"
+        },
+        "session_state": {
+          "type": "string",
+          "description": "Session identifier"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Scopes associated with the token"
+        }
+      },
+      "type": "object"
+    },
+    "SignupRequest": {
+      "required": [
+        "confirm_email",
+        "confirm_password",
+        "email",
+        "first_name",
+        "last_name",
+        "password",
+        "phone_number",
+        "username"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User email"
+        },
+        "confirm_email": {
+          "type": "string",
+          "description": "User email confirmation"
+        },
+        "password": {
+          "type": "string",
+          "description": "User password"
+        },
+        "confirm_password": {
+          "type": "string",
+          "description": "Confirm your password"
+        },
+        "first_name": {
+          "type": "string",
+          "description": "Users first name"
+        },
+        "last_name": {
+          "type": "string",
+          "description": "Users last name"
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "Users phone number"
+        },
+        "username": {
+          "type": "string",
+          "description": "Desired username"
+        },
+        "user_type": {
+          "type": "string",
+          "description": "Standard or Professional",
+          "example": "Standard",
+          "enum": [
+            "Standard",
+            "Professional"
+          ]
+        },
+        "license_body": {
+          "type": "string",
+          "description": "License body (HCPC, BACP, UKCP)",
+          "example": "HCPC",
+          "enum": [
+            "HCPC",
+            "BACP",
+            "UKCP"
+          ]
+        },
+        "license_number": {
+          "type": "string",
+          "description": "Professional license/registration number"
+        },
+        "consent_license_data": {
+          "type": "string",
+          "description": "Consent to use and display license data"
+        }
+      },
+      "type": "object"
+    },
+    "SignupResponse": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Response message indicating success or failure of signup"
+        }
+      },
+      "type": "object"
+    },
+    "LogoutRequest": {
+      "properties": {
+        "refresh_token": {
+          "type": "string",
+          "description": "Users refresh token"
+        }
+      },
+      "type": "object"
+    },
+    "RefreshTokenRequest": {
+      "required": [
+        "refresh_token"
+      ],
+      "properties": {
+        "refresh_token": {
+          "type": "string",
+          "description": "Valid refresh token"
+        }
+      },
+      "type": "object"
+    },
+    "SetUserTypeRequest": {
+      "required": [
+        "user_type"
+      ],
+      "properties": {
+        "user_type": {
+          "type": "string",
+          "description": "Choose 'professional' or 'standard'"
+        },
+        "license": {
+          "type": "string",
+          "description": "License number (for professional users only)"
+        },
+        "specialization": {
+          "type": "string",
+          "description": "Specialization field (for professional users only)"
+        }
+      },
+      "type": "object"
+    },
+    "ChangePasswordRequest": {
+      "required": [
+        "new_password"
+      ],
+      "properties": {
+        "new_password": {
+          "type": "string",
+          "description": "New password for the user"
+        }
+      },
+      "type": "object"
+    },
+    "ResetPasswordRequest": {
+      "required": [
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User's email for password reset"
+        }
+      },
+      "type": "object"
+    },
+    "DeleteAccountRequest": {
+      "required": [
+        "confirmation"
+      ],
+      "properties": {
+        "confirmation": {
+          "type": "boolean",
+          "description": "Confirmation required to delete the account"
+        }
+      },
+      "type": "object"
+    },
+    "PostResponse": {
+      "properties": {
+        "posts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Post"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "Post": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Post ID"
+        },
+        "author": {
+          "type": "string",
+          "description": "Username of the author"
+        },
+        "author_id": {
+          "type": "string",
+          "description": "The Keycloak-ID of the author"
+        },
+        "author_pic": {
+          "type": "string",
+          "description": "URL to author's profile picture"
+        },
+        "content": {
+          "type": "string",
+          "description": "Text content of the post"
+        },
+        "image": {
+          "type": "string",
+          "description": "URL to image in the post"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the post in ISO format"
+        },
+        "likes": {
+          "type": "integer",
+          "description": "Number of likes"
+        },
+        "comments": {
+          "type": "integer",
+          "description": "Number of comments"
+        },
+        "current_user_reaction": {
+          "type": "string",
+          "description": "Current user's reaction to the post, if any"
+        }
+      },
+      "type": "object"
+    },
+    "CreatePostRequest": {
+      "required": [
+        "content"
+      ],
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "Content of the post"
+        }
+      },
+      "type": "object"
+    },
+    "GetReactionsResponse": {
+      "properties": {
+        "reactions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ReactionResponse"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "ReactionResponse": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the post"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of reaction"
+        },
+        "author": {
+          "type": "string",
+          "description": "Username of the reaction's author"
+        },
+        "picture": {
+          "type": "string",
+          "description": "URL to the author's profile picture"
+        }
+      },
+      "type": "object"
+    },
+    "ReactionRequest": {
+      "required": [
+        "reaction_type"
+      ],
+      "properties": {
+        "reaction_type": {
+          "type": "string",
+          "description": "Reaction type: 'like', 'love', 'laugh', 'angry', etc."
+        }
+      },
+      "type": "object"
+    },
+    "ReactToPostResponse": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Result message"
+        }
+      },
+      "type": "object"
+    },
+    "LikePostRequest": {
+      "required": [
+        "post_id"
+      ],
+      "properties": {
+        "post_id": {
+          "type": "integer",
+          "description": "ID of the post to like or unlike"
+        }
+      },
+      "type": "object"
+    },
+    "AddCommentRequest": {
+      "required": [
+        "content"
+      ],
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "Content of the comment"
+        }
+      },
+      "type": "object"
+    },
+    "GetCommentResponse": {
+      "properties": {
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Comment"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "Comment": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the comment"
+        },
+        "author": {
+          "type": "string",
+          "description": "Username of the comment's author"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the comment"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the comment in ISO format"
+        }
+      },
+      "type": "object"
+    },
+    "FollowUserRequest": {
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "'follow' to follow, 'unfollow' to unfollow"
+        },
+        "follow_type": {
+          "type": "string",
+          "description": "Basic follow or follow as a friend"
+        }
+      },
+      "type": "object"
+    },
+    "GetFollowersRequest": {
+      "properties": {
+
+      },
+      "type": "object"
+    },
+    "GetFollowersResponse": {
+      "properties": {
+        "followers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Follower"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "Follower": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the follower"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the follower"
+        }
+      },
+      "type": "object"
+    },
+    "GetFollowingRequest": {
+      "properties": {
+
+      },
+      "type": "object"
+    },
+    "GetFollowingResponse": {
+      "properties": {
+        "following": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FollowedUser"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "FollowedUser": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Keycloak_ID of the followed user"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the followed user"
+        },
+        "follow_type": {
+          "type": "string",
+          "description": "Type of follow relationship: 'basic' or 'friend'"
+        },
+        "profile_pic": {
+          "type": "string",
+          "description": "URL to the followed user's profile picture"
+        }
+      },
+      "type": "object"
+    },
+    "SendMessageRequest": {
+      "required": [
+        "message",
+        "receiver_id"
+      ],
+      "properties": {
+        "receiver_id": {
+          "type": "string",
+          "description": "keycloak ID of the recipient user"
+        },
+        "message": {
+          "type": "string",
+          "description": "Message content"
+        }
+      },
+      "type": "object"
+    },
+    "GetMessagesRequest": {
+      "properties": {
+
+      },
+      "type": "object"
+    },
+    "GetMessagesResponse": {
+      "properties": {
+        "messages": {
+          "type": "array",
+          "description": "List of chat messages",
+          "items": {
+            "$ref": "#/definitions/Chat"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "Chat": {
+      "properties": {
+        "sender": {
+          "type": "string",
+          "description": "Sender Username"
+        },
+        "receiver": {
+          "type": "string",
+          "description": "Receiver Username"
+        },
+        "content": {
+          "type": "string",
+          "description": "Message content"
+        },
+        "opened": {
+          "type": "boolean",
+          "description": "Whether the message has been opened"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the message ISO format"
+        }
+      },
+      "type": "object"
+    },
+    "MarkChatOpenedResponse": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Confirmation message with number of messages opened",
+          "example": "3 messages marked as opened"
+        }
+      },
+      "type": "object"
+    },
+    "GetFriendsRequest": {
+      "required": [
+        "keycloak_id"
+      ],
+      "properties": {
+        "keycloak_id": {
+          "type": "string",
+          "description": "The Keycloak ID of the current user"
+        }
+      },
+      "type": "object"
+    },
+    "GetFriendsResponse": {
+      "properties": {
+        "friends": {
+          "type": "array",
+          "description": "List of friends with chat preview",
+          "items": {
+            "$ref": "#/definitions/FriendInfo"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "FriendInfo": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Keycloak ID of the friend"
+        },
+        "username": {
+          "type": "string",
+          "description": "Friend's username"
+        },
+        "profile_pic": {
+          "type": "string",
+          "description": "URL to profile picture"
+        },
+        "last_message": {
+          "type": "string",
+          "description": "Snippet of the last message"
+        },
+        "last_message_time": {
+          "type": "string",
+          "description": "Timestamp of last message (ISO 8601 format)"
+        },
+        "unread": {
+          "type": "boolean",
+          "description": "True if last message is from friend and not opened, otherwise False"
+        }
+      },
+      "type": "object"
+    },
+    "EventsQuery": {
+      "properties": {
+        "start_time": {
+          "type": "string",
+          "description": "Start time filter in ISO format"
+        },
+        "end_time": {
+          "type": "string",
+          "description": "End time filter in ISO format"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
+        }
+      },
+      "type": "object"
+    },
+    "EventsResponse": {
+      "properties": {
+        "event_ids": {
+          "type": "array",
+          "description": "List of Event IDs",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "total_events": {
+          "type": "integer",
+          "description": "total number of events meeting query"
+        },
+        "total_pages": {
+          "type": "integer",
+          "description": "total number of pages meeting the query"
+        },
+        "current_page": {
+          "type": "integer",
+          "description": "current page number"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "number of events per page"
+        }
+      },
+      "type": "object"
+    },
+    "EventInfoQuery": {
+      "required": [
+        "event_ids"
+      ],
+      "properties": {
+        "event_ids": {
+          "type": "array",
+          "description": "takes list of Ids for event to be fetched",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
+        }
+      },
+      "type": "object"
+    },
+    "AddEventRequest": {
+      "required": [
+        "event_time",
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the event"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description about the event"
+        },
+        "location": {
+          "type": "string",
+          "description": "Description of the event location i.e second floor conference room"
+        },
+        "event_time": {
+          "type": "string",
+          "description": "Date and time of event in ISO format"
+        },
+        "creator_attending": {
+          "type": "boolean"
+        },
+        "address_id": {
+          "type": "integer",
+          "description": "Address ID for if the address is already in the database"
+        },
+        "address_number": {
+          "type": "string",
+          "description": "House number (or name) for address"
+        },
+        "address_street": {
+          "type": "string",
+          "description": "Street Name"
+        },
+        "address_city": {
+          "type": "string",
+          "description": "City"
+        },
+        "address_county": {
+          "type": "string",
+          "description": "County"
+        },
+        "address_country": {
+          "type": "string",
+          "description": "Country, (UK by default)"
+        },
+        "post_code": {
+          "type": "string",
+          "description": "post code"
+        }
+      },
+      "type": "object"
+    },
+    "EventInfoResponse": {
+      "properties": {
+        "event_infos": {
+          "$ref": "#/definitions/EventsModelResponse"
+        },
+        "total_events": {
+          "type": "integer",
+          "description": "total number of events meeting query"
+        },
+        "total_pages": {
+          "type": "integer",
+          "description": "total number of pages meeting the query"
+        },
+        "current_page": {
+          "type": "integer",
+          "description": "current page number"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "number of events per page"
+        }
+      },
+      "type": "object"
+    },
+    "EventsModelResponse": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "event_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "address": {
+          "$ref": "#/definitions/AddressModelResponse"
+        },
+        "attendees": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "AddressModelResponse": {
+      "properties": {
+        "number": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "county": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "post_code": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "AttendingQuery": {
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "User ID of creator to find events for, will default to user that made the request"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of request, upcoming/past/all, defaults to 'all'"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
+        }
+      },
+      "type": "object"
+    },
+    "AddAttendeeRequest": {
+      "required": [
+        "event_id"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "User ID to be added, will default to user that made the request"
+        },
+        "event_id": {
+          "type": "integer",
+          "description": "ID of event to add attendee to"
+        }
+      },
+      "type": "object"
+    },
+    "RemoveAttendeeRequest": {
+      "required": [
+        "event_id"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "User ID to be removed, will default to user that made the request"
+        },
+        "event_id": {
+          "type": "integer",
+          "description": "ID of event to remove attendee from"
+        }
+      },
+      "type": "object"
+    },
+    "CreateBlogPost": {
+      "required": [
+        "content",
+        "title"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the blog post"
+        },
+        "content": {
+          "type": "string",
+          "description": "Blog post content"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "Optional image URL"
+        }
+      },
+      "type": "object"
+    },
+    "RegisterDeviceToken": {
+      "required": [
+        "platform",
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "Device push token"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Device platform (ios/android)"
+        }
+      },
+      "type": "object"
+    },
+    "Message": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Response message"
+        }
+      },
+      "type": "object"
+    },
+    "DeviceTokenList": {
+      "properties": {
+        "device_tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeviceToken"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "DeviceToken": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Token ID"
+        },
+        "token": {
+          "type": "string",
+          "description": "Device push token"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Device platform"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Token registration date/time (ISO format)"
+        }
+      },
+      "type": "object"
+    },
+    "MessageRequest": {
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Message content"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
 }
