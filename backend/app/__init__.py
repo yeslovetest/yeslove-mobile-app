@@ -22,6 +22,7 @@ from app.api.deviceToken.device_token_routes import api as device_token_api
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
 from app.api.media.media_routes import api as media_api
+from app.api.notifications.notification_routes import api as notifications_api
 
 
 # Load environment variables
@@ -69,6 +70,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(device_token_api, path="/api/device")
     api.add_namespace(chatbot_api, path="/api/chatbot")
     api.add_namespace(media_api, path="/api/media")
+    api.add_namespace(notifications_api, path="/api/notifications")
 
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
     
