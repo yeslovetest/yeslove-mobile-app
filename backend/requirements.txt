@@ -36,6 +36,9 @@ prometheus-flask-exporter
 
 openai
 
+# Graph database dependencies
+gremlinpython>=3.6.0
+
 # Vector DB requirements
 
 tiktoken

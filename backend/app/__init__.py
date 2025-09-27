@@ -10,7 +10,8 @@ from prometheus_flask_exporter import PrometheusMetrics
 from dotenv import load_dotenv
 from app.config import DevelopmentConfig
 from app.utils import get_keycloak_public_keys
-from app.graph.neo4j_client import create_driver, close_driver, create_constraints
+from app.graph.neptune_client import create_neptune_client
+from app.graph.neptune_repository import NeptuneRepository
 from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
@@ -57,6 +58,10 @@ def create_app(config_class=DevelopmentConfig):
     app.config["KEYCLOAK_CLIENT_SECRET"] = config_class.KEYCLOAK_CLIENT_SECRET
     app.config["KEYCLOAK_ISSUER"] = config_class.keycloak_issuer()
     app.config["KEYCLOAK_CERTS_URL"] = config_class.keycloak_certs_url()
+    
+    # 🌊 Neptune Configuration
+    app.config["NEPTUNE_ENDPOINT"] = os.getenv('NEPTUNE_ENDPOINT')
+    app.config["NEPTUNE_PORT"] = int(os.getenv('NEPTUNE_PORT', 8182))
 
     # 📊 Initialize API
     api = Api(app, title="YesLove API", version="1.0", doc="/swagger")
@@ -88,22 +93,31 @@ def create_app(config_class=DevelopmentConfig):
     with app.app_context():
         get_keycloak_public_keys()
 
-    # --- Initialize Neo4j driver (optional) ---
+    # --- Initialize Neptune client (optional) ---
     try:
-        app.neo4j_driver = create_driver(app.config.get('NEO4J_URI'), app.config.get('NEO4J_USER'), app.config.get('NEO4J_PASS'))
-        # create basic constraints if possible (idempotent)
-        create_constraints(app.neo4j_driver)
+        neptune_endpoint = app.config.get('NEPTUNE_ENDPOINT')
+        neptune_port = app.config.get('NEPTUNE_PORT', 8182)
+        
+        if neptune_endpoint:
+            app.neptune_client = create_neptune_client(neptune_endpoint, neptune_port)
+            if app.neptune_client:
+                app.graph_repository = NeptuneRepository(app.neptune_client)
+                app.logger.info('Neptune client initialized successfully')
+            else:
+                app.logger.warning('Failed to connect to Neptune')
+        else:
+            app.logger.info('Neptune not configured, skipping graph database')
     except Exception:
-        app.logger.exception('Failed to initialize Neo4j driver')
+        app.logger.exception('Failed to initialize Neptune client')
 
     @app.teardown_appcontext
-    def shutdown_neo4j(exception=None):
-        driver = getattr(app, 'neo4j_driver', None)
-        if driver:
+    def shutdown_neptune(exception=None):
+        client = getattr(app, 'neptune_client', None)
+        if client:
             try:
-                close_driver(driver)
+                client.close()
             except Exception:
-                app.logger.exception('Error closing Neo4j driver')
+                app.logger.exception('Error closing Neptune client')
 
     app.chatbot = Chatbot() #initializing the chatbot
     

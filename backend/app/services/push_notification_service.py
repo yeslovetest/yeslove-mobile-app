@@ -31,7 +31,14 @@ class PushNotificationService:
     
     @staticmethod
     def send_to_multiple_users(user_ids, title, body, data=None, notification_type="posts"):
-        """Send push notification to multiple users"""
+        """Send push notification to multiple users via SQS"""
+        # For large user lists, use SQS for async processing
+        if len(user_ids) > 10:
+            from app.services.sqs_service import SQSService
+            sqs = SQSService()
+            return sqs.send_notification_job(user_ids, title, body, data)
+        
+        # For small lists, send directly
         success_count = 0
         for user_id in user_ids:
             if PushNotificationService.send_to_user(user_id, title, body, data, notification_type):

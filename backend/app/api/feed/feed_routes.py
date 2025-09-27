@@ -18,6 +18,8 @@ class Feed(Resource):
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
         from app.models import User, Post, Like, Reaction
+        from app.services.feed_cache_service import FeedCacheService
+        
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
@@ -25,6 +27,13 @@ class Feed(Resource):
         feed_type = request.args.get("feed_type", "all")
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))
+        
+        # Try cache first for main feed
+        feed_cache = FeedCacheService()
+        if feed_type == "all":
+            cached_feed = feed_cache.get_user_feed(user.id, page, per_page)
+            if cached_feed:
+                return cached_feed, 200
 
         # Build query based on feed type
         
@@ -52,7 +61,7 @@ class Feed(Resource):
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
 
-        return {
+        feed_data = {
             "posts": [{
                 "id": post.id,
                 "author": post.author.username,
@@ -73,7 +82,13 @@ class Feed(Resource):
                 "has_next": paginated_posts.has_next,
                 "has_prev": paginated_posts.has_prev
             }
-        }, 200
+        }
+        
+        # Cache the feed data for main feed
+        if feed_type == "all":
+            feed_cache.cache_user_feed(user.id, feed_data, page, per_page)
+        
+        return feed_data, 200
 
 
 
@@ -99,6 +114,11 @@ class CreatePost(Resource):
         post = Post(content=data["content"], user_id=user.id)
         db.session.add(post)
         db.session.commit()
+        
+        # Fanout post to followers
+        from app.services.fanout_service import FanoutService
+        fanout_service = FanoutService()
+        fanout_service.fanout_post(post.id, user.id)
 
         # Send push notification to followers
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
