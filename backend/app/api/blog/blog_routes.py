@@ -82,3 +82,70 @@ class CreateBlog(Resource):
             logger.exception("Error creating blog post")
             db.session.rollback()
             return {"message": "An error occurred while creating the blog post."}, 500
+
+@api.route("/blogs")
+class GetBlogs(Resource):
+    from .blog_models import BlogListResponse
+    @api.response(200, "Success", BlogListResponse)
+    def get(self):
+        """Get all blog posts with pagination"""
+        from app.models import BlogPost
+        
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        
+        try:
+            paginated_blogs = BlogPost.query.order_by(BlogPost.timestamp.desc()).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            blogs = paginated_blogs.items
+            
+            return {
+                "blogs": [{
+                    "id": blog.id,
+                    "title": blog.title,
+                    "content": blog.content,
+                    "author": blog.author.username,
+                    "timestamp": blog.timestamp.isoformat(),
+                    "image_url": blog.image_url,
+                    "summary": blog.summary
+                } for blog in blogs],
+                "pagination": {
+                    "page": paginated_blogs.page,
+                    "per_page": paginated_blogs.per_page,
+                    "total_blogs": paginated_blogs.total,
+                    "total_pages": paginated_blogs.pages,
+                    "has_next": paginated_blogs.has_next,
+                    "has_prev": paginated_blogs.has_prev
+                }
+            }, 200
+            
+        except Exception as e:
+            logger.exception("Error fetching blog posts")
+            return {"message": "An error occurred while fetching blog posts."}, 500
+
+@api.route("/blog/<int:blog_id>")
+class GetBlog(Resource):
+    from .blog_models import BlogResponse
+    @api.response(200, "Success", BlogResponse)
+    def get(self, blog_id):
+        """Get a specific blog post by ID"""
+        from app.models import BlogPost
+        
+        try:
+            blog = BlogPost.query.get_or_404(blog_id)
+            
+            return {
+                "id": blog.id,
+                "title": blog.title,
+                "content": blog.content,
+                "author": blog.author.username,
+                "timestamp": blog.timestamp.isoformat(),
+                "image_url": blog.image_url,
+                "summary": blog.summary
+            }, 200
+            
+        except Exception as e:
+            logger.exception(f"Error fetching blog post {blog_id}")
+            return {"message": "Blog post not found."}, 404

@@ -1,8 +1,8 @@
 from flask import request
 from flask_restx import Namespace, Resource
+from typing import Dict, Any
 
 from app.logging_setup import setup_logger
-
 from app.utils import require_auth
 
 logger = setup_logger()
@@ -63,10 +63,12 @@ class UpdateProfile(Resource):
     @api.expect(UserProfile)  # ✅ Attach model
     def put(self):
         """Update user profile."""
-        data = request.json
+        data = request.json or {}
         
         from app.models import User, db
-        user = User.query.filter_by(email=request.user["email"]).first()
+        # Type hint for request.user added by @require_auth decorator
+        user_data: Dict[str, Any] = getattr(request, 'user', {})
+        user = User.query.filter_by(email=user_data.get("email")).first()
 
         if not user:
             return {"message": "User not found"}, 404
@@ -118,12 +120,13 @@ class GetUserKeycloakIDFlexible(Resource):
     def post(self):
         """Retrieve a user's Keycloak ID by username (required), with optional email or user ID."""
         from app.models import User
-        data = request.json
+        data = request.json or {}
         username = data.get("username")
         email = data.get("email")
         user_id = data.get("user_id")
 
-        logger.info(f"🔍 User Keycloak ID Lookup initiated by {request.user['username']}")
+        user_data: Dict[str, Any] = getattr(request, 'user', {})
+        logger.info(f"🔍 User Keycloak ID Lookup initiated by {user_data.get('username', 'unknown')}")
 
         # ✅ Enforce username requirement
         if not username:
@@ -161,7 +164,8 @@ class ProfileVisibility(Resource):
     def get(self):
         """Get profile visibility settings."""
         from app.models import ProfileVisibilitySettings
-        user_id = request.user["keycloak_id"]
+        user_data: Dict[str, Any] = getattr(request, 'user', {})
+        user_id = user_data.get("keycloak_id")
         settings = ProfileVisibilitySettings.query.filter_by(user_id=user_id).all()
         return {'settings' :
                 [{"setting_id": s.setting_id, 
@@ -174,8 +178,9 @@ class ProfileVisibility(Resource):
     def post(self):
         """Update profile visibility settings."""
         from app.models import ProfileVisibilitySettings, db
-        data = request.json
-        user_id = request.user["keycloak_id"]
+        data = request.json or {}
+        user_data: Dict[str, Any] = getattr(request, 'user', {})
+        user_id = user_data.get("keycloak_id")
 
         for setting in data.get("settings", []):
             setting_id = setting["setting_id"]
@@ -204,7 +209,8 @@ class EmailNotifications(Resource):
     def get(self):
         """Get email notification settings."""
         from app.models import EmailNotificationSettings
-        user_id = request.user["keycloak_id"]
+        user_data: Dict[str, Any] = getattr(request, 'user', {})
+        user_id = user_data.get("keycloak_id")
         settings = EmailNotificationSettings.query.filter_by(user_id=user_id).all()
         return {'settings': [{"setting_id": s.setting_id, "value": s.value} for s in settings]}, 200
 
@@ -214,8 +220,9 @@ class EmailNotifications(Resource):
     def post(self):
         """Update email notification settings."""
         from app.models import EmailNotificationSettings, db
-        data = request.json
-        user_id = request.user["keycloak_id"]
+        data = request.json or {}
+        user_data: Dict[str, Any] = getattr(request, 'user', {})
+        user_id = user_data.get("keycloak_id")
 
         for setting in data.get("settings", []):
             setting_id = setting["setting_id"]
