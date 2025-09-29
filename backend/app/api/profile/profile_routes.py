@@ -14,6 +14,7 @@ api = Namespace("profile", description="API Endpoints")
 class UserProfile(Resource):
     from app.api.profile.profile_models import UserProfile
     @require_auth()
+    @api.doc(security='Bearer')
     @api.response(200, "Success", UserProfile)  # ✅ Ensure correct model
     def get(self, keycloak_id):
         
@@ -60,6 +61,7 @@ class UserProfile(Resource):
 class UpdateProfile(Resource):
     from app.api.profile.profile_models import UserProfile
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(UserProfile)  # ✅ Attach model
     def put(self):
         """Update user profile."""
@@ -96,6 +98,7 @@ class UpdateProfile(Resource):
 class About(Resource):
     from app.api.profile.profile_models import AboutResponse
     @require_auth()
+    @api.doc(security='Bearer')
     @api.response(200, model=AboutResponse, description='')  # ✅ Attach model
     def get(self, keycloak_id):
         """Get user contact & education details for About section."""
@@ -128,6 +131,7 @@ class About(Resource):
 class GetUserKeycloakIDFlexible(Resource):
     from app.api.profile.profile_models import UserQuery, UserQueryResponse
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(UserQuery)  # ✅ Require Authorization Header
     @api.response(200, "Success", UserQueryResponse)  # ✅ Ensure correct model
     def post(self):
@@ -172,8 +176,9 @@ class GetUserKeycloakIDFlexible(Resource):
 @api.route("/profile_visibility")
 class ProfileVisibility(Resource):
     from app.api.profile.profile_models import ProfileVisibilitySettings
-    @api.response(200, "Success", ProfileVisibilitySettings)  
     @require_auth()
+    @api.doc(security='Bearer')
+    @api.response(200, "Success", ProfileVisibilitySettings)  
     def get(self):
         """Get profile visibility settings."""
         from app.models import ProfileVisibilitySettings
@@ -187,6 +192,7 @@ class ProfileVisibility(Resource):
 
     from app.api.profile.profile_models import ProfileVisibilitySettings
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(ProfileVisibilitySettings)
     def post(self):
         """Update profile visibility settings."""
@@ -217,8 +223,9 @@ class ProfileVisibility(Resource):
 @api.route("/email_notifications")
 class EmailNotifications(Resource):
     from app.api.profile.profile_models import EmailNotificationSettings
-    @api.response(200, "Success", EmailNotificationSettings)
     @require_auth()
+    @api.doc(security='Bearer')
+    @api.response(200, "Success", EmailNotificationSettings)
     def get(self):
         """Get email notification settings."""
         from app.models import EmailNotificationSettings
@@ -229,6 +236,7 @@ class EmailNotifications(Resource):
 
     from app.api.profile.profile_models import EmailNotificationSettings
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(EmailNotificationSettings)
     def post(self):
         """Update email notification settings."""

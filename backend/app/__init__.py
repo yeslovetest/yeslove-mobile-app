@@ -19,7 +19,7 @@ from app.api.chat.chat_routes import api as chat_api
 
 from app.api.events.events_routes import api as events_api
 from app.api.blog.blog_routes import api as blog_api
-from app.api.deviceToken.device_token_routes import api as device_token_api
+# Device token API removed - handled by DeviceTokenService in auth routes
 from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
 from app.api.media.media_routes import api as media_api
@@ -63,8 +63,24 @@ def create_app(config_class=DevelopmentConfig):
     app.config["NEPTUNE_ENDPOINT"] = os.getenv('NEPTUNE_ENDPOINT')
     app.config["NEPTUNE_PORT"] = int(os.getenv('NEPTUNE_PORT', 8182))
 
-    # 📊 Initialize API
-    api = Api(app, title="YesLove API", version="1.0", doc="/swagger")
+    # 📊 Initialize API with JWT authorization
+    authorizations = {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"'
+        }
+    }
+    
+    api = Api(
+        app, 
+        title="YesLove API", 
+        version="1.0", 
+        doc="/swagger",
+        authorizations=authorizations,
+        security='Bearer'
+    )
 
     api.add_namespace(profile_api, path="/api/profile")
     api.add_namespace(auth_api, path="/api/auth")
@@ -72,7 +88,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(chat_api, path="/api/chat")
     api.add_namespace(events_api, path="/api/events")
     api.add_namespace(blog_api, path="/api/blog")
-    api.add_namespace(device_token_api, path="/api/device")
+    # Device token API removed - handled by DeviceTokenService
     api.add_namespace(chatbot_api, path="/api/chatbot")
     api.add_namespace(media_api, path="/api/media")
     api.add_namespace(notifications_api, path="/api/notifications")

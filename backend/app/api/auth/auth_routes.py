@@ -77,16 +77,28 @@ class Login(Resource):
             # ✅ Ensure user exists in local DB
             user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
             if not user:
-                logger.info(f"🔹 Creating new user {user_info['preferred_username']} in database...")
-                user = User(
-                    keycloak_id=user_info["sub"],
-                    username=user_info.get("preferred_username", username),
-                    email=user_info.get("email", ""),
-                    user_type=user_type
-                )
-                db.session.add(user)
+                # Check if user exists by username to avoid duplicates
+                existing_user = User.query.filter_by(username=user_info.get("preferred_username", username)).first()
+                if existing_user:
+                    # Update existing user with Keycloak ID
+                    existing_user.keycloak_id = user_info["sub"]
+                    existing_user.email = user_info.get("email", existing_user.email)
+                    existing_user.user_type = user_type
+                    user = existing_user
+                    logger.info(f"✅ Updated existing user {user.username} with Keycloak ID")
+                else:
+                    # Create new user
+                    logger.info(f"🔹 Creating new user {user_info['preferred_username']} in database...")
+                    user = User(
+                        keycloak_id=user_info["sub"],
+                        username=user_info.get("preferred_username", username),
+                        email=user_info.get("email", ""),
+                        user_type=user_type
+                    )
+                    db.session.add(user)
+                    logger.info(f"✅ User {user.username} created successfully.")
+                
                 db.session.commit()
-                logger.info(f"✅ User {user.username} created successfully.")
 
             # ✅ If user is professional, ensure they have details
             if user.user_type == "professional":
@@ -100,9 +112,10 @@ class Login(Resource):
             # Auto-register device token if provided
             device_token = data.get("device_token")
             platform = data.get("platform")
+            device_id = data.get("device_id")
             if device_token:
                 from app.services.device_token_service import DeviceTokenService
-                DeviceTokenService.register_device_token(user.id, device_token, platform)
+                DeviceTokenService.register_device_token(user.id, device_token, platform, device_id)
                 logger.info(f"Device token registered for user {user.username}")
             
             logger.info(f"✅ User {user.username} logged in successfully.")
@@ -272,22 +285,31 @@ class Signup(Resource):
             from sqlalchemy.exc import IntegrityError
 
             # Check to see if username already taken
-            if User.query.filter_by(username=username).first():
-                logger.warning(f"⚠️ Signup rejected → Username {username} already exists in local DB")
-                return {"message" : "Username already exists"}, 409
-            
-            # Creates a local user row
-            new_user = User(
-                keycloak_id  = user_id,
-                username     = username, 
-                email        = email,
-                phone_number = phone_number,
-                user_type = user_type.lower()
-
-            )
+            existing_user = User.query.filter_by(username=username).first()
+            if existing_user:
+                # Update existing user with Keycloak ID if missing
+                if not existing_user.keycloak_id:
+                    existing_user.keycloak_id = user_id
+                    existing_user.email = email
+                    existing_user.phone_number = phone_number
+                    existing_user.user_type = user_type.lower()
+                    new_user = existing_user
+                    logger.info(f"✅ Updated existing user {username} with Keycloak ID")
+                else:
+                    logger.warning(f"⚠️ Signup rejected → Username {username} already exists")
+                    return {"message" : "Username already exists"}, 409
+            else:
+                # Creates a local user row
+                new_user = User(
+                    keycloak_id  = user_id,
+                    username     = username, 
+                    email        = email,
+                    phone_number = phone_number,
+                    user_type = user_type.lower()
+                )
+                db.session.add(new_user)
             
             try:
-                db.session.add(new_user)
                 db.session.flush()
 
                 # Creates a professional user row
@@ -310,9 +332,10 @@ class Signup(Resource):
             # Auto-register device token if provided during signup
             device_token = data.get("device_token")
             platform = data.get("platform")
+            device_id = data.get("device_id")
             if device_token:
                 from app.services.device_token_service import DeviceTokenService
-                DeviceTokenService.register_device_token(new_user.id, device_token, platform)
+                DeviceTokenService.register_device_token(new_user.id, device_token, platform, device_id)
                 logger.info(f"Device token registered for new user {username}")
             
             return {"message":"User created in Keycloak and email verification sent"},201
@@ -327,6 +350,7 @@ class Signup(Resource):
 class Logout(Resource):
     from .auth_models import LogoutRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(LogoutRequest)  # ✅ Attach model
     def post(self):
         """Logout user from Keycloak."""
@@ -385,6 +409,7 @@ class RefreshToken(Resource):
 class SetUserType(Resource):
     from .auth_models import SetUserTypeRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(SetUserTypeRequest)  # ✅ Attach model
     def post(self):
         """Set user type (professional or standard) for new users."""
@@ -435,6 +460,7 @@ class SetUserType(Resource):
 class ChangePassword(Resource):
     from .auth_models import ChangePasswordRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(ChangePasswordRequest)
     def post(self):
         """Change user password via Keycloak API."""
@@ -517,6 +543,7 @@ class ResetPassword(Resource):
 class DeleteAccount(Resource):
     from .auth_models import DeleteAccountRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(DeleteAccountRequest)
     def delete(self):
         """Delete user account via Keycloak API."""
