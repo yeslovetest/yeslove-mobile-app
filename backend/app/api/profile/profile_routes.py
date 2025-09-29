@@ -32,7 +32,7 @@ class UserProfile(Resource):
         response_data = {
             "username": user.username or "",
             "bio": user.bio or "",
-            "profile_pic": user.profile_pic or "",
+            "profile_pic": user.profile_pic_url or "",
             "user_type": user.user_type or "standard",
             "contact_info": {
                 "name": user.username or "",
@@ -74,7 +74,20 @@ class UpdateProfile(Resource):
             return {"message": "User not found"}, 404
 
         user.bio = data.get("bio", user.bio)
-        user.profile_pic = data.get("profile_pic", user.profile_pic)
+        
+        # Handle profile picture upload to S3
+        if 'profile_pic' in request.files:
+            from app.services.media.media_service import MediaService
+            try:
+                upload_result = MediaService.upload_file(
+                    file=request.files['profile_pic'],
+                    user_id=user.id,
+                    folder='profiles'
+                )
+                user.profile_pic_url = upload_result.get('s3_url') if upload_result else None
+            except Exception as e:
+                logger.error(f"Profile pic upload failed: {e}")
+        
         db.session.commit()
         return {"message": "Profile updated successfully"}, 200
     

@@ -28,10 +28,23 @@ class CreateBlog(Resource):
                 logger.warning(f"Unauthorized blog post creation attempt by user {request.user.get('keycloak_id')}")
                 return {"message": "Access denied. Admins only."}, 403
 
-            data = request.get_json()
+            data = request.get_json() or {}
             title = data.get("title")
             content = data.get("content")
+            
+            # Handle image upload to S3 if provided
             image_url = data.get("image_url")
+            if 'image' in request.files:
+                from app.services.media.media_service import MediaService
+                try:
+                    upload_result = MediaService.upload_file(
+                        file=request.files['image'],
+                        user_id=user.id,
+                        folder='blogs'
+                    )
+                    image_url = upload_result.get('s3_url') if upload_result else None
+                except Exception as e:
+                    logger.error(f"Blog image upload failed: {e}")
 
             # ✅ Basic validation
             if not title or not content:

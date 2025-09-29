@@ -123,6 +123,7 @@ class EventInfo(Resource):
     @api.doc(description="""Add event to events table,
                         Can take an address id if the address is already within in the database,
                         otherwise can be added line by line. Address isn't required to allow for online events.
+                        Image will be uploaded to S3 if provided.
                          """)
     @api.response(201, "Success")
     def post(self):
@@ -145,6 +146,13 @@ class EventInfo(Resource):
                 return {"message": "Address id does not exist"}, 400
         elif data.get("address_number"):
             logger.info("Creating address")
+            
+            # Validate address fields
+            from .address_validation import validate_address_fields
+            is_valid, validation_message = validate_address_fields(data)
+            if not is_valid:
+                return {"message": validation_message}, 400
+            
             country = data.get("address_country") or "UK"
             event_address = Address(
                 number=data.get("address_number"),
@@ -175,6 +183,23 @@ class EventInfo(Resource):
             return {"message": "Invalid datetime format. Use ISO format."}, 400
 
         logger.info("Creating Event")
+        
+        # Handle image upload to S3 if provided
+        image_url = None
+        if 'image' in request.files:
+            from app.services.media.media_service import MediaService
+            try:
+                upload_result = MediaService.upload_file(
+                    file=request.files['image'],
+                    user_id=creator.id,
+                    folder='events'
+                )
+                image_url = upload_result.get('s3_url') if upload_result else None
+                logger.info(f"Event image uploaded to S3: {image_url}")
+            except Exception as e:
+                logger.error(f"Image upload failed: {e}")
+                # Continue without image rather than failing
+        
         event = Event(
             name=data.get("name"),
             description=data.get("description"),
@@ -182,7 +207,8 @@ class EventInfo(Resource):
             event_time=event_datetime,
             creator_id=creator.id,
             address=event_address,
-            address_id=event_address.id if event_address else None
+            address_id=event_address.id if event_address else None,
+            image_url=image_url  # S3 URL stored in PostgreSQL
         )
 
         logger.info("Adding event to database")
@@ -395,20 +421,122 @@ class CreatedEvents(Resource):
 
 
 
-    # to do:
-    #
-    # put to edit event data
-    # add image functionality
-    # address verification
-    # delete event functionality
-    # better commenting
+@api.route("/event_info/<int:event_id>")
+class EventManagement(Resource):
+    from .events_models import UpdateEventRequest
+    
+    @require_auth()
+    @api.expect(UpdateEventRequest)
+    @api.doc(description="Update event data - only event creator can edit")
+    def put(self, event_id):
+        """Edit event data"""
+        from app.models import User, Event, Address, db
+        
+        data = request.json or {}
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        
+        if not user:
+            return {"message": "User not found"}, 404
+        
+        event = Event.query.get_or_404(event_id)
+        
+        # Only creator can edit event
+        if event.creator_id != user.id:
+            return {"message": "Only event creator can edit this event"}, 403
+        
+        try:
+            # Update basic event fields
+            if data.get("name"):
+                event.name = data.get("name")
+            if data.get("description"):
+                event.description = data.get("description")
+            if data.get("location"):
+                event.location = data.get("location")
+            if data.get("event_time"):
+                event.event_time = parse_iso_datetime(data.get("event_time"))
+            if data.get("image_url"):
+                event.image_url = data.get("image_url")
+            
+            db.session.commit()
+            return {"message": "Event updated successfully"}, 200
+            
+        except Exception as e:
+            logger.error(f"Error updating event: {e}")
+            db.session.rollback()
+            return {"message": "Error updating event"}, 500
+    
+    @require_auth()
+    @api.doc(description="Delete event - only event creator can delete")
+    def delete(self, event_id):
+        """Delete event"""
+        from app.models import User, Event, db
+        
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        
+        if not user:
+            return {"message": "User not found"}, 404
+        
+        event = Event.query.get_or_404(event_id)
+        
+        # Only creator can delete event
+        if event.creator_id != user.id:
+            return {"message": "Only event creator can delete this event"}, 403
+        
+        try:
+            db.session.delete(event)
+            db.session.commit()
+            return {"message": "Event deleted successfully"}, 200
+            
+        except Exception as e:
+            logger.error(f"Error deleting event: {e}")
+            db.session.rollback()
+            return {"message": "Error deleting event"}, 500
 
 
-    # testing with postman:
-    #
-    # get event ids - untested
-    # get event info - tested - ok - needs some more error handling for requests with incorrect ids
-    # create new event - untested
-    # add attendee - untested
-    # get attending - untested
-    # remove attendee - untested
+@api.route("/professionals")
+class GetProfessionals(Resource):
+    from .events_models import ProfessionalsListResponse
+    @api.response(200, "Success", ProfessionalsListResponse)
+    def get(self):
+        """Get list of verified professionals for event page"""
+        from app.models import User, ProfessionalDetails
+        
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 20))
+        
+        try:
+            # Query for users with verified professional details
+            query = User.query.join(ProfessionalDetails).filter(
+                ProfessionalDetails.is_verified == True
+            ).order_by(User.username)
+            
+            paginated_professionals = query.paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            professionals = paginated_professionals.items
+            
+            return {
+                "professionals": [{
+                    "id": user.id,
+                    "keycloak_id": user.keycloak_id,
+                    "username": user.username,
+                    "email": user.email,
+                    "bio": user.bio,
+                    "profile_pic": user.profile_pic_url,
+                    "specialization": user.professional_details.specialization,
+                    "license_body": user.professional_details.license_body
+                } for user in professionals],
+                "pagination": {
+                    "page": paginated_professionals.page,
+                    "per_page": paginated_professionals.per_page,
+                    "total_professionals": paginated_professionals.total,
+                    "total_pages": paginated_professionals.pages,
+                    "has_next": paginated_professionals.has_next,
+                    "has_prev": paginated_professionals.has_prev
+                }
+            }, 200
+            
+        except Exception as e:
+            logger.error(f"Error fetching professionals: {e}")
+            return {"message": "Error fetching professionals"}, 500

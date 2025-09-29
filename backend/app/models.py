@@ -28,7 +28,7 @@ class User(db.Model):
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
     bio             = db.Column(db.String(250), default="")
-    profile_pic     = db.Column(db.String(200), default="default.jpg")
+    profile_pic_url = db.Column(db.String(500), nullable=True)  # S3 URL for profile pictures
     user_type       = db.Column(db.String(20), default="standard")  # ✅ Defaulgt to "standard" or "professional"
 
 
@@ -122,7 +122,7 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image = db.Column(db.String(200), nullable=True)
+    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 
@@ -224,6 +224,7 @@ class Event(db.Model):
 
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
+    image_url = db.Column(db.String(500), nullable=True)  # Event image
 
     # relationships
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -242,6 +243,7 @@ class Event(db.Model):
             "location": self.location,
             "event_time": self.event_time.isoformat(),
             "creator_id": self.creator_id,
+            "image_url": self.image_url,
             "address": self.address.to_dict() if self.address else None,
             "attendees": [user.id for user in self.attendees]
         }
