@@ -54,6 +54,7 @@ AddEventRequest = api.model("AddEventRequest", {
     "location": fields.String(description="Description of the event location i.e second floor conference room"),
     "event_time": fields.String(required=True, description="Date and time of event in ISO format"),
     "creator_attending": fields.Boolean(),
+    "image": fields.Raw(required=False, description="Event image file (will be uploaded to S3)"),
     "address_id": fields.Integer(description="Address ID for if the address is already in the database"),
     "address_number": fields.String(description="House number (or name) for address"),
     "address_street": fields.String(description="Street Name"),
@@ -91,5 +92,29 @@ CreatedEventsQuery = api.model("AttendingQuery", {
     "type": fields.String(required=True, description="Type of request, upcoming/past/all, defaults to 'all'"),
     "page": fields.Integer(required=False, description="Page Number, default = 1"),
     "per_page": fields.Integer(required=False, description="Number of Events per page, default = 20")
+})
+
+UpdateEventRequest = api.model("UpdateEventRequest", {
+    "name": fields.String(required=False, description="Event name"),
+    "description": fields.String(required=False, description="Event description"),
+    "location": fields.String(required=False, description="Event location"),
+    "event_time": fields.String(required=False, description="Event datetime in ISO format"),
+    "image": fields.Raw(required=False, description="Event image file (will be uploaded to S3)")
+})
+
+ProfessionalResponse = api.model("ProfessionalResponse", {
+    "id": fields.Integer(description="User ID"),
+    "keycloak_id": fields.String(description="Keycloak ID"),
+    "username": fields.String(description="Username"),
+    "email": fields.String(description="Email"),
+    "bio": fields.String(description="Bio"),
+    "profile_pic": fields.String(description="Profile picture URL"),
+    "specialization": fields.String(description="Professional specialization"),
+    "license_body": fields.String(description="License body (BACP, HCPC, etc.)")
+})
+
+ProfessionalsListResponse = api.model("ProfessionalsListResponse", {
+    "professionals": fields.List(fields.Nested(ProfessionalResponse)),
+    "pagination": fields.Raw(description="Pagination info")
 })
 

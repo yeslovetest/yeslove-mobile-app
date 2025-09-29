@@ -66,9 +66,9 @@ class Feed(Resource):
                 "id": post.id,
                 "author": post.author.username,
                 "author_id": post.author.keycloak_id,
-                "author_pic": post.author.profile_pic,
+                "author_pic": post.author.profile_pic_url,
                 "content": post.content,
-                "image": post.image,
+                "image_url": post.image_url,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
@@ -111,7 +111,21 @@ class CreatePost(Resource):
         if not data.get("content"):
             return {"message": "Post content cannot be empty"}, 400
 
-        post = Post(content=data["content"], user_id=user.id)
+        # Handle image upload to S3 if provided
+        image_url = None
+        if 'image' in request.files:
+            from app.services.media.media_service import MediaService
+            try:
+                upload_result = MediaService.upload_file(
+                    file=request.files['image'],
+                    user_id=user.id,
+                    folder='posts'
+                )
+                image_url = upload_result.get('s3_url') if upload_result else None
+            except Exception as e:
+                logger.error(f"Post image upload failed: {e}")
+        
+        post = Post(content=data["content"], user_id=user.id, image_url=image_url)
         db.session.add(post)
         db.session.commit()
         

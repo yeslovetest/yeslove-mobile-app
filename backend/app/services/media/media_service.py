@@ -98,6 +98,40 @@ class MediaService:
         return media_ids
     
     @staticmethod
+    def upload_file(file, user_id, folder='media'):
+        """Upload file to S3 and return metadata"""
+        if not file:
+            return None
+        
+        # Validate file
+        MediaValidator.validate_file(file)
+        
+        content = file.read()
+        
+        # Security scan
+        SecurityService.scan_file_content(content)
+        
+        # Process image if needed
+        if file.content_type.startswith('image/'):
+            content = MediaProcessor.compress_image(content)
+        
+        # Upload to S3
+        from flask import current_app
+        s3_url = None
+        if current_app.config.get('USE_S3_STORAGE', False):
+            s3 = S3Storage()
+            key = f"{folder}/{uuid.uuid4()}/{file.filename}"
+            s3_url = s3.upload_file(content, key, file.content_type)
+        
+        return {
+            'id': str(uuid.uuid4()),
+            's3_url': s3_url,
+            'filename': file.filename,
+            'content_type': file.content_type,
+            'file_size': len(content)
+        }
+    
+    @staticmethod
     def get_media_metadata(media_id):
         media = Media.query.filter_by(id=media_id).first()
         if not media:
