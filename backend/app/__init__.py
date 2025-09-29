@@ -63,8 +63,24 @@ def create_app(config_class=DevelopmentConfig):
     app.config["NEPTUNE_ENDPOINT"] = os.getenv('NEPTUNE_ENDPOINT')
     app.config["NEPTUNE_PORT"] = int(os.getenv('NEPTUNE_PORT', 8182))
 
-    # 📊 Initialize API
-    api = Api(app, title="YesLove API", version="1.0", doc="/swagger")
+    # 📊 Initialize API with JWT authorization
+    authorizations = {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"'
+        }
+    }
+    
+    api = Api(
+        app, 
+        title="YesLove API", 
+        version="1.0", 
+        doc="/swagger",
+        authorizations=authorizations,
+        security='Bearer'
+    )
 
     api.add_namespace(profile_api, path="/api/profile")
     api.add_namespace(auth_api, path="/api/auth")
