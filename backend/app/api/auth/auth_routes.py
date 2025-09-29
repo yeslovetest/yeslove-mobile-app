@@ -100,9 +100,10 @@ class Login(Resource):
             # Auto-register device token if provided
             device_token = data.get("device_token")
             platform = data.get("platform")
+            device_id = data.get("device_id")
             if device_token:
                 from app.services.device_token_service import DeviceTokenService
-                DeviceTokenService.register_device_token(user.id, device_token, platform)
+                DeviceTokenService.register_device_token(user.id, device_token, platform, device_id)
                 logger.info(f"Device token registered for user {user.username}")
             
             logger.info(f"✅ User {user.username} logged in successfully.")
@@ -310,9 +311,10 @@ class Signup(Resource):
             # Auto-register device token if provided during signup
             device_token = data.get("device_token")
             platform = data.get("platform")
+            device_id = data.get("device_id")
             if device_token:
                 from app.services.device_token_service import DeviceTokenService
-                DeviceTokenService.register_device_token(new_user.id, device_token, platform)
+                DeviceTokenService.register_device_token(new_user.id, device_token, platform, device_id)
                 logger.info(f"Device token registered for new user {username}")
             
             return {"message":"User created in Keycloak and email verification sent"},201

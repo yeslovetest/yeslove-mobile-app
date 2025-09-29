@@ -291,7 +291,9 @@ class DeviceToken(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     token = db.Column(db.String(255), unique=True, nullable=False)
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
+    device_id = db.Column(db.String(255))  # Device fingerprint
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime, default=datetime.utcnow)
 
 class NotificationSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
