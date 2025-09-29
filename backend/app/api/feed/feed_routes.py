@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 
 from app.logging_setup import setup_logger
@@ -268,58 +268,31 @@ class FollowUser(Resource):
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
         follow_type = request.json.get("follow_type", "basic")
+
+        graph_repo = getattr(current_app, "graph_repository", None)
+        if not graph_repo:
+            return {"message": "Graph DB not configured"}, 500
         
-        # Get existing follow relationships (both directions)
-        follows = Follow.query.filter(
-            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) | 
-            ((Follow.follower_id == target_user.id) & (Follow.followed_id == user.id))
-        ).all()
-        existing = {(f.follower_id, f.followed_id): f for f in follows}
-
-        followby_current_user = existing.get((user.id, target_user.id))
-        followby_target_user = existing.get((target_user.id, user.id))
-
-        # Unfollow
-        if follow_action == "unfollow":
-            if followby_current_user:
-                db.session.delete(followby_current_user)
-                if follow_type == "friend" and followby_target_user:
-                   db.session.delete(followby_target_user) 
-                db.session.commit()
+        try: 
+            if follow_action == "unfollow":
+                graph_repo.unfollow(user.keycloak_id, target_user.keycloak_id)
                 return {"message": "Unfollowed successfully"}, 200
-            return {"message": "You are not following this user"}, 400
-        
-        # Follow
-        if followby_current_user:
-            # Already following
-            if follow_type == "basic":
-                return {"message": "Already following"}, 400
+            
+            # follow action
             if follow_type == "friend":
-                followby_current_user.follow_type = "friend" 
-                # Add reverse record if not exists  (send frienship request by email, To be done later)
-                if not followby_target_user:
-                    new_follow = Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend")
-                    db.session.add(new_follow)
-                    db.session.commit()
-                    return {"message": "Connected as friend"}, 201
-                # Otherwise just update both
-                followby_target_user.follow_type = "friend"
-                db.session.commit()
-                return {"message": "Follow type updated"}, 201
+                # Creates bidirectional friend edges
+                graph_repo.follow(user.keycloak_id, target_user.keycloak_id, follow_type="friend")
+                graph_repo.follow(target_user.keycloak_id, user.keycloak_id, follow_type="friend")
+                return {"message" : "Connected as friends"}, 200
+            
+            # basic follow
+            graph_repo.follow(user.keycloak_id, target_user.keycloak_id, follow_type="basic")
+            return {"message": "Following successfully"}, 201
+        
+        except Exception:
+            current_app.logger.exception("Graph follow operation failed")
+            return {"message": "Graph operation failed"}, 500
 
-        # Create new follows
-        records = []
-        if follow_type == "friend": # send frienship request by email, To be done later
-            records.append(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
-            records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
-            db.session.add_all(records)
-            db.session.commit()
-            return {"message": "Connected as friend"}, 201
-
-        # Basic follow
-        db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
-        db.session.commit()
-        return {"message": "Following Successfully"}, 201
 
 
 @api.route("/followers/<string:keycloak_id>")
@@ -330,14 +303,74 @@ class GetFollowers(Resource):
     def get(self, keycloak_id):
         """Fetch all followers of a user."""
         from app.models import Follow, User
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        followers = Follow.query.filter_by(followed_id=user.id).all()
-        return {
-           "followers": [
-            {"id": follow.follower_id, "username": follow.follower.username}
-            for follow in followers
-        ]}, 200
+        # Pagination params
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 50))
+        per_page = max(1, min(per_page, 1000))
+        skip = (page -  1) * per_page
 
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message" : "User not found"}, 404
+        
+        graph_repo = getattr(current_app, "graph_repository", None)
+        try: 
+            if graph_repo:
+                # Keycloak id of the target user
+                target_kc = keycloak_id
+
+                # Fetches paged follower keycloak id from graph
+                follower_kc_ids = graph_repo.get_followers_page(target_kc, skip=skip, limit=per_page)
+
+                # Maps keycloak ids to internal user rows with a single IN query
+                followers_out = []
+                if follower_kc_ids:
+                    users = User.query.filter(User.keycloak_id.in_(follower_kc_ids)).all()
+                    users_by_kc = {u.keycloak_id: u for u in users}
+
+                    # Preserves the order returned by graph
+                    followers_out = [
+                        {"id": kc, "username": (users_by_kc.get(kc).username if users_by_kc.get(kc) else None)}
+                        for kc in follower_kc_ids
+                    ]
+                else:
+                    follower_kc_ids = []
+                    followers_out = []
+
+                # follower count
+                total = None
+                if hasattr(graph_repo, "get_follower_count"):
+                    try:
+                        total = graph_repo.get_follower_count(target_kc)
+                    except Exception:
+                        total = None
+
+                response = {
+                    "followers": followers_out,
+                    "pagination" : {
+                        "page" : page,
+                        "per_page" : per_page,
+                        "returned" : len(followers_out)
+                    }
+                }
+                if total is not None:
+                    response["pagination"]["total"] = total
+                return response, 200
+            
+        except Exception:
+            current_app.logger.exception("Graph followers lookup failed")
+
+        # Fallback to SQL based follower query if graph repo missing or failed
+        try:
+            follower_links = Follow.query.filter_by(followed_id=user.id).all()
+            followers_out = [{"id": f.follower.keycloak_id, "username": f.follower.username} for f in follower_links]
+            response = {"followers": followers_out, "pagination": {"page": page, "per_page": per_page, "returned": len(followers_out)}}
+            return response, 200
+        except Exception:
+            current_app.logger.exception("SQL followers fallback failed")
+            return {"message": "Failed to retrieve followers"}, 500
+
+                
 
 @api.route("/following/<string:keycloak_id>")
 class GetFollowing(Resource):
@@ -347,11 +380,70 @@ class GetFollowing(Resource):
     def get(self, keycloak_id):
         """Fetch all users the current user is following."""
         from app.models import Follow, User
+
+        # Pagination params
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 50))
+        per_page = max(1, min(per_page, 1000))
+        skip = (page - 1) * per_page
+
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        following = Follow.query.filter_by(follower_id=user.id).all()
-        return {'following':
-                [
-                    {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
-                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic}
-                    for follow in following
-                ]}, 200
+        if not user:
+            return {"message": "User not found"}, 404
+        
+        graph_repo = getattr(current_app, "graph_repository", None)
+
+        try:
+            if graph_repo:
+                # The subject whose following list we want (use path param keycloak_id)
+                target_kc = keycloak_id
+
+                # Fetch paged following keycloak ids
+                following_kc_ids = graph_repo.get_following_page(target_kc, skip=skip, limit=per_page)
+
+                # Map to User rows
+                if following_kc_ids:
+                    users = User.query.filter(User.keycloak_id.in_(following_kc_ids)).all()
+                    users_by_kc = {u.keycloak_id: u for u in users}
+                else:
+                    users_by_kc = {}
+
+                # Construct output preserving graph order
+                following_out = [
+                    {
+                        "id": kc,
+                        # follow_type isn't directly returned by this simple repo call;
+                        # we default to None here (see enriched variant below if you need it)
+                        "follow_type": None,
+                        "username": users_by_kc.get(kc).username if users_by_kc.get(kc) else None,
+                        "profile_pic": users_by_kc.get(kc).profile_pic if users_by_kc.get(kc) else None
+                    }
+                    for kc in following_kc_ids
+                ]
+
+                total = None
+                if hasattr(graph_repo, "get_following_count"):
+                    try:
+                        total = graph_repo.get_following_count(target_kc)
+                    except Exception:
+                        total = None
+
+                response = {
+                    "following": following_out,
+                    "pagination": {"page": page, "per_page": per_page, "returned": len(following_out)}
+                }
+                if total is not None:
+                    response["pagination"]["total"] = total
+                return response, 200
+        except Exception:
+            current_app.logger.exception("Graph following lookup failed")
+
+        # SQL fallback for following
+        try:
+            following_links = Follow.query.filter_by(follower_id=user.id).all()
+            following_out = [{"id": f.followed.keycloak_id, "username": f.followed.username} for f in following_links]
+            response = {"following": following_out, "pagination": {"page": page, "per_page": per_page, "returned": len(following_out)}}
+            return response, 200
+        except Exception:
+            current_app.logger.exception("SQL following fallback failed")
+            return {"message": "Failed to retrieve following"}, 500
