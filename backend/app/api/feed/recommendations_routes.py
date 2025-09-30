@@ -10,6 +10,7 @@ api = Namespace("recommendations", description="User Recommendation Endpoints")
 class UserRecommendations(Resource):
     @require_auth()
     @api.doc(security='Bearer')
+    @api.param('limit', 'Number of recommendations to return', type='integer', default=10)
     def get(self):
         """Get user recommendations based on graph analysis"""
         from app.models import User
@@ -69,6 +70,7 @@ class UserRecommendations(Resource):
 class PostRecommendations(Resource):
     @require_auth()
     @api.doc(security='Bearer')
+    @api.param('limit', 'Number of posts to return', type='integer', default=20)
     def get(self):
         """Get recommended posts based on user interests"""
         from app.models import User, Post, Like, Follow
@@ -107,6 +109,7 @@ class PostRecommendations(Resource):
 class BlogRecommendations(Resource):
     @require_auth()
     @api.doc(security='Bearer')
+    @api.param('limit', 'Number of blogs to return', type='integer', default=10)
     def get(self):
         """Get recommended blogs based on user reading history"""
         from app.models import User, BlogPost, db

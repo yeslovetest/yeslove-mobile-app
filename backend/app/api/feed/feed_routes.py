@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, reqparse
 from app.logging_setup import setup_logger
 
 from app.utils import require_auth
+from app.utils.rate_limiter import read_rate_limit, write_rate_limit
 
 logger = setup_logger()
 
@@ -12,8 +13,12 @@ api = Namespace("feed", description="API Endpoints")
 @api.route("/feed")
 class Feed(Resource):
     from .feed_models import FeedQuery, FeedResponse
+    @read_rate_limit
     @require_auth()
-    @api.param("feed_type", "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'")
+    @api.doc(security='Bearer')
+    @api.param("feed_type", "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'", type='string', default='all')
+    @api.param("page", "Page number for pagination", type='integer', default=1)
+    @api.param("per_page", "Number of posts per page", type='integer', default=10)
     @api.response(code=200, description="", model=FeedResponse)
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
@@ -110,7 +115,9 @@ class Feed(Resource):
 @api.route("/post")
 class CreatePost(Resource):
     from .feed_models import CreatePostRequest
+    @write_rate_limit
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(CreatePostRequest)
     @api.response(201, "Post created successfully")
     def post(self):
@@ -206,6 +213,7 @@ class GetReactions(Resource):
 class ReactToPost(Resource):
     from .feed_models import ReactionRequest, ReactToPostResponse
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(ReactionRequest)  # ✅ Attach model
     @api.response(code=200, description="success", model=ReactToPostResponse)
     def post(self, post_id):
@@ -248,6 +256,7 @@ class ReactToPost(Resource):
 class LikePost(Resource):
     from .feed_models import LikePostRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(LikePostRequest)  # ✅ Attach model
     def post(self, post_id):
         """Like or unlike a post."""
@@ -304,6 +313,7 @@ class LikePost(Resource):
 class AddComment(Resource):
     from .feed_models import AddCommentRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(AddCommentRequest)
     def post(self, post_id):
         """Add a comment to a post."""
@@ -366,6 +376,7 @@ class GetComments(Resource):
 class FollowUser(Resource):
     from .feed_models import FollowUserRequest
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(FollowUserRequest)  # ✅ Attach model
     def post(self, keycloak_id):
         """Follow or unfollow a user."""
@@ -471,6 +482,7 @@ class FollowUser(Resource):
 class GetFollowers(Resource):
     from .feed_models import GetFollowersRequest, GetFollowersResponse
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(GetFollowersRequest)  # ✅ Attach model
     @api.response(code=200, description="List of followers", model=GetFollowersResponse)
     def get(self, keycloak_id):
@@ -489,6 +501,7 @@ class GetFollowers(Resource):
 class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest, GetFollowingResponse
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(GetFollowingRequest)  # ✅ Attach model
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
     def get(self, keycloak_id):

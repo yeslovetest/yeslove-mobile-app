@@ -15,6 +15,7 @@ class CreateBlog(Resource):
     from .blog_models import CreateBlogPost
     """Endpoint for creating blog posts for the Get Educated page (Admins only)."""   
     @require_auth()
+    @api.doc(security='Bearer')
     @api.expect(CreateBlogPost)
     def post(self):
         """Create a blog post for the Get Educated page (Admins only)."""
@@ -99,6 +100,8 @@ class CreateBlog(Resource):
 @api.route("/blogs")
 class GetBlogs(Resource):
     from .blog_models import BlogListResponse
+    @api.param("page", "Page number for pagination", type='integer', default=1)
+    @api.param("per_page", "Number of blogs per page", type='integer', default=10)
     @api.response(200, "Success", BlogListResponse)
     def get(self):
         """Get all blog posts with pagination"""
