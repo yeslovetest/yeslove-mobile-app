@@ -1,7 +1,11 @@
 from flask import Blueprint, jsonify, current_app
 from datetime import datetime
-import psutil
 import os
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 health_bp = Blueprint('health', __name__)
 
@@ -35,12 +39,21 @@ def readiness_check():
 @health_bp.route('/metrics/system')
 def system_metrics():
     """System resource metrics"""
-    return jsonify({
-        "cpu_percent": psutil.cpu_percent(),
-        "memory_percent": psutil.virtual_memory().percent,
-        "disk_percent": psutil.disk_usage('/').percent,
-        "process_count": len(psutil.pids())
-    })
+    if psutil:
+        return jsonify({
+            "cpu_percent": psutil.cpu_percent(),
+            "memory_percent": psutil.virtual_memory().percent,
+            "disk_percent": psutil.disk_usage('/').percent,
+            "process_count": len(psutil.pids())
+        })
+    else:
+        return jsonify({
+            "cpu_percent": 0,
+            "memory_percent": 0,
+            "disk_percent": 0,
+            "process_count": 0,
+            "note": "psutil not available"
+        })
 
 def check_database():
     """Check database connectivity"""

@@ -34,6 +34,8 @@ python-dateutil
 
 prometheus-flask-exporter
 
+psutil
+
 openai
 
 # Graph database dependencies
@@ -52,6 +54,9 @@ pgvector
 
 # Cache and queue
 redis>=4.0.0
+
+# Monitoring
+prometheus-client
 
 # Database
 psycopg2-binary

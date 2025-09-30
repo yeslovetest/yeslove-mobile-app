@@ -15,7 +15,7 @@ ingester:
   
   wal:
     enabled: true
-    dir: /wal
+    dir: /loki/wal
 
 compactor:
   working_directory: /loki/compactor
@@ -39,8 +39,8 @@ schema_config:
 storage_config:
   boltdb_shipper:
     # where to keep the index
-    active_index_directory: /loki/index
-    cache_location: /loki/cache
+    active_index_directory: /loki/boltdb-shipper-active
+    cache_location: /loki/boltdb-shipper-cache
     shared_store: filesystem
   filesystem:
     # where to keep the actual log chunks
