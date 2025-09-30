@@ -370,11 +370,15 @@ class FollowUser(Resource):
     def post(self, keycloak_id):
         """Follow or unfollow a user."""
         from app.models import User, Follow, db
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        from app.utils.common_helpers import get_current_user, safe_neptune_operation
+        
+        user, error_response, status_code = get_current_user()
+        if error_response:
+            return error_response, status_code
+            
         target_user = User.query.filter_by(keycloak_id=keycloak_id).first()
-
-        if not user or not target_user:
-            return {"message": "User not found"}, 404
+        if not target_user:
+            return {"message": "Target user not found"}, 404
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
         follow_type = request.json.get("follow_type", "basic")
@@ -442,20 +446,12 @@ class FollowUser(Resource):
             db.session.commit()
             
             # Create follow in Neptune
-            if hasattr(current_app, 'graph_repository'):
-                try:
-                    current_app.graph_repository.follow(
-                        follower_id=user.keycloak_id,
-                        followed_id=target_user.keycloak_id,
-                        follow_type="friend"
-                    )
-                    current_app.graph_repository.follow(
-                        follower_id=target_user.keycloak_id,
-                        followed_id=user.keycloak_id,
-                        follow_type="friend"
-                    )
-                except Exception as e:
-                    logger.warning(f"Neptune follow failed: {e}")
+            safe_neptune_operation(
+                lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "friend")
+            )
+            safe_neptune_operation(
+                lambda repo: repo.follow(target_user.keycloak_id, user.keycloak_id, "friend")
+            )
             
             return {"message": "Connected as friend"}, 201
 
@@ -464,15 +460,9 @@ class FollowUser(Resource):
         db.session.commit()
         
         # Create follow in Neptune
-        if hasattr(current_app, 'graph_repository'):
-            try:
-                current_app.graph_repository.follow(
-                    follower_id=user.keycloak_id,
-                    followed_id=target_user.keycloak_id,
-                    follow_type="basic"
-                )
-            except Exception as e:
-                logger.warning(f"Neptune follow failed: {e}")
+        safe_neptune_operation(
+            lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "basic")
+        )
         
         return {"message": "Following Successfully"}, 201
 
