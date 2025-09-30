@@ -96,8 +96,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
 
-    from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
-    from .api.blog.blog_models import BlogView
+    from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings, BlogView
     
     from sqlalchemy import event
     from sqlalchemy.engine import Engine

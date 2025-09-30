@@ -110,7 +110,7 @@ class BlogRecommendations(Resource):
     def get(self):
         """Get recommended blogs based on user reading history"""
         from app.models import User, BlogPost, db
-        from app.api.blog.blog_models import BlogView
+        from app.models import BlogView
         from sqlalchemy import func, and_
         
         current_user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()

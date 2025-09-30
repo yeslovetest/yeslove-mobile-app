@@ -134,7 +134,7 @@ class GetBlog(Resource):
     def get(self, blog_id):
         """Get a specific blog post by ID and track view"""
         from app.models import BlogPost, User, db
-        from app.api.blog.blog_models import BlogView
+        from app.models import BlogView
         
         try:
             blog = BlogPost.query.get_or_404(blog_id)

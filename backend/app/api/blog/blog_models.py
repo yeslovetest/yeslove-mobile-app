@@ -1,6 +1,5 @@
 from .blog_routes import api
 from flask_restx import fields
-from app import db
 from datetime import datetime
 
 CreateBlogPost = api.model("CreateBlogPost", {
@@ -26,17 +25,5 @@ BlogListResponse = api.model("BlogListResponse", {
     "pagination": fields.Raw(description="Pagination info")
 })
 
-class BlogView(db.Model):
-    __tablename__ = 'blog_view'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    blog_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'), nullable=False)
-    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
-    read_duration = db.Column(db.Integer)  # seconds spent reading
-    
-    # Relationships
-    user = db.relationship('User', backref='blog_views')
-    blog = db.relationship('BlogPost', backref='views')
-    
-    __table_args__ = (db.UniqueConstraint('user_id', 'blog_id', name='unique_user_blog_view'),)
+# BlogView model moved to avoid circular imports
+# Import it from models.py instead
