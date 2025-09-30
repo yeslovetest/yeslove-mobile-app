@@ -143,11 +143,34 @@ class GetBlog(Resource):
     from .blog_models import BlogResponse
     @api.response(200, "Success", BlogResponse)
     def get(self, blog_id):
-        """Get a specific blog post by ID"""
-        from app.models import BlogPost
+        """Get a specific blog post by ID and track view"""
+        from app.models import BlogPost, User, db
+        from app.api.blog.blog_models import BlogView
         
         try:
             blog = BlogPost.query.get_or_404(blog_id)
+            
+            # Track blog view if user is authenticated
+            auth_header = request.headers.get('Authorization')
+            if auth_header:
+                try:
+                    from app.utils import verify_jwt
+                    token = auth_header.replace('Bearer ', '')
+                    user_info = verify_jwt(token)
+                    if user_info:
+                        user = User.query.filter_by(keycloak_id=user_info['sub']).first()
+                        if user:
+                            # Create or update blog view
+                            existing_view = BlogView.query.filter_by(
+                                user_id=user.id, blog_id=blog_id
+                            ).first()
+                            
+                            if not existing_view:
+                                blog_view = BlogView(user_id=user.id, blog_id=blog_id)
+                                db.session.add(blog_view)
+                                db.session.commit()
+                except Exception as e:
+                    logger.warning(f"Failed to track blog view: {e}")
             
             return {
                 "id": blog.id,
