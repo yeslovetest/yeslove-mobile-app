@@ -13,5 +13,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost']
         labels:
-          job: yeslove
+          job: yeslove-api
+          service: yeslove
+          environment: development
           __path__: /app/backend/app.log

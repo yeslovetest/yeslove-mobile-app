@@ -151,6 +151,10 @@ class CreatePost(Resource):
         db.session.add(post)
         db.session.commit()
         
+        # Track post creation metric
+        from app.monitoring.metrics import track_post_creation
+        track_post_creation()
+        
         # Add post to Neptune graph
         if hasattr(current_app, 'graph_repository'):
             try:

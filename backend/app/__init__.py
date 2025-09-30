@@ -40,7 +40,15 @@ def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
 
     # Initialising of monitoring stack 
-    PrometheusMetrics(app)
+    metrics = PrometheusMetrics(app)
+    
+    # Custom metrics setup
+    try:
+        from prometheus_client import Info
+        app_info = Info('yeslove_app_info', 'Application information')
+        app_info.info({'version': '1.0', 'environment': os.getenv('ENVIRONMENT', 'development')})
+    except:
+        pass  # Ignore if prometheus_client not available
 
     app.config.from_object(config_class)
     # app.config['SQLALCHEMY_DATABASE_URI'] = config_class.SQLALCHEMY_DATABASE_URI
@@ -95,6 +103,10 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(media_api, path="/api/media")
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
+    
+    # Register health check endpoints
+    from app.monitoring.health import health_bp
+    app.register_blueprint(health_bp)
 
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings, BlogView
     
