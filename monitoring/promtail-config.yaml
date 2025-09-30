@@ -17,14 +17,3 @@ scrape_configs:
           service: yeslove
           environment: development
           __path__: /app/backend/app.log
-    pipeline_stages:
-      - json:
-          expressions:
-            level: level
-            timestamp: timestamp
-            message: message
-      - labels:
-          level:
-      - timestamp:
-          source: timestamp
-          format: RFC3339
