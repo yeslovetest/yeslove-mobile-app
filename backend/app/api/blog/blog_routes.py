@@ -104,15 +104,11 @@ class GetBlogs(Resource):
         """Get all blog posts with pagination"""
         from app.models import BlogPost
         
-        page = int(request.args.get("page", 1))
-        per_page = int(request.args.get("per_page", 10))
+        from app.utils.common_helpers import paginate_query
         
         try:
-            paginated_blogs = BlogPost.query.order_by(BlogPost.timestamp.desc()).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
-            
-            blogs = paginated_blogs.items
+            query = BlogPost.query.order_by(BlogPost.timestamp.desc())
+            result = paginate_query(query)
             
             return {
                 "blogs": [{
@@ -123,15 +119,8 @@ class GetBlogs(Resource):
                     "timestamp": blog.timestamp.isoformat(),
                     "image_url": blog.image_url,
                     "summary": blog.summary
-                } for blog in blogs],
-                "pagination": {
-                    "page": paginated_blogs.page,
-                    "per_page": paginated_blogs.per_page,
-                    "total_blogs": paginated_blogs.total,
-                    "total_pages": paginated_blogs.pages,
-                    "has_next": paginated_blogs.has_next,
-                    "has_prev": paginated_blogs.has_prev
-                }
+                } for blog in result["items"]],
+                "pagination": result["pagination"]
             }, 200
             
         except Exception as e:
@@ -155,7 +144,8 @@ class GetBlog(Resource):
             if auth_header:
                 try:
                     from app.utils import verify_jwt
-                    token = auth_header.replace('Bearer ', '')
+                    from app.utils.common_helpers import extract_jwt_token
+                    token = extract_jwt_token()
                     user_info = verify_jwt(token)
                     if user_info:
                         user = User.query.filter_by(keycloak_id=user_info['sub']).first()
