@@ -24,6 +24,8 @@ from app.api.chatbot.chatbot_routes import api as chatbot_api
 from app.chatbot_package.chatbot import Chatbot
 from app.api.media.media_routes import api as media_api
 from app.api.notifications.notification_routes import api as notifications_api
+# from app.api.social.social_routes import api as social_api
+from app.api.feed.recommendations_routes import api as recommendations_api
 
 
 # Load environment variables
@@ -92,8 +94,10 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(chatbot_api, path="/api/chatbot")
     api.add_namespace(media_api, path="/api/media")
     api.add_namespace(notifications_api, path="/api/notifications")
+    api.add_namespace(recommendations_api, path="/api/recommendations")
 
     from .models import User, Post, Chat, Comment, ProfessionalDetails, ProfileVisibilitySettings, Follow, Reaction, Like, EmailNotificationSettings
+    from .api.blog.blog_models import BlogView
     
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
@@ -115,9 +119,10 @@ def create_app(config_class=DevelopmentConfig):
         neptune_port = app.config.get('NEPTUNE_PORT', 8182)
         
         if neptune_endpoint:
-            app.neptune_client = create_neptune_client(neptune_endpoint, neptune_port)
-            if app.neptune_client:
-                app.graph_repository = NeptuneRepository(app.neptune_client)
+            neptune_client = create_neptune_client(neptune_endpoint, neptune_port)
+            if neptune_client:
+                setattr(app, 'neptune_client', neptune_client)
+                setattr(app, 'graph_repository', NeptuneRepository(neptune_client))
                 app.logger.info('Neptune client initialized successfully')
             else:
                 app.logger.warning('Failed to connect to Neptune')
@@ -135,7 +140,7 @@ def create_app(config_class=DevelopmentConfig):
             except Exception:
                 app.logger.exception('Error closing Neptune client')
 
-    app.chatbot = Chatbot() #initializing the chatbot
+    setattr(app, 'chatbot', Chatbot()) #initializing the chatbot
     
     # Initalises professional user admin panel
     from .admin import init_admin

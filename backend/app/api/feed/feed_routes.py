@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 
 from app.logging_setup import setup_logger
@@ -42,7 +42,22 @@ class Feed(Resource):
         elif feed_type == "favorites":
             query = Post.query.join(Like).filter(Like.user_id == user.id).order_by(Post.timestamp.desc())
         elif feed_type == "friends":
+            # Try Neptune for friend recommendations first
             friend_ids = [follow.followed_id for follow in user.following]
+            if hasattr(current_app, 'graph_repository') and not friend_ids:
+                try:
+                    recommendations = current_app.graph_repository.recommendations(
+                        user_id=user.keycloak_id, limit=50
+                    )
+                    if recommendations:
+                        from app.models import User as UserModel
+                        rec_users = UserModel.query.filter(
+                            UserModel.keycloak_id.in_([r["user_id"] for r in recommendations])
+                        ).all()
+                        friend_ids = [u.id for u in rec_users]
+                except Exception as e:
+                    logger.warning(f"Neptune recommendations failed: {e}")
+            
             query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
             
         elif feed_type == "groups":
@@ -128,6 +143,17 @@ class CreatePost(Resource):
         post = Post(content=data["content"], user_id=user.id, image_url=image_url)
         db.session.add(post)
         db.session.commit()
+        
+        # Add post to Neptune graph
+        if hasattr(current_app, 'graph_repository'):
+            try:
+                current_app.graph_repository.merge_post_node(
+                    post_id=post.id,
+                    author_id=user.keycloak_id,
+                    props={"content": data["content"][:100], "timestamp": post.timestamp.isoformat()}
+                )
+            except Exception as e:
+                logger.warning(f"Neptune post creation failed: {e}")
         
         # Fanout post to followers
         from app.services.fanout_service import FanoutService
@@ -242,6 +268,17 @@ class LikePost(Resource):
         new_like = Like(user_id=user.id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
+        
+        # Add like to Neptune graph
+        if hasattr(current_app, 'graph_repository'):
+            try:
+                current_app.graph_repository.like_post(
+                    user_id=user.keycloak_id,
+                    post_id=post_id,
+                    reaction_type="like"
+                )
+            except Exception as e:
+                logger.warning(f"Neptune like failed: {e}")
         
         # Notify post author about like
         from app.models import Post
@@ -359,6 +396,22 @@ class FollowUser(Resource):
                 if follow_type == "friend" and followby_target_user:
                    db.session.delete(followby_target_user) 
                 db.session.commit()
+                
+                # Remove from Neptune
+                if hasattr(current_app, 'graph_repository'):
+                    try:
+                        current_app.graph_repository.unfollow(
+                            follower_id=user.keycloak_id,
+                            followed_id=target_user.keycloak_id
+                        )
+                        if follow_type == "friend":
+                            current_app.graph_repository.unfollow(
+                                follower_id=target_user.keycloak_id,
+                                followed_id=user.keycloak_id
+                            )
+                    except Exception as e:
+                        logger.warning(f"Neptune unfollow failed: {e}")
+                
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
         
@@ -387,11 +440,40 @@ class FollowUser(Resource):
             records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
             db.session.add_all(records)
             db.session.commit()
+            
+            # Create follow in Neptune
+            if hasattr(current_app, 'graph_repository'):
+                try:
+                    current_app.graph_repository.follow(
+                        follower_id=user.keycloak_id,
+                        followed_id=target_user.keycloak_id,
+                        follow_type="friend"
+                    )
+                    current_app.graph_repository.follow(
+                        follower_id=target_user.keycloak_id,
+                        followed_id=user.keycloak_id,
+                        follow_type="friend"
+                    )
+                except Exception as e:
+                    logger.warning(f"Neptune follow failed: {e}")
+            
             return {"message": "Connected as friend"}, 201
 
         # Basic follow
         db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
         db.session.commit()
+        
+        # Create follow in Neptune
+        if hasattr(current_app, 'graph_repository'):
+            try:
+                current_app.graph_repository.follow(
+                    follower_id=user.keycloak_id,
+                    followed_id=target_user.keycloak_id,
+                    follow_type="basic"
+                )
+            except Exception as e:
+                logger.warning(f"Neptune follow failed: {e}")
+        
         return {"message": "Following Successfully"}, 201
 
 
