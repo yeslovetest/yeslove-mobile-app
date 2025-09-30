@@ -1,8 +1,24 @@
 global:
-  scrape_interval: 15s   # how often to scrape metrics
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
 
 scrape_configs:
-  - job_name: 'flask-app'
+  - job_name: 'yeslove-api'
     metrics_path: /metrics
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'flask_.*'
+        target_label: service
+        replacement: 'yeslove-api'
+        
+  - job_name: 'yeslove-health'
+    metrics_path: /metrics/system
+    scrape_interval: 30s
     static_configs:
       - targets: ['host.docker.internal:5000']
