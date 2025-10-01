@@ -1,4 +1,5 @@
 from flask import request, current_app
+from typing import Dict
 from flask_restx import Namespace, Resource, reqparse
 
 from app.logging_setup import setup_logger
@@ -51,8 +52,22 @@ class Feed(Resource):
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
 
-        return {
-            "posts": [{
+        # Batch-fetch like counts from graph (reduces N round-trips)
+        graph_repo = getattr(current_app, 'graph_repository', None)
+        like_counts: Dict[int, int] = {}
+        try:
+            if graph_repo and posts:
+                like_counts = graph_repo.get_like_counts([p.id for p in posts])
+        except Exception:
+            current_app.logger.exception('Failed to batch fetch like counts')
+
+        def likes_for(post_obj):
+            return like_counts.get(post_obj.id, len(post_obj.likes))
+
+        posts_out = []
+        for post in posts:
+            curr_reaction = reaction_map.get(post.id)
+            posts_out.append({
                 "id": post.id,
                 "author": post.author.username,
                 "author_id": post.author.keycloak_id,
@@ -60,10 +75,13 @@ class Feed(Resource):
                 "content": post.content,
                 "image": post.image,
                 "timestamp": post.timestamp.isoformat(),
-                "likes": len(post.likes),
+                "likes": likes_for(post),
                 "comments": len(post.comments),
-                "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
-            } for post in posts],
+                "current_user_reaction": curr_reaction.reaction_type if curr_reaction else None,
+            })
+
+        return {
+            "posts": posts_out,
             "pagination": {
                 "page": paginated_posts.page,
                 "per_page": paginated_posts.per_page,
@@ -182,26 +200,48 @@ class LikePost(Resource):
     @api.expect(LikePostRequest)  # ✅ Attach model
     def post(self, post_id):
         """Like or unlike a post."""
-        from app.models import User, Like, db
+        from app.models import User, Post
+        data = request.json or {}
+        reaction_type = (request.json or {}).get("reaction_type", "like")
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             logger.warning(f"❌ User with Keycloak ID {request.user['keycloak_id']} not found")
             return {"message": "User not found"}, 404
+        
+        graph_repo = getattr(current_app, "graph_repository", None)
+        if not graph_repo:
+            return {"message" : "Graph DB not configured"}, 500
 
-        existing_like = Like.query.filter_by(user_id=user.id, post_id=post_id).first()
+        try:
+            if graph_repo.has_liked(user.keycloak_id, post_id):
+                ok = graph_repo.unlike_post(user.keycloak_id, post_id)
+                if ok:
+                    return {"message" : "like removed"}, 200
+                return {"message" : "Failed to remove like"}, 500
+            else:
+                ok = graph_repo.like_post(user.keycloak_id, post_id, reaction_type=reaction_type)
+                if not ok:
+                    return {"message": "Failed to record like"}, 500
 
-        if existing_like:
-            db.session.delete(existing_like)
-            db.session.commit()
-            logger.info(f"🔹 User {user.username} unliked post {post_id}")
-            return {"message": "Like removed"}, 200
+            # like notification
+            post = Post.query.get(post_id)
+            if post and post.user_id != user.id:
+                try:
+                    from app.services.push_notification_service import PushNotificationService
+                    PushNotificationService.send_to_user(
+                        user_id=post.user_id,
+                        title="New Like",
+                        body=f"{user.username} liked your post",
+                        data={"type": "like", "post_id": post_id},
+                        notification_type="likes"
+                    )
+                except Exception:
+                    current_app.logger.exception("Failed to send like notification")
 
-        new_like = Like(user_id=user.id, post_id=post_id)
-        db.session.add(new_like)
-        db.session.commit()
-        logger.info(f"✅ User {user.username} liked post {post_id}")
-        return {"message": "Post liked"}, 201
-
+            return {"message": "Post Liked"}, 201
+        except Exception:
+            current_app.logger.exception("Like operation failed")
+            return {"message" : "Failed to process like"}
 # -------------------------
 # 🚀 COMMENT ROUTES
 # -------------------------

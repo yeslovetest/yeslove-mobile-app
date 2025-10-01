@@ -5,7 +5,8 @@ from gremlin_python.driver import client
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
-from gremlin_python.process.traversal import T
+from gremlin_python.process.traversal import T, P
+import datetime
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -82,9 +83,10 @@ class NeptuneClient:
     def follow_user(self, follower_id: str, followed_id: str, follow_type: str = "basic") -> bool:
         """Create follow relationship"""
         try:
+            created_at = datetime.datetime.utcnow().isoformat()
             self.g.V().has('User', 'user_id', follower_id).addE('FOLLOWS').to(
                 self.g.V().has('User', 'user_id', followed_id)
-            ).property('follow_type', follow_type).property('created_at', 'datetime()').next()
+            ).property('follow_type', follow_type).property('created_at', created_at).next()
             
             return True
         except Exception as e:
@@ -124,13 +126,71 @@ class NeptuneClient:
     def like_post(self, user_id: str, post_id: int, reaction_type: str = "like") -> bool:
         """Create like relationship to post"""
         try:
+            created_at = datetime.datetime.utcnow().isoformat()
             self.g.V().has('User', 'user_id', user_id).addE('LIKED').to(
                 self.g.V().has('Post', 'post_id', post_id)
-            ).property('reaction_type', reaction_type).property('created_at', 'datetime()').next()
+            ).property('reaction_type', reaction_type).property('created_at', created_at).next()
             
             return True
         except Exception as e:
             logger.error(f"Failed to like post: {e}")
+            return False
+        
+    def unlike_post(self, user_id: str, post_id: int) -> bool:
+        # remove LIKED edge(s) from user -> post
+        try:
+            self.g.V().has('User', 'user_id', user_id) \
+                .outE('LIKED').where(__.inV().has('post_id', post_id)).drop().next()
+            return True
+        except Exception:
+            return False
+
+    def has_liked(self, user_id: str, post_id: int) -> bool:
+        """Return True if user has a LIKED edge to the post"""
+        try:
+            res = self.g.V().has('User', 'user_id', user_id).outE('LIKED').where(
+                __.inV().has('Post', 'post_id', post_id)
+            ).limit(1).toList()
+            return len(res) > 0
+        except Exception as e:
+            logger.error(f"Failed to check liked state for {user_id} -> {post_id}: {e}")
+            return False
+        
+    def get_like_count(self, post_id: int) -> int:
+        try:
+            c = self.g.V().has("Post", "post_id", post_id).in_("LIKED").count().next()
+            return int(c)
+        except Exception:
+            return 0
+
+    def get_like_counts(self, post_ids: List[int]) -> Dict[int, int]:
+        """Return a mapping of post_id -> like count for the given list of post ids in a single traversal."""
+        try:
+            # group by post_id and count incoming LIKED edges
+            res = self.g.V().has('Post', 'post_id', P.within(post_ids)).group().by('post_id').by(__.in_('LIKED').count()).toList()
+            if not res:
+                return {}
+            # res is usually a single map element
+            mapping = res[0]
+            # convert keys/values to ints
+            out = {}
+            for k, v in mapping.items():
+                try:
+                    out[int(k)] = int(v)
+                except Exception:
+                    # fallback: keep as-is if conversion fails
+                    out[k] = v
+            return out
+        except Exception as e:
+            logger.error(f"Failed to fetch like counts in batch: {e}")
+            return {}
+        
+    def has_liked(self, user_id:int, post_id:int) -> bool:
+        try:
+            exists = self.g.V().has("User", "user_id", user_id).outE("LIKED").where(__.inV().has("post", "post_id", post_id)).limit(1).toList()
+            return len(exists) > 0
+        except Exception as e:
+            logger.error(f"Failed to check like existence: {e}")
             return False
 
     def get_following(self, user_id: str, limit: int = 100) -> List[str]:

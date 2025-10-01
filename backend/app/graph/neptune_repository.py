@@ -51,15 +51,14 @@ class NeptuneRepository:
         """Remove follow relationship"""
         self.client.unfollow_user(follower_id, followed_id)
 
-    def get_following(self, user_id: str, limit:int = 100 )-> list[str]:
-        "Gets a list of users that the user is following"
-        try:
-            following = self.g.V().has("User", "user_id", user_id).out('FOLLOWS').values('user_id').limit(limit).toList()
-            return following
-        
-        except Exception as e:
-            logger.error(f"Failed to get follwing for {user_id}: {e}")
+    def get_following(self, user_id: str, limit: int = 100) -> List[str]:
+        """Get list of keycloak ids the user is following (direct wrapper)."""
+        return self.client.get_following(user_id, limit)
     
+    def get_following_page(self, user_id: str, skip: int = 0, limit: int = 100) -> List[str]:
+        all_following = self.client.get_following(user_id, limit + skip)
+        return all_following[skip:skip + limit]
+        
     def get_followers_page(self, user_id: str, skip: int = 0, limit: int = 100) -> List[str]:
         """Get paginated list of followers"""
         # Neptune doesn't have native skip, so we get more and slice
@@ -70,17 +69,24 @@ class NeptuneRepository:
         """Get follower count"""
         return self.client.get_follower_count(user_id)
     
-    def like_post(self, user_id: str, post_id: int, reaction_type: Optional[str] = None) -> Dict[str, Any]:
-        """Create like relationship to post"""
-        reaction_type = reaction_type or "like"
-        success = self.client.like_post(user_id, post_id, reaction_type)
-        if success:
-            return {
-                "user_id": user_id,
-                "post_id": post_id,
-                "reaction_type": reaction_type
-            }
-        return {}
+    def like_post(self, user_kc: str, post_id: int, reaction_type: str = "like") -> bool:
+        success = self.client.like_post(user_kc, post_id, reaction_type)
+        return bool(success)
+    
+    def unlike_post(self, user_kc: str, post_id:int) -> bool:
+        return bool(self.client.unlike_post(user_kc, post_id))
+
+    def has_liked(self, user_kc: str, post_id: int) -> bool:
+        return bool(self.client.has_liked(user_kc, post_id))
+    
+    def get_like_count(self, post_id:int) -> int:
+        return self.client.get_like_count(post_id)
+
+    def get_like_counts(self, post_ids: List[int]) -> Dict[int, int]:
+        return self.client.get_like_counts(post_ids)
+    
+    def has_liked(self, user_kc: str, post_id:int) -> bool:
+        return self.client.has_liked(user_kc, post_id)
     
     def recommendations(self, user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
         """Get user recommendations"""
