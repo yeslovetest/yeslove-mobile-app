@@ -1,5 +1,7 @@
 import requests
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
+
+logger = setup_logger()
 
 FCM_SERVER_KEY = "YOUR_FCM_SERVER_KEY"
 FCM_URL = "https://fcm.googleapis.com/fcm/send"

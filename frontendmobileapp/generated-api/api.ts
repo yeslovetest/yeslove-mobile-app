@@ -230,6 +230,92 @@ export interface AttendingQuery {
 /**
  * 
  * @export
+ * @interface BlogPostList
+ */
+export interface BlogPostList {
+    /**
+     * 
+     * @type {Array<BlogPostModel>}
+     * @memberof BlogPostList
+     */
+    'items'?: Array<BlogPostModel>;
+    /**
+     * Total matching posts
+     * @type {number}
+     * @memberof BlogPostList
+     */
+    'total'?: number;
+    /**
+     * Current page
+     * @type {number}
+     * @memberof BlogPostList
+     */
+    'page'?: number;
+    /**
+     * Items per page
+     * @type {number}
+     * @memberof BlogPostList
+     */
+    'per_page'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface BlogPostModel
+ */
+export interface BlogPostModel {
+    /**
+     * Post ID
+     * @type {number}
+     * @memberof BlogPostModel
+     */
+    'id'?: number;
+    /**
+     * Title
+     * @type {string}
+     * @memberof BlogPostModel
+     */
+    'title'?: string;
+    /**
+     * Content
+     * @type {string}
+     * @memberof BlogPostModel
+     */
+    'content'?: string;
+    /**
+     * Summary
+     * @type {string}
+     * @memberof BlogPostModel
+     */
+    'summary'?: string;
+    /**
+     * Image URL
+     * @type {string}
+     * @memberof BlogPostModel
+     */
+    'image_url'?: string;
+    /**
+     * Author user ID
+     * @type {number}
+     * @memberof BlogPostModel
+     */
+    'author_id'?: number;
+    /**
+     * Author username
+     * @type {string}
+     * @memberof BlogPostModel
+     */
+    'author'?: string;
+    /**
+     * UTC timestamp (ISO 8601)
+     * @type {string}
+     * @memberof BlogPostModel
+     */
+    'timestamp'?: string;
+}
+/**
+ * 
+ * @export
  * @interface ChangePasswordRequest
  */
 export interface ChangePasswordRequest {
@@ -352,6 +438,12 @@ export interface ContactInfo {
  */
 export interface CreateBlogPost {
     /**
+     * Post ID
+     * @type {number}
+     * @memberof CreateBlogPost
+     */
+    'id': number;
+    /**
      * Title of the blog post
      * @type {string}
      * @memberof CreateBlogPost
@@ -363,6 +455,12 @@ export interface CreateBlogPost {
      * @memberof CreateBlogPost
      */
     'content': string;
+    /**
+     * Blog post Summary /short intro to Blog
+     * @type {string}
+     * @memberof CreateBlogPost
+     */
+    'summary'?: string;
     /**
      * Optional image URL
      * @type {string}
@@ -2104,16 +2202,17 @@ export class AuthApi extends BaseAPI {
 export const BlogApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @summary Create a blog post for the Get Educated page (Admins only)
-         * @param {CreateBlogPost} payload 
+         * Retrieve a single blog post by its ID
+         * @param {number} postId 
+         * @param {string} [xFields] An optional fields mask
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreateBlog: async (payload: CreateBlogPost, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postCreateBlog', 'payload', payload)
-            const localVarPath = `/api/blog/blog-post`;
+        getGetSingleBlog: async (postId: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('getGetSingleBlog', 'postId', postId)
+            const localVarPath = `/api/blog/blog-posts/{post_id}`
+                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2121,18 +2220,66 @@ export const BlogApiAxiosParamCreator = function (configuration?: Configuration)
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
 
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * List blog posts with pagination, search, and filtering
+         * @param {string} [q] Search string for author name, title, or content
+         * @param {number} [perPage] Items per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getListBlogs: async (q?: string, perPage?: number, page?: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/blog/blog-posts`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (q !== undefined) {
+                localVarQueryParameter['q'] = q;
+            }
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2150,16 +2297,31 @@ export const BlogApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = BlogApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @summary Create a blog post for the Get Educated page (Admins only)
-         * @param {CreateBlogPost} payload 
+         * Retrieve a single blog post by its ID
+         * @param {number} postId 
+         * @param {string} [xFields] An optional fields mask
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreateBlog(payload: CreateBlogPost, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreateBlog(payload, options);
+        async getGetSingleBlog(postId: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BlogPostModel>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetSingleBlog(postId, xFields, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlogApi.postCreateBlog']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlogApi.getGetSingleBlog']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * List blog posts with pagination, search, and filtering
+         * @param {string} [q] Search string for author name, title, or content
+         * @param {number} [perPage] Items per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getListBlogs(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BlogPostList>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getListBlogs(q, perPage, page, xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BlogApi.getListBlogs']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2173,14 +2335,26 @@ export const BlogApiFactory = function (configuration?: Configuration, basePath?
     const localVarFp = BlogApiFp(configuration)
     return {
         /**
-         * 
-         * @summary Create a blog post for the Get Educated page (Admins only)
-         * @param {CreateBlogPost} payload 
+         * Retrieve a single blog post by its ID
+         * @param {number} postId 
+         * @param {string} [xFields] An optional fields mask
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreateBlog(payload: CreateBlogPost, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postCreateBlog(payload, options).then((request) => request(axios, basePath));
+        getGetSingleBlog(postId: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<BlogPostModel> {
+            return localVarFp.getGetSingleBlog(postId, xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * List blog posts with pagination, search, and filtering
+         * @param {string} [q] Search string for author name, title, or content
+         * @param {number} [perPage] Items per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getListBlogs(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<BlogPostList> {
+            return localVarFp.getListBlogs(q, perPage, page, xFields, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2193,15 +2367,29 @@ export const BlogApiFactory = function (configuration?: Configuration, basePath?
  */
 export class BlogApi extends BaseAPI {
     /**
-     * 
-     * @summary Create a blog post for the Get Educated page (Admins only)
-     * @param {CreateBlogPost} payload 
+     * Retrieve a single blog post by its ID
+     * @param {number} postId 
+     * @param {string} [xFields] An optional fields mask
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof BlogApi
      */
-    public postCreateBlog(payload: CreateBlogPost, options?: RawAxiosRequestConfig) {
-        return BlogApiFp(this.configuration).postCreateBlog(payload, options).then((request) => request(this.axios, this.basePath));
+    public getGetSingleBlog(postId: number, xFields?: string, options?: RawAxiosRequestConfig) {
+        return BlogApiFp(this.configuration).getGetSingleBlog(postId, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * List blog posts with pagination, search, and filtering
+     * @param {string} [q] Search string for author name, title, or content
+     * @param {number} [perPage] Items per page (default 10, max 100)
+     * @param {number} [page] Page number (default 1)
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof BlogApi
+     */
+    public getListBlogs(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig) {
+        return BlogApiFp(this.configuration).getListBlogs(q, perPage, page, xFields, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2374,8 +2562,7 @@ export const ChatApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ChatApiAxiosParamCreator(configuration)
     return {
         /**
-         * This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - 
-         * Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
          * @summary Fetch all friends of the current user along with
          * @param {string} keycloakId 
          * @param {GetFriendsRequest} payload 

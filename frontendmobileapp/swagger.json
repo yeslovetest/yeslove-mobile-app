@@ -203,23 +203,80 @@
         ]
       }
     },
-    "/api/blog/blog-post": {
-      "post": {
+    "/api/blog/blog-posts": {
+      "get": {
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/BlogPostList"
+            }
           }
         },
-        "summary": "Create a blog post for the Get Educated page (Admins only)",
-        "operationId": "post_create_blog",
+        "description": "List blog posts with pagination, search, and filtering",
+        "operationId": "get_list_blogs",
         "parameters": [
           {
-            "name": "payload",
-            "required": true,
-            "in": "body",
+            "in": "query",
+            "description": "Search string for author name, title, or content",
+            "name": "q",
+            "type": "string"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Items per page (default 10, max 100)",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Page number (default 1)",
+            "name": "page"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "blog"
+        ]
+      }
+    },
+    "/api/blog/blog-posts/{post_id}": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
             "schema": {
-              "$ref": "#/definitions/CreateBlogPost"
+              "$ref": "#/definitions/BlogPostModel"
             }
+          },
+          "404": {
+            "description": "Blog post not found"
+          }
+        },
+        "description": "Retrieve a single blog post by its ID",
+        "operationId": "get_get_single_blog",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
           }
         ],
         "tags": [
@@ -2243,9 +2300,14 @@
     "CreateBlogPost": {
       "required": [
         "content",
+        "id",
         "title"
       ],
       "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Post ID"
+        },
         "title": {
           "type": "string",
           "description": "Title of the blog post"
@@ -2254,9 +2316,73 @@
           "type": "string",
           "description": "Blog post content"
         },
+        "summary": {
+          "type": "string",
+          "description": "Blog post Summary /short intro to Blog"
+        },
         "image_url": {
           "type": "string",
           "description": "Optional image URL"
+        }
+      },
+      "type": "object"
+    },
+    "BlogPostModel": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Post ID"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Summary"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "Image URL"
+        },
+        "author_id": {
+          "type": "integer",
+          "description": "Author user ID"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author username"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "UTC timestamp (ISO 8601)"
+        }
+      },
+      "type": "object"
+    },
+    "BlogPostList": {
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BlogPostModel"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "description": "Total matching posts"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Current page"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Items per page"
         }
       },
       "type": "object"
