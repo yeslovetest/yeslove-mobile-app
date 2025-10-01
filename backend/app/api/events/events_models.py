@@ -118,3 +118,21 @@ ProfessionalsListResponse = api.model("ProfessionalsListResponse", {
     "pagination": fields.Raw(description="Pagination info")
 })
 
+EventResponse = api.model("EventResponse", {
+    "id": fields.Integer(description="Event ID"),
+    "name": fields.String(description="Event name"),
+    "description": fields.String(description="Event description"),
+    "location": fields.String(description="Event location"),
+    "event_time": fields.String(description="Event datetime"),
+    "creator": fields.String(description="Creator username"),
+    "creator_id": fields.Integer(description="Creator ID"),
+    "image_url": fields.String(description="Event image URL"),
+    "attendees_count": fields.Integer(description="Number of attendees"),
+    "address": fields.Nested(AddressModelResponse, allow_null=True)
+})
+
+EventsListResponse = api.model("EventsListResponse", {
+    "events": fields.List(fields.Nested(EventResponse)),
+    "pagination": fields.Raw(description="Pagination info")
+})
+
