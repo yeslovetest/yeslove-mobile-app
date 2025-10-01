@@ -34,20 +34,32 @@ python-dateutil
 
 prometheus-flask-exporter
 
+psutil
+
 openai
 
-<<<<<<< Updated upstream
+# Graph database dependencies
+gremlinpython>=3.6.0
+
+# AWS SDK
+boto3>=1.26.0
+
+# Media processing
+Pillow>=9.0.0
+ffmpeg-python>=0.2.0
+
 # Vector DB requirements
 
+# Vector DB requirements
 tiktoken
-
 pgvector
-=======
-neo4j
 
+
+# Cache and queue
 redis
 
-celery
->>>>>>> Stashed changes
+# Monitoring
+prometheus-client
 
+# Database
 psycopg2-binary
