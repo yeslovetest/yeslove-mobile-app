@@ -1,0 +1,141 @@
+@startuml Complete YesLove System Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam handwritten false
+
+actor User as U
+participant "Mobile App" as MA
+participant "Load Balancer" as LB
+participant "Flask API" as API
+participant "Auth Service" as AUTH
+participant "Feed Service" as FEED
+participant "Media Service" as MEDIA
+participant "Notification Service" as NOTIF
+
+database "SQLite DB" as DB
+database "Redis Cache" as REDIS
+database "Amazon Neptune" as NEPTUNE
+queue "Amazon SQS" as SQS
+participant "SQS Workers" as WORKERS
+participant "AWS S3" as S3
+participant "CloudFront CDN" as CDN
+participant "Firebase FCM" as FCM
+
+== User Authentication & Device Registration ==
+
+U -> MA: Login
+MA -> LB: POST /auth/login\n{username, password, device_token, platform}
+LB -> API: Route request
+API -> AUTH: Process login
+AUTH -> DB: Validate user
+AUTH -> DB: Store device token
+AUTH --> MA: JWT + Success
+MA --> U: Logged in
+
+== Post Creation & Fanout ==
+
+U -> MA: Create Post
+MA -> API: POST /feed/post\n{content, image}
+API -> FEED: Process post
+FEED -> DB: Save post
+FEED -> MEDIA: Process image (if any)
+MEDIA -> S3: Upload to S3
+S3 -> CDN: Distribute via CloudFront
+
+FEED -> SQS: Queue fanout job\n{post_id, author_id, follower_ids}
+FEED -> NEPTUNE: Update social graph
+FEED -> REDIS: Invalidate author's cache
+
+WORKERS -> SQS: Poll for jobs
+WORKERS -> REDIS: Invalidate followers' feed cache
+WORKERS -> NOTIF: Send push notifications
+NOTIF -> FCM: Send to devices
+FCM -> MA: Push notification
+MA -> U: Show notification
+
+== Feed Retrieval with Caching ==
+
+U -> MA: View Feed
+MA -> API: GET /feed?page=1
+API -> FEED: Get user feed
+FEED -> REDIS: Check cache
+alt Cache Hit
+    REDIS --> FEED: Return cached feed
+else Cache Miss
+    FEED -> DB: Query posts from followed users
+    FEED -> NEPTUNE: Get social graph data
+    FEED -> REDIS: Cache generated feed
+end
+FEED --> MA: Feed data
+MA --> U: Display posts
+
+== Social Interactions ==
+
+U -> MA: Like Post
+MA -> API: POST /feed/post/{id}/like
+API -> FEED: Process like
+FEED -> DB: Save like
+FEED -> NOTIF: Queue notification
+NOTIF -> SQS: Queue push job
+WORKERS -> SQS: Process notification
+WORKERS -> FCM: Send to post author
+FCM -> MA: Like notification
+
+== Media Upload & Processing ==
+
+U -> MA: Upload Media
+MA -> API: POST /media/upload
+API -> MEDIA: Process upload
+MEDIA -> S3: Store original
+MEDIA -> SQS: Queue processing job\n{resize, compress}
+WORKERS -> SQS: Process media
+WORKERS -> S3: Store processed versions
+WORKERS -> CDN: Invalidate cache
+MEDIA --> MA: Media URLs
+
+== Event Creation & Notifications ==
+
+U -> MA: Create Event
+MA -> API: POST /events/event_info
+API -> DB: Save event
+API -> NEPTUNE: Update graph relationships
+API -> SQS: Queue follower notifications
+WORKERS -> NOTIF: Send event notifications
+NOTIF -> FCM: Notify followers
+
+== Notification Preferences ==
+
+U -> MA: Update Settings
+MA -> API: PUT /notifications/preferences\n{posts: true, likes: false}
+API -> DB: Update preferences
+note right: Future notifications respect these settings
+
+== Background Processing Flow ==
+
+SQS -> WORKERS: Message polling
+WORKERS -> WORKERS: Process job types:\n- Push notifications\n- Media processing\n- Feed fanout\n- Email sending
+WORKERS -> DB: Update job status
+WORKERS -> REDIS: Cache operations
+WORKERS -> FCM: Send notifications
+WORKERS -> S3: Media operations
+
+== System Monitoring ==
+
+API -> API: Prometheus metrics
+REDIS -> REDIS: Cache hit/miss stats
+SQS -> SQS: Queue depth monitoring
+WORKERS -> WORKERS: Job processing metrics
+
+note over U, FCM
+**Key Improvements:**
+- Device tokens auto-managed during auth
+- Feed caching with Redis for performance
+- Async fanout via SQS workers
+- Media processing with S3 + CloudFront
+- Neptune for social graph queries
+- Granular notification preferences
+- Background job processing
+end note
+
+@enduml

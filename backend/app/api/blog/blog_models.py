@@ -1,12 +1,13 @@
 from .blog_routes import api
 from flask_restx import fields
+from datetime import datetime
 
 CreateBlogPost = api.model("CreateBlogPost", {
-    "id" : fields.Integer(required = True, description="Post ID"),
     "title": fields.String(required=True, description="Title of the blog post"),
     "content": fields.String(required=True, description="Blog post content"),
     "summary": fields.String(required=False, description="Blog post Summary /short intro to Blog"),
-    "image_url": fields.String(required=False, description="Optional image URL")
+    "image": fields.Raw(required=False, description="Blog image file (will be uploaded to S3)"),
+    "image_url": fields.String(required=False, description="Optional image URL (alternative to file upload)")
 })
 
 BlogPostModel = api.model("BlogPostModel", {
@@ -26,3 +27,7 @@ BlogPostList = api.model("BlogPostList", {
     "page" : fields.Integer(description="Current page"),
     "per_page" : fields.Integer(description="Items per page")
 })
+   
+
+# BlogView model moved to avoid circular imports
+# Import it from models.py instead

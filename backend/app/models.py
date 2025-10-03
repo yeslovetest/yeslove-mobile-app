@@ -28,7 +28,7 @@ class User(db.Model):
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
     bio             = db.Column(db.String(250), default="")
-    profile_pic     = db.Column(db.String(200), default="default.jpg")
+    profile_pic_url = db.Column(db.String(500), nullable=True)  # S3 URL for profile pictures
     user_type       = db.Column(db.String(20), default="standard")  # ✅ Defaulgt to "standard" or "professional"
 
 
@@ -122,7 +122,7 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image = db.Column(db.String(200), nullable=True)
+    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 
@@ -224,6 +224,7 @@ class Event(db.Model):
 
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
+    image_url = db.Column(db.String(500), nullable=True)  # Event image
 
     # relationships
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -242,6 +243,7 @@ class Event(db.Model):
             "location": self.location,
             "event_time": self.event_time.isoformat(),
             "creator_id": self.creator_id,
+            "image_url": self.image_url,
             "address": self.address.to_dict() if self.address else None,
             "attendees": [user.id for user in self.attendees]
         }
@@ -289,7 +291,18 @@ class DeviceToken(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     token = db.Column(db.String(255), unique=True, nullable=False)
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
+    device_id = db.Column(db.String(255))  # Device fingerprint
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime, default=datetime.utcnow)
+
+class NotificationSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    posts_enabled = db.Column(db.Boolean, default=True)
+    likes_enabled = db.Column(db.Boolean, default=True)
+    comments_enabled = db.Column(db.Boolean, default=True)
+    events_enabled = db.Column(db.Boolean, default=True)
+    blogs_enabled = db.Column(db.Boolean, default=True)
 
 
 # ------------------------- Create Vector DB Model -------------------------
@@ -310,6 +323,30 @@ def generate_uuid():
 
 class Media(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
-    content = db.Column(db.LargeBinary, nullable=False)  # Store binary content
-    content_type = db.Column(db.String(50), nullable=False)  # e.g., 'image/jpeg', 'video/mp4'
+    content = db.Column(db.LargeBinary, nullable=True)  # Nullable if using S3
+    content_type = db.Column(db.String(50), nullable=False)
+    filename = db.Column(db.String(255))
+    file_size = db.Column(db.Integer)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    duration = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_public = db.Column(db.Boolean, default=True)
+    s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
+
+class BlogView(db.Model):
+    __tablename__ = 'blog_view'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    blog_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'), nullable=False)
+    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    read_duration = db.Column(db.Integer)  # seconds spent reading
+    
+    # Relationships
+    user = db.relationship('User', backref='blog_views')
+    blog = db.relationship('BlogPost', backref='views')
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'blog_id', name='unique_user_blog_view'),)
 
