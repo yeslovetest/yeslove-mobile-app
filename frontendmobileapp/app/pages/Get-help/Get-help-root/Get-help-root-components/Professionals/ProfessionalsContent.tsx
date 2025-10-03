@@ -6,7 +6,7 @@ import GetHelpSearchBar from '../Get-help-search-bar/GetHelpSearchBar'
 const ProfessionalsContent = () => {
   return (
     <View>
-      <GetHelpSearchBar placeholder="Search professionals..." />
+      <GetHelpSearchBar placeholder="Search professionals..."  currentSection='professionals'/>
       <GetHelpProfessionals />
     </View>
   )

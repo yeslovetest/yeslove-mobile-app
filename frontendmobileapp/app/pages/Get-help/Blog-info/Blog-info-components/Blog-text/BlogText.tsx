@@ -1,5 +1,5 @@
 import { Text } from "react-native";
-import blogPlaceholders, { Blog } from "../../../Get-help-root/Get-help-root-components/Blogs/Blogs-list/PlaceholderBlogs";
+import { BlogPostModel as Blog } from "@/generated-api";
 import { useAppSelector } from '@/app/store/hooks';
 import styles from "./BlogTextStyles";
 
@@ -8,7 +8,7 @@ const BlogText = () => {
   
   return (
     <Text style={styles.blogText}>
-{blog.text}
+{blog.content}
     </Text>
   )
 }

@@ -9,6 +9,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         justifyContent: "center",
         alignItems: "center",
+        flexDirection: 'row'
       },
     
       searchBar: {
@@ -18,6 +19,18 @@ const styles = StyleSheet.create({
         borderColor: "#ddd",
         paddingHorizontal: 10,
       },
+
+      searchButton: {
+        marginHorizontal: 5,
+        backgroundColor: theme.colors.primaryBlue,
+        padding: 10,
+        borderRadius: 5,
+        height: 43,
+      },
+
+      searchButtonText: {
+        color: "#fff",
+      }  
 })
 
 export default styles

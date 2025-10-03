@@ -3,14 +3,13 @@ from flask_restx import Namespace, Resource
 from app.logging_setup import setup_logger
 from app.utils import require_auth
 from datetime import datetime
-
-# create a logger instance 
-logger = setup_logger()
+from app.notifications import send_push_notification_to_all_users
 
 api = Namespace("blog", description="API Endpoints")
 
+logger = setup_logger() 
 
-@api.route("/blog-post")
+@api.route("/blog-posts")
 class CreateBlog(Resource):
     from .blog_models import CreateBlogPost
     """Endpoint for creating blog posts for the Get Educated page (Admins only)."""   
@@ -32,6 +31,7 @@ class CreateBlog(Resource):
             data = request.get_json() or {}
             title = data.get("title")
             content = data.get("content")
+            summary = data.get("summary")
             
             # Handle image upload to S3 if provided
             image_url = data.get("image_url")
@@ -61,6 +61,7 @@ class CreateBlog(Resource):
                 content=content,
                 author_id=user.id,
                 image_url=image_url,
+                summary=summary,
                 timestamp=datetime.utcnow()
             )
             db.session.add(post)
@@ -87,6 +88,16 @@ class CreateBlog(Resource):
 
             logger.info(f"Blog post created by user {user.id}: {post.id}")
 
+            # Send push notification to all users
+            try:
+                send_push_notification_to_all_users(
+                    title="New Blog Post",
+                    message=f"{title}",
+                    data={"post_id": post.id}
+                )
+            except Exception as notify_err:
+                logger.error(f"Failed to send push notification for blog post {post.id}: {notify_err}")
+
             return {
                 "message": "Blog post created successfully",
                 "post_id": post.id
@@ -97,84 +108,97 @@ class CreateBlog(Resource):
             db.session.rollback()
             return {"message": "An error occurred while creating the blog post."}, 500
 
-@api.route("/blogs")
-class GetBlogs(Resource):
-    from .blog_models import BlogListResponse
-    @api.param("page", "Page number for pagination", type='integer', default=1)
-    @api.param("per_page", "Number of blogs per page", type='integer', default=10)
-    @api.response(200, "Success", BlogListResponse)
-    def get(self):
-        """Get all blog posts with pagination"""
-        from app.models import BlogPost
-        
-        from app.utils.common_helpers import paginate_query
-        
-        try:
-            query = BlogPost.query.order_by(BlogPost.timestamp.desc())
-            result = paginate_query(query)
-            
-            return {
-                "blogs": [{
-                    "id": blog.id,
-                    "title": blog.title,
-                    "content": blog.content,
-                    "author": blog.author.username,
-                    "timestamp": blog.timestamp.isoformat(),
-                    "image_url": blog.image_url,
-                    "summary": blog.summary
-                } for blog in result["items"]],
-                "pagination": result["pagination"]
-            }, 200
-            
-        except Exception as e:
-            logger.exception("Error fetching blog posts")
-            return {"message": "An error occurred while fetching blog posts."}, 500
 
-@api.route("/blog/<int:blog_id>")
-class GetBlog(Resource):
-    from .blog_models import BlogResponse
-    @api.response(200, "Success", BlogResponse)
-    def get(self, blog_id):
-        """Get a specific blog post by ID and track view"""
-        from app.models import BlogPost, User, db
-        from app.models import BlogView
-        
+@api.route("/blog-posts/<int:post_id>")
+class GetSingleBlog(Resource):
+    """Gets a single blog post by ID"""
+
+    from .blog_models import BlogPostModel, BlogPostList
+    @api.doc(description="Retrieve a single blog post by its ID")
+    @api.response(200, "Success", BlogPostModel)
+    @api.response(404, "Blog post not found")
+    @api.marshal_with(BlogPostModel)
+    def get(self, post_id):
+        from app.models import BlogPost
+        post = BlogPost.query.get(post_id)
+        if not post:
+            return {"message": "Blog post not found"}, 404
+
+        return {
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "summary": getattr(post, "summary", None),
+            "image_url": getattr(post, "image_url", None),
+            "author_id": post.author_id,
+            "author": post.author.username if post.author else None,
+            "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
+        }, 200
+
+
+@api.route("/blog-posts")
+class ListBlogs(Resource):
+    """Lists blog posts with optional pagination and search"""
+
+    from .blog_models import BlogPostModel, BlogPostList
+    @api.doc(description="List blog posts with pagination, search, and filtering")
+    @api.param("page", "Page number (default 1)", type="integer")
+    @api.param("per_page", "Items per page (default 10, max 100)", type="integer")
+    @api.param("q", "Search string for author name, title, or content")  # 🔄 updated doc
+    @api.response(200, "Success", BlogPostList)
+    @api.marshal_with(BlogPostList)
+    def get(self):
+        from app.models import BlogPost, User   # 🔄 import User to filter by name
+        # Query parameters
         try:
-            blog = BlogPost.query.get_or_404(blog_id)
-            
-            # Track blog view if user is authenticated
-            auth_header = request.headers.get('Authorization')
-            if auth_header:
-                try:
-                    from app.utils import verify_jwt
-                    from app.utils.common_helpers import extract_jwt_token
-                    token = extract_jwt_token()
-                    user_info = verify_jwt(token)
-                    if user_info:
-                        user = User.query.filter_by(keycloak_id=user_info['sub']).first()
-                        if user:
-                            # Create or update blog view
-                            existing_view = BlogView.query.filter_by(
-                                user_id=user.id, blog_id=blog_id
-                            ).first()
-                            
-                            if not existing_view:
-                                blog_view = BlogView(user_id=user.id, blog_id=blog_id)
-                                db.session.add(blog_view)
-                                db.session.commit()
-                except Exception as e:
-                    logger.warning(f"Failed to track blog view: {e}")
-            
-            return {
-                "id": blog.id,
-                "title": blog.title,
-                "content": blog.content,
-                "author": blog.author.username,
-                "timestamp": blog.timestamp.isoformat(),
-                "image_url": blog.image_url,
-                "summary": blog.summary
-            }, 200
-            
-        except Exception as e:
-            logger.exception(f"Error fetching blog post {blog_id}")
-            return {"message": "Blog post not found."}, 404
+            page = max(int(request.args.get("page", 1)), 1)
+        except ValueError:
+            page = 1
+
+        try:
+            per_page = int(request.args.get("per_page", 10))
+        except ValueError:
+            per_page = 10
+
+        per_page = max(1, min(per_page, 100))
+
+        q = request.args.get("q")
+
+        # Base query
+        query = BlogPost.query.join(User, BlogPost.author)   
+
+        # Search filter
+        if q:
+            ilike = f"%{q}%"
+            query = query.filter(
+                (BlogPost.title.ilike(ilike)) |
+                (BlogPost.content.ilike(ilike)) |
+                (User.username.ilike(ilike))   
+            )
+
+        # Order newest first
+        query = query.order_by(BlogPost.timestamp.desc())
+
+        # Pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        items = []
+        for post in pagination.items:
+            items.append({
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "summary": getattr(post, "summary", None),
+                "image_url": getattr(post, "image_url", None),
+                "author_id": post.author_id,
+                "author": post.author.username if post.author else None,
+                "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
+            })
+
+        return {
+            "items": items,
+            "total": pagination.total,
+            "page": page,
+            "per_page": per_page
+        }, 200
+    

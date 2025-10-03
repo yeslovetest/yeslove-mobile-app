@@ -11,7 +11,7 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   ChatApiFactory,
   GetMessagesResponse,
   BlogApiFactory,
-  GetBlogPostsResponse,
+  BlogPostList,
   MarkChatOpenedResponse,
   GetFriendsResponse} from "@/generated-api";
 import { appSelect } from "../hooks";
@@ -149,9 +149,17 @@ function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
 /** 
  * BlogPost Api 
  * */
-function* handleGetBlogPost(action: PayloadAction<void>){
-  const blogs = ((yield call(BlogApiFactory().getBlogPosts)) as AxiosResponse<GetBlogPostsResponse>).data as GetBlogPostsResponse;
-  yield put(setBlogPosts({blogs: blogs.blogs ?? []}));
+function* handleGetBlogPost(action: PayloadAction<{searchquery?: string, perPage?: number, currentPage?: number}>){
+  try {
+    const response = ((yield call(BlogApiFactory().getListBlogs, action.payload.searchquery ?? undefined,
+                    action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined 
+                  ))  as AxiosResponse<BlogPostList>).data as BlogPostList;
+    yield put(setBlogPosts({blogs: response}));
+  }
+  catch (error) {
+    console.error('failed to fetch blog posts', error);  
+  }
+  
 }
 
 /** 
