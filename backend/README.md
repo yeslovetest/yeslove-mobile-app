@@ -38,7 +38,7 @@ KEYCLOAK_SERVER_URL=http://localhost:8080
 KEYCLOAK_REALM_NAME=YesLove_Auth
 KEYCLOAK_CLIENT_ID=your-client-id
 KEYCLOAK_CLIENT_SECRET=your-client-secret
-```
+``` 
 
 ## 📂 Step 5: Initialize the Database
 ```bash
