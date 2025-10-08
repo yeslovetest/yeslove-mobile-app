@@ -3,17 +3,13 @@ import { fetchUserDataAction, getEmailNotificationSettings, getProfileVisibility
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
   TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
   GetReactionsResponse, ReactToPostResponse,
-  ChangePasswordRequest,
-  DeleteAccountRequest,
-  EmailNotificationSettings,
-  ProfileVisibilitySettings,
-  GetFollowingResponse,
-  ChatApiFactory,
-  GetMessagesResponse,
-  BlogApiFactory,
-  BlogPostList,
-  MarkChatOpenedResponse,
-  GetFriendsResponse} from "@/generated-api";
+  ChangePasswordRequest, DeleteAccountRequest,
+  EmailNotificationSettings, ProfileVisibilitySettings,
+  GetFollowingResponse, ChatApiFactory,
+  GetMessagesResponse, BlogApiFactory, BlogPostList,
+  MarkChatOpenedResponse, GetFriendsResponse, 
+  EventsApiFactory, EventListResponse,
+  ProfessionalsListResponse} from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -33,7 +29,9 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
  } from "../Home-store/feedSlice";
 import { changeTabAction, TabType } from "../Navigation/navigationSlice";
 import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList } from "../Chat/chatSlice";
-import { setBlogPosts, fetchBlogPosts } from "../Get-help-store/getHelpSlice";
+import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals } from "../Get-help-store/getHelpSlice";
+import { fetchAllEvents, fetchUserEvents, setAllEvents,
+   setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent } from "../Events-store/eventsSlice";
 
 
 
@@ -162,6 +160,7 @@ function* handleGetBlogPost(action: PayloadAction<{searchquery?: string, perPage
   
 }
 
+
 /** 
  * Chat Api 
  * */
@@ -194,25 +193,93 @@ function* handleGetFriendList(action: PayloadAction<string>){
   yield put(setFriendList(friends.friends ?? []));
 }
 
+
+/** 
+ * Events Api 
+ * */
+function* handleGetEventsList(action: PayloadAction<{endDate?: string, startDate?: string, perPage?: number, currentPage?: number}>){
+  try {
+    const response = ((yield call(EventsApiFactory().getEventList, action.payload.endDate ?? undefined,
+          action.payload.startDate ?? undefined, action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined 
+    ))  as AxiosResponse<EventListResponse>).data as EventListResponse;
+
+    yield put(setAllEvents({events: response}));
+  }
+  catch (error) {
+    console.error('failed to fetch Events', error);  
+  } 
+}
+
+function* handleGetAttendingEvents(action: PayloadAction<{queryType: string , endDate?: string, startDate?: string, perPage?: number, currentPage?: number}>){
+  try {
+    const response = ((yield call(EventsApiFactory().getAttendingEvents, action.payload.endDate ?? undefined,
+          action.payload.startDate ?? undefined,
+          action.payload.perPage ?? undefined, 
+          action.payload.currentPage ?? undefined, 
+          action.payload.queryType ?? 'all' 
+    ))  as AxiosResponse<EventListResponse>).data as EventListResponse;
+
+    yield put(setUserEvents({events: response}));
+  }
+  catch (error) {
+    console.error('failed to fetch Events', error);  
+  }
+}
+
+function* handleAddAttendeeToEvent(action: PayloadAction<{eventId: number}>){ 
+  try {
+    yield call(EventsApiFactory().postEventAttendees,{user_id: undefined, event_id: action.payload.eventId});
+    yield put(fetchUserEvents({queryType: 'attending'}));
+  }
+  catch (error) {
+    console.error('failed to add attendee to event', error);  
+  } 
+}
+
+function* handleRemoveAttendeeFromEvent(action: PayloadAction<{eventId: number}>){ 
+  try {
+    yield call(EventsApiFactory().deleteRemoveAttendee, {user_id: undefined, event_id: action.payload.eventId});
+    yield put(fetchUserEvents({queryType: 'attending'}));
+  }
+  catch (error) {
+    console.error('failed to remove attendee from event', error);  
+  } 
+} 
+
+function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, currentPage?: number}>){
+  try {
+    const response = ((yield call(EventsApiFactory().getGetProfessionals, action.payload.perPage ?? undefined, 
+    action.payload.currentPage ?? undefined ))  as AxiosResponse<ProfessionalsListResponse>).data as ProfessionalsListResponse;
+       yield put(setProfessionals({items: response.professionals ?? [], total: response.pagination?.total_professionals ?? 0, 
+        page: response.pagination?.page ?? 1, per_page: response.pagination?.per_page ?? 20}));
+  } 
+  catch (error) {
+       console.error('failed to fetch professionals', error);  
+  } 
+}
+
+
 /** 
  * Feed Api 
  * */
-function* updateFeed(action: PayloadAction<string>){
-  const posts = ((yield call(FeedApiFactory().getFeed, action.payload)) as AxiosResponse<PostResponse>).data as PostResponse;
-  yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload}));
+function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | undefined, page: number | undefined}>){
+  const posts = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
+  console.log(action.payload.feedType)
+  console.log(posts)
+  yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload.feedType}));
 }
 
 function* postNewPost(action: PayloadAction<{content: string}>){
   yield call(FeedApiFactory().postCreatePost, {content: action.payload.content});
-  yield put(updatePostsForFeedAction('all'));
-  yield put(updatePostsForFeedAction('friends'));
+  yield put(updatePostsForFeedAction({feedType: 'all'}));
+  yield put(updatePostsForFeedAction({feedType: 'friends'}));
 }
 
 function* postNewComment(action: PayloadAction<{postId: number, content: string}>){
   yield call(FeedApiFactory().postAddComment, action.payload.postId,  {content: action.payload.content});
   yield put(retrievePostReactions({postId: action.payload.postId}));
-  yield put(updatePostsForFeedAction('all'));
-  yield put(updatePostsForFeedAction('friends'));
+  yield put(updatePostsForFeedAction({feedType: 'all'}));
+  yield put(updatePostsForFeedAction({feedType: 'friends'}));
 }
 
 function* handleGetFollowing(action: PayloadAction<void>){
@@ -241,8 +308,8 @@ function* handleReactionToPost(action: PayloadAction<{postId: number, reactionTy
      yield put(postLikePost({postId: action.payload.postId})); 
   }
   yield put(retrievePostReactions({postId: action.payload.postId}));
-  yield put(updatePostsForFeedAction('all'));
-  yield put(updatePostsForFeedAction('friends'));
+  yield put(updatePostsForFeedAction({feedType: 'all'}));
+  yield put(updatePostsForFeedAction({feedType: 'friends'}));
   
 }
 
@@ -267,7 +334,7 @@ function* fetchPostReactions (action: PayloadAction<{postId: number}>){
  * */
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* saveProfileInfoEffect(action: any) {
-  let userId: string = yield appSelect(state => state.user.id);
+  let userId: string = yield appSelect((state: { user: { id: any; }; }) => state.user.id);
   let info: UserProfile = yield appSelect(state => state.profile.profiles[userId]);
   ProfileApiFactory()
     .putUpdateProfile(info)
@@ -322,6 +389,12 @@ function* appSaga() {
   yield takeEvery(fetchFriendList.type, handleGetFriendList);
 /**BlogPost APi saga */  
   yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
+/**Events APi saga */  
+  yield takeEvery(fetchAllEvents.type, handleGetEventsList);
+  yield takeEvery(fetchUserEvents.type, handleGetAttendingEvents);  
+  yield takeEvery(addAttendeeToEvent.type, handleAddAttendeeToEvent);
+  yield takeEvery(removeAttendeeFromEvent.type, handleRemoveAttendeeFromEvent);
+  yield takeEvery(fetchProfessionals.type, handleFetchProfessionals);
 /**Feed Api saga */
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);

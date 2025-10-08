@@ -21,6 +21,11 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "auth"
         ]
@@ -43,6 +48,11 @@
             "schema": {
               "$ref": "#/definitions/DeleteAccountRequest"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -94,6 +104,11 @@
             "schema": {
               "$ref": "#/definitions/LogoutRequest"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -169,6 +184,11 @@
             "schema": {
               "$ref": "#/definitions/SetUserTypeRequest"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -436,97 +456,6 @@
         ]
       }
     },
-    "/api/device/delete-device-token/{token_id}": {
-      "parameters": [
-        {
-          "name": "token_id",
-          "in": "path",
-          "required": true,
-          "type": "integer"
-        }
-      ],
-      "delete": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Message"
-            }
-          }
-        },
-        "operationId": "delete_delete_device_token",
-        "parameters": [
-          {
-            "name": "X-Fields",
-            "in": "header",
-            "type": "string",
-            "format": "mask",
-            "description": "An optional fields mask"
-          }
-        ],
-        "tags": [
-          "device"
-        ]
-      }
-    },
-    "/api/device/my-device-tokens": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/DeviceTokenList"
-            }
-          }
-        },
-        "operationId": "get_list_device_tokens",
-        "parameters": [
-          {
-            "name": "X-Fields",
-            "in": "header",
-            "type": "string",
-            "format": "mask",
-            "description": "An optional fields mask"
-          }
-        ],
-        "tags": [
-          "device"
-        ]
-      }
-    },
-    "/api/device/register-device-token": {
-      "post": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/Message"
-            }
-          }
-        },
-        "operationId": "post_register_device_token",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/RegisterDeviceToken"
-            }
-          },
-          {
-            "name": "X-Fields",
-            "in": "header",
-            "type": "string",
-            "format": "mask",
-            "description": "An optional fields mask"
-          }
-        ],
-        "tags": [
-          "device"
-        ]
-      }
-    },
     "/api/events/created_events": {
       "get": {
         "responses": {
@@ -555,31 +484,6 @@
       }
     },
     "/api/events/event_attendees": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/EventsResponse"
-            }
-          }
-        },
-        "description": "Returns Event IDs of all events to be attended/already attended by the provided user id)",
-        "operationId": "get_event_attendees",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/AttendingQuery"
-            }
-          }
-        ],
-        "tags": [
-          "events"
-        ]
-      },
       "post": {
         "responses": {
           "201": {
@@ -595,6 +499,75 @@
             "schema": {
               "$ref": "#/definitions/AddAttendeeRequest"
             }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/event_attendees/attending": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EventListResponse"
+            }
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        },
+        "description": "Returns events (with details) the given user is attending, has attended, or both.\n        Results are paginated, and can be filtered by start_date and end_date.\n        \n        - For `attended`: end_date defaults to today (cannot exceed today)\n        - For `attending`: start_date defaults to today (cannot be earlier than today)",
+        "operationId": "get_attending_events",
+        "parameters": [
+          {
+            "type": "string",
+            "in": "query",
+            "description": "Filter end date (YYYY-MM-DD)",
+            "name": "end_date"
+          },
+          {
+            "type": "string",
+            "in": "query",
+            "description": "Filter start date (YYYY-MM-DD)",
+            "name": "start_date"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Events per page (default 10, max 100)",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Page number (default 1)",
+            "name": "page"
+          },
+          {
+            "type": "string",
+            "default": "all",
+            "in": "query",
+            "description": "Event type filter: attending (future), attended (past), or all",
+            "name": "type"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "User ID (defaults to authenticated user)",
+            "name": "user_id"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
           }
         ],
         "tags": [
@@ -685,7 +658,7 @@
             "description": "Success"
           }
         },
-        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.",
+        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.\n                        Image will be uploaded to S3 if provided.",
         "operationId": "post_event_info",
         "parameters": [
           {
@@ -695,6 +668,137 @@
             "schema": {
               "$ref": "#/definitions/AddEventRequest"
             }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/event_info/{event_id}": {
+      "parameters": [
+        {
+          "name": "event_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Edit event data",
+        "description": "Update event data - only event creator can edit",
+        "operationId": "put_event_management",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateEventRequest"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Delete event",
+        "description": "Delete event - only event creator can delete",
+        "operationId": "delete_event_management",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/events_list": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EventListResponse"
+            }
+          }
+        },
+        "description": "List events with pagination and optional date range filter",
+        "operationId": "get_event_list",
+        "parameters": [
+          {
+            "type": "string",
+            "in": "query",
+            "description": "End date for filtering (YYYY-MM-DD)",
+            "name": "end_date"
+          },
+          {
+            "type": "string",
+            "in": "query",
+            "description": "Start date for filtering (YYYY-MM-DD, defaults to today)",
+            "name": "start_date"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Events per page (default 10, max 100)",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Page number (default 1)",
+            "name": "page"
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/professionals": {
+      "get": {
+        "responses": {
+          "500": {
+            "description": "Internal server error"
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProfessionalsListResponse"
+            }
+          }
+        },
+        "summary": "Retrieve verified professionals with pagination",
+        "description": "Get a paginated list of verified professionals for the event page/Get-help page",
+        "operationId": "get_get_professionals",
+        "parameters": [
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Professionals per page (default 20, max 100)",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Page number (default 1)",
+            "name": "page"
           }
         ],
         "tags": [
@@ -716,10 +820,30 @@
         "operationId": "get_feed",
         "parameters": [
           {
+            "type": "integer",
+            "default": 10,
+            "in": "query",
+            "description": "Number of posts per page",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "default": 1,
+            "in": "query",
+            "description": "Page number for pagination",
+            "name": "page"
+          },
+          {
+            "type": "string",
+            "default": "all",
             "in": "query",
             "description": "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'",
-            "name": "feed_type",
-            "type": "string"
+            "name": "feed_type"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -752,6 +876,11 @@
             "schema": {
               "$ref": "#/definitions/FollowUserRequest"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -789,6 +918,11 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "feed"
         ]
@@ -824,6 +958,11 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "feed"
         ]
@@ -846,6 +985,11 @@
             "schema": {
               "$ref": "#/definitions/CreatePostRequest"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -878,6 +1022,11 @@
             "schema": {
               "$ref": "#/definitions/AddCommentRequest"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -937,6 +1086,11 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "feed"
         ]
@@ -973,6 +1127,11 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "feed"
         ]
@@ -1003,6 +1162,19 @@
         ]
       }
     },
+    "/api/media/bulk-upload": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "post_bulk_upload_media",
+        "tags": [
+          "media"
+        ]
+      }
+    },
     "/api/media/upload": {
       "post": {
         "responses": {
@@ -1011,6 +1183,27 @@
           }
         },
         "operationId": "post_upload_media",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/media/user/{user_id}": {
+      "parameters": [
+        {
+          "name": "user_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "get_get_user_media",
         "tags": [
           "media"
         ]
@@ -1035,6 +1228,74 @@
         "tags": [
           "media"
         ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "delete_get_media",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/media/{media_id}/metadata": {
+      "parameters": [
+        {
+          "name": "media_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "get_get_media_metadata",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/notifications/preferences": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Update user's notification preferences",
+        "operationId": "put_notification_preferences_resource",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/NotificationPreferences"
+            }
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get user's notification preferences",
+        "operationId": "get_notification_preferences_resource",
+        "tags": [
+          "notifications"
+        ]
       }
     },
     "/api/profile/about/{keycloak_id}": {
@@ -1057,6 +1318,11 @@
         },
         "summary": "Get user contact & education details for About section",
         "operationId": "get_about",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "profile"
         ]
@@ -1074,6 +1340,11 @@
         },
         "summary": "Get email notification settings",
         "operationId": "get_email_notifications",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "profile"
         ]
@@ -1094,6 +1365,11 @@
             "schema": {
               "$ref": "#/definitions/EmailNotificationSettings"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -1121,6 +1397,11 @@
         },
         "summary": "Get user profile",
         "operationId": "get_user_profile",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "profile"
         ]
@@ -1138,6 +1419,11 @@
         },
         "summary": "Get profile visibility settings",
         "operationId": "get_profile_visibility",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "profile"
         ]
@@ -1158,6 +1444,11 @@
             "schema": {
               "$ref": "#/definitions/ProfileVisibilitySettings"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -1182,6 +1473,11 @@
             "schema": {
               "$ref": "#/definitions/UserProfile"
             }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -1211,8 +1507,97 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "tags": [
           "profile"
+        ]
+      }
+    },
+    "/api/recommendations/blogs": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get recommended blogs based on user reading history",
+        "operationId": "get_blog_recommendations",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 10,
+            "in": "query",
+            "description": "Number of blogs to return",
+            "name": "limit"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recommendations"
+        ]
+      }
+    },
+    "/api/recommendations/posts": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get recommended posts based on user interests",
+        "operationId": "get_post_recommendations",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 20,
+            "in": "query",
+            "description": "Number of posts to return",
+            "name": "limit"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recommendations"
+        ]
+      }
+    },
+    "/api/recommendations/users": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get user recommendations based on graph analysis",
+        "operationId": "get_user_recommendations",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 10,
+            "in": "query",
+            "description": "Number of recommendations to return",
+            "name": "limit"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "recommendations"
         ]
       }
     }
@@ -1226,6 +1611,19 @@
   ],
   "consumes": [
     "application/json"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
   ],
   "tags": [
     {
@@ -1253,16 +1651,20 @@
       "description": "API Endpoints"
     },
     {
-      "name": "device",
-      "description": "Device Token Endpoints"
-    },
-    {
       "name": "chatbot",
       "description": "API Endpoints"
     },
     {
       "name": "media",
       "description": "API Endpoints"
+    },
+    {
+      "name": "notifications",
+      "description": "Notification Settings"
+    },
+    {
+      "name": "recommendations",
+      "description": "User Recommendation Endpoints"
     }
   ],
   "definitions": {
@@ -1454,6 +1856,18 @@
         "password": {
           "type": "string",
           "description": "User's Keycloak password"
+        },
+        "device_token": {
+          "type": "string",
+          "description": "Device token for push notifications"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Device platform (ios/android)"
+        },
+        "device_id": {
+          "type": "string",
+          "description": "Unique device identifier"
         }
       },
       "type": "object"
@@ -1565,6 +1979,18 @@
         "consent_license_data": {
           "type": "string",
           "description": "Consent to use and display license data"
+        },
+        "device_token": {
+          "type": "string",
+          "description": "Device token for push notifications"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Device platform (ios/android)"
+        },
+        "device_id": {
+          "type": "string",
+          "description": "Unique device identifier"
         }
       },
       "type": "object"
@@ -2136,6 +2562,10 @@
         "creator_attending": {
           "type": "boolean"
         },
+        "image": {
+          "type": "object",
+          "description": "Event image file (will be uploaded to S3)"
+        },
         "address_id": {
           "type": "integer",
           "description": "Address ID for if the address is already in the database"
@@ -2193,24 +2623,41 @@
     },
     "EventsModelResponse": {
       "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Event ID"
+        },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Event name"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Event description"
         },
         "location": {
-          "type": "string"
+          "type": "string",
+          "description": "Event location"
         },
         "event_time": {
           "type": "string",
-          "format": "date-time"
+          "description": "Event time in ISO 8601"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "Event image URL"
         },
         "address": {
-          "$ref": "#/definitions/AddressModelResponse"
+          "description": "Event address details",
+          "allOf": [
+            {
+              "$ref": "#/definitions/AddressModelResponse"
+            }
+          ]
         },
         "attendees": {
           "type": "array",
+          "description": "List of attendee user IDs",
           "items": {
             "type": "integer"
           }
@@ -2241,26 +2688,26 @@
       },
       "type": "object"
     },
-    "AttendingQuery": {
-      "required": [
-        "type"
-      ],
+    "EventListResponse": {
       "properties": {
-        "user_id": {
-          "type": "integer",
-          "description": "User ID of creator to find events for, will default to user that made the request"
+        "items": {
+          "type": "array",
+          "description": "List of events",
+          "items": {
+            "$ref": "#/definitions/EventsModelResponse"
+          }
         },
-        "type": {
-          "type": "string",
-          "description": "Type of request, upcoming/past/all, defaults to 'all'"
+        "total": {
+          "type": "integer",
+          "description": "Total number of events"
         },
         "page": {
           "type": "integer",
-          "description": "Page Number, default = 1"
+          "description": "Current page"
         },
         "per_page": {
           "type": "integer",
-          "description": "Number of Events per page, default = 20"
+          "description": "Events per page"
         }
       },
       "type": "object"
@@ -2297,17 +2744,113 @@
       },
       "type": "object"
     },
-    "CreateBlogPost": {
+    "AttendingQuery": {
       "required": [
-        "content",
-        "id",
-        "title"
+        "type"
       ],
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "description": "User ID of creator to find events for, will default to user that made the request"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of request, upcoming/past/all, defaults to 'all'"
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
+        }
+      },
+      "type": "object"
+    },
+    "UpdateEventRequest": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Event name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Event description"
+        },
+        "location": {
+          "type": "string",
+          "description": "Event location"
+        },
+        "event_time": {
+          "type": "string",
+          "description": "Event datetime in ISO format"
+        },
+        "image": {
+          "type": "object",
+          "description": "Event image file (will be uploaded to S3)"
+        }
+      },
+      "type": "object"
+    },
+    "ProfessionalsListResponse": {
+      "properties": {
+        "professionals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProfessionalResponse"
+          }
+        },
+        "pagination": {
+          "type": "object",
+          "description": "Pagination info"
+        }
+      },
+      "type": "object"
+    },
+    "ProfessionalResponse": {
       "properties": {
         "id": {
           "type": "integer",
-          "description": "Post ID"
+          "description": "User ID"
         },
+        "keycloak_id": {
+          "type": "string",
+          "description": "Keycloak ID"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Bio"
+        },
+        "profile_pic": {
+          "type": "string",
+          "description": "Profile picture URL"
+        },
+        "specialization": {
+          "type": "string",
+          "description": "Professional specialization"
+        },
+        "license_body": {
+          "type": "string",
+          "description": "License body (BACP, HCPC, etc.)"
+        }
+      },
+      "type": "object"
+    },
+    "CreateBlogPost": {
+      "required": [
+        "content",
+        "title"
+      ],
+      "properties": {
         "title": {
           "type": "string",
           "description": "Title of the blog post"
@@ -2320,9 +2863,13 @@
           "type": "string",
           "description": "Blog post Summary /short intro to Blog"
         },
+        "image": {
+          "type": "object",
+          "description": "Blog image file (will be uploaded to S3)"
+        },
         "image_url": {
           "type": "string",
-          "description": "Optional image URL"
+          "description": "Optional image URL (alternative to file upload)"
         }
       },
       "type": "object"
@@ -2387,64 +2934,6 @@
       },
       "type": "object"
     },
-    "RegisterDeviceToken": {
-      "required": [
-        "platform",
-        "token"
-      ],
-      "properties": {
-        "token": {
-          "type": "string",
-          "description": "Device push token"
-        },
-        "platform": {
-          "type": "string",
-          "description": "Device platform (ios/android)"
-        }
-      },
-      "type": "object"
-    },
-    "Message": {
-      "properties": {
-        "message": {
-          "type": "string",
-          "description": "Response message"
-        }
-      },
-      "type": "object"
-    },
-    "DeviceTokenList": {
-      "properties": {
-        "device_tokens": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeviceToken"
-          }
-        }
-      },
-      "type": "object"
-    },
-    "DeviceToken": {
-      "properties": {
-        "id": {
-          "type": "integer",
-          "description": "Token ID"
-        },
-        "token": {
-          "type": "string",
-          "description": "Device push token"
-        },
-        "platform": {
-          "type": "string",
-          "description": "Device platform"
-        },
-        "created_at": {
-          "type": "string",
-          "description": "Token registration date/time (ISO format)"
-        }
-      },
-      "type": "object"
-    },
     "MessageRequest": {
       "required": [
         "message"
@@ -2453,6 +2942,31 @@
         "message": {
           "type": "string",
           "description": "Message content"
+        }
+      },
+      "type": "object"
+    },
+    "NotificationPreferences": {
+      "properties": {
+        "posts": {
+          "type": "boolean",
+          "description": "Notifications for new posts"
+        },
+        "likes": {
+          "type": "boolean",
+          "description": "Notifications for likes"
+        },
+        "comments": {
+          "type": "boolean",
+          "description": "Notifications for comments"
+        },
+        "events": {
+          "type": "boolean",
+          "description": "Notifications for new events"
+        },
+        "blogs": {
+          "type": "boolean",
+          "description": "Notifications for new blogs"
         }
       },
       "type": "object"

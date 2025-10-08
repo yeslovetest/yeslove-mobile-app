@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 const AllUpdatesPosts = () => {
   const dispatch = useAppDispatch();
     useFocusEffect(React.useCallback(() => {
-        dispatch(updatePostsForFeedAction('all'));
+        dispatch(updatePostsForFeedAction({feedType: 'all'}));
         dispatch(fetchFollowedUsers());
   }, []));
   
