@@ -111,6 +111,12 @@ export interface AddEventRequest {
      */
     'creator_attending'?: boolean;
     /**
+     * Event image file (will be uploaded to S3)
+     * @type {object}
+     * @memberof AddEventRequest
+     */
+    'image'?: object;
+    /**
      * Address ID for if the address is already in the database
      * @type {number}
      * @memberof AddEventRequest
@@ -438,12 +444,6 @@ export interface ContactInfo {
  */
 export interface CreateBlogPost {
     /**
-     * Post ID
-     * @type {number}
-     * @memberof CreateBlogPost
-     */
-    'id': number;
-    /**
      * Title of the blog post
      * @type {string}
      * @memberof CreateBlogPost
@@ -462,7 +462,13 @@ export interface CreateBlogPost {
      */
     'summary'?: string;
     /**
-     * Optional image URL
+     * Blog image file (will be uploaded to S3)
+     * @type {object}
+     * @memberof CreateBlogPost
+     */
+    'image'?: object;
+    /**
+     * Optional image URL (alternative to file upload)
      * @type {string}
      * @memberof CreateBlogPost
      */
@@ -493,50 +499,6 @@ export interface DeleteAccountRequest {
      * @memberof DeleteAccountRequest
      */
     'confirmation': boolean;
-}
-/**
- * 
- * @export
- * @interface DeviceToken
- */
-export interface DeviceToken {
-    /**
-     * Token ID
-     * @type {number}
-     * @memberof DeviceToken
-     */
-    'id'?: number;
-    /**
-     * Device push token
-     * @type {string}
-     * @memberof DeviceToken
-     */
-    'token'?: string;
-    /**
-     * Device platform
-     * @type {string}
-     * @memberof DeviceToken
-     */
-    'platform'?: string;
-    /**
-     * Token registration date/time (ISO format)
-     * @type {string}
-     * @memberof DeviceToken
-     */
-    'created_at'?: string;
-}
-/**
- * 
- * @export
- * @interface DeviceTokenList
- */
-export interface DeviceTokenList {
-    /**
-     * 
-     * @type {Array<DeviceToken>}
-     * @memberof DeviceTokenList
-     */
-    'device_tokens'?: Array<DeviceToken>;
 }
 /**
  * 
@@ -666,41 +628,84 @@ export interface EventInfoResponse {
 /**
  * 
  * @export
+ * @interface EventListResponse
+ */
+export interface EventListResponse {
+    /**
+     * List of events
+     * @type {Array<EventsModelResponse>}
+     * @memberof EventListResponse
+     */
+    'items'?: Array<EventsModelResponse>;
+    /**
+     * Total number of events
+     * @type {number}
+     * @memberof EventListResponse
+     */
+    'total'?: number;
+    /**
+     * Current page
+     * @type {number}
+     * @memberof EventListResponse
+     */
+    'page'?: number;
+    /**
+     * Events per page
+     * @type {number}
+     * @memberof EventListResponse
+     */
+    'per_page'?: number;
+}
+/**
+ * 
+ * @export
  * @interface EventsModelResponse
  */
 export interface EventsModelResponse {
     /**
-     * 
+     * Event ID
+     * @type {number}
+     * @memberof EventsModelResponse
+     */
+    'id'?: number;
+    /**
+     * Event name
      * @type {string}
      * @memberof EventsModelResponse
      */
     'name'?: string;
     /**
-     * 
+     * Event description
      * @type {string}
      * @memberof EventsModelResponse
      */
     'description'?: string;
     /**
-     * 
+     * Event location
      * @type {string}
      * @memberof EventsModelResponse
      */
     'location'?: string;
     /**
-     * 
+     * Event time in ISO 8601
      * @type {string}
      * @memberof EventsModelResponse
      */
     'event_time'?: string;
     /**
-     * 
+     * Event image URL
+     * @type {string}
+     * @memberof EventsModelResponse
+     */
+    'image_url'?: string;
+    /**
+     * Event address details
      * @type {AddressModelResponse}
      * @memberof EventsModelResponse
      */
     'address'?: AddressModelResponse;
     /**
-     * 
+     * List of attendee user IDs
      * @type {Array<number>}
      * @memberof EventsModelResponse
      */
@@ -1008,6 +1013,24 @@ export interface LoginRequest {
      * @memberof LoginRequest
      */
     'password': string;
+    /**
+     * Device token for push notifications
+     * @type {string}
+     * @memberof LoginRequest
+     */
+    'device_token'?: string;
+    /**
+     * Device platform (ios/android)
+     * @type {string}
+     * @memberof LoginRequest
+     */
+    'platform'?: string;
+    /**
+     * Unique device identifier
+     * @type {string}
+     * @memberof LoginRequest
+     */
+    'device_id'?: string;
 }
 /**
  * 
@@ -1038,19 +1061,6 @@ export interface MarkChatOpenedResponse {
 /**
  * 
  * @export
- * @interface Message
- */
-export interface Message {
-    /**
-     * Response message
-     * @type {string}
-     * @memberof Message
-     */
-    'message'?: string;
-}
-/**
- * 
- * @export
  * @interface MessageRequest
  */
 export interface MessageRequest {
@@ -1060,6 +1070,43 @@ export interface MessageRequest {
      * @memberof MessageRequest
      */
     'message': string;
+}
+/**
+ * 
+ * @export
+ * @interface NotificationPreferences
+ */
+export interface NotificationPreferences {
+    /**
+     * Notifications for new posts
+     * @type {boolean}
+     * @memberof NotificationPreferences
+     */
+    'posts'?: boolean;
+    /**
+     * Notifications for likes
+     * @type {boolean}
+     * @memberof NotificationPreferences
+     */
+    'likes'?: boolean;
+    /**
+     * Notifications for comments
+     * @type {boolean}
+     * @memberof NotificationPreferences
+     */
+    'comments'?: boolean;
+    /**
+     * Notifications for new events
+     * @type {boolean}
+     * @memberof NotificationPreferences
+     */
+    'events'?: boolean;
+    /**
+     * Notifications for new blogs
+     * @type {boolean}
+     * @memberof NotificationPreferences
+     */
+    'blogs'?: boolean;
 }
 /**
  * 
@@ -1140,6 +1187,80 @@ export interface PostResponse {
      * @memberof PostResponse
      */
     'posts'?: Array<Post>;
+}
+/**
+ * 
+ * @export
+ * @interface ProfessionalResponse
+ */
+export interface ProfessionalResponse {
+    /**
+     * User ID
+     * @type {number}
+     * @memberof ProfessionalResponse
+     */
+    'id'?: number;
+    /**
+     * Keycloak ID
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'keycloak_id'?: string;
+    /**
+     * Username
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'username'?: string;
+    /**
+     * Email
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'email'?: string;
+    /**
+     * Bio
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'bio'?: string;
+    /**
+     * Profile picture URL
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'profile_pic'?: string;
+    /**
+     * Professional specialization
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'specialization'?: string;
+    /**
+     * License body (BACP, HCPC, etc.)
+     * @type {string}
+     * @memberof ProfessionalResponse
+     */
+    'license_body'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ProfessionalsListResponse
+ */
+export interface ProfessionalsListResponse {
+    /**
+     * 
+     * @type {Array<ProfessionalResponse>}
+     * @memberof ProfessionalsListResponse
+     */
+    'professionals'?: Array<ProfessionalResponse>;
+    /**
+     * Pagination info
+     * @type {object}
+     * @memberof ProfessionalsListResponse
+     */
+    'pagination'?: object;
 }
 /**
  * 
@@ -1248,25 +1369,6 @@ export interface RefreshTokenRequest {
      * @memberof RefreshTokenRequest
      */
     'refresh_token': string;
-}
-/**
- * 
- * @export
- * @interface RegisterDeviceToken
- */
-export interface RegisterDeviceToken {
-    /**
-     * Device push token
-     * @type {string}
-     * @memberof RegisterDeviceToken
-     */
-    'token': string;
-    /**
-     * Device platform (ios/android)
-     * @type {string}
-     * @memberof RegisterDeviceToken
-     */
-    'platform': string;
 }
 /**
  * 
@@ -1422,6 +1524,24 @@ export interface SignupRequest {
      * @memberof SignupRequest
      */
     'consent_license_data'?: string;
+    /**
+     * Device token for push notifications
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'device_token'?: string;
+    /**
+     * Device platform (ios/android)
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'platform'?: string;
+    /**
+     * Unique device identifier
+     * @type {string}
+     * @memberof SignupRequest
+     */
+    'device_id'?: string;
 }
 
 export const SignupRequestUserTypeEnum = {
@@ -1505,6 +1625,43 @@ export interface TokenResponse {
      * @memberof TokenResponse
      */
     'scope'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface UpdateEventRequest
+ */
+export interface UpdateEventRequest {
+    /**
+     * Event name
+     * @type {string}
+     * @memberof UpdateEventRequest
+     */
+    'name'?: string;
+    /**
+     * Event description
+     * @type {string}
+     * @memberof UpdateEventRequest
+     */
+    'description'?: string;
+    /**
+     * Event location
+     * @type {string}
+     * @memberof UpdateEventRequest
+     */
+    'location'?: string;
+    /**
+     * Event datetime in ISO format
+     * @type {string}
+     * @memberof UpdateEventRequest
+     */
+    'event_time'?: string;
+    /**
+     * Event image file (will be uploaded to S3)
+     * @type {object}
+     * @memberof UpdateEventRequest
+     */
+    'image'?: object;
 }
 /**
  * 
@@ -1616,6 +1773,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -1651,6 +1811,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -1688,6 +1851,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -1723,6 +1889,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -1760,6 +1929,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -1795,6 +1967,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -1832,6 +2007,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -1867,6 +2045,9 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -2224,6 +2405,9 @@ export const BlogApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             if (xFields != null) {
@@ -2259,6 +2443,9 @@ export const BlogApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
             if (q !== undefined) {
                 localVarQueryParameter['q'] = q;
@@ -2427,6 +2614,9 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -2467,6 +2657,9 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -2502,6 +2695,9 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -2539,6 +2735,9 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -2758,6 +2957,9 @@ export const ChatbotApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -2841,23 +3043,23 @@ export class ChatbotApi extends BaseAPI {
 
 
 /**
- * DeviceApi - axios parameter creator
+ * EventsApi - axios parameter creator
  * @export
  */
-export const DeviceApiAxiosParamCreator = function (configuration?: Configuration) {
+export const EventsApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @param {number} tokenId 
-         * @param {string} [xFields] An optional fields mask
+         * Delete event - only event creator can delete
+         * @summary Delete event
+         * @param {number} eventId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteDeleteDeviceToken: async (tokenId: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'tokenId' is not null or undefined
-            assertParamExists('deleteDeleteDeviceToken', 'tokenId', tokenId)
-            const localVarPath = `/api/device/delete-device-token/{token_id}`
-                .replace(`{${"token_id"}}`, encodeURIComponent(String(tokenId)));
+        deleteEventManagement: async (eventId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'eventId' is not null or undefined
+            assertParamExists('deleteEventManagement', 'eventId', eventId)
+            const localVarPath = `/api/events/event_info/{event_id}`
+                .replace(`{${"event_id"}}`, encodeURIComponent(String(eventId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2869,11 +3071,11 @@ export const DeviceApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
-            if (xFields != null) {
-                localVarHeaderParameter['X-Fields'] = String(xFields);
-            }
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -2883,219 +3085,6 @@ export const DeviceApiAxiosParamCreator = function (configuration?: Configuratio
                 options: localVarRequestOptions,
             };
         },
-        /**
-         * 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getListDeviceTokens: async (xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/device/my-device-tokens`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            if (xFields != null) {
-                localVarHeaderParameter['X-Fields'] = String(xFields);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {RegisterDeviceToken} payload 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        postRegisterDeviceToken: async (payload: RegisterDeviceToken, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postRegisterDeviceToken', 'payload', payload)
-            const localVarPath = `/api/device/register-device-token`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            if (xFields != null) {
-                localVarHeaderParameter['X-Fields'] = String(xFields);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * DeviceApi - functional programming interface
- * @export
- */
-export const DeviceApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = DeviceApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {number} tokenId 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteDeleteDeviceToken(tokenId: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Message>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteDeleteDeviceToken(tokenId, xFields, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DeviceApi.deleteDeleteDeviceToken']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getListDeviceTokens(xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceTokenList>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getListDeviceTokens(xFields, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DeviceApi.getListDeviceTokens']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {RegisterDeviceToken} payload 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async postRegisterDeviceToken(payload: RegisterDeviceToken, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Message>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postRegisterDeviceToken(payload, xFields, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DeviceApi.postRegisterDeviceToken']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * DeviceApi - factory interface
- * @export
- */
-export const DeviceApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = DeviceApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {number} tokenId 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteDeleteDeviceToken(tokenId: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<Message> {
-            return localVarFp.deleteDeleteDeviceToken(tokenId, xFields, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getListDeviceTokens(xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<DeviceTokenList> {
-            return localVarFp.getListDeviceTokens(xFields, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {RegisterDeviceToken} payload 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        postRegisterDeviceToken(payload: RegisterDeviceToken, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<Message> {
-            return localVarFp.postRegisterDeviceToken(payload, xFields, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * DeviceApi - object-oriented interface
- * @export
- * @class DeviceApi
- * @extends {BaseAPI}
- */
-export class DeviceApi extends BaseAPI {
-    /**
-     * 
-     * @param {number} tokenId 
-     * @param {string} [xFields] An optional fields mask
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DeviceApi
-     */
-    public deleteDeleteDeviceToken(tokenId: number, xFields?: string, options?: RawAxiosRequestConfig) {
-        return DeviceApiFp(this.configuration).deleteDeleteDeviceToken(tokenId, xFields, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {string} [xFields] An optional fields mask
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DeviceApi
-     */
-    public getListDeviceTokens(xFields?: string, options?: RawAxiosRequestConfig) {
-        return DeviceApiFp(this.configuration).getListDeviceTokens(xFields, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {RegisterDeviceToken} payload 
-     * @param {string} [xFields] An optional fields mask
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DeviceApi
-     */
-    public postRegisterDeviceToken(payload: RegisterDeviceToken, xFields?: string, options?: RawAxiosRequestConfig) {
-        return DeviceApiFp(this.configuration).postRegisterDeviceToken(payload, xFields, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-
-
-/**
- * EventsApi - axios parameter creator
- * @export
- */
-export const EventsApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
         /**
          * Remove a user from an event\'s attendees list
          * @param {RemoveAttendeeRequest} payload 
@@ -3117,6 +3106,9 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3125,6 +3117,72 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Returns events (with details) the given user is attending, has attended, or both.         Results are paginated, and can be filtered by start_date and end_date.                  - For `attended`: end_date defaults to today (cannot exceed today)         - For `attending`: start_date defaults to today (cannot be earlier than today)
+         * @param {string} [endDate] Filter end date (YYYY-MM-DD)
+         * @param {string} [startDate] Filter start date (YYYY-MM-DD)
+         * @param {number} [perPage] Events per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [type] Event type filter: attending (future), attended (past), or all
+         * @param {number} [userId] User ID (defaults to authenticated user)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAttendingEvents: async (endDate?: string, startDate?: string, perPage?: number, page?: number, type?: string, userId?: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/events/event_attendees/attending`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['end_date'] = endDate;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['start_date'] = startDate;
+            }
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (userId !== undefined) {
+                localVarQueryParameter['user_id'] = userId;
+            }
+
+
+    
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3152,40 +3210,8 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Returns Event IDs of all events to be attended/already attended by the provided user id)
-         * @param {AttendingQuery} payload 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getEventAttendees: async (payload: AttendingQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('getEventAttendees', 'payload', payload)
-            const localVarPath = `/api/events/event_attendees`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3222,6 +3248,9 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3257,6 +3286,9 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3265,6 +3297,105 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * List events with pagination and optional date range filter
+         * @param {string} [endDate] End date for filtering (YYYY-MM-DD)
+         * @param {string} [startDate] Start date for filtering (YYYY-MM-DD, defaults to today)
+         * @param {number} [perPage] Events per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventList: async (endDate?: string, startDate?: string, perPage?: number, page?: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/events/events_list`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['end_date'] = endDate;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['start_date'] = startDate;
+            }
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Get a paginated list of verified professionals for the event page/Get-help page
+         * @summary Retrieve verified professionals with pagination
+         * @param {number} [perPage] Professionals per page (default 20, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetProfessionals: async (perPage?: number, page?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/events/professionals`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3292,6 +3423,9 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3307,7 +3441,7 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
-         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.                         Image will be uploaded to S3 if provided.
          * @param {AddEventRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3326,6 +3460,52 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Update event data - only event creator can edit
+         * @summary Edit event data
+         * @param {number} eventId 
+         * @param {UpdateEventRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putEventManagement: async (eventId: number, payload: UpdateEventRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'eventId' is not null or undefined
+            assertParamExists('putEventManagement', 'eventId', eventId)
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('putEventManagement', 'payload', payload)
+            const localVarPath = `/api/events/event_info/{event_id}`
+                .replace(`{${"event_id"}}`, encodeURIComponent(String(eventId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3352,6 +3532,19 @@ export const EventsApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = EventsApiAxiosParamCreator(configuration)
     return {
         /**
+         * Delete event - only event creator can delete
+         * @summary Delete event
+         * @param {number} eventId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteEventManagement(eventId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteEventManagement(eventId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.deleteEventManagement']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Remove a user from an event\'s attendees list
          * @param {RemoveAttendeeRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3364,6 +3557,24 @@ export const EventsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Returns events (with details) the given user is attending, has attended, or both.         Results are paginated, and can be filtered by start_date and end_date.                  - For `attended`: end_date defaults to today (cannot exceed today)         - For `attending`: start_date defaults to today (cannot be earlier than today)
+         * @param {string} [endDate] Filter end date (YYYY-MM-DD)
+         * @param {string} [startDate] Filter start date (YYYY-MM-DD)
+         * @param {number} [perPage] Events per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [type] Event type filter: attending (future), attended (past), or all
+         * @param {number} [userId] User ID (defaults to authenticated user)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAttendingEvents(endDate?: string, startDate?: string, perPage?: number, page?: number, type?: string, userId?: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventListResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAttendingEvents(endDate, startDate, perPage, page, type, userId, xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getAttendingEvents']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
          * @param {AttendingQuery} payload 
          * @param {*} [options] Override http request option.
@@ -3373,18 +3584,6 @@ export const EventsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getCreatedEvents(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['EventsApi.getCreatedEvents']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Returns Event IDs of all events to be attended/already attended by the provided user id)
-         * @param {AttendingQuery} payload 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getEventAttendees(payload: AttendingQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventsResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getEventAttendees(payload, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EventsApi.getEventAttendees']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3412,6 +3611,36 @@ export const EventsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * List events with pagination and optional date range filter
+         * @param {string} [endDate] End date for filtering (YYYY-MM-DD)
+         * @param {string} [startDate] Start date for filtering (YYYY-MM-DD, defaults to today)
+         * @param {number} [perPage] Events per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getEventList(endDate?: string, startDate?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventListResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getEventList(endDate, startDate, perPage, page, xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getEventList']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Get a paginated list of verified professionals for the event page/Get-help page
+         * @summary Retrieve verified professionals with pagination
+         * @param {number} [perPage] Professionals per page (default 20, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetProfessionals(perPage?: number, page?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProfessionalsListResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetProfessionals(perPage, page, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getGetProfessionals']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 
          * @param {AddAttendeeRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3424,7 +3653,7 @@ export const EventsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.                         Image will be uploaded to S3 if provided.
          * @param {AddEventRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3433,6 +3662,20 @@ export const EventsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postEventInfo(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['EventsApi.postEventInfo']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Update event data - only event creator can edit
+         * @summary Edit event data
+         * @param {number} eventId 
+         * @param {UpdateEventRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async putEventManagement(eventId: number, payload: UpdateEventRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.putEventManagement(eventId, payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.putEventManagement']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -3446,6 +3689,16 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
     const localVarFp = EventsApiFp(configuration)
     return {
         /**
+         * Delete event - only event creator can delete
+         * @summary Delete event
+         * @param {number} eventId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteEventManagement(eventId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteEventManagement(eventId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Remove a user from an event\'s attendees list
          * @param {RemoveAttendeeRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3455,6 +3708,21 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
             return localVarFp.deleteRemoveAttendee(payload, options).then((request) => request(axios, basePath));
         },
         /**
+         * Returns events (with details) the given user is attending, has attended, or both.         Results are paginated, and can be filtered by start_date and end_date.                  - For `attended`: end_date defaults to today (cannot exceed today)         - For `attending`: start_date defaults to today (cannot be earlier than today)
+         * @param {string} [endDate] Filter end date (YYYY-MM-DD)
+         * @param {string} [startDate] Filter start date (YYYY-MM-DD)
+         * @param {number} [perPage] Events per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [type] Event type filter: attending (future), attended (past), or all
+         * @param {number} [userId] User ID (defaults to authenticated user)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAttendingEvents(endDate?: string, startDate?: string, perPage?: number, page?: number, type?: string, userId?: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<EventListResponse> {
+            return localVarFp.getAttendingEvents(endDate, startDate, perPage, page, type, userId, xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
          * @param {AttendingQuery} payload 
          * @param {*} [options] Override http request option.
@@ -3462,15 +3730,6 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
          */
         getCreatedEvents(payload: AttendingQuery, options?: RawAxiosRequestConfig): AxiosPromise<EventsResponse> {
             return localVarFp.getCreatedEvents(payload, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Returns Event IDs of all events to be attended/already attended by the provided user id)
-         * @param {AttendingQuery} payload 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getEventAttendees(payload: AttendingQuery, options?: RawAxiosRequestConfig): AxiosPromise<EventsResponse> {
-            return localVarFp.getEventAttendees(payload, options).then((request) => request(axios, basePath));
         },
         /**
          * Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.
@@ -3491,6 +3750,30 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
             return localVarFp.getEventInfo(payload, options).then((request) => request(axios, basePath));
         },
         /**
+         * List events with pagination and optional date range filter
+         * @param {string} [endDate] End date for filtering (YYYY-MM-DD)
+         * @param {string} [startDate] Start date for filtering (YYYY-MM-DD, defaults to today)
+         * @param {number} [perPage] Events per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventList(endDate?: string, startDate?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<EventListResponse> {
+            return localVarFp.getEventList(endDate, startDate, perPage, page, xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Get a paginated list of verified professionals for the event page/Get-help page
+         * @summary Retrieve verified professionals with pagination
+         * @param {number} [perPage] Professionals per page (default 20, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetProfessionals(perPage?: number, page?: number, options?: RawAxiosRequestConfig): AxiosPromise<ProfessionalsListResponse> {
+            return localVarFp.getGetProfessionals(perPage, page, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @param {AddAttendeeRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3500,13 +3783,24 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
             return localVarFp.postEventAttendees(payload, options).then((request) => request(axios, basePath));
         },
         /**
-         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.                         Image will be uploaded to S3 if provided.
          * @param {AddEventRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         postEventInfo(payload: AddEventRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postEventInfo(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Update event data - only event creator can edit
+         * @summary Edit event data
+         * @param {number} eventId 
+         * @param {UpdateEventRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putEventManagement(eventId: number, payload: UpdateEventRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.putEventManagement(eventId, payload, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3519,6 +3813,18 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
  */
 export class EventsApi extends BaseAPI {
     /**
+     * Delete event - only event creator can delete
+     * @summary Delete event
+     * @param {number} eventId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public deleteEventManagement(eventId: number, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).deleteEventManagement(eventId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Remove a user from an event\'s attendees list
      * @param {RemoveAttendeeRequest} payload 
      * @param {*} [options] Override http request option.
@@ -3530,6 +3836,23 @@ export class EventsApi extends BaseAPI {
     }
 
     /**
+     * Returns events (with details) the given user is attending, has attended, or both.         Results are paginated, and can be filtered by start_date and end_date.                  - For `attended`: end_date defaults to today (cannot exceed today)         - For `attending`: start_date defaults to today (cannot be earlier than today)
+     * @param {string} [endDate] Filter end date (YYYY-MM-DD)
+     * @param {string} [startDate] Filter start date (YYYY-MM-DD)
+     * @param {number} [perPage] Events per page (default 10, max 100)
+     * @param {number} [page] Page number (default 1)
+     * @param {string} [type] Event type filter: attending (future), attended (past), or all
+     * @param {number} [userId] User ID (defaults to authenticated user)
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getAttendingEvents(endDate?: string, startDate?: string, perPage?: number, page?: number, type?: string, userId?: number, xFields?: string, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getAttendingEvents(endDate, startDate, perPage, page, type, userId, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
      * @param {AttendingQuery} payload 
      * @param {*} [options] Override http request option.
@@ -3538,17 +3861,6 @@ export class EventsApi extends BaseAPI {
      */
     public getCreatedEvents(payload: AttendingQuery, options?: RawAxiosRequestConfig) {
         return EventsApiFp(this.configuration).getCreatedEvents(payload, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Returns Event IDs of all events to be attended/already attended by the provided user id)
-     * @param {AttendingQuery} payload 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof EventsApi
-     */
-    public getEventAttendees(payload: AttendingQuery, options?: RawAxiosRequestConfig) {
-        return EventsApiFp(this.configuration).getEventAttendees(payload, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3574,6 +3886,34 @@ export class EventsApi extends BaseAPI {
     }
 
     /**
+     * List events with pagination and optional date range filter
+     * @param {string} [endDate] End date for filtering (YYYY-MM-DD)
+     * @param {string} [startDate] Start date for filtering (YYYY-MM-DD, defaults to today)
+     * @param {number} [perPage] Events per page (default 10, max 100)
+     * @param {number} [page] Page number (default 1)
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getEventList(endDate?: string, startDate?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getEventList(endDate, startDate, perPage, page, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Get a paginated list of verified professionals for the event page/Get-help page
+     * @summary Retrieve verified professionals with pagination
+     * @param {number} [perPage] Professionals per page (default 20, max 100)
+     * @param {number} [page] Page number (default 1)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getGetProfessionals(perPage?: number, page?: number, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getGetProfessionals(perPage, page, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * 
      * @param {AddAttendeeRequest} payload 
      * @param {*} [options] Override http request option.
@@ -3585,7 +3925,7 @@ export class EventsApi extends BaseAPI {
     }
 
     /**
-     * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+     * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.                         Image will be uploaded to S3 if provided.
      * @param {AddEventRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3593,6 +3933,19 @@ export class EventsApi extends BaseAPI {
      */
     public postEventInfo(payload: AddEventRequest, options?: RawAxiosRequestConfig) {
         return EventsApiFp(this.configuration).postEventInfo(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Update event data - only event creator can edit
+     * @summary Edit event data
+     * @param {number} eventId 
+     * @param {UpdateEventRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public putEventManagement(eventId: number, payload: UpdateEventRequest, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).putEventManagement(eventId, payload, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -3607,11 +3960,13 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
          * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFeed: async (feedType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getFeed: async (perPage?: number, page?: number, feedType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/feed/feed`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3623,6 +3978,17 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
 
             if (feedType !== undefined) {
                 localVarQueryParameter['feed_type'] = feedType;
@@ -3662,6 +4028,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -3698,6 +4067,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3739,6 +4111,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3775,6 +4150,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3813,6 +4191,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3848,6 +4229,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3889,6 +4273,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3928,6 +4315,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -3969,6 +4359,9 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -3996,12 +4389,14 @@ export const FeedApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
          * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFeed(feedType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PostResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFeed(feedType, options);
+        async getFeed(perPage?: number, page?: number, feedType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PostResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getFeed(perPage, page, feedType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getFeed']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4142,12 +4537,14 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
          * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFeed(feedType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PostResponse> {
-            return localVarFp.getFeed(feedType, options).then((request) => request(axios, basePath));
+        getFeed(perPage?: number, page?: number, feedType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PostResponse> {
+            return localVarFp.getFeed(perPage, page, feedType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4258,13 +4655,15 @@ export class FeedApi extends BaseAPI {
     /**
      * 
      * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
+     * @param {number} [perPage] Number of posts per page
+     * @param {number} [page] Page number for pagination
      * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public getFeed(feedType?: string, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).getFeed(feedType, options).then((request) => request(this.axios, this.basePath));
+    public getFeed(perPage?: number, page?: number, feedType?: string, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).getFeed(perPage, page, feedType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4396,6 +4795,42 @@ export const MediaApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        deleteGetMedia: async (mediaId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'mediaId' is not null or undefined
+            assertParamExists('deleteGetMedia', 'mediaId', mediaId)
+            const localVarPath = `/api/media/{media_id}`
+                .replace(`{${"media_id"}}`, encodeURIComponent(String(mediaId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getGetMedia: async (mediaId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'mediaId' is not null or undefined
             assertParamExists('getGetMedia', 'mediaId', mediaId)
@@ -4411,6 +4846,113 @@ export const MediaApiAxiosParamCreator = function (configuration?: Configuration
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetMediaMetadata: async (mediaId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'mediaId' is not null or undefined
+            assertParamExists('getGetMediaMetadata', 'mediaId', mediaId)
+            const localVarPath = `/api/media/{media_id}/metadata`
+                .replace(`{${"media_id"}}`, encodeURIComponent(String(mediaId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} userId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetUserMedia: async (userId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('getGetUserMedia', 'userId', userId)
+            const localVarPath = `/api/media/user/{user_id}`
+                .replace(`{${"user_id"}}`, encodeURIComponent(String(userId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postBulkUploadMedia: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/media/bulk-upload`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -4441,6 +4983,9 @@ export const MediaApiAxiosParamCreator = function (configuration?: Configuration
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -4468,10 +5013,57 @@ export const MediaApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async deleteGetMedia(mediaId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteGetMedia(mediaId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.deleteGetMedia']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getGetMedia(mediaId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMedia(mediaId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MediaApi.getGetMedia']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetMediaMetadata(mediaId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMediaMetadata(mediaId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.getGetMediaMetadata']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} userId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetUserMedia(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetUserMedia(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.getGetUserMedia']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postBulkUploadMedia(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postBulkUploadMedia(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.postBulkUploadMedia']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4501,8 +5093,43 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        deleteGetMedia(mediaId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteGetMedia(mediaId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getGetMedia(mediaId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getGetMedia(mediaId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} mediaId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetMediaMetadata(mediaId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getGetMediaMetadata(mediaId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} userId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetUserMedia(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getGetUserMedia(userId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postBulkUploadMedia(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postBulkUploadMedia(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4529,8 +5156,51 @@ export class MediaApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof MediaApi
      */
+    public deleteGetMedia(mediaId: string, options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).deleteGetMedia(mediaId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} mediaId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
     public getGetMedia(mediaId: string, options?: RawAxiosRequestConfig) {
         return MediaApiFp(this.configuration).getGetMedia(mediaId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} mediaId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
+    public getGetMediaMetadata(mediaId: string, options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).getGetMediaMetadata(mediaId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} userId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
+    public getGetUserMedia(userId: number, options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).getGetUserMedia(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
+    public postBulkUploadMedia(options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).postBulkUploadMedia(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4541,6 +5211,184 @@ export class MediaApi extends BaseAPI {
      */
     public postUploadMedia(options?: RawAxiosRequestConfig) {
         return MediaApiFp(this.configuration).postUploadMedia(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * NotificationsApi - axios parameter creator
+ * @export
+ */
+export const NotificationsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Get user\'s notification preferences
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNotificationPreferencesResource: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/notifications/preferences`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Update user\'s notification preferences
+         * @param {NotificationPreferences} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putNotificationPreferencesResource: async (payload: NotificationPreferences, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('putNotificationPreferencesResource', 'payload', payload)
+            const localVarPath = `/api/notifications/preferences`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * NotificationsApi - functional programming interface
+ * @export
+ */
+export const NotificationsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = NotificationsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Get user\'s notification preferences
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getNotificationPreferencesResource(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getNotificationPreferencesResource(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.getNotificationPreferencesResource']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Update user\'s notification preferences
+         * @param {NotificationPreferences} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async putNotificationPreferencesResource(payload: NotificationPreferences, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.putNotificationPreferencesResource(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.putNotificationPreferencesResource']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * NotificationsApi - factory interface
+ * @export
+ */
+export const NotificationsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = NotificationsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Get user\'s notification preferences
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNotificationPreferencesResource(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getNotificationPreferencesResource(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Update user\'s notification preferences
+         * @param {NotificationPreferences} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putNotificationPreferencesResource(payload: NotificationPreferences, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.putNotificationPreferencesResource(payload, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * NotificationsApi - object-oriented interface
+ * @export
+ * @class NotificationsApi
+ * @extends {BaseAPI}
+ */
+export class NotificationsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Get user\'s notification preferences
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof NotificationsApi
+     */
+    public getNotificationPreferencesResource(options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).getNotificationPreferencesResource(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Update user\'s notification preferences
+     * @param {NotificationPreferences} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof NotificationsApi
+     */
+    public putNotificationPreferencesResource(payload: NotificationPreferences, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).putNotificationPreferencesResource(payload, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -4575,6 +5423,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -4605,6 +5456,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -4634,6 +5488,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -4669,6 +5526,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -4701,6 +5561,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -4738,6 +5601,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -4774,6 +5640,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
 
     
             localVarHeaderParameter['Content-Type'] = 'application/json';
@@ -4809,6 +5678,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
     
@@ -5126,6 +5998,264 @@ export class ProfileApi extends BaseAPI {
      */
     public putUpdateProfile(payload: UserProfile, options?: RawAxiosRequestConfig) {
         return ProfileApiFp(this.configuration).putUpdateProfile(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * RecommendationsApi - axios parameter creator
+ * @export
+ */
+export const RecommendationsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Get recommended blogs based on user reading history
+         * @param {number} [limit] Number of blogs to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBlogRecommendations: async (limit?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/recommendations/blogs`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get recommended posts based on user interests
+         * @param {number} [limit] Number of posts to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPostRecommendations: async (limit?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/recommendations/posts`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get user recommendations based on graph analysis
+         * @param {number} [limit] Number of recommendations to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserRecommendations: async (limit?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/recommendations/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * RecommendationsApi - functional programming interface
+ * @export
+ */
+export const RecommendationsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = RecommendationsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Get recommended blogs based on user reading history
+         * @param {number} [limit] Number of blogs to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getBlogRecommendations(limit?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlogRecommendations(limit, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['RecommendationsApi.getBlogRecommendations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get recommended posts based on user interests
+         * @param {number} [limit] Number of posts to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getPostRecommendations(limit?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPostRecommendations(limit, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['RecommendationsApi.getPostRecommendations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get user recommendations based on graph analysis
+         * @param {number} [limit] Number of recommendations to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserRecommendations(limit?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserRecommendations(limit, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['RecommendationsApi.getUserRecommendations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * RecommendationsApi - factory interface
+ * @export
+ */
+export const RecommendationsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = RecommendationsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Get recommended blogs based on user reading history
+         * @param {number} [limit] Number of blogs to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBlogRecommendations(limit?: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getBlogRecommendations(limit, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get recommended posts based on user interests
+         * @param {number} [limit] Number of posts to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPostRecommendations(limit?: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getPostRecommendations(limit, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get user recommendations based on graph analysis
+         * @param {number} [limit] Number of recommendations to return
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserRecommendations(limit?: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getUserRecommendations(limit, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * RecommendationsApi - object-oriented interface
+ * @export
+ * @class RecommendationsApi
+ * @extends {BaseAPI}
+ */
+export class RecommendationsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Get recommended blogs based on user reading history
+     * @param {number} [limit] Number of blogs to return
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecommendationsApi
+     */
+    public getBlogRecommendations(limit?: number, options?: RawAxiosRequestConfig) {
+        return RecommendationsApiFp(this.configuration).getBlogRecommendations(limit, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get recommended posts based on user interests
+     * @param {number} [limit] Number of posts to return
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecommendationsApi
+     */
+    public getPostRecommendations(limit?: number, options?: RawAxiosRequestConfig) {
+        return RecommendationsApiFp(this.configuration).getPostRecommendations(limit, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get user recommendations based on graph analysis
+     * @param {number} [limit] Number of recommendations to return
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RecommendationsApi
+     */
+    public getUserRecommendations(limit?: number, options?: RawAxiosRequestConfig) {
+        return RecommendationsApiFp(this.configuration).getUserRecommendations(limit, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

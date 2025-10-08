@@ -5,7 +5,7 @@ import GetHelpSearchBar from '../Get-help-search-bar/GetHelpSearchBar'
 import { fetchBlogPosts, setSearchQuery } from '@/app/store/Get-help-store/getHelpSlice'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { useFocusEffect } from 'expo-router'
-import BlogPaginator from './Blog-Paginator/BlogPaginator'
+import BlogPaginator from '../../../../../Universal-components/Paginator/Paginator'
 
 const BlogsContent = () => {
 

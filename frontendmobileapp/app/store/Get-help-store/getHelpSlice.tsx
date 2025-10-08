@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BlogPostList, BlogPostModel } from "@/generated-api";
+import { BlogPostList, BlogPostModel, ProfessionalResponse } from "@/generated-api";
 
 const getHelpSlice = createSlice({
     name: "getHelp",
@@ -10,6 +10,10 @@ const getHelpSlice = createSlice({
         blogPage: 1,
         blogsPerPage: 10,
         currentSearchQuery: '',
+        professionals: [] as ProfessionalResponse[],
+        totalProfessionals: 0,
+        professionalPage: 1,
+        professionalsPerPage: 20,
     },
     reducers: {
         setActiveGetHelpTabAction: (state, action: PayloadAction<string>) => {
@@ -25,10 +29,18 @@ const getHelpSlice = createSlice({
         setSearchQuery: (state, action:PayloadAction<string>) => {
             state.currentSearchQuery = action.payload;      
         },
+        fetchProfessionals: (state, action: PayloadAction<{perPage?: number, currentPage?: number}>) => {},
+        setProfessionals: (state, action:PayloadAction<{items: ProfessionalResponse[]; total: number; page: number; per_page: number}>) => {
+            state.professionals = action.payload.items || [];
+            state.totalProfessionals = action.payload.total || 0;
+            state.professionalPage = action.payload.page || 1;
+            state.professionalsPerPage = action.payload.per_page || 20;
+        },
     }
 })
 
 export const {
-    setActiveGetHelpTabAction, fetchBlogPosts, setBlogPosts, setSearchQuery
+    setActiveGetHelpTabAction, fetchBlogPosts, setBlogPosts, setSearchQuery,
+    fetchProfessionals, setProfessionals
 } = getHelpSlice.actions;
 export default getHelpSlice.reducer;

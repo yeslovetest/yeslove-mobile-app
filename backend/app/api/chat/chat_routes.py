@@ -172,7 +172,7 @@ class GetFriends(Resource):
                 User.id.label("friend_id"),
                 User.keycloak_id,
                 User.username,
-                User.profile_pic,
+                User.profile_pic_url,
                 Chat.message,
                 Chat.timestamp,
                 Chat.opened,
@@ -216,7 +216,7 @@ class GetFriends(Resource):
                 {
                     "id": f.keycloak_id,
                     "username": f.username,
-                    "profile_pic": f.profile_pic,
+                    "profile_pic": f.profile_pic_url,
                     "last_message": f.message[:60] if f.message else '',
                     "last_message_time": f.timestamp.isoformat() if f.timestamp else date.today().isoformat(),
                     "unread": (
