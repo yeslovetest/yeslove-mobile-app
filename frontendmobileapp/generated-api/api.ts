@@ -45,6 +45,25 @@ export interface AboutResponse {
 /**
  * 
  * @export
+ * @interface AddAttendeeRequest
+ */
+export interface AddAttendeeRequest {
+    /**
+     * User ID to be added, will default to user that made the request
+     * @type {number}
+     * @memberof AddAttendeeRequest
+     */
+    'user_id'?: number;
+    /**
+     * ID of event to add attendee to
+     * @type {number}
+     * @memberof AddAttendeeRequest
+     */
+    'event_id': number;
+}
+/**
+ * 
+ * @export
  * @interface AddCommentRequest
  */
 export interface AddCommentRequest {
@@ -58,6 +77,159 @@ export interface AddCommentRequest {
 /**
  * 
  * @export
+ * @interface AddEventRequest
+ */
+export interface AddEventRequest {
+    /**
+     * Name of the event
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'name': string;
+    /**
+     * Description about the event
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'description'?: string;
+    /**
+     * Description of the event location i.e second floor conference room
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'location'?: string;
+    /**
+     * Date and time of event in ISO format
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'event_time': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AddEventRequest
+     */
+    'creator_attending'?: boolean;
+    /**
+     * Address ID for if the address is already in the database
+     * @type {number}
+     * @memberof AddEventRequest
+     */
+    'address_id'?: number;
+    /**
+     * House number (or name) for address
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'address_number'?: string;
+    /**
+     * Street Name
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'address_street'?: string;
+    /**
+     * City
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'address_city'?: string;
+    /**
+     * County
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'address_county'?: string;
+    /**
+     * Country, (UK by default)
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'address_country'?: string;
+    /**
+     * post code
+     * @type {string}
+     * @memberof AddEventRequest
+     */
+    'post_code'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface AddressModelResponse
+ */
+export interface AddressModelResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof AddressModelResponse
+     */
+    'number'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddressModelResponse
+     */
+    'street'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddressModelResponse
+     */
+    'city'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddressModelResponse
+     */
+    'county'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddressModelResponse
+     */
+    'country'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AddressModelResponse
+     */
+    'post_code'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface AttendingQuery
+ */
+export interface AttendingQuery {
+    /**
+     * User ID of creator to find events for, will default to user that made the request
+     * @type {number}
+     * @memberof AttendingQuery
+     */
+    'user_id'?: number;
+    /**
+     * Type of request, upcoming/past/all, defaults to \'all\'
+     * @type {string}
+     * @memberof AttendingQuery
+     */
+    'type': string;
+    /**
+     * Page Number, default = 1
+     * @type {number}
+     * @memberof AttendingQuery
+     */
+    'page'?: number;
+    /**
+     * Number of Events per page, default = 20
+     * @type {number}
+     * @memberof AttendingQuery
+     */
+    'per_page'?: number;
+}
+/**
+ * 
+ * @export
  * @interface ChangePasswordRequest
  */
 export interface ChangePasswordRequest {
@@ -67,6 +239,74 @@ export interface ChangePasswordRequest {
      * @memberof ChangePasswordRequest
      */
     'new_password': string;
+}
+/**
+ * 
+ * @export
+ * @interface Chat
+ */
+export interface Chat {
+    /**
+     * Sender Username
+     * @type {string}
+     * @memberof Chat
+     */
+    'sender'?: string;
+    /**
+     * Receiver Username
+     * @type {string}
+     * @memberof Chat
+     */
+    'receiver'?: string;
+    /**
+     * Message content
+     * @type {string}
+     * @memberof Chat
+     */
+    'content'?: string;
+    /**
+     * Whether the message has been opened
+     * @type {boolean}
+     * @memberof Chat
+     */
+    'opened'?: boolean;
+    /**
+     * Timestamp of the message ISO format
+     * @type {string}
+     * @memberof Chat
+     */
+    'timestamp'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface Comment
+ */
+export interface Comment {
+    /**
+     * ID of the comment
+     * @type {number}
+     * @memberof Comment
+     */
+    'id'?: number;
+    /**
+     * Username of the comment\'s author
+     * @type {string}
+     * @memberof Comment
+     */
+    'author'?: string;
+    /**
+     * Content of the comment
+     * @type {string}
+     * @memberof Comment
+     */
+    'content'?: string;
+    /**
+     * Timestamp of the comment in ISO format
+     * @type {string}
+     * @memberof Comment
+     */
+    'timestamp'?: string;
 }
 /**
  * 
@@ -123,12 +363,6 @@ export interface CreateBlogPost {
      * @memberof CreateBlogPost
      */
     'content': string;
-    /**
-     * Blog post Summary /short intro to Blog
-     * @type {string}
-     * @memberof CreateBlogPost
-     */
-    'summary'?: string;
     /**
      * Optional image URL
      * @type {string}
@@ -240,34 +474,207 @@ export interface EducationInfo {
 /**
  * 
  * @export
- * @interface EmailNotificationSettings
+ * @interface EmailNotificationSetting
  */
-export interface EmailNotificationSettings {
+export interface EmailNotificationSetting {
     /**
      * Unique ID for the setting
      * @type {string}
-     * @memberof EmailNotificationSettings
+     * @memberof EmailNotificationSetting
      */
     'setting_id': string;
     /**
      * Notification enabled (true/false)
      * @type {boolean}
-     * @memberof EmailNotificationSettings
+     * @memberof EmailNotificationSetting
      */
     'value': boolean;
 }
 /**
  * 
  * @export
- * @interface FeedQuery
+ * @interface EmailNotificationSettings
  */
-export interface FeedQuery {
+export interface EmailNotificationSettings {
     /**
-     * Type of feed: \'all\', \'mentions\', \'favorites\', \'friends\', \'groups\'
-     * @type {string}
-     * @memberof FeedQuery
+     * List of email notification settings
+     * @type {Array<EmailNotificationSetting>}
+     * @memberof EmailNotificationSettings
      */
-    'feed_type'?: string;
+    'settings'?: Array<EmailNotificationSetting>;
+}
+/**
+ * 
+ * @export
+ * @interface EventInfoQuery
+ */
+export interface EventInfoQuery {
+    /**
+     * takes list of Ids for event to be fetched
+     * @type {Array<number>}
+     * @memberof EventInfoQuery
+     */
+    'event_ids': Array<number>;
+    /**
+     * Page Number, default = 1
+     * @type {number}
+     * @memberof EventInfoQuery
+     */
+    'page'?: number;
+    /**
+     * Number of Events per page, default = 20
+     * @type {number}
+     * @memberof EventInfoQuery
+     */
+    'per_page'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface EventInfoResponse
+ */
+export interface EventInfoResponse {
+    /**
+     * 
+     * @type {EventsModelResponse}
+     * @memberof EventInfoResponse
+     */
+    'event_infos'?: EventsModelResponse;
+    /**
+     * total number of events meeting query
+     * @type {number}
+     * @memberof EventInfoResponse
+     */
+    'total_events'?: number;
+    /**
+     * total number of pages meeting the query
+     * @type {number}
+     * @memberof EventInfoResponse
+     */
+    'total_pages'?: number;
+    /**
+     * current page number
+     * @type {number}
+     * @memberof EventInfoResponse
+     */
+    'current_page'?: number;
+    /**
+     * number of events per page
+     * @type {number}
+     * @memberof EventInfoResponse
+     */
+    'per_page'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface EventsModelResponse
+ */
+export interface EventsModelResponse {
+    /**
+     * 
+     * @type {string}
+     * @memberof EventsModelResponse
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EventsModelResponse
+     */
+    'description'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EventsModelResponse
+     */
+    'location'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EventsModelResponse
+     */
+    'event_time'?: string;
+    /**
+     * 
+     * @type {AddressModelResponse}
+     * @memberof EventsModelResponse
+     */
+    'address'?: AddressModelResponse;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof EventsModelResponse
+     */
+    'attendees'?: Array<number>;
+}
+/**
+ * 
+ * @export
+ * @interface EventsQuery
+ */
+export interface EventsQuery {
+    /**
+     * Start time filter in ISO format
+     * @type {string}
+     * @memberof EventsQuery
+     */
+    'start_time'?: string;
+    /**
+     * End time filter in ISO format
+     * @type {string}
+     * @memberof EventsQuery
+     */
+    'end_time'?: string;
+    /**
+     * Page Number, default = 1
+     * @type {number}
+     * @memberof EventsQuery
+     */
+    'page'?: number;
+    /**
+     * Number of Events per page, default = 20
+     * @type {number}
+     * @memberof EventsQuery
+     */
+    'per_page'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface EventsResponse
+ */
+export interface EventsResponse {
+    /**
+     * List of Event IDs
+     * @type {Array<number>}
+     * @memberof EventsResponse
+     */
+    'event_ids'?: Array<number>;
+    /**
+     * total number of events meeting query
+     * @type {number}
+     * @memberof EventsResponse
+     */
+    'total_events'?: number;
+    /**
+     * total number of pages meeting the query
+     * @type {number}
+     * @memberof EventsResponse
+     */
+    'total_pages'?: number;
+    /**
+     * current page number
+     * @type {number}
+     * @memberof EventsResponse
+     */
+    'current_page'?: number;
+    /**
+     * number of events per page
+     * @type {number}
+     * @memberof EventsResponse
+     */
+    'per_page'?: number;
 }
 /**
  * 
@@ -287,6 +694,190 @@ export interface FollowUserRequest {
      * @memberof FollowUserRequest
      */
     'follow_type'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface FollowedUser
+ */
+export interface FollowedUser {
+    /**
+     * Keycloak_ID of the followed user
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'id'?: string;
+    /**
+     * Username of the followed user
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'username'?: string;
+    /**
+     * Type of follow relationship: \'basic\' or \'friend\'
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'follow_type'?: string;
+    /**
+     * URL to the followed user\'s profile picture
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'profile_pic'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface Follower
+ */
+export interface Follower {
+    /**
+     * ID of the follower
+     * @type {string}
+     * @memberof Follower
+     */
+    'id'?: string;
+    /**
+     * Username of the follower
+     * @type {string}
+     * @memberof Follower
+     */
+    'username'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface FriendInfo
+ */
+export interface FriendInfo {
+    /**
+     * Keycloak ID of the friend
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'id'?: string;
+    /**
+     * Friend\'s username
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'username'?: string;
+    /**
+     * URL to profile picture
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'profile_pic'?: string;
+    /**
+     * Snippet of the last message
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'last_message'?: string;
+    /**
+     * Timestamp of last message (ISO 8601 format)
+     * @type {string}
+     * @memberof FriendInfo
+     */
+    'last_message_time'?: string;
+    /**
+     * True if last message is from friend and not opened, otherwise False
+     * @type {boolean}
+     * @memberof FriendInfo
+     */
+    'unread'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface GetCommentResponse
+ */
+export interface GetCommentResponse {
+    /**
+     * 
+     * @type {Array<Comment>}
+     * @memberof GetCommentResponse
+     */
+    'comments'?: Array<Comment>;
+}
+/**
+ * 
+ * @export
+ * @interface GetFollowersResponse
+ */
+export interface GetFollowersResponse {
+    /**
+     * 
+     * @type {Array<Follower>}
+     * @memberof GetFollowersResponse
+     */
+    'followers'?: Array<Follower>;
+}
+/**
+ * 
+ * @export
+ * @interface GetFollowingResponse
+ */
+export interface GetFollowingResponse {
+    /**
+     * 
+     * @type {Array<FollowedUser>}
+     * @memberof GetFollowingResponse
+     */
+    'following'?: Array<FollowedUser>;
+}
+/**
+ * 
+ * @export
+ * @interface GetFriendsRequest
+ */
+export interface GetFriendsRequest {
+    /**
+     * The Keycloak ID of the current user
+     * @type {string}
+     * @memberof GetFriendsRequest
+     */
+    'keycloak_id': string;
+}
+/**
+ * 
+ * @export
+ * @interface GetFriendsResponse
+ */
+export interface GetFriendsResponse {
+    /**
+     * List of friends with chat preview
+     * @type {Array<FriendInfo>}
+     * @memberof GetFriendsResponse
+     */
+    'friends'?: Array<FriendInfo>;
+}
+/**
+ * 
+ * @export
+ * @interface GetMessagesResponse
+ */
+export interface GetMessagesResponse {
+    /**
+     * List of chat messages
+     * @type {Array<Chat>}
+     * @memberof GetMessagesResponse
+     */
+    'messages'?: Array<Chat>;
+}
+/**
+ * 
+ * @export
+ * @interface GetReactionsResponse
+ */
+export interface GetReactionsResponse {
+    /**
+     * 
+     * @type {Array<ReactionResponse>}
+     * @memberof GetReactionsResponse
+     */
+    'reactions'?: Array<ReactionResponse>;
 }
 /**
  * 
@@ -332,6 +923,19 @@ export interface LogoutRequest {
      * @memberof LogoutRequest
      */
     'refresh_token'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface MarkChatOpenedResponse
+ */
+export interface MarkChatOpenedResponse {
+    /**
+     * Confirmation message with number of messages opened
+     * @type {string}
+     * @memberof MarkChatOpenedResponse
+     */
+    'message'?: string;
 }
 /**
  * 
@@ -419,6 +1023,12 @@ export interface Post {
      * @memberof Post
      */
     'comments'?: number;
+    /**
+     * Current user\'s reaction to the post, if any
+     * @type {string}
+     * @memberof Post
+     */
+    'current_user_reaction'?: string;
 }
 /**
  * 
@@ -436,27 +1046,53 @@ export interface PostResponse {
 /**
  * 
  * @export
- * @interface ProfileVisibilitySettings
+ * @interface ProfileVisibilitySetting
  */
-export interface ProfileVisibilitySettings {
+export interface ProfileVisibilitySetting {
     /**
      * Unique ID for the setting
      * @type {string}
-     * @memberof ProfileVisibilitySettings
+     * @memberof ProfileVisibilitySetting
      */
     'setting_id': string;
     /**
      * Visibility value (visible/hidden)
      * @type {string}
-     * @memberof ProfileVisibilitySettings
+     * @memberof ProfileVisibilitySetting
      */
     'value': string;
     /**
      * Category: \'Contact\' or \'Education And Other Information\'
      * @type {string}
-     * @memberof ProfileVisibilitySettings
+     * @memberof ProfileVisibilitySetting
      */
     'category': string;
+}
+/**
+ * 
+ * @export
+ * @interface ProfileVisibilitySettings
+ */
+export interface ProfileVisibilitySettings {
+    /**
+     * List of profile visibility settings
+     * @type {Array<ProfileVisibilitySetting>}
+     * @memberof ProfileVisibilitySettings
+     */
+    'settings'?: Array<ProfileVisibilitySetting>;
+}
+/**
+ * 
+ * @export
+ * @interface ReactToPostResponse
+ */
+export interface ReactToPostResponse {
+    /**
+     * Result message
+     * @type {string}
+     * @memberof ReactToPostResponse
+     */
+    'message'?: string;
 }
 /**
  * 
@@ -470,6 +1106,37 @@ export interface ReactionRequest {
      * @memberof ReactionRequest
      */
     'reaction_type': string;
+}
+/**
+ * 
+ * @export
+ * @interface ReactionResponse
+ */
+export interface ReactionResponse {
+    /**
+     * ID of the post
+     * @type {number}
+     * @memberof ReactionResponse
+     */
+    'id'?: number;
+    /**
+     * Type of reaction
+     * @type {string}
+     * @memberof ReactionResponse
+     */
+    'type'?: string;
+    /**
+     * Username of the reaction\'s author
+     * @type {string}
+     * @memberof ReactionResponse
+     */
+    'author'?: string;
+    /**
+     * URL to the author\'s profile picture
+     * @type {string}
+     * @memberof ReactionResponse
+     */
+    'picture'?: string;
 }
 /**
  * 
@@ -502,6 +1169,25 @@ export interface RegisterDeviceToken {
      * @memberof RegisterDeviceToken
      */
     'platform': string;
+}
+/**
+ * 
+ * @export
+ * @interface RemoveAttendeeRequest
+ */
+export interface RemoveAttendeeRequest {
+    /**
+     * User ID to be removed, will default to user that made the request
+     * @type {number}
+     * @memberof RemoveAttendeeRequest
+     */
+    'user_id'?: number;
+    /**
+     * ID of event to remove attendee from
+     * @type {number}
+     * @memberof RemoveAttendeeRequest
+     */
+    'event_id': number;
 }
 /**
  * 
@@ -654,6 +1340,19 @@ export const SignupRequestLicenseBodyEnum = {
 
 export type SignupRequestLicenseBodyEnum = typeof SignupRequestLicenseBodyEnum[keyof typeof SignupRequestLicenseBodyEnum];
 
+/**
+ * 
+ * @export
+ * @interface SignupResponse
+ */
+export interface SignupResponse {
+    /**
+     * Response message indicating success or failure of signup
+     * @type {string}
+     * @memberof SignupResponse
+     */
+    'message'?: string;
+}
 /**
  * 
  * @export
@@ -1193,7 +1892,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postSignup(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postSignup']?.[localVarOperationServerIndex]?.url;
@@ -1286,7 +1985,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
             return localVarFp.postSignup(payload, options).then((request) => request(axios, basePath));
         },
     };
@@ -1515,6 +2214,46 @@ export class BlogApi extends BaseAPI {
 export const ChatApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all friends of the current user along with
+         * @param {string} keycloakId 
+         * @param {GetFriendsRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriends: async (keycloakId: string, payload: GetFriendsRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'keycloakId' is not null or undefined
+            assertParamExists('getGetFriends', 'keycloakId', keycloakId)
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('getGetFriends', 'payload', payload)
+            const localVarPath = `/api/chat/friends/{keycloak_id}`
+                .replace(`{${"keycloak_id"}}`, encodeURIComponent(String(keycloakId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @summary Fetch chat messages between two users
          * @param {string} receiverId 
@@ -1590,6 +2329,40 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+         * @summary Mark all messages in the chat as opened
+         * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putMarkChatOpened: async (receiverId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'receiverId' is not null or undefined
+            assertParamExists('putMarkChatOpened', 'receiverId', receiverId)
+            const localVarPath = `/api/chat/mark_chat_opened/{receiver_id}`
+                .replace(`{${"receiver_id"}}`, encodeURIComponent(String(receiverId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -1601,6 +2374,21 @@ export const ChatApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ChatApiAxiosParamCreator(configuration)
     return {
         /**
+         * This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - 
+         * Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all friends of the current user along with
+         * @param {string} keycloakId 
+         * @param {GetFriendsRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetFriends(keycloakId: string, payload: GetFriendsRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFriendsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFriends(keycloakId, payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetFriends']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * 
          * @summary Fetch chat messages between two users
          * @param {string} receiverId 
@@ -1608,7 +2396,7 @@ export const ChatApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetMessages']?.[localVarOperationServerIndex]?.url;
@@ -1627,6 +2415,19 @@ export const ChatApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['ChatApi.postSendMessage']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+         * @summary Mark all messages in the chat as opened
+         * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async putMarkChatOpened(receiverId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MarkChatOpenedResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.putMarkChatOpened(receiverId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatApi.putMarkChatOpened']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -1638,6 +2439,17 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
     const localVarFp = ChatApiFp(configuration)
     return {
         /**
+         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all friends of the current user along with
+         * @param {string} keycloakId 
+         * @param {GetFriendsRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriends(keycloakId: string, payload: GetFriendsRequest, options?: RawAxiosRequestConfig): AxiosPromise<GetFriendsResponse> {
+            return localVarFp.getGetFriends(keycloakId, payload, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @summary Fetch chat messages between two users
          * @param {string} receiverId 
@@ -1645,7 +2457,7 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
             return localVarFp.getGetMessages(receiverId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1658,6 +2470,16 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
         postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postSendMessage(payload, options).then((request) => request(axios, basePath));
         },
+        /**
+         * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+         * @summary Mark all messages in the chat as opened
+         * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        putMarkChatOpened(receiverId: string, options?: RawAxiosRequestConfig): AxiosPromise<MarkChatOpenedResponse> {
+            return localVarFp.putMarkChatOpened(receiverId, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -1668,6 +2490,19 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
  * @extends {BaseAPI}
  */
 export class ChatApi extends BaseAPI {
+    /**
+     * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+     * @summary Fetch all friends of the current user along with
+     * @param {string} keycloakId 
+     * @param {GetFriendsRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatApi
+     */
+    public getGetFriends(keycloakId: string, payload: GetFriendsRequest, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).getGetFriends(keycloakId, payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @summary Fetch chat messages between two users
@@ -1691,6 +2526,18 @@ export class ChatApi extends BaseAPI {
      */
     public postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig) {
         return ChatApiFp(this.configuration).postSendMessage(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
+     * @summary Mark all messages in the chat as opened
+     * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatApi
+     */
+    public putMarkChatOpened(receiverId: string, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).putMarkChatOpened(receiverId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2057,22 +2904,56 @@ export class DeviceApi extends BaseAPI {
 
 
 /**
- * FeedApi - axios parameter creator
+ * EventsApi - axios parameter creator
  * @export
  */
-export const FeedApiAxiosParamCreator = function (configuration?: Configuration) {
+export const EventsApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
-         * @param {FeedQuery} payload 
+         * Remove a user from an event\'s attendees list
+         * @param {RemoveAttendeeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFeed: async (payload: FeedQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        deleteRemoveAttendee: async (payload: RemoveAttendeeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'payload' is not null or undefined
-            assertParamExists('getFeed', 'payload', payload)
-            const localVarPath = `/api/feed/feed`;
+            assertParamExists('deleteRemoveAttendee', 'payload', payload)
+            const localVarPath = `/api/events/event_attendees/remove`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
+         * @param {AttendingQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getCreatedEvents: async (payload: AttendingQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('getCreatedEvents', 'payload', payload)
+            const localVarPath = `/api/events/created_events`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2092,6 +2973,479 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Returns Event IDs of all events to be attended/already attended by the provided user id)
+         * @param {AttendingQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventAttendees: async (payload: AttendingQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('getEventAttendees', 'payload', payload)
+            const localVarPath = `/api/events/event_attendees`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.
+         * @param {EventsQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventIds: async (payload: EventsQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('getEventIds', 'payload', payload)
+            const localVarPath = `/api/events/event_ids`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Retrieve detailed info for one or more events by their IDs. Supports pagination.
+         * @param {EventInfoQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventInfo: async (payload: EventInfoQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('getEventInfo', 'payload', payload)
+            const localVarPath = `/api/events/event_info`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {AddAttendeeRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postEventAttendees: async (payload: AddAttendeeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('postEventAttendees', 'payload', payload)
+            const localVarPath = `/api/events/event_attendees`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+         * @param {AddEventRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postEventInfo: async (payload: AddEventRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('postEventInfo', 'payload', payload)
+            const localVarPath = `/api/events/event_info`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * EventsApi - functional programming interface
+ * @export
+ */
+export const EventsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = EventsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * Remove a user from an event\'s attendees list
+         * @param {RemoveAttendeeRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteRemoveAttendee(payload: RemoveAttendeeRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteRemoveAttendee(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.deleteRemoveAttendee']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
+         * @param {AttendingQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getCreatedEvents(payload: AttendingQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getCreatedEvents(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getCreatedEvents']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Returns Event IDs of all events to be attended/already attended by the provided user id)
+         * @param {AttendingQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getEventAttendees(payload: AttendingQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getEventAttendees(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getEventAttendees']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.
+         * @param {EventsQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getEventIds(payload: EventsQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getEventIds(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getEventIds']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Retrieve detailed info for one or more events by their IDs. Supports pagination.
+         * @param {EventInfoQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getEventInfo(payload: EventInfoQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventInfoResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getEventInfo(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getEventInfo']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {AddAttendeeRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postEventAttendees(payload: AddAttendeeRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postEventAttendees(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.postEventAttendees']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+         * @param {AddEventRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postEventInfo(payload: AddEventRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postEventInfo(payload, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.postEventInfo']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * EventsApi - factory interface
+ * @export
+ */
+export const EventsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = EventsApiFp(configuration)
+    return {
+        /**
+         * Remove a user from an event\'s attendees list
+         * @param {RemoveAttendeeRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteRemoveAttendee(payload: RemoveAttendeeRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteRemoveAttendee(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
+         * @param {AttendingQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getCreatedEvents(payload: AttendingQuery, options?: RawAxiosRequestConfig): AxiosPromise<EventsResponse> {
+            return localVarFp.getCreatedEvents(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Returns Event IDs of all events to be attended/already attended by the provided user id)
+         * @param {AttendingQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventAttendees(payload: AttendingQuery, options?: RawAxiosRequestConfig): AxiosPromise<EventsResponse> {
+            return localVarFp.getEventAttendees(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.
+         * @param {EventsQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventIds(payload: EventsQuery, options?: RawAxiosRequestConfig): AxiosPromise<EventsResponse> {
+            return localVarFp.getEventIds(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Retrieve detailed info for one or more events by their IDs. Supports pagination.
+         * @param {EventInfoQuery} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEventInfo(payload: EventInfoQuery, options?: RawAxiosRequestConfig): AxiosPromise<EventInfoResponse> {
+            return localVarFp.getEventInfo(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AddAttendeeRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postEventAttendees(payload: AddAttendeeRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postEventAttendees(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+         * @param {AddEventRequest} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postEventInfo(payload: AddEventRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postEventInfo(payload, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * EventsApi - object-oriented interface
+ * @export
+ * @class EventsApi
+ * @extends {BaseAPI}
+ */
+export class EventsApi extends BaseAPI {
+    /**
+     * Remove a user from an event\'s attendees list
+     * @param {RemoveAttendeeRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public deleteRemoveAttendee(payload: RemoveAttendeeRequest, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).deleteRemoveAttendee(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Returns list of event ids created by the given user ID (defaults to account making the                              request). Can specify type as \'upcoming\', \'past\' and \'all\'.
+     * @param {AttendingQuery} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getCreatedEvents(payload: AttendingQuery, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getCreatedEvents(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Returns Event IDs of all events to be attended/already attended by the provided user id)
+     * @param {AttendingQuery} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getEventAttendees(payload: AttendingQuery, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getEventAttendees(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieve events IDs in a given date range, if no params given returns first page of all upcoming IDs. Supports pagination.
+     * @param {EventsQuery} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getEventIds(payload: EventsQuery, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getEventIds(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieve detailed info for one or more events by their IDs. Supports pagination.
+     * @param {EventInfoQuery} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getEventInfo(payload: EventInfoQuery, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getEventInfo(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AddAttendeeRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public postEventAttendees(payload: AddAttendeeRequest, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).postEventAttendees(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Add event to events table,                         Can take an address id if the address is already within in the database,                         otherwise can be added line by line. Address isn\'t required to allow for online events.
+     * @param {AddEventRequest} payload 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public postEventInfo(payload: AddEventRequest, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).postEventInfo(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * FeedApi - axios parameter creator
+ * @export
+ */
+export const FeedApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
+         * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFeed: async (feedType?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/feed/feed`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (feedType !== undefined) {
+                localVarQueryParameter['feed_type'] = feedType;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2455,12 +3809,12 @@ export const FeedApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
-         * @param {FeedQuery} payload 
+         * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFeed(payload: FeedQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PostResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFeed(payload, options);
+        async getFeed(feedType?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PostResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getFeed(feedType, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getFeed']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2472,7 +3826,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetComments(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetComments(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetCommentResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetComments(postId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetComments']?.[localVarOperationServerIndex]?.url;
@@ -2486,7 +3840,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetFollowers(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetFollowers(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFollowersResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFollowers(keycloakId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFollowers']?.[localVarOperationServerIndex]?.url;
@@ -2500,7 +3854,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetFollowingResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFollowing(keycloakId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFollowing']?.[localVarOperationServerIndex]?.url;
@@ -2513,7 +3867,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetReactions(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetReactions(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetReactionsResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetReactions(postId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetReactions']?.[localVarOperationServerIndex]?.url;
@@ -2582,7 +3936,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ReactToPostResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postReactToPost(postId, payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postReactToPost']?.[localVarOperationServerIndex]?.url;
@@ -2601,12 +3955,12 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
-         * @param {FeedQuery} payload 
+         * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFeed(payload: FeedQuery, options?: RawAxiosRequestConfig): AxiosPromise<PostResponse> {
-            return localVarFp.getFeed(payload, options).then((request) => request(axios, basePath));
+        getFeed(feedType?: string, options?: RawAxiosRequestConfig): AxiosPromise<PostResponse> {
+            return localVarFp.getFeed(feedType, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2615,7 +3969,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetComments(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetComments(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<GetCommentResponse> {
             return localVarFp.getGetComments(postId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2626,7 +3980,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetFollowers(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetFollowers(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetFollowersResponse> {
             return localVarFp.getGetFollowers(keycloakId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2637,7 +3991,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetFollowingResponse> {
             return localVarFp.getGetFollowing(keycloakId, payload, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2647,7 +4001,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetReactions(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetReactions(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<GetReactionsResponse> {
             return localVarFp.getGetReactions(postId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2701,7 +4055,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        postReactToPost(postId: number, payload: ReactionRequest, options?: RawAxiosRequestConfig): AxiosPromise<ReactToPostResponse> {
             return localVarFp.postReactToPost(postId, payload, options).then((request) => request(axios, basePath));
         },
     };
@@ -2717,13 +4071,13 @@ export class FeedApi extends BaseAPI {
     /**
      * 
      * @summary Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination
-     * @param {FeedQuery} payload 
+     * @param {string} [feedType] Type of feed: \&#39;all\&#39;, \&#39;mentions\&#39;, \&#39;favorites\&#39;, \&#39;friends\&#39;, \&#39;groups\&#39;
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public getFeed(payload: FeedQuery, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).getFeed(payload, options).then((request) => request(this.axios, this.basePath));
+    public getFeed(feedType?: string, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).getFeed(feedType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3312,7 +4666,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getEmailNotifications(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getEmailNotifications(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EmailNotificationSettings>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getEmailNotifications(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.getEmailNotifications']?.[localVarOperationServerIndex]?.url;
@@ -3324,7 +4678,7 @@ export const ProfileApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProfileVisibility(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getProfileVisibility(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProfileVisibilitySettings>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getProfileVisibility(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProfileApi.getProfileVisibility']?.[localVarOperationServerIndex]?.url;
@@ -3421,7 +4775,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getEmailNotifications(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getEmailNotifications(options?: RawAxiosRequestConfig): AxiosPromise<EmailNotificationSettings> {
             return localVarFp.getEmailNotifications(options).then((request) => request(axios, basePath));
         },
         /**
@@ -3430,7 +4784,7 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfileVisibility(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getProfileVisibility(options?: RawAxiosRequestConfig): AxiosPromise<ProfileVisibilitySettings> {
             return localVarFp.getProfileVisibility(options).then((request) => request(axios, basePath));
         },
         /**

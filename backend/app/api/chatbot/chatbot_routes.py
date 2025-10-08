@@ -1,7 +1,10 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource
 from app.utils import require_auth
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
+
+# create a logger instance 
+logger = setup_logger()
 
 api = Namespace("chatbot", description="API Endpoints")
 

@@ -8,25 +8,34 @@ import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAppDispatch } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
+import { useFocusEffect } from "@react-navigation/native";
+import { getEmailNotificationSettings, getProfileVisibilitySettings } from '@/app/store/Profile-store/profileSlice'
 
 const SettingsPage = () => {
     const dispatch = useAppDispatch()
 
-const openGeneral = () => {
-  dispatch(openTabOnTopAction( { type: TabType.GENERAL} ))
-}
+    useFocusEffect(React.useCallback(() => {
+        dispatch(getEmailNotificationSettings());
+        dispatch(getProfileVisibilitySettings());
+    }, []));
 
-const openEmail = () => {
-  dispatch(openTabOnTopAction( { type: TabType.EMAIL} ))
-}
 
-const openProfileVisibility = () => {
-  dispatch(openTabOnTopAction( { type: TabType.PROFILE_VISIBILITY} ))
-}
 
-const openExportData = () => {
-  dispatch(openTabOnTopAction( { type: TabType.EXPORT_DATA} ))
-}
+    const openGeneral = () => {
+    dispatch(openTabOnTopAction( { type: TabType.GENERAL} ))
+    }
+
+    const openEmail = () => {
+    dispatch(openTabOnTopAction( { type: TabType.EMAIL } ))
+    }
+
+    const openProfileVisibility = () => {
+    dispatch(openTabOnTopAction( { type: TabType.PROFILE_VISIBILITY } ))
+    }
+
+    const openExportData = () => {
+    dispatch(openTabOnTopAction( { type: TabType.EXPORT_DATA} ))
+    }
 
     return (
         <>

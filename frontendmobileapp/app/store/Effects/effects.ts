@@ -1,8 +1,8 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import { fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, storeUserDataAction, updateEmailNotificationSettings, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
-  TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, CommentResponse, 
-  ReactionResponse, PostReactionToPostResponse,
+  TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
+  GetReactionsResponse, ReactToPostResponse,
   ChangePasswordRequest,
   DeleteAccountRequest,
   EmailNotificationSettings,
@@ -10,8 +10,10 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   GetFollowingResponse,
   ChatApiFactory,
   GetMessagesResponse,
-  BlogPostApiFactory,
-  GetBlogPostsResponse} from "@/generated-api";
+  BlogApiFactory,
+  GetBlogPostsResponse,
+  MarkChatOpenedResponse,
+  GetFriendsResponse} from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -30,7 +32,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    SendFollowUser
  } from "../Home-store/feedSlice";
 import { changeTabAction, TabType } from "../Navigation/navigationSlice";
-import { setChatMessages, fetchChatMessages, sendChatMessage } from "../chatSlice";
+import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList } from "../Chat/chatSlice";
 import { setBlogPosts, fetchBlogPosts } from "../Get-help-store/getHelpSlice";
 
 
@@ -81,6 +83,20 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
   }
 }
 
+function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
+  let request = action.payload;
+
+  try{
+    const signupResponse = ((yield call(AuthApiFactory().postSignup, request)) as AxiosResponse<SignupResponse>).data as SignupResponse;
+
+    yield put(setSignupMessage(signupResponse.message ?? ""));
+  }catch (error) {
+    console.error('Sign up failed', error);
+    
+    yield put(setSignupMessage(String(error)));
+  }
+}
+
 function* handleLogout(action: PayloadAction<string>) {
   try {
     yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
@@ -96,6 +112,8 @@ function* handleLogout(action: PayloadAction<string>) {
     yield put(setEmailNotificationSettings([]));
     yield put(setProfileVisibilitySettings([]));
     yield put(setChatMessages([]));
+    yield put(setFriendList([]));
+
   } catch (error) {
     console.error('Logout Failed!', error);
   }
@@ -126,11 +144,13 @@ function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
   }
 }
 
+
+
 /** 
  * BlogPost Api 
  * */
 function* handleGetBlogPost(action: PayloadAction<void>){
-  const blogs = ((yield call(BlogPostApiFactory().getBlogPosts)) as AxiosResponse<GetBlogPostsResponse>).data as GetBlogPostsResponse;
+  const blogs = ((yield call(BlogApiFactory().getBlogPosts)) as AxiosResponse<GetBlogPostsResponse>).data as GetBlogPostsResponse;
   yield put(setBlogPosts({blogs: blogs.blogs ?? []}));
 }
 
@@ -151,11 +171,26 @@ function* handlePostSendMessage(action: PayloadAction<{id: string, message: stri
   }
 }
 
+function* updateChatOpened(action: PayloadAction<string>){
+  try{
+    const response = ((yield call(ChatApiFactory().putMarkChatOpened, action.payload)) as AxiosResponse<MarkChatOpenedResponse>).data as MarkChatOpenedResponse;
+    console.log(response.message);
+  } catch (error) {
+    console.error('failed to mark chat opened', error);  
+  }
+  
+}
+
+function* handleGetFriendList(action: PayloadAction<string>){
+  const friends = ((yield call(ChatApiFactory().getGetFriends, action.payload, {'keycloak_id': action.payload})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
+  yield put(setFriendList(friends.friends ?? []));
+}
+
 /** 
  * Feed Api 
  * */
 function* updateFeed(action: PayloadAction<string>){
-  const posts = ((yield call(FeedApiFactory().getFeed, {feed_type: action.payload})) as AxiosResponse<PostResponse>).data as PostResponse;
+  const posts = ((yield call(FeedApiFactory().getFeed, action.payload)) as AxiosResponse<PostResponse>).data as PostResponse;
   yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload}));
 }
 
@@ -193,7 +228,7 @@ function* handleLikePost(action: PayloadAction<{postId: number}>){
 }
  
 function* handleReactionToPost(action: PayloadAction<{postId: number, reactionType: string}>){
-  const response = ((yield call(FeedApiFactory().postReactToPost, action.payload.postId, {reaction_type: action.payload.reactionType})) as AxiosResponse<PostReactionToPostResponse>).data as PostReactionToPostResponse;
+  const response = ((yield call(FeedApiFactory().postReactToPost, action.payload.postId, {reaction_type: action.payload.reactionType})) as AxiosResponse<ReactToPostResponse>).data as ReactToPostResponse;
   if (response?.message?.includes('Removed') || response?.message?.includes('Added')) {
      yield put(postLikePost({postId: action.payload.postId})); 
   }
@@ -212,23 +247,9 @@ function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
 
 }
 
-function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
-  let request = action.payload;
-
-  try{
-    const signupResponse = ((yield call(AuthApiFactory().postSignup, request)) as AxiosResponse<SignupResponse>).data as SignupResponse;
-
-    yield put(setSignupMessage(signupResponse.message ?? ""));
-  }catch (error) {
-    console.error('Sign up failed', error);
-    
-    yield put(setSignupMessage(String(error)));
-  }
-}
-
 function* fetchPostReactions (action: PayloadAction<{postId: number}>){
-  const comments = ((yield call(FeedApiFactory().getGetComments, action.payload.postId)) as AxiosResponse<CommentResponse>).data as CommentResponse;
-  const reactions = ((yield call(FeedApiFactory().getReactions, action.payload.postId)) as AxiosResponse<ReactionResponse>).data as ReactionResponse;
+  const comments = ((yield call(FeedApiFactory().getGetComments, action.payload.postId)) as AxiosResponse<GetCommentResponse>).data as GetCommentResponse;
+  const reactions = ((yield call(FeedApiFactory().getGetReactions , action.payload.postId)) as AxiosResponse<GetReactionsResponse>).data as GetReactionsResponse;
   yield put(setComments(comments.comments ?? []));
   yield put(setReactions(reactions.reactions ?? []));
 }
@@ -285,9 +306,12 @@ function* appSaga() {
   yield takeEvery(signupAction.type, handleSignupRequest);
   yield takeEvery(setUserPassword.type, handlePasswordChange);
   yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
+  yield takeEvery(logoutAction.type, handleLogout);
 /**Chat Api saga */
   yield takeEvery(fetchChatMessages.type, handleGetMessages);
   yield takeEvery(sendChatMessage.type, handlePostSendMessage);
+  yield takeEvery(markChatOpened.type, updateChatOpened);
+  yield takeEvery(fetchFriendList.type, handleGetFriendList);
 /**BlogPost APi saga */  
   yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
 /**Feed Api saga */
@@ -297,7 +321,6 @@ function* appSaga() {
   yield takeEvery(retrievePostReactions.type, fetchPostReactions);
   yield takeEvery(postReactionToPost.type, handleReactionToPost);
   yield takeEvery(postLikePost.type, handleLikePost);
-  yield takeEvery(logoutAction.type, handleLogout);
   yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
   yield takeEvery(SendFollowUser.type, handlePostFollowUser);
 /**Profile Api saga */

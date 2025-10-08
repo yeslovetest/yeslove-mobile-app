@@ -24,8 +24,6 @@ Mako
 
 typing-extensions 
 
-Docker 
-
 authlib 
 
 email-validator
@@ -34,4 +32,31 @@ Flask-Admin
 
 python-dateutil
 
+prometheus-flask-exporter
+
+psutil
+
 openai
+
+# Graph database dependencies
+gremlinpython>=3.6.0
+
+# AWS SDK
+boto3>=1.26.0
+
+# Media processing
+Pillow>=9.0.0
+ffmpeg-python>=0.2.0
+
+# Vector DB requirements
+tiktoken
+pgvector
+
+# Cache and queue
+redis>=4.0.0
+
+# Monitoring
+prometheus-client
+
+# Database
+psycopg2-binary

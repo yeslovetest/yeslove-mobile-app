@@ -1,5 +1,5 @@
-import { UserProfile, EmailNotification, EmailNotificationSettings, 
-        ProfileVisibility, ProfileVisibilitySettings } from "@/generated-api";
+import { UserProfile, EmailNotificationSetting, EmailNotificationSettings, 
+        ProfileVisibilitySetting, ProfileVisibilitySettings } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const profileSlice = createSlice({
@@ -7,8 +7,8 @@ const profileSlice = createSlice({
   initialState: {
     profiles: {} as Record<string, UserProfile>,
     view: { activeTab: "Timeline", activeAboutTab: "View"},
-    settings: { emailNotificationSettings: [] as EmailNotification[], 
-                profileVisibilitySettings: [] as ProfileVisibility[],
+    settings: { emailNotificationSettings: [] as EmailNotificationSetting[], 
+                profileVisibilitySettings: [] as ProfileVisibilitySetting[],
                  DefaultValue: true },
 
   }, //defines initial state
@@ -31,7 +31,7 @@ const profileSlice = createSlice({
       state.profiles[action.payload.id] = action.payload.profile;
     },
     getEmailNotificationSettings: (state, action: PayloadAction<void>) => {},
-    setEmailNotificationSettings: (state, action: PayloadAction<EmailNotification[]>) => {
+    setEmailNotificationSettings: (state, action: PayloadAction<EmailNotificationSetting[]>) => {
       state.settings.emailNotificationSettings = action.payload;
     },   
     setEmailNotification: (state, action: PayloadAction<{id: number}>)  => {
@@ -47,7 +47,7 @@ const profileSlice = createSlice({
     },
     updateEmailNotificationSettings: (state, action: PayloadAction<EmailNotificationSettings>) => {},
     getProfileVisibilitySettings: (state, action: PayloadAction<void>) => {},
-    setProfileVisibilitySettings: (state, action: PayloadAction<ProfileVisibility[]>) => {
+    setProfileVisibilitySettings: (state, action: PayloadAction<ProfileVisibilitySetting[]>) => {
       state.settings.profileVisibilitySettings = action.payload;
     },   
     setProfileVisibility: (state, action: PayloadAction<{id: number, category: string}>)  => {

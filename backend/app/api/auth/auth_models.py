@@ -25,12 +25,21 @@ SignupRequest = api.model("SignupRequest", {
         ),
 
     "license_number"    : fields.String(description="Professional license/registration number"),
-    "consent_license_data" : fields.String(description="Consent to use and display license data")
+    "consent_license_data" : fields.String(description="Consent to use and display license data"),
+    "device_token": fields.String(required=False, description="Device token for push notifications"),
+    "platform": fields.String(required=False, description="Device platform (ios/android)"),
+    "device_id": fields.String(required=False, description="Unique device identifier"),
 })
+
+SignupResponse = api.model("SignupResponse", {
+    "message": fields.String(description="Response message indicating success or failure of signup")})
 
 LoginRequest = api.model("LoginRequest", {
         "username": fields.String(required=True, description="User's Keycloak username"),
         "password": fields.String(required=True, description="User's Keycloak password"),
+        "device_token": fields.String(required=False, description="Device token for push notifications"),
+        "platform": fields.String(required=False, description="Device platform (ios/android)"),
+        "device_id": fields.String(required=False, description="Unique device identifier"),
     })
 
 TokenResponse = api.model("TokenResponse", {

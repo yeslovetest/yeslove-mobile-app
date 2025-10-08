@@ -17,6 +17,7 @@ const Email = (props: Props) => {
     const currentSettings = props?.settings ?? [];
     const msgToggle = useMsgToggle();
     const msg = useAppSelector(state => state.auth.message);
+    
     const checkBoxList1 = [
         {label: 'when tagged in an any post or comment',
          onPress: () => changeEmailSetting(0)
@@ -64,6 +65,7 @@ const Email = (props: Props) => {
     useEffect(() => {   //make the message appear for 3s
         msgToggle.toggleMsg(msg);
     }, [msgToggle.errorMsg, msg]);
+
     const changeEmailSetting = (settingId: number) => { 
     //change one email notification setting
     dispatch(setEmailNotification({id: settingId}));

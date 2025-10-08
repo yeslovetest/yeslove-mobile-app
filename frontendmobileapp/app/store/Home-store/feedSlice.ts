@@ -1,5 +1,4 @@
-
-import { Post, Comment, Reaction, FollowedUser } from "@/generated-api";
+import { Post, Comment, ReactionResponse, FollowedUser } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export enum FeedTabs { ALL_UPDATES, FRIENDS };
@@ -13,7 +12,7 @@ const feedSlice = createSlice({
         scrollToTopAction: true,   // trigger for performing Scroll to Top action
         feed: { posts: [] as Post[], friends: [] as Post[]},
         postReactionTab: 'comments',
-        userPosts: { comments: [] as Comment[], reactions: [] as Reaction[] },
+        userPosts: { comments: [] as Comment[], reactions: [] as ReactionResponse[] },
         followedUsers: {} as Record<string, [string, string, string]>, //list of followed users with 'username' as the key
     },
     reducers: {
@@ -47,7 +46,7 @@ const feedSlice = createSlice({
         setComments:  (state, action: PayloadAction<Comment[]>) => {
             state.userPosts.comments = action.payload;
         },
-        setReactions:  (state, action: PayloadAction<Reaction[]>) => {
+        setReactions:  (state, action: PayloadAction<ReactionResponse[]>) => {
             state.userPosts.reactions = action.payload;
         },
         fetchFollowedUsers: (state, action: PayloadAction<void>) => {},

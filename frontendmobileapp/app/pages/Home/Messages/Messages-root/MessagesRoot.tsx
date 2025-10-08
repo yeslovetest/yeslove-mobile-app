@@ -3,10 +3,10 @@ import React, { useState } from 'react'
 import { ScrollView, TouchableOpacity, Text, View } from 'react-native'
 import messagesSharedStyles from '../MessagesSharedStyles'
 import OneMessage from './Messages-root-components/One-message/OneMessage'
-import PlaceholderMessages from './Messages-root-components/PlaceholderMessages'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
 import AskChatbotButton from './Messages-root-components/Ask-chatbot-button/AskChatbotButton'
+import { fetchChatMessages } from '@/app/store/Chat/chatSlice'
 
 const Messages = () => {
     const dispatch = useAppDispatch()
@@ -18,18 +18,21 @@ const Messages = () => {
         (state) => state.profile.profiles[userId]?.username ?? ""
     );
 
-    const openConversation = () => {
-        dispatch(openTabOnTopAction({ type: TabType.CONVERSATION }))
-    }
+    const friendList = useAppSelector(state => state.chat.friends) || [];
 
-    const filteredMessages = PlaceholderMessages.filter(msg => {
-        if (filter === 'all') return true
-        if (filter === 'read') return msg.opened === true
-        if (filter === 'unread') return msg.opened === false
+    const openConversation = (otherUserId: string) => {
+        dispatch(fetchChatMessages(otherUserId ?? ''));
+        dispatch(openTabOnTopAction({ type: TabType.CONVERSATION, data: { userId: otherUserId } }));
+    }
+    // Apply filter to friendList
+    const filteredFriendList = friendList.filter(friend => {
+        if (filter === 'all') return true   
+        if (filter === 'read') return friend.unread === false
+        if (filter === 'unread') return friend.unread === true
         return true
     })
 
-
+    
     return (
         <>
             <Header mainTitle={userName}></Header>
@@ -80,11 +83,16 @@ const Messages = () => {
             </View>
 
             <ScrollView contentContainerStyle={messagesSharedStyles.contentContainer} style={messagesSharedStyles.container}>
-                <TouchableOpacity onPress={openConversation}>
-                    {filteredMessages.map((MessagePlaceholder, index) => (
-                        <OneMessage message={MessagePlaceholder} key={index} ></OneMessage>
-                    ))}
-                </TouchableOpacity>
+                <View style={{width: '100%'}}>
+                {filteredFriendList.map((friend, key) => (
+                    <TouchableOpacity onPress={() => openConversation(friend.id ?? '')} key={friend.id ?? key}>
+                        <OneMessage message={friend}  key={friend.id ?? key}></OneMessage>
+                    </TouchableOpacity>)
+                )}
+                </View>
+                
+
+                
             </ScrollView>
         </>
     )

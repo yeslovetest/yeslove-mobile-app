@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app import db  # ✅ Import the same db instance
 
@@ -19,7 +20,7 @@ class User(db.Model):
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
     bio             = db.Column(db.String(250), default="")
-    profile_pic     = db.Column(db.String(200), default="default.jpg")
+    profile_pic_url = db.Column(db.String(500), nullable=True)  # S3 URL for profile pictures
     user_type       = db.Column(db.String(20), default="standard")  # ✅ Defaulgt to "standard" or "professional"
 
 
@@ -112,7 +113,7 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image = db.Column(db.String(200), nullable=True)
+    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 
@@ -168,6 +169,8 @@ class Chat(db.Model):
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     message = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    sender = db.relationship("User", foreign_keys=[sender_id])
+    receiver = db.relationship("User", foreign_keys=[receiver_id])
 
     # ✅ Prevent users from messaging themselves
     __table_args__ = (db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),)
@@ -198,6 +201,63 @@ class Reaction(db.Model):
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
+# ------------------
+# Event Model
+# ------------------
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+
+    location = db.Column(db.String(100), nullable=False)
+    event_time = db.Column(db.DateTime, nullable=False)
+
+    # relationships
+    creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    creator = db.relationship('User', back_populates='created_events')
+    address_id = db.Column(db.Integer, db.ForeignKey("address.id", ondelete='SET NULL'))  # nullable as could be online?
+    address = db.relationship('Address', back_populates='events')
+
+    # Attendees many-many relationship
+    attendees = db.relationship('User', secondary=event_attendees, back_populates="attending_events")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "location": self.location,
+            "event_time": self.event_time.isoformat(),
+            "creator_id": self.creator_id,
+            "address": self.address.to_dict() if self.address else None,
+            "attendees": [user.id for user in self.attendees]
+        }
+
+# -------------------------------
+# Address model (used for event locations)
+# -------------------------------
+class Address(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(100), nullable=False)  # str to support house names
+    street = db.Column(db.String, nullable=False)
+    city = db.Column(db.String, nullable=False)
+    county = db.Column(db.String)  # doesn't really need to be specified
+    country = db.Column(db.String)  # if left blank assume UK
+    post_code = db.Column(db.String, nullable=False)
+
+    events = db.relationship('Event', back_populates='address', lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "number": self.number,
+            "street": self.street,
+            "city": self.city,
+            "county": self.county,
+            "country": self.country,
+            "post_code": self.post_code
+        }
+
 # ------------------------- Create BlogPost Model -------------------------
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
@@ -213,7 +273,32 @@ class DeviceToken(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     token = db.Column(db.String(255), unique=True, nullable=False)
     platform = db.Column(db.String(50))  # e.g., 'ios', 'android'
+    device_id = db.Column(db.String(255))  # Device fingerprint
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used = db.Column(db.DateTime, default=datetime.utcnow)
+
+class NotificationSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    posts_enabled = db.Column(db.Boolean, default=True)
+    likes_enabled = db.Column(db.Boolean, default=True)
+    comments_enabled = db.Column(db.Boolean, default=True)
+    events_enabled = db.Column(db.Boolean, default=True)
+    blogs_enabled = db.Column(db.Boolean, default=True)
+
+
+# ------------------------- Create Vector DB Model -------------------------
+
+class Document(db.Model):
+    __tablename__ = "documents"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    source      = db.Column(db.Text, nullable=False)
+    chunk_index = db.Column(db.Integer, nullable=False)
+    content     = db.Column(db.Text, nullable=False)
+    embedding   = db.Column(Vector(1536), nullable=False)
+    created_at  = db.Column(db.DateTime, default=datetime.now)
+
     
 
 ##### ModerationLog model with explanations #####
@@ -232,3 +317,35 @@ class ModerationLog(db.Model):
     reviewed_at = db.Column(db.DateTime) # 🔹 Timestamp when the admin reviewed it
     timestamp = db.Column(db.DateTime, default=datetime.utcnow) # 🔹 When the moderation log entry was created (automatically set)
     
+def generate_uuid():
+    return str(uuid.uuid4())
+
+class Media(db.Model):
+    id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
+    content = db.Column(db.LargeBinary, nullable=True)  # Nullable if using S3
+    content_type = db.Column(db.String(50), nullable=False)
+    filename = db.Column(db.String(255))
+    file_size = db.Column(db.Integer)
+    width = db.Column(db.Integer)
+    height = db.Column(db.Integer)
+    duration = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_public = db.Column(db.Boolean, default=True)
+    s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
+
+class BlogView(db.Model):
+    __tablename__ = 'blog_view'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    blog_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'), nullable=False)
+    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    read_duration = db.Column(db.Integer)  # seconds spent reading
+    
+    # Relationships
+    user = db.relationship('User', backref='blog_views')
+    blog = db.relationship('BlogPost', backref='views')
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'blog_id', name='unique_user_blog_view'),)
+
