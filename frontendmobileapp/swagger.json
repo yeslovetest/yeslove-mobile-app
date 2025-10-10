@@ -627,6 +627,28 @@
       }
     },
     "/api/events/event_info": {
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.\n                        Image will be uploaded to S3 if provided.",
+        "operationId": "post_event_info",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddEventRequest"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
       "get": {
         "responses": {
           "200": {
@@ -645,28 +667,6 @@
             "in": "body",
             "schema": {
               "$ref": "#/definitions/EventInfoQuery"
-            }
-          }
-        ],
-        "tags": [
-          "events"
-        ]
-      },
-      "post": {
-        "responses": {
-          "201": {
-            "description": "Success"
-          }
-        },
-        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.\n                        Image will be uploaded to S3 if provided.",
-        "operationId": "post_event_info",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/AddEventRequest"
             }
           }
         ],
@@ -1218,17 +1218,6 @@
           "type": "string"
         }
       ],
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "operationId": "get_get_media",
-        "tags": [
-          "media"
-        ]
-      },
       "delete": {
         "responses": {
           "200": {
@@ -1236,6 +1225,17 @@
           }
         },
         "operationId": "delete_get_media",
+        "tags": [
+          "media"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "get_get_media",
         "tags": [
           "media"
         ]
@@ -1329,26 +1329,6 @@
       }
     },
     "/api/profile/email_notifications": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/EmailNotificationSettings"
-            }
-          }
-        },
-        "summary": "Get email notification settings",
-        "operationId": "get_email_notifications",
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      },
       "post": {
         "responses": {
           "200": {
@@ -1367,6 +1347,26 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EmailNotificationSettings"
+            }
+          }
+        },
+        "summary": "Get email notification settings",
+        "operationId": "get_email_notifications",
         "security": [
           {
             "Bearer": []
@@ -1408,26 +1408,6 @@
       }
     },
     "/api/profile/profile_visibility": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ProfileVisibilitySettings"
-            }
-          }
-        },
-        "summary": "Get profile visibility settings",
-        "operationId": "get_profile_visibility",
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      },
       "post": {
         "responses": {
           "200": {
@@ -1446,6 +1426,26 @@
             }
           }
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProfileVisibilitySettings"
+            }
+          }
+        },
+        "summary": "Get profile visibility settings",
+        "operationId": "get_profile_visibility",
         "security": [
           {
             "Bearer": []
@@ -2514,29 +2514,6 @@
       },
       "type": "object"
     },
-    "EventInfoQuery": {
-      "required": [
-        "event_ids"
-      ],
-      "properties": {
-        "event_ids": {
-          "type": "array",
-          "description": "takes list of Ids for event to be fetched",
-          "items": {
-            "type": "integer"
-          }
-        },
-        "page": {
-          "type": "integer",
-          "description": "Page Number, default = 1"
-        },
-        "per_page": {
-          "type": "integer",
-          "description": "Number of Events per page, default = 20"
-        }
-      },
-      "type": "object"
-    },
     "AddEventRequest": {
       "required": [
         "event_time",
@@ -2593,6 +2570,29 @@
         "post_code": {
           "type": "string",
           "description": "post code"
+        }
+      },
+      "type": "object"
+    },
+    "EventInfoQuery": {
+      "required": [
+        "event_ids"
+      ],
+      "properties": {
+        "event_ids": {
+          "type": "array",
+          "description": "takes list of Ids for event to be fetched",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
         }
       },
       "type": "object"
@@ -2654,6 +2654,10 @@
               "$ref": "#/definitions/AddressModelResponse"
             }
           ]
+        },
+        "is_attending": {
+          "type": "boolean",
+          "description": "Is the current user attending the event"
         },
         "attendees": {
           "type": "array",
