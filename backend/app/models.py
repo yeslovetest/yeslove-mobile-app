@@ -175,14 +175,19 @@ class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-    message = db.Column(db.Text, nullable=False)
+    message = db.Column(db.Text, nullable=True)
+    media_id = db.Column(db.String(36), db.ForeignKey("media.id"), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     opened = db.Column(db.Boolean, default=False)
     sender = db.relationship("User", foreign_keys=[sender_id])
     receiver = db.relationship("User", foreign_keys=[receiver_id])
+    media = db.relationship("Media", backref="chat_messages")
 
-    # ✅ Prevent users from messaging themselves
-    __table_args__ = (db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),)
+    # ✅ Prevent users from messaging themselves and ensure message or media exists
+    __table_args__ = (
+        db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),
+        db.CheckConstraint("message IS NOT NULL OR media_id IS NOT NULL", name="check_message_or_media")
+    )
 
 
 class EmailNotificationSettings(db.Model):

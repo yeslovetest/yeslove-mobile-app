@@ -3,6 +3,10 @@ import io
 import boto3
 from flask import current_app
 import os
+try:
+    from mutagen import File as MutagenFile
+except ImportError:
+    MutagenFile = None
 
 class MediaProcessor:
     
@@ -34,6 +38,33 @@ class MediaProcessor:
             return output.getvalue()
         except:
             return content
+    
+    @staticmethod
+    def extract_media_metadata(content, content_type, filename):
+        """Extract metadata from media files"""
+        metadata = {'width': None, 'height': None, 'duration': None}
+        
+        if content_type.startswith('image/'):
+            try:
+                img = Image.open(io.BytesIO(content))
+                metadata.update({'width': img.width, 'height': img.height})
+            except:
+                pass
+        elif MutagenFile and (content_type.startswith('audio/') or content_type.startswith('video/')):
+            try:
+                # Save temp file for mutagen
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix=os.path.splitext(filename)[1]) as tmp:
+                    tmp.write(content)
+                    tmp.flush()
+                    
+                    audio_file = MutagenFile(tmp.name)
+                    if audio_file and hasattr(audio_file, 'info'):
+                        metadata['duration'] = int(audio_file.info.length) if audio_file.info.length else None
+            except:
+                pass
+        
+        return metadata
 
 class S3Storage:
     def __init__(self):
