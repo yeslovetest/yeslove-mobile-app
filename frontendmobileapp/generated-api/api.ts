@@ -705,6 +705,12 @@ export interface EventsModelResponse {
      */
     'address'?: AddressModelResponse;
     /**
+     * Is the current user attending the event
+     * @type {boolean}
+     * @memberof EventsModelResponse
+     */
+    'is_attending'?: boolean;
+    /**
      * List of attendee user IDs
      * @type {Array<number>}
      * @memberof EventsModelResponse

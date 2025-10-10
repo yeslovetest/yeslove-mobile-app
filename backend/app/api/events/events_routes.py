@@ -258,8 +258,13 @@ class EventList(Resource):
     @api.response(200, "Success", EventListResponse)
     @api.marshal_with(EventListResponse)
     def get(self):
-        from app.models import Event
-        from datetime import datetime, timedelta, date
+        from app.models import Event, User
+        from datetime import datetime, date
+
+        # Get logged-in user
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
 
         # Pagination setup
         try:
@@ -283,7 +288,7 @@ class EventList(Resource):
         # Apply date range filter
         if start_date_str or end_date_str:
             try:
-                # ✅ Default start date = today if not provided
+                # Default start date = today if not provided
                 if start_date_str:
                     start = datetime.strptime(start_date_str, "%Y-%m-%d")
                 else:
@@ -291,7 +296,6 @@ class EventList(Resource):
                     start = datetime.combine(today, datetime.min.time())
 
                 if end_date_str:
-                    # End of the given day
                     end = datetime.combine(
                         datetime.strptime(end_date_str, "%Y-%m-%d"), datetime.max.time()
                     )
@@ -300,10 +304,9 @@ class EventList(Resource):
 
                 query = query.filter(Event.event_time >= start, Event.event_time <= end)
             except ValueError:
-                # Ignore invalid date formats
                 pass
         else:
-            # ✅ Default behavior if no params — show from today onwards
+            # Default behavior if no params — show from today onwards
             today = date.today()
             start = datetime.combine(today, datetime.min.time())
             query = query.filter(Event.event_time >= start)
@@ -313,7 +316,14 @@ class EventList(Resource):
 
         # Pagination
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-        items = [event.to_dict() for event in pagination.items]
+        events = pagination.items
+
+        # Add is_attending flag for each event
+        items = []
+        for event in events:
+            event_dict = event.to_dict()
+            event_dict["is_attending"] = any(u.id == user.id for u in event.attendees)
+            items.append(event_dict)
 
         return {
             "items": items,
@@ -321,6 +331,7 @@ class EventList(Resource):
             "page": page,
             "per_page": per_page
         }, 200
+
 
 
 @api.route("/event_attendees")

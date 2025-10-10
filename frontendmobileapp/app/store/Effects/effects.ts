@@ -229,6 +229,7 @@ function* handleGetAttendingEvents(action: PayloadAction<{queryType: string , en
 function* handleAddAttendeeToEvent(action: PayloadAction<{eventId: number}>){ 
   try {
     yield call(EventsApiFactory().postEventAttendees,{user_id: undefined, event_id: action.payload.eventId});
+    yield put(fetchAllEvents({}));
     yield put(fetchUserEvents({queryType: 'attending'}));
   }
   catch (error) {
@@ -239,6 +240,7 @@ function* handleAddAttendeeToEvent(action: PayloadAction<{eventId: number}>){
 function* handleRemoveAttendeeFromEvent(action: PayloadAction<{eventId: number}>){ 
   try {
     yield call(EventsApiFactory().deleteRemoveAttendee, {user_id: undefined, event_id: action.payload.eventId});
+    yield put(fetchAllEvents({}));
     yield put(fetchUserEvents({queryType: 'attending'}));
   }
   catch (error) {

@@ -18,6 +18,7 @@ EventModelResponse = api.model("EventsModelResponse", {
     "event_time": fields.String(description="Event time in ISO 8601"),
     "image_url": fields.String(description="Event image URL"),
     "address": fields.Nested(AddressModelResponse, description="Event address details"),
+    "is_attending": fields.Boolean(description="Is the current user attending the event"),
     "attendees": fields.List(fields.Integer, description="List of attendee user IDs")
 })
 
