@@ -5,11 +5,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAppDispatch } from "@/app/store/hooks"
 import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSlice"
-import { BlogPost } from "@/generated-api";
+import { BlogPostModel } from "@/generated-api";
 
 
 export interface Props {
-    blog: BlogPost
+    blog: BlogPostModel
 }
 
 const OneBlog = (props: Props) => {

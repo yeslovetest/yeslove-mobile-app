@@ -1,9 +1,7 @@
 import { View } from "react-native"
 import OneBlog from "../One-blog/OneBlog"
 import styles from "./BlogsListStyles"
-import blogPlaceholders from "./PlaceholderBlogs"
 import { useAppSelector } from "@/app/store/hooks"
-import GetHelpSearchBar from "../../Get-help-search-bar/GetHelpSearchBar"
 
 
 const BlogsList = () => {

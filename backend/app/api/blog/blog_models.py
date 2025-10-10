@@ -10,20 +10,24 @@ CreateBlogPost = api.model("CreateBlogPost", {
     "image_url": fields.String(required=False, description="Optional image URL (alternative to file upload)")
 })
 
-BlogResponse = api.model("BlogResponse", {
-    "id": fields.Integer(description="Blog post ID"),
-    "title": fields.String(description="Blog post title"),
-    "content": fields.String(description="Blog post content"),
-    "author": fields.String(description="Author username"),
-    "timestamp": fields.String(description="Creation timestamp"),
+BlogPostModel = api.model("BlogPostModel", {
+    "id" : fields.Integer(description="Post ID"),
+    "title" : fields.String(description="Title"),
+    "content" : fields.String(description="Content"),
+    "summary" : fields.String(description="Summary"),
     "image_url": fields.String(description="Image URL"),
-    "summary": fields.String(description="Blog summary")
+    "author_id" : fields.Integer(description="Author user ID"),
+    "author" : fields.String(description="Author username"),
+    "timestamp" : fields.String(description="UTC timestamp (ISO 8601)")
 })
 
-BlogListResponse = api.model("BlogListResponse", {
-    "blogs": fields.List(fields.Nested(BlogResponse)),
-    "pagination": fields.Raw(description="Pagination info")
+BlogPostList = api.model("BlogPostList", {
+    "items" : fields.List(fields.Nested(BlogPostModel)),
+    "total" : fields.Integer(description="Total matching posts"),
+    "page" : fields.Integer(description="Current page"),
+    "per_page" : fields.Integer(description="Items per page")
 })
+   
 
 # BlogView model moved to avoid circular imports
 # Import it from models.py instead

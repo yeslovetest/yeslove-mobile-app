@@ -34,11 +34,13 @@ class Feed(Resource):
         per_page = int(request.args.get("per_page", 10))
         
         # Try cache first for main feed
+        ''' to be uncommented later (during production)
         feed_cache = FeedCacheService()
         if feed_type == "all":
             cached_feed = feed_cache.get_user_feed(user.id, page, per_page)
             if cached_feed:
                 return cached_feed, 200
+        '''    
 
         # Build query based on feed type
         
@@ -81,6 +83,8 @@ class Feed(Resource):
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
 
+       
+
         feed_data = {
             "posts": [{
                 "id": post.id,
@@ -105,8 +109,10 @@ class Feed(Resource):
         }
         
         # Cache the feed data for main feed
+        '''
         if feed_type == "all":
             feed_cache.cache_user_feed(user.id, feed_data, page, per_page)
+        '''    
         
         return feed_data, 200
 
@@ -115,7 +121,7 @@ class Feed(Resource):
 @api.route("/post")
 class CreatePost(Resource):
     from .feed_models import CreatePostRequest
-    @write_rate_limit
+    #@write_rate_limit
     @require_auth()
     @api.doc(security='Bearer')
     @api.expect(CreatePostRequest)
@@ -208,7 +214,7 @@ class GetReactions(Resource):
                     "id": reaction.id,
                     "type": reaction.reaction_type,
                     "author": reaction.user.username,
-                    "picture": reaction.user.profile_pic,
+                    "picture": reaction.user.profile_pic_url,
                 }
             for reaction in reactions]
             }, 200
@@ -516,6 +522,6 @@ class GetFollowing(Resource):
         return {'following':
                 [
                     {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
-                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic}
+                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic_url}
                     for follow in following
                 ]}, 200

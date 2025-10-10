@@ -26,15 +26,19 @@ const feedSlice = createSlice({
             state.scrollToTopAction = !state.scrollToTopAction;
         },
         setFeedDataAction: (state, action: PayloadAction<{post: Post[], feedType: string}>) => {
+            console.log("Setting feed data for type:", action.payload.feedType);
+            console.log(action.payload.post)
+
             if (action.payload.feedType === 'all'){
                 state.feed.posts = action.payload.post;
+                //console.log(post)
             }
             else if (action.payload.feedType === 'friends'){
                 state.feed.friends = action.payload.post;
             }
             
         },
-        updatePostsForFeedAction: (state, action: PayloadAction<string>) => {},
+        updatePostsForFeedAction: (state, action: PayloadAction<{feedType: string, perPage?: number, page?: number}>) => {},
         postNewPostAction: (state, action: PayloadAction<{content: string}>) => {},
         postComment: (state, action: PayloadAction<{postId: number, content: string}>) => {},
         setPostReactionTab: (state, action: PayloadAction<string>) => {

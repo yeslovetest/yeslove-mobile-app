@@ -11,13 +11,24 @@ AddressModelResponse = api.model("AddressModelResponse", {
 })
 
 EventModelResponse = api.model("EventsModelResponse", {
-    "name": fields.String,
-    "description": fields.String,
-    "location": fields.String,
-    "event_time": fields.DateTime(dt_format="iso8601"),
-    "address": fields.Nested(AddressModelResponse),
-    "attendees": fields.List(fields.Integer)
+    "id": fields.Integer(description="Event ID"),
+    "name": fields.String(description="Event name"),
+    "description": fields.String(description="Event description"),
+    "location": fields.String(description="Event location"),
+    "event_time": fields.String(description="Event time in ISO 8601"),
+    "image_url": fields.String(description="Event image URL"),
+    "address": fields.Nested(AddressModelResponse, description="Event address details"),
+    "is_attending": fields.Boolean(description="Is the current user attending the event"),
+    "attendees": fields.List(fields.Integer, description="List of attendee user IDs")
 })
+
+EventListResponse = api.model("EventListResponse", {
+    "items": fields.List(fields.Nested(EventModelResponse), description="List of events"),
+    "total": fields.Integer(description="Total number of events"),
+    "page": fields.Integer(description="Current page"),
+    "per_page": fields.Integer(description="Events per page")
+})
+
 
 EventsQuery = api.model("EventsQuery", {
     "start_time": fields.String(required=False, description="Start time filter in ISO format"),

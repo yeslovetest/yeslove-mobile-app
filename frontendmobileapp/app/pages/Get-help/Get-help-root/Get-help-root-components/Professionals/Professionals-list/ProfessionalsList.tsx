@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { useAppSelector } from '@/app/store/hooks';
 import styles from './ProfessionalsListStyles';
 import PlaceholderProfessionals from './PlaceholderProfessionals';
 
 const ProfessionalsList = () => {
+  const professionals = useAppSelector(state => state.getHelp.professionals);
   const [expanded, setExpanded] = useState(null); 
 
 
@@ -13,12 +15,12 @@ const ProfessionalsList = () => {
 
   return (
     <View>
-      {PlaceholderProfessionals.map((professional, index) => (
+      {professionals.map((professional, index) => (
         <View key={index} style={styles.professionalProfileContainer}>
-          <Image style={styles.profileImage} source={{ uri: professional.image }} />
-          <Text style={styles.professionalProfileName}>{professional.name}</Text>
+          <Image style={styles.profileImage} source={{ uri: professional?.profile_pic ?? ''}} />
+          <Text style={styles.professionalProfileName}>{professional?.username}</Text>
           <Text style={styles.professionalDescription}>
-            {expanded === index ? professional.description : `${professional.description.substring(0, 300)}...`}
+            {expanded === index ? professional?.bio : `${professional?.bio?.substring(0, 300)}...`}
           </Text>
           <TouchableOpacity onPress={() => handleToggle(index)}>
             <TouchableOpacity style={styles.viewProfile}>

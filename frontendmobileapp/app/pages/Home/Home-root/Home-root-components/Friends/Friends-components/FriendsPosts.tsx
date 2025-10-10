@@ -9,7 +9,7 @@ import OnePost from '../../Post/One-post/OnePost';
 const FriendsPosts = () => {
   const dispatch = useAppDispatch();
   useFocusEffect(React.useCallback(() => {
-    dispatch(updatePostsForFeedAction('friends'));
+    dispatch(updatePostsForFeedAction({feedType: 'friends'}));
     dispatch(fetchFollowedUsers());
   }, []));
   
