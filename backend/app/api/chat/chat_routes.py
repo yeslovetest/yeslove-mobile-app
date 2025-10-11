@@ -2,13 +2,11 @@ from datetime import date
 from flask import request
 from flask_restx import Namespace, Resource
 from sqlalchemy import func, or_, and_
-from app.utils.moderation_utils import moderate_text
+from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 
 from app.logging_setup import setup_logger
 
 from app.utils import require_auth
-from app.models import ModerationLog
-from datetime import datetime
 
 logger = setup_logger()
 
@@ -50,40 +48,25 @@ class SendMessage(Resource):
         if not receiver:
             return {"message": "Receiver not found"}, 404
 
-        score = 0.0
-        status = "allowed"
+        # Check if user is suspended
+        if check_user_suspension(user.id):
+            return {"message": "Account suspended. Cannot send messages."}, 403
 
-        try:
-            moderation = moderate_text(message)
-            if moderation and moderation["is_flagged"]:
-                score = moderation["score"]
-                severity = moderation["severity"]
-                triggered = moderation["triggered"]
-
-                # Log moderation
-                log = ModerationLog(
-                    user_id=user.id,
-                    content_type="chat",
-                    content=message,
-                    score=score,
-                    severity=severity,
-                    auto_action="blocked" if severity == "high" else "flagged",
-                    attributes=moderation["attributes"]
-                )
-                db.session.add(log)
-
-                if severity == "high":
-                    db.session.commit()
-                    return {
-                        "message": "Your message was blocked due to harmful language.",
-                        "toxicity_score": score,
-                        "triggered": triggered
-                    }, 400
-                else:
-                    status = "flagged"
-        except Exception as e:
-            logger.exception("Message toxicity check failed")
-            return {"message": "Error during content moderation"}, 500
+        # Moderate content if message exists
+        moderation_result = None
+        if message:
+            moderation_result = handle_content_moderation(message, user.id, "chat")
+            
+            if moderation_result["status"] == "error":
+                return {"message": moderation_result["message"]}, 500
+            
+            if not moderation_result["allowed"]:
+                db.session.commit()  # Save moderation log
+                return {
+                    "message": moderation_result["message"],
+                    "toxicity_score": moderation_result["score"],
+                    "triggered": moderation_result.get("triggered", {})
+                }, 400
 
         # ✅ Save the message (even if flagged)
         new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
@@ -93,8 +76,12 @@ class SendMessage(Resource):
         db.session.commit()
 
         response_msg = "Message sent successfully"
-        if status == "flagged":
-            response_msg += " (flagged for review)"
+        score = 0.0
+        
+        if moderation_result:
+            score = moderation_result["score"]
+            if moderation_result["status"] == "flagged":
+                response_msg += " (flagged for review)"
 
         return {
             "message": response_msg,

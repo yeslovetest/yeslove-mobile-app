@@ -1,13 +1,10 @@
-from app.logging_setup import logger
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 
-from app.utils.moderation_utils import moderate_text
-from app.logging_setup import logger
+from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
 
 from app.utils import require_auth
-from app.models import ModerationLog
 from datetime import datetime
 from app.utils.rate_limiter import read_rate_limit, write_rate_limit
 
@@ -83,6 +80,7 @@ class Feed(Resource):
         post_ids = [post.id for post in posts]
 
         # Fetch all reactions by the current user for these posts and create map for quick lookup
+        from app.models import Reaction
         reactions = Reaction.query.filter(
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
@@ -143,29 +141,26 @@ class CreatePost(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
-        # Moderate text
-        score = 0.0
-        status = "visible"
-        log = None
-        try:
-            moderation = moderate_text(content)
-            if moderation and moderation["is_flagged"]:
-                status = "removed" if moderation["severity"] == "high" else "flagged"
-                score = moderation["score"]
+        # Check if user is suspended
+        if check_user_suspension(user.id):
+            return {"message": "Account suspended. Cannot create posts."}, 403
 
-                log = ModerationLog(
-                    user_id=user.id,
-                    content_type="post",
-                    content=content,
-                    score=moderation["score"],
-                    severity=moderation["severity"],
-                    auto_action=status,
-                    attributes=moderation["attributes"]
-                )
-                db.session.add(log)
-        except Exception as e:
-            logger.exception("Toxicity check failed")
-            return {"message": "Error during content moderation"}, 500
+        # Moderate content
+        moderation_result = handle_content_moderation(content, user.id, "post")
+        
+        if moderation_result["status"] == "error":
+            return {"message": moderation_result["message"]}, 500
+        
+        # Handle blocked content
+        if not moderation_result["allowed"]:
+            return {
+                "message": moderation_result["message"],
+                "toxicity_score": moderation_result["score"],
+                "triggered": moderation_result.get("triggered", {})
+            }, 400
+        
+        status = moderation_result["status"]
+        score = moderation_result["score"]
 
         # Save post with moderation status
         post = Post(content=content, user_id=user.id, status=status)
@@ -194,7 +189,7 @@ class CreatePost(Resource):
             "visible": "Post created successfully.",
             "flagged": "Post was flagged for review.",
             "removed": "Your post was removed for violating guidelines."
-        }.get(status)
+        }.get(status, "Post created successfully.")
 
         
         # Track post creation metric
@@ -218,6 +213,7 @@ class CreatePost(Resource):
         fanout_service.fanout_post(post.id, user.id)
 
         # Send push notification to followers
+        from app.models import Follow
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
@@ -234,7 +230,12 @@ class CreatePost(Resource):
             except Exception as e:
                 logger.error(f"Push notification failed: {e}")
 
-        return {"message": "Post created successfully"}, 201
+        return {
+            "message": message,
+            "toxicity_score": score,
+            "post_id": post.id,
+            "status": status
+        }, 201
     
 # -------------------------
 # 🚀 Reaction ROUTES
@@ -249,13 +250,6 @@ class GetReactions(Resource):
         from app.models import Reaction
         reactions = Reaction.query.filter_by(post_id=post_id).all()
         return {
-            "message": message,
-            "toxicity_score": score,
-            "post_id": post.id,
-            "status": status
-        }, 201
-
-
             "reactions": [
                 {
                     "id": reaction.id,
@@ -263,8 +257,9 @@ class GetReactions(Resource):
                     "author": reaction.user.username,
                     "picture": reaction.user.profile_pic_url,
                 }
-            for reaction in reactions]
-            }, 200
+                for reaction in reactions
+            ]
+        }, 200
     
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
@@ -388,40 +383,26 @@ class AddComment(Resource):
         if not content:
             return {"message": "Comment cannot be empty"}, 400
 
-        score = 0.0  # default
-        status = "visible"
+        # Check if user is suspended
+        if check_user_suspension(user.id):
+            return {"message": "Account suspended. Cannot add comments."}, 403
 
-        try:
-            moderation = moderate_text(content)
-            if moderation and moderation["is_flagged"]:
-                score = moderation["score"]
-                severity = moderation["severity"]
-                triggered = moderation["triggered"]
-
-                log = ModerationLog(
-                    user_id=user.id,
-                    content_type="comment",
-                    content=content,
-                    score=score,
-                    severity=severity,
-                    auto_action="blocked" if severity == "high" else "flagged",
-                    attributes=moderation["attributes"]
-                )
-                db.session.add(log)
-
-                if severity == "high":
-                    db.session.commit()
-                    return {
-                        "message": "Your comment was removed due to harmful language.",
-                        "toxicity_score": score,
-                        "triggered": triggered
-                    }, 400
-                else:
-                    status = "flagged"
-
-        except Exception as e:
-            logger.exception("Toxicity check failed")
-            return {"message": "Error during content moderation"}, 500
+        # Moderate content
+        moderation_result = handle_content_moderation(content, user.id, "comment")
+        
+        if moderation_result["status"] == "error":
+            return {"message": moderation_result["message"]}, 500
+        
+        if not moderation_result["allowed"]:
+            db.session.commit()  # Save moderation log
+            return {
+                "message": moderation_result["message"],
+                "toxicity_score": moderation_result["score"],
+                "triggered": moderation_result.get("triggered", {})
+            }, 400
+        
+        score = moderation_result["score"]
+        status = moderation_result["status"]
 
         # ✅ Save comment anyway, maybe flagged
         comment = Comment(content=content, user_id=user.id, post_id=post_id)
@@ -432,7 +413,6 @@ class AddComment(Resource):
         if status == "flagged":
             message += " (flagged for review)"
 
-        
         # Notify post author about comment
         from app.models import Post
         post = Post.query.get(post_id)
