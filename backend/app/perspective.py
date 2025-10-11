@@ -1,7 +1,9 @@
 # backend/app/perspective.py
 import os
 import requests
-from app.logging_setup import logger
+from app.logging_setup import setup_logger
+
+logger = setup_logger()
 
 API_KEY = os.getenv("PERSPECTIVE_API_KEY")
 

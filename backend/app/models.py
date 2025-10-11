@@ -1,10 +1,14 @@
+import uuid
 from flask_sqlalchemy import SQLAlchemy
 from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app import db  # ✅ Import the same db instance
 
-
-#db = SQLAlchemy()
+# Association table for event attendees
+event_attendees = db.Table('attendees',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+)
 
 # -------------------------
 # 🚀 User Model (Keycloak Integrated)
@@ -28,6 +32,8 @@ class User(db.Model):
     posts       = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
     followers   = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
     following   = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
+    created_events = db.relationship("Event", foreign_keys="[Event.creator_id]", back_populates="creator", lazy=True)
+    attending_events = db.relationship("Event", secondary=event_attendees, back_populates="attendees")
 
     # ✅ One-to-One Relationship with ProfessionalDetails
     professional_details = db.relationship(
@@ -272,6 +278,9 @@ class BlogPost(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     image_url = db.Column(db.String(500))  # Optional image
+    summary = db.Column(db.String(1000))
+    # Relationships 
+    author = db.relationship("User", backref="blogs")
     
 class DeviceToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
