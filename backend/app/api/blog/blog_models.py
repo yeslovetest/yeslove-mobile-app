@@ -1,6 +1,5 @@
 from .blog_routes import api
 from flask_restx import fields
-from datetime import datetime
 
 CreateBlogPost = api.model("CreateBlogPost", {
     "title": fields.String(required=True, description="Title of the blog post"),

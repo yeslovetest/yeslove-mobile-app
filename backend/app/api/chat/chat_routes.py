@@ -2,10 +2,13 @@ from datetime import date
 from flask import request
 from flask_restx import Namespace, Resource
 from sqlalchemy import func, or_, and_
+from app.utils.moderation_utils import moderate_text
 
 from app.logging_setup import setup_logger
 
 from app.utils import require_auth
+from app.models import ModerationLog
+from datetime import datetime
 
 logger = setup_logger()
 
@@ -22,39 +25,84 @@ class SendMessage(Resource):
     @api.response(404, 'User not found')
     @api.response(401, 'Unauthorized')
     def post(self):
-        """Send a private message."""
-        from app.models import User, Chat, db
+        """Send a private message with moderation."""
+        from app.models import User, Chat, ModerationLog, db
+        from datetime import datetime
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
         data = request.json
         receiver_id = data.get("receiver_id")
         message = data.get("message")
 
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        receiver = User.query.filter_by(keycloak_id=receiver_id).first()
-
-        if not user:
-            return {"message": "User not found"}, 404
-
+        if not message or not receiver_id:
+            return {"message": "Message and receiver ID are required"}, 400
         if (not message and not data.get("media_id")) or not receiver_id:
             logger.error("❌ Message content/media or receiver ID missing")
             return {"message": "Message or media and receiver ID are required"}, 400
 
-        if user.keycloak_id == receiver_id:
-            logger.warning(f"❌ User {user.username} tried to message themselves")
+        if user.id == receiver_id:
             return {"message": "You cannot message yourself"}, 400
 
+        receiver = User.query.get(receiver_id)
         if not receiver:
-            logger.warning(f"❌ Receiver ID {receiver_id} not found")
             return {"message": "Receiver not found"}, 404
 
+        score = 0.0
+        status = "allowed"
+
+        try:
+            moderation = moderate_text(message)
+            if moderation and moderation["is_flagged"]:
+                score = moderation["score"]
+                severity = moderation["severity"]
+                triggered = moderation["triggered"]
+
+                # Log moderation
+                log = ModerationLog(
+                    user_id=user.id,
+                    content_type="chat",
+                    content=message,
+                    score=score,
+                    severity=severity,
+                    auto_action="blocked" if severity == "high" else "flagged",
+                    attributes=moderation["attributes"]
+                )
+                db.session.add(log)
+
+                if severity == "high":
+                    db.session.commit()
+                    return {
+                        "message": "Your message was blocked due to harmful language.",
+                        "toxicity_score": score,
+                        "triggered": triggered
+                    }, 400
+                else:
+                    status = "flagged"
+        except Exception as e:
+            logger.exception("Message toxicity check failed")
+            return {"message": "Error during content moderation"}, 500
+
+        # ✅ Save the message (even if flagged)
+        new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
         media_id = data.get("media_id")
         new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_id)
         db.session.add(new_message)
         db.session.commit()
-        logger.info(f"✅ Message sent from {user.username} to {receiver.username}")
-        return {"message": "Message sent successfully"}, 201
+
+        response_msg = "Message sent successfully"
+        if status == "flagged":
+            response_msg += " (flagged for review)"
+
+        return {
+            "message": response_msg,
+            "toxicity_score": score
+        }, 201
 
 
-@api.route("/get_messages/<string:receiver_id>")
+@api.route("/get_messages/<int:receiver_id>")
 class GetMessages(Resource):
     @require_auth()
     @api.doc(
@@ -70,17 +118,15 @@ class GetMessages(Resource):
         """Fetch chat messages between two users."""
         from app.models import User, Chat
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        receiver = User.query.filter_by(keycloak_id=receiver_id).first()
-
-        if not user or not receiver:
+        if not user:
             return {"message": "User not found"}, 404
 
         messages = Chat.query.filter(
-            ((Chat.sender_id == user.id) & (Chat.receiver_id == receiver.id))
-            | ((Chat.sender_id == receiver.id) & (Chat.receiver_id == user.id))
+            ((Chat.sender_id == user.id) & (Chat.receiver_id == receiver_id))
+            | ((Chat.sender_id == receiver_id) & (Chat.receiver_id == user.id))
         ).order_by(Chat.timestamp.asc()).all()
 
-        return {"messages": [
+        return [
             {
                 "sender": msg.sender.username,
                 "receiver": msg.receiver.username,
@@ -92,7 +138,7 @@ class GetMessages(Resource):
                 "timestamp": msg.timestamp.isoformat(),
             }
             for msg in messages
-        ]}, 200
+        ], 200
 
 
 @api.route("/mark_chat_opened/<string:receiver_id>")

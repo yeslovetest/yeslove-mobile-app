@@ -1,6 +1,6 @@
 from flask import request
 from flask_restx import Namespace, Resource
-from app.logging_setup import setup_logger
+from app.logging_setup import logger
 from app.utils import require_auth
 from datetime import datetime
 from app.notifications import send_push_notification_to_all_users
@@ -14,7 +14,6 @@ class CreateBlog(Resource):
     from .blog_models import CreateBlogPost
     """Endpoint for creating blog posts for the Get Educated page (Admins only)."""   
     @require_auth()
-    @api.doc(security='Bearer')
     @api.expect(CreateBlogPost)
     def post(self):
         """Create a blog post for the Get Educated page (Admins only)."""
@@ -28,24 +27,13 @@ class CreateBlog(Resource):
                 logger.warning(f"Unauthorized blog post creation attempt by user {request.user.get('keycloak_id')}")
                 return {"message": "Access denied. Admins only."}, 403
 
-            data = request.get_json() or {}
+            data = request.get_json()
             title = data.get("title")
             content = data.get("content")
             summary = data.get("summary")
             
             # Handle image upload to S3 if provided
             image_url = data.get("image_url")
-            if 'image' in request.files:
-                from app.services.media.media_service import MediaService
-                try:
-                    upload_result = MediaService.upload_file(
-                        file=request.files['image'],
-                        user_id=user.id,
-                        folder='blogs'
-                    )
-                    image_url = upload_result.get('s3_url') if upload_result else None
-                except Exception as e:
-                    logger.error(f"Blog image upload failed: {e}")
 
             # ✅ Basic validation
             if not title or not content:
@@ -66,25 +54,6 @@ class CreateBlog(Resource):
             )
             db.session.add(post)
             db.session.commit()
-            
-            # Send push notification to all users about new blog post
-            from app.models import User as AllUsers
-            from app.services.push_notification_service import PushNotificationService
-            
-            # Get all user IDs (or you could target specific user groups)
-            all_user_ids = [u.id for u in AllUsers.query.all()]
-            
-            if all_user_ids:
-                try:
-                    PushNotificationService.send_to_multiple_users(
-                        user_ids=all_user_ids,
-                        title="New Blog Post",
-                        body=f"New article: {title[:50]}...",
-                        data={"type": "new_blog", "blog_id": post.id},
-                        notification_type="blogs"
-                    )
-                except Exception as e:
-                    logger.error(f"Blog notification failed: {e}")
 
             logger.info(f"Blog post created by user {user.id}: {post.id}")
 
