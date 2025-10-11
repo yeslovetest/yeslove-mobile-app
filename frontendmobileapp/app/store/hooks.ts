@@ -13,3 +13,6 @@ export const appSelect: <Fn extends (state: State, ...args: any[]) => any>(
     selector: Fn,
     ...args: Tail<Parameters<Fn>>
   ) => SelectEffect = select;
+
+
+

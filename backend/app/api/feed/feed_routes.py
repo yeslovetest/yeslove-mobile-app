@@ -38,11 +38,13 @@ class Feed(Resource):
         per_page = int(request.args.get("per_page", 10))
         
         # Try cache first for main feed
+        ''' to be uncommented later (during production)
         feed_cache = FeedCacheService()
         if feed_type == "all":
             cached_feed = feed_cache.get_user_feed(user.id, page, per_page)
             if cached_feed:
                 return cached_feed, 200
+        '''    
 
         # Build query based on feed type
         if feed_type == "mentions":
@@ -85,6 +87,8 @@ class Feed(Resource):
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
 
+       
+
         feed_data = {
             "posts": [{
                 "id": post.id,
@@ -107,8 +111,10 @@ class Feed(Resource):
         }
         
         # Cache the feed data for main feed
+        '''
         if feed_type == "all":
             feed_cache.cache_user_feed(user.id, feed_data, page, per_page)
+        '''    
         
         return feed_data, 200
 
@@ -117,7 +123,7 @@ class Feed(Resource):
 @api.route("/post")
 class CreatePost(Resource):
     from .feed_models import CreatePostRequest
-    @write_rate_limit
+    #@write_rate_limit
     @require_auth()
     @api.doc(security='Bearer')
     @api.expect(CreatePostRequest)
@@ -250,6 +256,15 @@ class GetReactions(Resource):
         }, 201
 
 
+            "reactions": [
+                {
+                    "id": reaction.id,
+                    "type": reaction.reaction_type,
+                    "author": reaction.user.username,
+                    "picture": reaction.user.profile_pic_url,
+                }
+            for reaction in reactions]
+            }, 200
     
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
@@ -585,9 +600,12 @@ class GetFollowing(Resource):
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
     def get(self, user_id):
         """Fetch all users the current user is following."""
-        from app.models import Follow
-        following = Follow.query.filter_by(follower_id=user_id).all()
-        return [
-            {"id": follow.followed_id, "username": follow.followed.username}
-            for follow in following
-        ], 200
+        from app.models import Follow, User
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        following = Follow.query.filter_by(follower_id=user.id).all()
+        return {'following':
+                [
+                    {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
+                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic_url}
+                    for follow in following
+                ]}, 200

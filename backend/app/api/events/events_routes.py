@@ -243,6 +243,97 @@ class EventInfo(Resource):
         return {"message": "Event created successfully"}, 201
 
 
+@api.route("/events_list")
+class EventList(Resource):
+    """Lists events with optional pagination and date range filter"""
+
+    from .events_models import EventModelResponse, EventListResponse
+
+    @require_auth()
+    @api.doc(description="List events with pagination and optional date range filter")
+    @api.param("page", "Page number (default 1)", type="integer")
+    @api.param("per_page", "Events per page (default 10, max 100)", type="integer")
+    @api.param("start_date", "Start date for filtering (YYYY-MM-DD, defaults to today)", type="string")
+    @api.param("end_date", "End date for filtering (YYYY-MM-DD)", type="string")
+    @api.response(200, "Success", EventListResponse)
+    @api.marshal_with(EventListResponse)
+    def get(self):
+        from app.models import Event, User
+        from datetime import datetime, date
+
+        # Get logged-in user
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        # Pagination setup
+        try:
+            page = max(int(request.args.get("page", 1)), 1)
+        except ValueError:
+            page = 1
+
+        try:
+            per_page = int(request.args.get("per_page", 10))
+        except ValueError:
+            per_page = 10
+
+        per_page = max(1, min(per_page, 100))
+
+        # Date filters
+        start_date_str = request.args.get("start_date")
+        end_date_str = request.args.get("end_date")
+
+        query = Event.query
+
+        # Apply date range filter
+        if start_date_str or end_date_str:
+            try:
+                # Default start date = today if not provided
+                if start_date_str:
+                    start = datetime.strptime(start_date_str, "%Y-%m-%d")
+                else:
+                    today = date.today()
+                    start = datetime.combine(today, datetime.min.time())
+
+                if end_date_str:
+                    end = datetime.combine(
+                        datetime.strptime(end_date_str, "%Y-%m-%d"), datetime.max.time()
+                    )
+                else:
+                    end = datetime.max
+
+                query = query.filter(Event.event_time >= start, Event.event_time <= end)
+            except ValueError:
+                pass
+        else:
+            # Default behavior if no params — show from today onwards
+            today = date.today()
+            start = datetime.combine(today, datetime.min.time())
+            query = query.filter(Event.event_time >= start)
+
+        # Sort by upcoming first
+        query = query.order_by(Event.event_time.asc())
+
+        # Pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        events = pagination.items
+
+        # Add is_attending flag for each event
+        items = []
+        for event in events:
+            event_dict = event.to_dict()
+            event_dict["is_attending"] = any(u.id == user.id for u in event.attendees)
+            items.append(event_dict)
+
+        return {
+            "items": items,
+            "total": pagination.total,
+            "page": page,
+            "per_page": per_page
+        }, 200
+
+
+
 @api.route("/event_attendees")
 class EventAttendees(Resource):
     from .events_models import AddAttendeeRequest, AttendingQuery, EventsResponse
@@ -287,22 +378,45 @@ class EventAttendees(Resource):
         return {"message": "User added to event successfully"}, 201
 
 
-    # get attending
+@api.route("/event_attendees/attending")
+class AttendingEvents(Resource):
+    """Lists events a user is attending or has attended"""
+
+    from .events_models import EventModelResponse, EventListResponse
+
     @require_auth()
-    @api.expect(AttendingQuery)
-    @api.doc(description="""Returns Event IDs of all events to be attended/already attended by the provided user id)
+    @api.doc(description="""
+        Returns events (with details) the given user is attending, has attended, or both.
+        Results are paginated, and can be filtered by start_date and end_date.
+        
+        - For `attended`: end_date defaults to today (cannot exceed today)
+        - For `attending`: start_date defaults to today (cannot be earlier than today)
     """)
-    @api.response(200, "Success", EventsResponse)
+    @api.param("user_id", "User ID (defaults to authenticated user)", type="integer")
+    @api.param("type", "Event type filter: attending (future), attended (past), or all", type="string", default="all")
+    @api.param("page", "Page number (default 1)", type="integer")
+    @api.param("per_page", "Events per page (default 10, max 100)", type="integer")
+    @api.param("start_date", "Filter start date (YYYY-MM-DD)", type="string")
+    @api.param("end_date", "Filter end date (YYYY-MM-DD)", type="string")
+    @api.response(200, "Success", EventListResponse)
+    @api.response(400, "Invalid request")
+    @api.response(404, "User not found")
+    @api.marshal_with(EventListResponse)
     def get(self):
         from app.models import Event, User
+        from datetime import datetime, date, timedelta
 
         data = request.args
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
 
-        user_id = data.get("user_id", user.id)
+        # Defaults
+        user_id = int(data.get("user_id", user.id))
         request_type = data.get("type", "all").lower()
-        page = int(data.get("page", 1))
-        per_page = int(data.get("per_page", 20))
+        page = max(int(data.get("page", 1)), 1)
+        per_page = max(1, min(int(data.get("per_page", 20)), 100))
+
+        start_date_str = data.get("start_date")
+        end_date_str = data.get("end_date")
 
         valid_types = {"attending", "attended", "all"}
         if request_type not in valid_types:
@@ -312,25 +426,70 @@ class EventAttendees(Resource):
         if not attendee:
             return {"message": "User not found"}, 404
 
-        query = Event.query.join(Event.attending).filter(User.id == user_id)
-        query = query.order_by(Event.event_time.desc())
+        # Base query: all events the user is attending
+        query = Event.query.join(Event.attendees).filter(User.id == user_id)
 
         now = datetime.utcnow()
-        if request_type == "attending":
-            query = query.filter(Event.event_time > now)
-        elif request_type == "attended":
-            query = query.filter(Event.event_time < now)
+        today = date.today()
 
-        pagination = query.paginate(page=page, per_page=per_page)
-        events = pagination.items
+        # Parse dates safely
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d") if start_date_str else None
+        except ValueError:
+            return {"message": "Invalid start_date format. Use YYYY-MM-DD."}, 400
+
+        try:
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d") if end_date_str else None
+        except ValueError:
+            return {"message": "Invalid end_date format. Use YYYY-MM-DD."}, 400
+
+        # Apply event type logic and date bounds
+        if request_type == "attended":
+            # Past events only — end_date cannot exceed today
+            if not end_date or end_date.date() > today:
+                end_date = datetime.combine(today, datetime.max.time())
+            if not start_date:
+                start_date = datetime.min
+            query = query.filter(Event.event_time <= end_date)
+            if start_date:
+                query = query.filter(Event.event_time >= start_date)
+
+        elif request_type == "attending":
+            # Future events only — start_date cannot be before today
+            if not start_date or start_date.date() < today:
+                start_date = datetime.combine(today, datetime.min.time())
+            if not end_date:
+                end_date = datetime.max
+            query = query.filter(Event.event_time >= start_date)
+            if end_date:
+                query = query.filter(Event.event_time <= end_date)
+
+        else:  # "all"
+            if start_date and end_date:
+                query = query.filter(Event.event_time >= start_date, Event.event_time <= end_date)
+            elif start_date:
+                query = query.filter(Event.event_time >= start_date)
+            elif end_date:
+                query = query.filter(Event.event_time <= end_date)
+
+        # Order events
+        if request_type == "attending":
+            query = query.order_by(Event.event_time.asc())
+        else:
+            query = query.order_by(Event.event_time.desc())
+
+        # Pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        events = [event.to_dict() for event in pagination.items]
 
         return {
-            "event_ids": [event.id for event in events],
-            "total_events": pagination.total,
-            "total_pages": pagination.pages,
-            "current_page": page,
+            "items": events,
+            "total": pagination.total,
+            "page": page,
             "per_page": per_page
         }, 200
+
+
 
 @api.route("/event_attendees/remove")
 class RemoveAttendee(Resource):
@@ -540,29 +699,46 @@ class GetEvents(Resource):
 
 @api.route("/professionals")
 class GetProfessionals(Resource):
+    """Lists verified professionals for the event page/Get-help page"""
+
     from .events_models import ProfessionalsListResponse
+
+    @api.doc(description="Get a paginated list of verified professionals for the event page/Get-help page")
+    @api.param("page", "Page number (default 1)", type="integer")
+    @api.param("per_page", "Professionals per page (default 20, max 100)", type="integer")
     @api.response(200, "Success", ProfessionalsListResponse)
+    @api.response(500, "Internal server error")
     def get(self):
-        """Get list of verified professionals for event page"""
+        """Retrieve verified professionals with pagination"""
         from app.models import User, ProfessionalDetails
-        
-        page = int(request.args.get("page", 1))
-        per_page = int(request.args.get("per_page", 20))
-        
+
         try:
+            # Query parameters
+            try:
+                page = max(int(request.args.get("page", 1)), 1)
+            except ValueError:
+                page = 1
+
+            try:
+                per_page = int(request.args.get("per_page", 20))
+            except ValueError:
+                per_page = 20
+
+            per_page = max(1, min(per_page, 100))
+
             # Query for users with verified professional details
-            query = User.query.join(ProfessionalDetails).filter(
-                ProfessionalDetails.is_verified == True
-            ).order_by(User.username)
-            
+            query = (
+                User.query.join(ProfessionalDetails)
+                .filter(ProfessionalDetails.is_verified == True)
+                .order_by(User.username)
+            )
+
             paginated_professionals = query.paginate(
                 page=page, per_page=per_page, error_out=False
             )
-            
-            professionals = paginated_professionals.items
-            
-            return {
-                "professionals": [{
+
+            professionals = [
+                {
                     "id": user.id,
                     "keycloak_id": user.keycloak_id,
                     "username": user.username,
@@ -570,18 +746,24 @@ class GetProfessionals(Resource):
                     "bio": user.bio,
                     "profile_pic": user.profile_pic_url,
                     "specialization": user.professional_details.specialization,
-                    "license_body": user.professional_details.license_body
-                } for user in professionals],
+                    "license_body": user.professional_details.license_body,
+                }
+                for user in paginated_professionals.items
+            ]
+
+            return {
+                "professionals": professionals,
                 "pagination": {
                     "page": paginated_professionals.page,
                     "per_page": paginated_professionals.per_page,
                     "total_professionals": paginated_professionals.total,
                     "total_pages": paginated_professionals.pages,
                     "has_next": paginated_professionals.has_next,
-                    "has_prev": paginated_professionals.has_prev
-                }
+                    "has_prev": paginated_professionals.has_prev,
+                },
             }, 200
-            
+
         except Exception as e:
             logger.error(f"Error fetching professionals: {e}")
             return {"message": "Error fetching professionals"}, 500
+

@@ -7,8 +7,9 @@ from app.notifications import send_push_notification_to_all_users
 
 api = Namespace("blog", description="API Endpoints")
 
+logger = setup_logger() 
 
-@api.route("/blog-post")
+@api.route("/blog-posts")
 class CreateBlog(Resource):
     from .blog_models import CreateBlogPost
     """Endpoint for creating blog posts for the Get Educated page (Admins only)."""   
@@ -30,6 +31,8 @@ class CreateBlog(Resource):
             title = data.get("title")
             content = data.get("content")
             summary = data.get("summary")
+            
+            # Handle image upload to S3 if provided
             image_url = data.get("image_url")
 
             # ✅ Basic validation
@@ -73,3 +76,98 @@ class CreateBlog(Resource):
             logger.exception("Error creating blog post")
             db.session.rollback()
             return {"message": "An error occurred while creating the blog post."}, 500
+
+
+@api.route("/blog-posts/<int:post_id>")
+class GetSingleBlog(Resource):
+    """Gets a single blog post by ID"""
+
+    from .blog_models import BlogPostModel, BlogPostList
+    @api.doc(description="Retrieve a single blog post by its ID")
+    @api.response(200, "Success", BlogPostModel)
+    @api.response(404, "Blog post not found")
+    @api.marshal_with(BlogPostModel)
+    def get(self, post_id):
+        from app.models import BlogPost
+        post = BlogPost.query.get(post_id)
+        if not post:
+            return {"message": "Blog post not found"}, 404
+
+        return {
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "summary": getattr(post, "summary", None),
+            "image_url": getattr(post, "image_url", None),
+            "author_id": post.author_id,
+            "author": post.author.username if post.author else None,
+            "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
+        }, 200
+
+
+@api.route("/blog-posts")
+class ListBlogs(Resource):
+    """Lists blog posts with optional pagination and search"""
+
+    from .blog_models import BlogPostModel, BlogPostList
+    @api.doc(description="List blog posts with pagination, search, and filtering")
+    @api.param("page", "Page number (default 1)", type="integer")
+    @api.param("per_page", "Items per page (default 10, max 100)", type="integer")
+    @api.param("q", "Search string for author name, title, or content")  # 🔄 updated doc
+    @api.response(200, "Success", BlogPostList)
+    @api.marshal_with(BlogPostList)
+    def get(self):
+        from app.models import BlogPost, User   # 🔄 import User to filter by name
+        # Query parameters
+        try:
+            page = max(int(request.args.get("page", 1)), 1)
+        except ValueError:
+            page = 1
+
+        try:
+            per_page = int(request.args.get("per_page", 10))
+        except ValueError:
+            per_page = 10
+
+        per_page = max(1, min(per_page, 100))
+
+        q = request.args.get("q")
+
+        # Base query
+        query = BlogPost.query.join(User, BlogPost.author)   
+
+        # Search filter
+        if q:
+            ilike = f"%{q}%"
+            query = query.filter(
+                (BlogPost.title.ilike(ilike)) |
+                (BlogPost.content.ilike(ilike)) |
+                (User.username.ilike(ilike))   
+            )
+
+        # Order newest first
+        query = query.order_by(BlogPost.timestamp.desc())
+
+        # Pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        items = []
+        for post in pagination.items:
+            items.append({
+                "id": post.id,
+                "title": post.title,
+                "content": post.content,
+                "summary": getattr(post, "summary", None),
+                "image_url": getattr(post, "image_url", None),
+                "author_id": post.author_id,
+                "author": post.author.username if post.author else None,
+                "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
+            })
+
+        return {
+            "items": items,
+            "total": pagination.total,
+            "page": page,
+            "per_page": per_page
+        }, 200
+    

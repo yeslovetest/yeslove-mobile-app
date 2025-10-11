@@ -39,16 +39,20 @@ indEventContainer: {
     },
     favouriteContainer: {
         display: "flex",
-        width: 65,
-        height: 65,
         justifyContent: "center",
         alignItems: "center",
         position: "absolute",
-        borderRadius: "50%",
+        borderRadius: 10,
+        padding: 12,
         bottom: -20,
         right: 50,
         zIndex: 1,
         backgroundColor: theme.colors.primaryBlue
+    },
+    addToEventText: {
+        color: "white",
+        fontSize: 18,
+        
     },
 })
 

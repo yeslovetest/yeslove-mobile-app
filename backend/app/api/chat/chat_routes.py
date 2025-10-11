@@ -16,10 +16,14 @@ api = Namespace("chat", description="API Endpoints")
 
 @api.route("/send_message")
 class SendMessage(Resource):
-    from .chat_models import SendMessageRequest
-
-    @require_auth()
-    @api.expect(SendMessageRequest)
+    @require_auth() 
+    @api.doc(
+        description="Send a message with optional media attachment. Either message or media_id must be provided."
+    )
+    @api.response(201, 'Message sent successfully')
+    @api.response(400, 'Bad request - missing message/media or invalid receiver')
+    @api.response(404, 'User not found')
+    @api.response(401, 'Unauthorized')
     def post(self):
         """Send a private message with moderation."""
         from app.models import User, Chat, ModerationLog, db
@@ -35,6 +39,9 @@ class SendMessage(Resource):
 
         if not message or not receiver_id:
             return {"message": "Message and receiver ID are required"}, 400
+        if (not message and not data.get("media_id")) or not receiver_id:
+            logger.error("❌ Message content/media or receiver ID missing")
+            return {"message": "Message or media and receiver ID are required"}, 400
 
         if user.id == receiver_id:
             return {"message": "You cannot message yourself"}, 400
@@ -80,6 +87,8 @@ class SendMessage(Resource):
 
         # ✅ Save the message (even if flagged)
         new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
+        media_id = data.get("media_id")
+        new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_id)
         db.session.add(new_message)
         db.session.commit()
 
@@ -95,10 +104,16 @@ class SendMessage(Resource):
 
 @api.route("/get_messages/<int:receiver_id>")
 class GetMessages(Resource):
-    from .chat_models import GetMessagesRequest, GetMessagesResponse
     @require_auth()
-    @api.expect(GetMessagesRequest)  # ✅ Attach model
-    @api.response(200, 'Success', GetMessagesResponse) 
+    @api.doc(
+        description="Fetch chat messages between current user and specified receiver, including media attachments",
+        params={
+            'receiver_id': 'Keycloak ID of the message recipient'
+        }
+    )
+    @api.response(200, 'Success')
+    @api.response(404, 'User not found')
+    @api.response(401, 'Unauthorized')
     def get(self, receiver_id):
         """Fetch chat messages between two users."""
         from app.models import User, Chat
@@ -116,6 +131,9 @@ class GetMessages(Resource):
                 "sender": msg.sender.username,
                 "receiver": msg.receiver.username,
                 "content": msg.message,
+                "media_id": msg.media_id,
+                "media_url": f"/api/media/{msg.media_id}" if msg.media_id else None,
+                "media_type": msg.media.content_type if msg.media else None,
                 "opened": msg.opened,
                 "timestamp": msg.timestamp.isoformat(),
             }
@@ -125,7 +143,6 @@ class GetMessages(Resource):
 
 @api.route("/mark_chat_opened/<string:receiver_id>")
 class MarkChatOpened(Resource):
-    from .chat_models import MarkChatOpenedResponse
     @require_auth()
     @api.doc(
         description="Mark all unread messages in a chat as opened when the current user opens the conversation.",
@@ -133,7 +150,7 @@ class MarkChatOpened(Resource):
             "receiver_id": "The Keycloak ID of the user on the other end of the chat"
         }
     )
-    @api.response(200, "Messages successfully marked as opened", MarkChatOpenedResponse)
+    @api.response(200, "Messages successfully marked as opened")
     @api.response(404, "User not found")
     def put(self, receiver_id):
         """
@@ -169,12 +186,14 @@ class MarkChatOpened(Resource):
 
 @api.route("/friends/<string:keycloak_id>")
 class GetFriends(Resource):
-    from .chat_models import GetFriendsRequest, GetFriendsResponse
-
     @require_auth()
-    @api.expect(GetFriendsRequest)  # ✅ Attach request model
-    @api.response(code=200, description="List of friends with last message", model=GetFriendsResponse)
-    @api.response(code=404, description="User not found")
+    @api.doc(
+        params={
+            'keycloak_id': 'Keycloak ID of the current user'
+        }
+    )
+    @api.response(200, "List of friends with last message")
+    @api.response(404, "User not found")
     def get(self, keycloak_id):
         """
         Fetch all friends of the current user along with
@@ -215,7 +234,7 @@ class GetFriends(Resource):
                 User.id.label("friend_id"),
                 User.keycloak_id,
                 User.username,
-                User.profile_pic,
+                User.profile_pic_url,
                 Chat.message,
                 Chat.timestamp,
                 Chat.opened,
@@ -259,7 +278,7 @@ class GetFriends(Resource):
                 {
                     "id": f.keycloak_id,
                     "username": f.username,
-                    "profile_pic": f.profile_pic,
+                    "profile_pic": f.profile_pic_url,
                     "last_message": f.message[:60] if f.message else '',
                     "last_message_time": f.timestamp.isoformat() if f.timestamp else date.today().isoformat(),
                     "unread": (
