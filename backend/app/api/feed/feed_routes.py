@@ -85,8 +85,6 @@ class Feed(Resource):
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
 
-       
-
         feed_data = {
             "posts": [{
                 "id": post.id,
@@ -96,7 +94,8 @@ class Feed(Resource):
                 "image_url": post.image_url,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
-                "comments": len(post.comments)
+                "comments": len(post.comments),
+                "user_reaction": reaction_map.get(post.id).reaction_type if post.id in reaction_map else None
             } for post in posts],
             "pagination": {
                 "page": paginated_posts.page,
@@ -162,11 +161,6 @@ class CreatePost(Resource):
         status = moderation_result["status"]
         score = moderation_result["score"]
 
-        # Save post with moderation status
-        post = Post(content=content, user_id=user.id, status=status)
-        if not data.get("content"):
-            return {"message": "Post content cannot be empty"}, 400
-
         # Handle image upload to S3 if provided
         image_url = None
         if 'image' in request.files:
@@ -181,7 +175,8 @@ class CreatePost(Resource):
             except Exception as e:
                 logger.error(f"Post image upload failed: {e}")
         
-        post = Post(content=data["content"], user_id=user.id, image_url=image_url)
+        # Create post with moderation status
+        post = Post(content=content, user_id=user.id, status=status, image_url=image_url)
         db.session.add(post)
         db.session.commit()
 
@@ -223,7 +218,7 @@ class CreatePost(Resource):
                 PushNotificationService.send_to_multiple_users(
                     user_ids=follower_user_ids,
                     title="New Post",
-                    body=f"{user.username}: {data['content'][:50]}...",
+                    body=f"{user.username}: {content[:50]}...",
                     data={"type": "new_post", "post_id": post.id},
                     notification_type="posts"
                 )
