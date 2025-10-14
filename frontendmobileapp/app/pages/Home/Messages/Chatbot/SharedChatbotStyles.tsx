@@ -1,3 +1,4 @@
+import theme from "@/assets/variables/Variables"
 import { StyleSheet } from "react-native"
 
 const styles = StyleSheet.create({
@@ -9,16 +10,9 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
         flexDirection: "row",
-        backgroundColor: "#fefefe",
         height: 60,
         borderBottomColor: "#fff",
         borderBottomWidth: 1,
-    },
-    headerBack: {
-        color: "#010101",
-        padding: 8,
-        marginLeft: 3,
-        borderRadius: 5,
     },
     headerText: {
         textAlign: "center",
@@ -40,7 +34,7 @@ const styles = StyleSheet.create({
         height: 38,
         borderRadius: "50%",
         marginRight: 10,
-        backgroundColor: "#fefefe",
+        backgroundColor: "#fbfbfb",
         borderColor: "#cbcbcb",
         borderWidth: 1,
         display: "flex",
@@ -49,25 +43,26 @@ const styles = StyleSheet.create({
     },
 
     headerBotProfileImage: {
-        color: "#b8e0fc",
+        color: "#fbfbfb",
         marginBottom: 2,
         fontSize: 20
     },
 
     chatbot: {
         fontWeight: 500,
-        fontSize: 16
+        fontSize: 16,
+        color: "#fbfbfb"
     },
 
     onlineNow: {
         fontSize: 11,
-        color: "#1f1f1f"
+        color: "#fbfbfb"
     },
 
     onlineSymbol: {
         width: 7,
         height: 7,
-        backgroundColor: "green",
+        backgroundColor: "#3fe86c",
         borderRadius: "50%",
         marginRight: 3
     },
@@ -92,7 +87,7 @@ const styles = StyleSheet.create({
 
     contentContainer: {
         flexGrow: 1,
-        backgroundColor: "#e6edfd",
+        backgroundColor: theme.colors.mainBkgColor,
         paddingBottom: "8%"
     },
     backgroundContainer: {
@@ -104,6 +99,7 @@ const styles = StyleSheet.create({
     background: {
         height: "100%",
         width: "100%",
+        backgroundColor: "#fbfbfb",
         display: "flex",
         justifyContent: "flex-start",
         alignItems: "center",
@@ -123,7 +119,7 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     chatIcon: {
-        color: "#fefefe"
+        color: "#fbfbfb"
     },
 
     greetingRobot: {
@@ -146,7 +142,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         position: "absolute",
         bottom: 10,
-        borderColor: "#c1c1c1",
+        borderColor: "#e1e1e1",
         borderWidth: 1,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -164,8 +160,8 @@ const styles = StyleSheet.create({
     sendIcon: {
         marginLeft: "auto",
         padding: 6,
-        color: "#fafafa",
-        backgroundColor: "#c9c9c9",
+        color: "#fbfbfb",
+        backgroundColor: theme.colors.primaryBlue,
         borderRadius: "50%"
     },
 
@@ -185,12 +181,13 @@ const styles = StyleSheet.create({
     chatPrompt: {
         marginLeft: "auto",
         borderRadius: 15,
-        backgroundColor: "#2d5be3",
-        padding: 10
+        backgroundColor: theme.colors.primaryBlue,
+        padding: 10,
+        maxWidth: "100%",
     },
 
     promptText: {
-        color: "#f5f5f5",
+        color: "#fbfbfb",
         fontSize: 17,
         fontFamily: "sans-serif",
     },
@@ -219,7 +216,7 @@ const styles = StyleSheet.create({
         fontFamily: "sans-serif",
         width: "100%",
         borderRadius: 15,
-        backgroundColor: "#fefefe",
+        backgroundColor: "#f1f1f1",
         color: "#4e4e4e",
         padding: 10,
         fontSize: 17
@@ -261,8 +258,8 @@ const styles = StyleSheet.create({
     },
 
     botProfileImagee: {
-width: 60, 
-height: 60
+        width: 60,
+        height: 60
     },
 
     /* loader*/

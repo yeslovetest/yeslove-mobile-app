@@ -26,7 +26,7 @@ useEffect(() => {
 
           <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contentContainer} style={styles.container}>
             <View style={styles.backgroundContainer}>
-              <LinearGradient style={styles.background} colors={['#b8e0fc', 'transparent']}>
+              <View style={styles.background}>
                 {messages.length === 0 ? (
                 <GreetingContainer />
               ) : (
@@ -42,7 +42,7 @@ useEffect(() => {
                   {loading && <LoadingAnimation />}  {/* dots after last message */}
                 </>
               )}
-              </LinearGradient>
+              </View>
             </View>
           </ScrollView>
   )
