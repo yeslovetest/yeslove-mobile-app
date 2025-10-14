@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, Image } from 'react-native';
 import styles from '../SharedChatbotStyles';
+import profileImg from "../../../../../../assets/images/profileImg1.jpg"
 
 export default function ChatPrompt({ prompt, time }: { prompt: string; time: Date }) {
 
@@ -9,14 +10,21 @@ export default function ChatPrompt({ prompt, time }: { prompt: string; time: Dat
     .replace(/^0/, '');
 
   return (
-    <View style={styles.chatPromptContainer}>
-      <View style={styles.promptAndTimeSentContainer}>
-      <View style={styles.chatPrompt}>
-        <Text style={styles.promptText}>{prompt}</Text>
-      </View>
-      {/* render time here*/}
-      <Text style={styles.timeSentPrompt}>{hhmm}</Text>
-      </View>
+<View style={styles.chatPromptContainer}>
+  <View style={styles.promptAndTimeSentContainer}>
+    <View style={styles.chatPrompt}>
+      <Text style={styles.promptText} numberOfLines={0}>
+        {prompt}
+      </Text>
+        <Text style={styles.timeSentPrompt}>{hhmm}</Text>
     </View>
+    
+
+    <Image style={styles.profileImg} source={profileImg} />
+  </View>
+
+
+</View>
+
   )
 }

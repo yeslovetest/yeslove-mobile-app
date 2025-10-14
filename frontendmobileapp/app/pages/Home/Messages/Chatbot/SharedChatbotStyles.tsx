@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         width: "97%",
-        height: 40,
-        paddingHorizontal: 3,
-        paddingVertical: 6,
+        height: 50,
+        paddingHorizontal: 5,
+        paddingVertical: 10,
         borderRadius: 20,
         backgroundColor: "#fff",
         position: "absolute",
@@ -170,33 +170,46 @@ const styles = StyleSheet.create({
     chatPromptContainer: {
         width: "100%",
         padding: 15,
-        marginBottom: 4,
+        marginBottom: 20,
         marginTop: "auto"
     },
     promptAndTimeSentContainer: {
-        marginLeft: "auto",
-        maxWidth: "50%",
+        alignSelf: "flex-end",
+        maxWidth: "80%",
+        flexDirection: "row",
+        alignItems: "flex-end",
     },
 
     chatPrompt: {
-        marginLeft: "auto",
-        borderRadius: 15,
         backgroundColor: theme.colors.primaryBlue,
-        padding: 10,
-        maxWidth: "100%",
+        borderRadius: 15,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        flexShrink: 1,
     },
 
     promptText: {
         color: "#fbfbfb",
         fontSize: 17,
         fontFamily: "sans-serif",
+        flexShrink: 1,
+        flexWrap: "wrap",
+        flex: 1,
     },
+
 
     timeSentPrompt: {
-        marginRight: "auto",
-        color: "#4e4e4e"
+        marginLeft: "auto",
+        color: "#e1e1e1"
     },
 
+    profileImg: {
+        width: 40,
+        height: 40,
+        marginLeft: 5,
+        marginTop: 5,
+        borderRadius: "50%"
+    },
 
 
     /*chat response */
@@ -218,7 +231,8 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         backgroundColor: "#f1f1f1",
         color: "#4e4e4e",
-        padding: 10,
+        paddingVertical: 15,
+        paddingHorizontal: 10,
         fontSize: 17
     },
 
