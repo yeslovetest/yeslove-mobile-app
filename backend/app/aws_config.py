@@ -2,11 +2,15 @@ import boto3
 import json
 import os
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class AWSConfigManager:
     def __init__(self):
-        self.secrets_client = boto3.client('secretsmanager')
-        self.ssm_client = boto3.client('ssm')
+        region = os.getenv("AWS_REGION", "eu-west-2")
+        self.secrets_client = boto3.client('secretsmanager', region_name=region)
+        self.ssm_client = boto3.client('ssm', region_name=region)
         self._secrets_cache = {}
         self._params_cache = {}
     

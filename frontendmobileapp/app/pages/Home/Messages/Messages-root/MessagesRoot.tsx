@@ -37,7 +37,9 @@ const Messages = () => {
         <>
             <Header mainTitle={userName}></Header>
             <Text style={messagesSharedStyles.messagesText}>Messages</Text>
-            <AskChatbotButton />
+            <AskChatbotButton onClick={() => dispatch(openTabOnTopAction({ type: TabType.CHATBOT }))} />
+
+
             <View style={messagesSharedStyles.filterBar}>
                 <TouchableOpacity onPress={() => setFilter('all')}>
                     <View style={[

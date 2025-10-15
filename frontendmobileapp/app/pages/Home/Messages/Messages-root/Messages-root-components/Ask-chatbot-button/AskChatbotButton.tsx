@@ -3,9 +3,13 @@ import { TouchableOpacity, View, Text } from 'react-native'
 import styles from './AskChatbotButtonStyles'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const AskChatbotButton = () => {
+type Props = {
+  onClick: () => void
+}
+
+const AskChatbotButton = (props: Props) => {
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity onPress={props.onClick} style={styles.container}>
   <View style={styles.chatbotButton}>
     <MaterialCommunityIcons name="account-heart-outline" size={24} style={styles.icon}/>
     <Text style={styles.chatbotButtonText}>
