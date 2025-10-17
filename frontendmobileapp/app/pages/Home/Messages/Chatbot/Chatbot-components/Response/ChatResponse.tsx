@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
-import styles from '../SharedChatbotStyles';
-import ChatbotProfile from './Chatbot-profile/ChatbotProfile';
+import styles from './ChatResponseStyles';
+import ChatbotProfile from '../Header/ChatbotProfile';
 
 
 const TYPE_SPEED = 1;
