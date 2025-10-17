@@ -477,19 +477,6 @@ export interface CreateBlogPost {
 /**
  * 
  * @export
- * @interface CreatePostRequest
- */
-export interface CreatePostRequest {
-    /**
-     * Content of the post
-     * @type {string}
-     * @memberof CreatePostRequest
-     */
-    'content': string;
-}
-/**
- * 
- * @export
  * @interface DeleteAccountRequest
  */
 export interface DeleteAccountRequest {
@@ -4217,13 +4204,14 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @summary Create a new post
-         * @param {CreatePostRequest} payload 
+         * @param {string} content Content of the post
+         * @param {File} [image] Optional image file
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost: async (payload: CreatePostRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postCreatePost', 'payload', payload)
+        postCreatePost: async (content: string, image?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'content' is not null or undefined
+            assertParamExists('postCreatePost', 'content', content)
             const localVarPath = `/api/feed/post`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4235,18 +4223,27 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             // authentication Bearer required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
+            if (content !== undefined) { 
+                localVarFormParams.append('content', content as any);
+            }
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
+            if (image !== undefined) { 
+                localVarFormParams.append('image', image as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4478,12 +4475,13 @@ export const FeedApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @summary Create a new post
-         * @param {CreatePostRequest} payload 
+         * @param {string} content Content of the post
+         * @param {File} [image] Optional image file
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreatePost(payload: CreatePostRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(payload, options);
+        async postCreatePost(content: string, image?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, image, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postCreatePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4608,12 +4606,13 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @summary Create a new post
-         * @param {CreatePostRequest} payload 
+         * @param {string} content Content of the post
+         * @param {File} [image] Optional image file
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost(payload: CreatePostRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postCreatePost(payload, options).then((request) => request(axios, basePath));
+        postCreatePost(content: string, image?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postCreatePost(content, image, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4738,13 +4737,14 @@ export class FeedApi extends BaseAPI {
     /**
      * 
      * @summary Create a new post
-     * @param {CreatePostRequest} payload 
+     * @param {string} content Content of the post
+     * @param {File} [image] Optional image file
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public postCreatePost(payload: CreatePostRequest, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).postCreatePost(payload, options).then((request) => request(this.axios, this.basePath));
+    public postCreatePost(content: string, image?: File, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).postCreatePost(content, image, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

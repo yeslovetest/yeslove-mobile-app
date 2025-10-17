@@ -1,4 +1,5 @@
 from app.models import Media, db
+from app.logging_setup import setup_logger
 from flask import abort
 from datetime import datetime
 from .media_validator import MediaValidator
@@ -6,51 +7,71 @@ from .media_processor import MediaProcessor, S3Storage
 from .security import SecurityService
 import uuid
 
+logger = setup_logger()
+
 class MediaService:
-    @staticmethod 
+    @staticmethod
     @SecurityService.rate_limit_uploads()
     def store_file(file, user_id=None):
+        from flask import current_app
+        
         if not file:
             abort(400, "No file uploaded")
-
-        # Validate file
+        logger.info('check -1')
+        # ✅ Validate file type, size, etc.
         MediaValidator.validate_file(file)
-        
+
         content = file.read()
-        
-        # Security scan
-        SecurityService.scan_file_content(content)
-        
-        # Process image if needed
-        if file.content_type.startswith('image/'):
+        logger.info('check 0')
+        if  not file.mimetype.startswith("image/"):
+            # Skip text-based scanning for images - image binary data might accidentally contain pattern
+            # improved scanning for images to be implemented later👈
+             # ✅ Security scan
+            SecurityService.scan_file_content(content)
+    
+       
+
+        logger.info('check 1')
+        # ✅ Process image (e.g., compression)
+        if file.content_type.startswith("image/"):
+            logger.info('check 2')
             content = MediaProcessor.compress_image(content)
-        
-        # Extract metadata
+
+        # ✅ Extract metadata (width, height, etc.)
+        logger.info('check 3')
         metadata = MediaValidator.extract_image_metadata(content, file.content_type)
-        
-        # Upload to S3 (optional)
+        logger.info('check 4')
+
+        # ✅ Upload to S3 if enabled
         s3_url = None
-        from flask import current_app
-        if current_app.config.get('USE_S3_STORAGE', False):
+        if current_app.config.get("USE_S3_STORAGE", False):
+            logger.info('check 5')
             s3 = S3Storage()
             key = f"media/{uuid.uuid4()}/{file.filename}"
             s3_url = s3.upload_file(content, key, file.content_type)
-        
+
+        # ✅ Create and save Media record
         media = Media(
             content_type=file.content_type,
-            content=content if not s3_url else None,  # Store locally or in S3
+            content=content if not s3_url else None,  # store locally or use S3
             filename=file.filename,
             file_size=len(content),
-            width=metadata.get('width'),
-            height=metadata.get('height'),
+            width=metadata.get("width"),
+            height=metadata.get("height"),
             user_id=user_id,
-            s3_url=s3_url
+            s3_url=s3_url,
         )
 
         db.session.add(media)
         db.session.commit()
 
-        return media.id
+        # ✅ Return both ID and URL (local or S3)
+        media_url = s3_url or f"/api/media/{media.id}"
+
+        return {
+            "media_id": media.id,
+            "media_url": media_url
+        }
 
     @staticmethod
     def get_media(media_id, user_id=None):

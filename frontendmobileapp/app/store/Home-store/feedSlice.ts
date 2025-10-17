@@ -1,4 +1,4 @@
-import { Post, Comment, ReactionResponse, FollowedUser } from "@/generated-api";
+import { Post, Comment, ReactionResponse, FollowedUser, CreatePostRequest } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export enum FeedTabs { ALL_UPDATES, FRIENDS };
@@ -39,7 +39,7 @@ const feedSlice = createSlice({
             
         },
         updatePostsForFeedAction: (state, action: PayloadAction<{feedType: string, perPage?: number, page?: number}>) => {},
-        postNewPostAction: (state, action: PayloadAction<{content: string}>) => {},
+        postNewPostAction: (state, action: PayloadAction<{ requestForm: FormData }>) => {},
         postComment: (state, action: PayloadAction<{postId: number, content: string}>) => {},
         setPostReactionTab: (state, action: PayloadAction<string>) => {
             state.postReactionTab = action.payload;

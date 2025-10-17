@@ -1,5 +1,6 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
+from werkzeug.datastructures import FileStorage
 
 from app.logging_setup import setup_logger
 
@@ -7,6 +8,7 @@ from app.utils import require_auth
 from app.utils.rate_limiter import read_rate_limit, write_rate_limit
 
 logger = setup_logger()
+post_parser = reqparse.RequestParser()
 
 api = Namespace("feed", description="API Endpoints")
 
@@ -92,7 +94,7 @@ class Feed(Resource):
                 "author_id": post.author.keycloak_id,
                 "author_pic": post.author.profile_pic_url,
                 "content": post.content,
-                "image_url": post.image_url,
+                "image": post.image_url,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
@@ -117,84 +119,143 @@ class Feed(Resource):
         return feed_data, 200
 
 
-
 @api.route("/post")
 class CreatePost(Resource):
+    """Create a new post (supports text + optional image upload)."""
     from .feed_models import CreatePostRequest
-    #@write_rate_limit
+
+    
+    post_parser.add_argument(
+        'content',
+        type=str,
+        required=True,
+        location='form',
+        help='Content of the post'
+    )
+    post_parser.add_argument(
+        'image',
+        type=FileStorage,
+        required=False,
+        location='files',
+        help='Optional image file'
+    )
+
     @require_auth()
     @api.doc(security='Bearer')
-    @api.expect(CreatePostRequest)
+    @api.expect(post_parser)
     @api.response(201, "Post created successfully")
     def post(self):
         """Create a new post."""
-        from app.models import User, Post, Follow, db
+        from app.services.media.media_service import MediaService
+        from app.services.fanout_service import FanoutService
+        from app.services.push_notification_service import PushNotificationService
+        from app.monitoring.metrics import track_post_creation
+        from app.models import User, Post, Follow, db, Media
         from app.notifications import send_push_notification_to_users
 
-        data = request.json
+        logger.info("Content-Type header: %s", request.content_type)
+        logger.info("Request form keys: %s", list(request.form.keys()))
+        logger.info("Request files keys: %s", list(request.files.keys()))
+        logger.info("Raw request content length: %s", request.content_length)
+        # Optionally log request.files.get('image') repr
+        logger.info("request.files.get('image'): %r", request.files.get('image'))
+        
+
+        # ✅ Parse form data (text + file)
+        args = post_parser.parse_args()
+        content = args.get("content", "")
+        file = args.get("image")
+        logger.info(f'file found: {file}')
+        
+        # ✅ Validate user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
 
-        if not data.get("content"):
+        if not content.strip():
             return {"message": "Post content cannot be empty"}, 400
 
-        # Handle image upload to S3 if provided
         image_url = None
-        if 'image' in request.files:
-            from app.services.media.media_service import MediaService
+        media_id = None
+
+        # ✅ Handle file upload (S3 or local)
+        if file:
+            logger.info('check 1')
             try:
-                upload_result = MediaService.upload_file(
-                    file=request.files['image'],
-                    user_id=user.id,
-                    folder='posts'
-                )
-                image_url = upload_result.get('s3_url') if upload_result else None
+                logger.info('check 2')
+                if current_app.config.get("USE_S3_STORAGE", False):
+                    logger.info('image file going to S3')
+                    upload_result = MediaService.upload_file(
+                        file=file,
+                        user_id=user.id,
+                        folder="posts"
+                    )
+                    image_url = upload_result.get("s3_url")
+                else:
+                    logger.info('image file going to local storage')
+                    result = MediaService.store_file(file=file, user_id=user.id)
+                    media_id = result.get("media_id")
+                    image_url = result.get("media_url")
+                logger.info('image file uploaded')    
             except Exception as e:
-                logger.error(f"Post image upload failed: {e}")
-        
-        post = Post(content=data["content"], user_id=user.id, image_url=image_url)
+                logger.error(f"Image upload/store failed: {e}")
+
+        # ✅ Create post record
+        post = Post(
+            content=content,
+            user_id=user.id,
+            image_url=image_url,
+            media_id=media_id
+        )
         db.session.add(post)
         db.session.commit()
-        
-        # Track post creation metric
-        from app.monitoring.metrics import track_post_creation
+
+        # ✅ Track post creation metric
         track_post_creation()
-        
-        # Add post to Neptune graph
+
+        # ✅ Add post to Neptune graph
         if hasattr(current_app, 'graph_repository'):
             try:
                 current_app.graph_repository.merge_post_node(
                     post_id=post.id,
                     author_id=user.keycloak_id,
-                    props={"content": data["content"][:100], "timestamp": post.timestamp.isoformat()}
+                    props={
+                        "content": content[:100],
+                        "timestamp": post.timestamp.isoformat()
+                    }
                 )
             except Exception as e:
                 logger.warning(f"Neptune post creation failed: {e}")
-        
-        # Fanout post to followers
-        from app.services.fanout_service import FanoutService
+
+        # ✅ Fanout post to followers
         fanout_service = FanoutService()
         fanout_service.fanout_post(post.id, user.id)
 
-        # Send push notification to followers
+        # ✅ Push notifications to followers
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
         if follower_user_ids:
-            from app.services.push_notification_service import PushNotificationService
             try:
                 PushNotificationService.send_to_multiple_users(
                     user_ids=follower_user_ids,
                     title="New Post",
-                    body=f"{user.username}: {data['content'][:50]}...",
+                    body=f"{user.username}: {content[:50]}...",
                     data={"type": "new_post", "post_id": post.id},
                     notification_type="posts"
                 )
             except Exception as e:
                 logger.error(f"Push notification failed: {e}")
 
-        return {"message": "Post created successfully"}, 201
+        return {
+            "message": "Post created successfully",
+            "post": {
+                "id": post.id,
+                "content": post.content,
+                "media_id": media_id,
+                "image_url": image_url,
+            }
+        }, 201
     
 # -------------------------
 # 🚀 Reaction ROUTES
@@ -418,8 +479,10 @@ class FollowUser(Resource):
         if follow_action == "unfollow":
             if followby_current_user:
                 db.session.delete(followby_current_user)
-                if follow_type == "friend" and followby_target_user:
+                logger.info(f"User {user.username} unfollowed {target_user.username}")
+                if followby_target_user and followby_target_user.follow_type == 'friend':
                    db.session.delete(followby_target_user) 
+                   logger.info('Also removed reverse friend follow')
                 db.session.commit()
                 
                 # Remove from Neptune

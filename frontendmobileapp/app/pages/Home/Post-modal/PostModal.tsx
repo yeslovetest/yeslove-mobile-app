@@ -12,6 +12,7 @@ import { postNewPostAction } from "@/app/store/Home-store/feedSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import PostInput from "./Post-modal-components/Post-input/PostInput";
 import PostingUserProfile from "./Post-modal-components/Posting-user-profile/PostingUserProfile";
+import { CreatePostRequest } from "@/generated-api";
 
 interface PostModalProps {
   visible: boolean;
@@ -24,6 +25,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const [isRendered, setIsRendered] = useState(visible);
   const [userPost, setUserPost] = useState("");
+  const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null);
 
   const userName = useAppSelector(
     (state) => state.user.name ?? ""
@@ -54,13 +56,40 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const handleClose = () => {
     onClose();
     setUserPost("");
+    setSelectedFile(null);
   };
 
-  const handlePost = () => {
+  function dataURLtoFile(dataUrl: string, filename: string) {
+      // covert base64/URLEncoded data component to raw binary data held in a string - 
+      // for web browser testing (not needed on mobile)
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)![1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+  }
+
+  const handlePost = async () => {
     if (!userPost.trim()) return;
-    dispatch(postNewPostAction({ content: userPost }));
-    handleClose();
-  };
+
+    const formData = new FormData();
+    formData.append("content", userPost);
+
+    // Only send image for now
+    console.log("Selected file for upload:", selectedFile);
+    if (selectedFile && selectedFile.type.startsWith("image")) {
+      const file: File | any = dataURLtoFile(selectedFile.uri, selectedFile.name ?? 'photo.jpg'); // ✅ convert base64 to File
+      formData.append("image", file);
+    }
+
+    console.log("Form Data to be sent:", formData.get("content"), formData.get("image"));
+  dispatch(postNewPostAction({requestForm: formData as any}));
+  handleClose();
+};
 
   return (
     <Modal transparent visible={isRendered} animationType="none">
@@ -86,7 +115,11 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
           </View>
           <View style={{ flex: 1 }}>
             <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
-            <PostInput userPost={userPost} setUserPost={setUserPost} />
+            <PostInput 
+              userPost={userPost} 
+              setUserPost={setUserPost} 
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}/>
           </View>
         </Animated.View>
       </View>

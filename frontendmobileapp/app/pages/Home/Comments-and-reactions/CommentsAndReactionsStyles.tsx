@@ -1,6 +1,6 @@
 import theme from "@/assets/variables/Variables";
 import { vw } from "@/ts/viewport-units";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
 
 const styles = StyleSheet.create({
         indPostContainer: {
@@ -35,6 +35,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     marginBottom: 10,
+  },
+  postImage: { 
+    width: Dimensions.get('window').width * 0.3, 
+    borderRadius: 10, 
+    marginTop: 10,
+    resizeMode: 'contain',
+    aspectRatio: 1.5,
   },
     profileName: {
     marginBottom: 7,

@@ -23,9 +23,10 @@ Post = api.model('Post', {
 
 FeedResponse = api.model('PostResponse', {'posts': fields.List(fields.Nested(Post))})
 
-CreatePostRequest= api.model("CreatePostRequest", {
-        "content": fields.String(required=True, description="Content of the post"),
-    })
+CreatePostRequest = api.model("CreatePostRequest", {
+    "content": fields.String(required=True, description="Content of the post"),
+    "image": fields.Raw(required=False, description="Image file to upload")
+})
 
 LikePostRequest = api.model("LikePostRequest", {
         "post_id": fields.Integer(required=True, description="ID of the post to like or unlike"),

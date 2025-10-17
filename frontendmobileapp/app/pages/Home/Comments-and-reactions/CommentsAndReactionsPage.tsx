@@ -14,6 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Header from '@/app/Universal-components/Header/Header';
+import { BASE_URL } from '@/generated-api/base';
 
 export interface Post {
     id: number;
@@ -107,6 +108,12 @@ const IndividualPost = () => {
                         <Text style={styles.postContent}>
                             {individualPost.content}
                         </Text>
+                        {individualPost.image &&  (
+                            <Image style={styles.postImage} 
+                                source={{ uri: `${BASE_URL}${individualPost.image.startsWith('/') ? '' : '/'}${individualPost.image}` }}
+                            /> 
+                             
+                        )}
 
                         <View style={{ ...styles.seeLessAndLikeContainer, borderTopWidth: 0 }} onPointerLeave={() => setPopUpState('hidden')}>
                             <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >

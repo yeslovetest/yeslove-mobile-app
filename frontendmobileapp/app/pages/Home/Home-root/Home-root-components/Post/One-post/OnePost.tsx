@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
 import { retrievePostReactions, postReactionToPost, setPostReactionTab, SendFollowUser } from '@/app/store/Home-store/feedSlice';
-
+import { BASE_URL } from '@/generated-api/base';
 
 export interface Props {
     post: PostData,
@@ -158,6 +158,13 @@ const OnePost = (props: Props) => {
             <Text style={styles.postContent}>
                 {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
             </Text>
+
+            {props.post.image &&  ( 
+               <Image style={styles.postImage} 
+                    source={{ uri: `${BASE_URL}${props.post.image.startsWith('/') ? '' : '/'}${props.post.image}` }} 
+               /> 
+    
+            )}    
 
             <View style={styles.seeLessAndLikeContainer} onPointerLeave={() => setPopUpState('hidden')}>
                 <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >

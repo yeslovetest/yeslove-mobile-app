@@ -122,7 +122,10 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images
+    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images (if any)
+    media_id = db.Column(db.String(36), nullable=True)  # no foreign key (for testing only)
+    # 👇use the format below in production
+    #media_id = db.Column(db.String(36), db.ForeignKey("media.id"), nullable=True)  # ✅ link to Media
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 

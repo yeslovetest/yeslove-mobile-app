@@ -9,8 +9,7 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   GetMessagesResponse, BlogApiFactory, BlogPostList,
   MarkChatOpenedResponse, GetFriendsResponse, 
   EventsApiFactory, EventListResponse,
-  ProfessionalsListResponse,
-  CreatePostRequest} from "@/generated-api";
+  ProfessionalsListResponse} from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -272,26 +271,10 @@ function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | 
   yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload.feedType}));
 }
 
-function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
-  try {
-    // ✅ Create API instance
-    const api = FeedApiFactory();
-
-    // ✅ Extract content and image from FormData
-    const content = action.payload.requestForm.get("content") as string;
-    const image = action.payload.requestForm.get("image") as File | null;
-
-    // ✅ Call API using its expected parameters
-    yield call([api, api.postCreatePost], content, image ?? undefined);
-
-    // ✅ Send multipart/form-data directly (no JSON serialization!)
-    yield put(updatePostsForFeedAction({feedType: 'all'}));
-    yield put(updatePostsForFeedAction({feedType: 'friends'}));
-  }
-  catch (error) {
-    console.error("❌ Error creating post:", error);  
-  }
-  
+function* postNewPost(action: PayloadAction<{content: string}>){
+  yield call(FeedApiFactory().postCreatePost, {content: action.payload.content});
+  yield put(updatePostsForFeedAction({feedType: 'all'}));
+  yield put(updatePostsForFeedAction({feedType: 'friends'}));
 }
 
 function* postNewComment(action: PayloadAction<{postId: number, content: string}>){
