@@ -17,35 +17,28 @@ class MediaService:
         
         if not file:
             abort(400, "No file uploaded")
-        logger.info('check -1')
         # ✅ Validate file type, size, etc.
         MediaValidator.validate_file(file)
 
         content = file.read()
-        logger.info('check 0')
-        if  not file.mimetype.startswith("image/"):
+
+        if  not file.mimetype.startswith(("image/", "video/")):
             # Skip text-based scanning for images - image binary data might accidentally contain pattern
             # improved scanning for images to be implemented later👈
              # ✅ Security scan
             SecurityService.scan_file_content(content)
     
        
-
-        logger.info('check 1')
         # ✅ Process image (e.g., compression)
         if file.content_type.startswith("image/"):
-            logger.info('check 2')
             content = MediaProcessor.compress_image(content)
 
         # ✅ Extract metadata (width, height, etc.)
-        logger.info('check 3')
         metadata = MediaValidator.extract_image_metadata(content, file.content_type)
-        logger.info('check 4')
 
         # ✅ Upload to S3 if enabled
         s3_url = None
         if current_app.config.get("USE_S3_STORAGE", False):
-            logger.info('check 5')
             s3 = S3Storage()
             key = f"media/{uuid.uuid4()}/{file.filename}"
             s3_url = s3.upload_file(content, key, file.content_type)
@@ -99,6 +92,7 @@ class MediaService:
         media_list = Media.query.filter_by(user_id=user_id, is_public=True).all()
         return [{
             "id": m.id,
+            "url": m.s3_url or f"/api/media/{m.id}",
             "filename": m.filename,
             "content_type": m.content_type,
             "file_size": m.file_size,

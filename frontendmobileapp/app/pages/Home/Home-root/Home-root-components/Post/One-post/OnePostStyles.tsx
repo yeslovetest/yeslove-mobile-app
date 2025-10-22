@@ -63,8 +63,18 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width * 0.3, 
     borderRadius: 10, 
     marginTop: 10,
+    marginBottom: 20,
     resizeMode: 'contain',
     aspectRatio: 1.5,
+  },
+
+  postVideo: { 
+    width: '100%', 
+    height: Dimensions.get('window').height * 0.5,
+    borderRadius: 10, 
+    marginTop: 10,
+    marginBottom: 20,
+    resizeMode: 'cover'
   },
 
   profileImageContainer: {

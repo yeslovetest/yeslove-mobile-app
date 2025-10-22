@@ -14,6 +14,9 @@ const ProfileHeaderAndBio = () => {
   const userName = useAppSelector((state) => state.profile.profiles[userId]?.username ?? "");
   const bio = useAppSelector((state) => state.profile.profiles[userId]?.bio ?? "");
   const profileImage = useAppSelector((state) => state.profile.profiles[userId]?.profile_pic ?? "");
+  const userPosts = useAppSelector((state) => state.profile.profiles[userId]?.user_posts ?? 0);
+  const userFollowers = useAppSelector((state) => state.profile.profiles[userId]?.user_followers ?? 0);
+  const userFollowing = useAppSelector((state) => state.profile.profiles[userId]?.user_following ?? 0);
   const dispatch = useAppDispatch();
 
   useFocusEffect(React.useCallback(() => {
@@ -37,9 +40,9 @@ const ProfileHeaderAndBio = () => {
           <Image style={styles.profileImage} source={{ uri:   axios.defaults.baseURL + "/api/media/" +  profileImage}} />
           <Text style={styles.userName}>{userName}</Text>
           <View style={styles.userStatsContainer}>
-            <Text style={styles.userStats}>Posts: <Text style={styles.userStatsNumber}>0</Text></Text>
-            <Text style={styles.userStats}>Comments: <Text style={styles.userStatsNumber}>0</Text></Text>
-            <Text style={styles.userStats}>Views: <Text style={styles.userStatsNumber}>0</Text></Text>
+            <Text style={styles.userStats}>Posts: <Text style={styles.userStatsNumber}>{userPosts}</Text></Text>
+            <Text style={styles.userStats}>Followers: <Text style={styles.userStatsNumber}>{userFollowers}</Text></Text>
+            <Text style={styles.userStats}>Following: <Text style={styles.userStatsNumber}>{userFollowing}</Text></Text>
           </View>
         </ImageBackground>
       </View>

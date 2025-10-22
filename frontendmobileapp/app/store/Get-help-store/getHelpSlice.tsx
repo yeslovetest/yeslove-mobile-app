@@ -10,10 +10,11 @@ const getHelpSlice = createSlice({
         blogPage: 1,
         blogsPerPage: 10,
         currentSearchQuery: '',
+        oneBlog: {} as BlogPostModel,
         professionals: [] as ProfessionalResponse[],
         totalProfessionals: 0,
         professionalPage: 1,
-        professionalsPerPage: 20,
+        professionalsPerPage: 20, 
     },
     reducers: {
         setActiveGetHelpTabAction: (state, action: PayloadAction<string>) => {
@@ -36,11 +37,15 @@ const getHelpSlice = createSlice({
             state.professionalPage = action.payload.page || 1;
             state.professionalsPerPage = action.payload.per_page || 20;
         },
+        fetchOneBlogPost: (state, action:PayloadAction<{blogId: number}>) => {},     
+        setOneBlogPost: (state, action:PayloadAction<BlogPostModel>) => {
+            state.oneBlog = action.payload;    
+        },
     }
 })
 
 export const {
     setActiveGetHelpTabAction, fetchBlogPosts, setBlogPosts, setSearchQuery,
-    fetchProfessionals, setProfessionals
+    fetchProfessionals, setProfessionals, fetchOneBlogPost, setOneBlogPost
 } = getHelpSlice.actions;
 export default getHelpSlice.reducer;

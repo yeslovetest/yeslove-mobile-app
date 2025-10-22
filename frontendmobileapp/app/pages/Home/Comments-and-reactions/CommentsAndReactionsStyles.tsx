@@ -43,6 +43,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     aspectRatio: 1.5,
   },
+  postVideo: { 
+    width: '100%', 
+    height: Dimensions.get('window').height ,
+    borderRadius: 10, 
+    marginTop: 10,
+    marginBottom: 20,
+    resizeMode: 'cover' 
+  },
     profileName: {
     marginBottom: 7,
     fontWeight: "600",

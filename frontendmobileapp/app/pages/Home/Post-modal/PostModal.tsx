@@ -12,7 +12,6 @@ import { postNewPostAction } from "@/app/store/Home-store/feedSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import PostInput from "./Post-modal-components/Post-input/PostInput";
 import PostingUserProfile from "./Post-modal-components/Posting-user-profile/PostingUserProfile";
-import { CreatePostRequest } from "@/generated-api";
 
 interface PostModalProps {
   visible: boolean;
@@ -79,17 +78,36 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
     const formData = new FormData();
     formData.append("content", userPost);
 
-    // Only send image for now
     console.log("Selected file for upload:", selectedFile);
-    if (selectedFile && selectedFile.type.startsWith("image")) {
-      const file: File | any = dataURLtoFile(selectedFile.uri, selectedFile.name ?? 'photo.jpg'); // ✅ convert base64 to File
-      formData.append("image", file);
+
+    if (selectedFile) {
+      const fieldName = "media"; 
+
+      // detect if it's base64 or file URI
+      if (selectedFile.uri.startsWith("file:")) {
+        // handle both image and video here
+        const file = selectedFile;
+        formData.append(fieldName, {
+          uri: file.uri,
+          type: file.type, // "image/jpeg" or "video/mp4"
+          name: file.name || (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"), 
+        } as any);
+      } 
+      else if (selectedFile.uri.startsWith("data:")) {
+        // handle base64 (e.g., for web)
+        const file: File | any = dataURLtoFile(
+          selectedFile.uri,
+          selectedFile.name ??
+            (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
+        );
+        formData.append(fieldName, file);
+      }
     }
 
-    console.log("Form Data to be sent:", formData.get("content"), formData.get("image"));
-  dispatch(postNewPostAction({requestForm: formData as any}));
-  handleClose();
-};
+    dispatch(postNewPostAction({ requestForm: formData as any }));
+    handleClose();
+  };
+
 
   return (
     <Modal transparent visible={isRendered} animationType="none">

@@ -52,7 +52,7 @@ EventInfoQuery = api.model("EventInfoQuery", {
 })
 
 EventInfoResponse = api.model("EventInfoResponse", {
-    "event_infos": fields.Nested(EventModelResponse),
+    "event_infos": fields.List(fields.Nested(EventModelResponse), description="List of Events"),
     "total_events": fields.Integer(description="total number of events meeting query"),
     "total_pages": fields.Integer(description="total number of pages meeting the query"),
     "current_page": fields.Integer(description="current page number"),

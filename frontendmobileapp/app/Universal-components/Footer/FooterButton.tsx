@@ -2,6 +2,7 @@ import React, { ReactNode } from "react";
 import { TouchableOpacity, Text, View } from "react-native";
 import { useAppDispatch, useAppSelector } from "../../../app/store/hooks";
 import { changeTabAction, TabData, TabType } from "../../store/Navigation/navigationSlice";
+import { fetchUserNotifications } from "@/app/store/Notification-store/notificationSlice";
 import styles from "./FooterStyles";
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -24,6 +25,9 @@ const FooterButton = (props: Props) => {
 
   const handlePress = () => {
     dispatch(changeTabAction(props.tab));
+    if (props.title === 'Notifications') {
+      dispatch(fetchUserNotifications({}));
+    }
     props.clicked?.();
   };
 

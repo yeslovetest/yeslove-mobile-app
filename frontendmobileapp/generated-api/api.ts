@@ -582,11 +582,11 @@ export interface EventInfoQuery {
  */
 export interface EventInfoResponse {
     /**
-     * 
-     * @type {EventsModelResponse}
+     * List of Events
+     * @type {Array<EventsModelResponse>}
      * @memberof EventInfoResponse
      */
-    'event_infos'?: EventsModelResponse;
+    'event_infos'?: Array<EventsModelResponse>;
     /**
      * total number of events meeting query
      * @type {number}
@@ -1054,6 +1054,62 @@ export interface MarkChatOpenedResponse {
 /**
  * 
  * @export
+ * @interface MediaFile
+ */
+export interface MediaFile {
+    /**
+     * Unique media ID
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'id'?: string;
+    /**
+     * Media URL (local or S3)
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'url'?: string;
+    /**
+     * Original filename
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'filename'?: string;
+    /**
+     * MIME type of the media
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'content_type'?: string;
+    /**
+     * Size of the file in bytes
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'file_size'?: number;
+    /**
+     * Timestamp when the media was uploaded
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'created_at'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface MediaListResponse
+ */
+export interface MediaListResponse {
+    /**
+     * List of media files
+     * @type {Array<MediaFile>}
+     * @memberof MediaListResponse
+     */
+    'media'?: Array<MediaFile>;
+}
+/**
+ * 
+ * @export
  * @interface MessageRequest
  */
 export interface MessageRequest {
@@ -1063,6 +1119,93 @@ export interface MessageRequest {
      * @memberof MessageRequest
      */
     'message': string;
+}
+/**
+ * 
+ * @export
+ * @interface Notification
+ */
+export interface Notification {
+    notification_type: string;
+    /**
+     * Notification ID
+     * @type {number}
+     * @memberof Notification
+     */
+    'id'?: number;
+    /**
+     * Notification title
+     * @type {string}
+     * @memberof Notification
+     */
+    'title'?: string;
+    /**
+     * Notification content
+     * @type {string}
+     * @memberof Notification
+     */
+    'body'?: string;
+    /**
+     * Type of notification
+     * @type {string}
+     * @memberof Notification
+     */
+    'type'?: string;
+    /**
+     * Extra data payload
+     * @type {object}
+     * @memberof Notification
+     */
+    'data'?: object;
+    /**
+     * Whether the notification has been read
+     * @type {boolean}
+     * @memberof Notification
+     */
+    'is_read'?: boolean;
+    /**
+     * Timestamp in ISO format
+     * @type {string}
+     * @memberof Notification
+     */
+    'created_at'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface NotificationListResponse
+ */
+export interface NotificationListResponse {
+    /**
+     * Total number of notifications for the user
+     * @type {number}
+     * @memberof NotificationListResponse
+     */
+    'total'?: number;
+    /**
+     * Number of notifications per page
+     * @type {number}
+     * @memberof NotificationListResponse
+     */
+    'per_page'?: number;
+    /**
+     * Current page number
+     * @type {number}
+     * @memberof NotificationListResponse
+     */
+    'current_page'?: number;
+    /**
+     * List of notifications
+     * @type {Array<Notification>}
+     * @memberof NotificationListResponse
+     */
+    'notifications'?: Array<Notification>;
+    /**
+     * Number of unread notifications
+     * @type {number}
+     * @memberof NotificationListResponse
+     */
+    'unread'?: number;
 }
 /**
  * 
@@ -1143,6 +1286,12 @@ export interface Post {
      * @memberof Post
      */
     'image'?: string;
+    /**
+     * URL to video in the post
+     * @type {string}
+     * @memberof Post
+     */
+    'video_url'?: string;
     /**
      * Timestamp of the post in ISO format
      * @type {string}
@@ -1687,6 +1836,24 @@ export interface UserProfile {
      */
     'user_type'?: string;
     /**
+     * Number of Posts from User
+     * @type {number}
+     * @memberof UserProfile
+     */
+    'user_posts'?: number;
+    /**
+     * Number of User followers
+     * @type {number}
+     * @memberof UserProfile
+     */
+    'user_followers'?: number;
+    /**
+     * Number of other users followed by current User
+     * @type {number}
+     * @memberof UserProfile
+     */
+    'user_following'?: number;
+    /**
      * 
      * @type {ContactInfo}
      * @memberof UserProfile
@@ -1736,6 +1903,12 @@ export interface UserQueryResponse {
      * @memberof UserQueryResponse
      */
     'keycloak_id'?: string;
+    /**
+     * User\'s database ID
+     * @type {number}
+     * @memberof UserQueryResponse
+     */
+    'user_id'?: number;
 }
 
 /**
@@ -4123,6 +4296,43 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @summary Fetch a single post by ID
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetPost: async (postId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('getGetPost', 'postId', postId)
+            const localVarPath = `/api/feed/post/{post_id}`
+                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Fetch all reactions for a post
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -4205,11 +4415,11 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {File} [image] Optional image file
+         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost: async (content: string, image?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postCreatePost: async (content: string, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'content' is not null or undefined
             assertParamExists('postCreatePost', 'content', content)
             const localVarPath = `/api/feed/post`;
@@ -4233,8 +4443,8 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
                 localVarFormParams.append('content', content as any);
             }
     
-            if (image !== undefined) { 
-                localVarFormParams.append('image', image as any);
+            if (media !== undefined) { 
+                localVarFormParams.append('media', media as any);
             }
     
     
@@ -4447,6 +4657,19 @@ export const FeedApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Fetch a single post by ID
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetPost(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Post>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetPost(postId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Fetch all reactions for a post
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -4476,12 +4699,12 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {File} [image] Optional image file
+         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreatePost(content: string, image?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, image, options);
+        async postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postCreatePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4584,6 +4807,16 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @summary Fetch a single post by ID
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetPost(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<Post> {
+            return localVarFp.getGetPost(postId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Fetch all reactions for a post
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -4607,12 +4840,12 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {File} [image] Optional image file
+         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost(content: string, image?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postCreatePost(content, image, options).then((request) => request(axios, basePath));
+        postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postCreatePost(content, media, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4711,6 +4944,18 @@ export class FeedApi extends BaseAPI {
 
     /**
      * 
+     * @summary Fetch a single post by ID
+     * @param {number} postId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FeedApi
+     */
+    public getGetPost(postId: number, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).getGetPost(postId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Fetch all reactions for a post
      * @param {number} postId 
      * @param {*} [options] Override http request option.
@@ -4738,13 +4983,13 @@ export class FeedApi extends BaseAPI {
      * 
      * @summary Create a new post
      * @param {string} content Content of the post
-     * @param {File} [image] Optional image file
+     * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public postCreatePost(content: string, image?: File, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).postCreatePost(content, image, options).then((request) => request(this.axios, this.basePath));
+    public postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).postCreatePost(content, media, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5055,7 +5300,7 @@ export const MediaApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetUserMedia(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async getGetUserMedia(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MediaListResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getGetUserMedia(userId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MediaApi.getGetUserMedia']?.[localVarOperationServerIndex]?.url;
@@ -5126,7 +5371,7 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetUserMedia(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        getGetUserMedia(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<MediaListResponse> {
             return localVarFp.getGetUserMedia(userId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -5230,6 +5475,49 @@ export const NotificationsApiAxiosParamCreator = function (configuration?: Confi
     return {
         /**
          * 
+         * @summary Return notifications for the logged-in user
+         * @param {number} [perPage] Notifications per page (default 20)
+         * @param {number} [page] Page number (default 1)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNotificationList: async (perPage?: number, page?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/notifications/notifications`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get user\'s notification preferences
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5244,6 +5532,43 @@ export const NotificationsApiAxiosParamCreator = function (configuration?: Confi
             }
 
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Mark a notification as read
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postMarkNotificationRead: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('postMarkNotificationRead', 'id', id)
+            const localVarPath = `/api/notifications/notifications/{id}/read`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -5312,6 +5637,20 @@ export const NotificationsApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @summary Return notifications for the logged-in user
+         * @param {number} [perPage] Notifications per page (default 20)
+         * @param {number} [page] Page number (default 1)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getNotificationList(perPage?: number, page?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<NotificationListResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getNotificationList(perPage, page, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.getNotificationList']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Get user\'s notification preferences
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5320,6 +5659,19 @@ export const NotificationsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getNotificationPreferencesResource(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['NotificationsApi.getNotificationPreferencesResource']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Mark a notification as read
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postMarkNotificationRead(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postMarkNotificationRead(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.postMarkNotificationRead']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5347,12 +5699,33 @@ export const NotificationsApiFactory = function (configuration?: Configuration, 
     return {
         /**
          * 
+         * @summary Return notifications for the logged-in user
+         * @param {number} [perPage] Notifications per page (default 20)
+         * @param {number} [page] Page number (default 1)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNotificationList(perPage?: number, page?: number, options?: RawAxiosRequestConfig): AxiosPromise<NotificationListResponse> {
+            return localVarFp.getNotificationList(perPage, page, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get user\'s notification preferences
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getNotificationPreferencesResource(options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getNotificationPreferencesResource(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Mark a notification as read
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postMarkNotificationRead(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postMarkNotificationRead(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5376,6 +5749,19 @@ export const NotificationsApiFactory = function (configuration?: Configuration, 
 export class NotificationsApi extends BaseAPI {
     /**
      * 
+     * @summary Return notifications for the logged-in user
+     * @param {number} [perPage] Notifications per page (default 20)
+     * @param {number} [page] Page number (default 1)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof NotificationsApi
+     */
+    public getNotificationList(perPage?: number, page?: number, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).getNotificationList(perPage, page, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Get user\'s notification preferences
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -5383,6 +5769,18 @@ export class NotificationsApi extends BaseAPI {
      */
     public getNotificationPreferencesResource(options?: RawAxiosRequestConfig) {
         return NotificationsApiFp(this.configuration).getNotificationPreferencesResource(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Mark a notification as read
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof NotificationsApi
+     */
+    public postMarkNotificationRead(id: number, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).postMarkNotificationRead(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

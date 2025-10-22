@@ -986,10 +986,10 @@
             "description": "Content of the post"
           },
           {
-            "name": "image",
+            "name": "media",
             "in": "formData",
             "type": "file",
-            "description": "Optional image file"
+            "description": "Optional image or video file (jpg, png, gif, mp4, mov, avi)"
           }
         ],
         "security": [
@@ -1000,6 +1000,31 @@
         "consumes": [
           "multipart/form-data"
         ],
+        "tags": [
+          "feed"
+        ]
+      }
+    },
+    "/api/feed/post/{post_id}": {
+      "parameters": [
+        {
+          "name": "post_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Post details",
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          }
+        },
+        "summary": "Fetch a single post by ID",
+        "operationId": "get_get_post",
         "tags": [
           "feed"
         ]
@@ -1208,7 +1233,10 @@
       "get": {
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/MediaListResponse"
+            }
           }
         },
         "operationId": "get_get_user_media",
@@ -1267,6 +1295,69 @@
         "operationId": "get_get_media_metadata",
         "tags": [
           "media"
+        ]
+      }
+    },
+    "/api/notifications/notifications": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "success",
+            "schema": {
+              "$ref": "#/definitions/NotificationListResponse"
+            }
+          }
+        },
+        "summary": "Return notifications for the logged-in user",
+        "operationId": "get_notification_list",
+        "parameters": [
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Notifications per page (default 20)",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "in": "query",
+            "description": "Page number (default 1)",
+            "name": "page"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/notifications/notifications/{id}/read": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Mark a notification as read",
+        "operationId": "post_mark_notification_read",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
         ]
       }
     },
@@ -1694,6 +1785,18 @@
           "type": "string",
           "description": "User type: professional or standard"
         },
+        "user_posts": {
+          "type": "integer",
+          "description": "Number of Posts from User"
+        },
+        "user_followers": {
+          "type": "integer",
+          "description": "Number of User followers"
+        },
+        "user_following": {
+          "type": "integer",
+          "description": "Number of other users followed by current User"
+        },
         "contact_info": {
           "$ref": "#/definitions/ContactInfo"
         },
@@ -1784,6 +1887,10 @@
         "keycloak_id": {
           "type": "string",
           "description": "User's Keycloak ID"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "User's database ID"
         }
       },
       "type": "object"
@@ -2125,6 +2232,10 @@
         "image": {
           "type": "string",
           "description": "URL to image in the post"
+        },
+        "video_url": {
+          "type": "string",
+          "description": "URL to video in the post"
         },
         "timestamp": {
           "type": "string",
@@ -2596,7 +2707,11 @@
     "EventInfoResponse": {
       "properties": {
         "event_infos": {
-          "$ref": "#/definitions/EventsModelResponse"
+          "type": "array",
+          "description": "List of Events",
+          "items": {
+            "$ref": "#/definitions/EventsModelResponse"
+          }
         },
         "total_events": {
           "type": "integer",
@@ -2946,6 +3061,47 @@
       },
       "type": "object"
     },
+    "MediaListResponse": {
+      "properties": {
+        "media": {
+          "type": "array",
+          "description": "List of media files",
+          "items": {
+            "$ref": "#/definitions/MediaFile"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "MediaFile": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique media ID"
+        },
+        "url": {
+          "type": "string",
+          "description": "Media URL (local or S3)"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Original filename"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "MIME type of the media"
+        },
+        "file_size": {
+          "type": "integer",
+          "description": "Size of the file in bytes"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Timestamp when the media was uploaded"
+        }
+      },
+      "type": "object"
+    },
     "NotificationPreferences": {
       "properties": {
         "posts": {
@@ -2967,6 +3123,67 @@
         "blogs": {
           "type": "boolean",
           "description": "Notifications for new blogs"
+        }
+      },
+      "type": "object"
+    },
+    "NotificationListResponse": {
+      "properties": {
+        "total": {
+          "type": "integer",
+          "description": "Total number of notifications for the user"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of notifications per page"
+        },
+        "current_page": {
+          "type": "integer",
+          "description": "Current page number"
+        },
+        "notifications": {
+          "type": "array",
+          "description": "List of notifications",
+          "items": {
+            "$ref": "#/definitions/Notification"
+          }
+        },
+        "unread": {
+          "type": "integer",
+          "description": "Number of unread notifications"
+        }
+      },
+      "type": "object"
+    },
+    "Notification": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Notification ID"
+        },
+        "title": {
+          "type": "string",
+          "description": "Notification title"
+        },
+        "body": {
+          "type": "string",
+          "description": "Notification content"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of notification"
+        },
+        "data": {
+          "type": "object",
+          "description": "Extra data payload"
+        },
+        "is_read": {
+          "type": "boolean",
+          "description": "Whether the notification has been read"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Timestamp in ISO format"
         }
       },
       "type": "object"

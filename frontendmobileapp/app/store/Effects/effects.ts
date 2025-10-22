@@ -10,7 +10,12 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   MarkChatOpenedResponse, GetFriendsResponse, 
   EventsApiFactory, EventListResponse,
   ProfessionalsListResponse,
-  CreatePostRequest} from "@/generated-api";
+  MediaListResponse,
+  MediaApiFactory,
+  NotificationsApiFactory,
+  NotificationListResponse,
+  Post, EventInfoResponse, BlogPostModel
+  } from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
   LoginState, setLoginStateAction, signupAction, 
@@ -20,19 +25,24 @@ import { attemptRefreshFromLocalStorageAction, logInAction,
   logoutAction} from "../Auth-store/authSlice";
 import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
-import { setUserId, setName, setPassword  } from "../Profile-store/userSlice";
+import { setUserId, setName, setPassword, setUserDBID  } from "../Profile-store/userSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postComment, 
    setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost,
    setFollowing,
    fetchFollowedUsers,
-   SendFollowUser
+   SendFollowUser, retrieveOnePost, setDetailedPost
  } from "../Home-store/feedSlice";
 import { changeTabAction, TabType } from "../Navigation/navigationSlice";
 import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList } from "../Chat/chatSlice";
-import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals } from "../Get-help-store/getHelpSlice";
+import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals,
+    fetchOneBlogPost, setOneBlogPost
+ } from "../Get-help-store/getHelpSlice";
 import { fetchAllEvents, fetchUserEvents, setAllEvents,
-   setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent } from "../Events-store/eventsSlice";
+   setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent,
+   fetchOneEvent, setOneEvent } from "../Events-store/eventsSlice";
+import { fetchMediaItems, setMediaItems } from "../Profile-store/mediaSlice";
+import { fetchUserNotifications, markNotificationRead, setUserNotification } from "../Notification-store/notificationSlice";
 
 
 
@@ -50,6 +60,7 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     const userQueryResponse: UserQueryResponse  = ((yield call(ProfileApiFactory().postGetUserKeycloakIdFlexible, {username: request.username})) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
     yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, userQueryResponse.keycloak_id ?? "");
     yield put(setUserId(userQueryResponse.keycloak_id));
+    yield put(setUserDBID(userQueryResponse.user_id || -1));
     yield put(setName(request.username));
     yield put(setPassword(request.password));
     yield put(setLoginStateAction(LoginState.LOGGED_IN));
@@ -161,6 +172,15 @@ function* handleGetBlogPost(action: PayloadAction<{searchquery?: string, perPage
   
 }
 
+function* handleGetOneBlogPost(action: PayloadAction<{blogId: number}>){  
+  try { 
+    const blog = ((yield call(BlogApiFactory().getGetSingleBlog, action.payload.blogId))  as AxiosResponse<BlogPostModel>).data as BlogPostModel;  
+    yield put(setOneBlogPost(blog));   
+  } catch (error) { 
+    console.error('failed to fetch blog post', error);
+  } 
+}
+
 
 /** 
  * Chat Api 
@@ -209,6 +229,16 @@ function* handleGetEventsList(action: PayloadAction<{endDate?: string, startDate
   catch (error) {
     console.error('failed to fetch Events', error);  
   } 
+}
+
+function* handleGetOneEvent(action: PayloadAction<{eventId: number}>){  
+  try { 
+    const response = ((yield call(EventsApiFactory().getEventInfo, {event_ids: [action.payload.eventId], page: 1, per_page: 10}))  as AxiosResponse<EventInfoResponse>).data as EventInfoResponse;  
+    yield put(setOneEvent(response.event_infos?.[0] ?? undefined));
+
+  } catch (error) { 
+    console.error('failed to fetch Event', error);
+  }
 }
 
 function* handleGetAttendingEvents(action: PayloadAction<{queryType: string , endDate?: string, startDate?: string, perPage?: number, currentPage?: number}>){
@@ -272,6 +302,11 @@ function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | 
   yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload.feedType}));
 }
 
+function* handleGetOnePost(action: PayloadAction<{postID: number}>){
+  const post = ((yield call(FeedApiFactory().getGetPost, action.payload.postID)) as AxiosResponse<Post>).data as Post;
+  yield put(setDetailedPost(post));
+}
+
 function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
   try {
     // ✅ Create API instance
@@ -279,10 +314,10 @@ function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
 
     // ✅ Extract content and image from FormData
     const content = action.payload.requestForm.get("content") as string;
-    const image = action.payload.requestForm.get("image") as File | null;
+    const media = action.payload.requestForm.get("media") as File | null;
 
     // ✅ Call API using its expected parameters
-    yield call([api, api.postCreatePost], content, image ?? undefined);
+    yield call([api, api.postCreatePost], content, media ?? undefined);
 
     // ✅ Send multipart/form-data directly (no JSON serialization!)
     yield put(updatePostsForFeedAction({feedType: 'all'}));
@@ -349,6 +384,38 @@ function* fetchPostReactions (action: PayloadAction<{postId: number}>){
 }
 
 /** 
+ * Media Api 
+ * */
+function* handleGetUserMediaItems(action: PayloadAction<number>){ 
+  const MediaItems = ((yield call(MediaApiFactory().getGetUserMedia, action.payload)) as AxiosResponse<MediaListResponse>).data as MediaListResponse;
+  yield put(setMediaItems(MediaItems.media ?? []));
+}  
+
+/** 
+ * Notification Api 
+ * */
+function* handleGetUserNotifications(action: PayloadAction<{perPage?: number, currentPage?: number}>){ 
+  try {
+    const response = ((yield call(NotificationsApiFactory().getNotificationList, action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined)) as AxiosResponse<NotificationListResponse>).data as NotificationListResponse;
+    yield put(setUserNotification(response));
+  }
+  catch (error){
+    console.error('failed to retrieve notification', (error))
+  } 
+} 
+
+function* updateNotificationOpened(action: PayloadAction<number>){
+  try{
+    yield call(NotificationsApiFactory().postMarkNotificationRead, action.payload);
+    yield put(fetchUserNotifications({}));
+    
+  } catch (error) {
+    console.error('failed to update notification', error);  
+  }
+  
+}
+
+/** 
  * Profile Api 
  * */
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
@@ -408,12 +475,14 @@ function* appSaga() {
   yield takeEvery(fetchFriendList.type, handleGetFriendList);
 /**BlogPost APi saga */  
   yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
+  yield takeEvery(fetchOneBlogPost.type, handleGetOneBlogPost);
 /**Events APi saga */  
   yield takeEvery(fetchAllEvents.type, handleGetEventsList);
   yield takeEvery(fetchUserEvents.type, handleGetAttendingEvents);  
   yield takeEvery(addAttendeeToEvent.type, handleAddAttendeeToEvent);
   yield takeEvery(removeAttendeeFromEvent.type, handleRemoveAttendeeFromEvent);
   yield takeEvery(fetchProfessionals.type, handleFetchProfessionals);
+  yield takeEvery(fetchOneEvent.type, handleGetOneEvent);
 /**Feed Api saga */
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
@@ -423,6 +492,12 @@ function* appSaga() {
   yield takeEvery(postLikePost.type, handleLikePost);
   yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
   yield takeEvery(SendFollowUser.type, handlePostFollowUser);
+  yield takeEvery(retrieveOnePost.type, handleGetOnePost);
+/**Media Api saga */
+  yield takeEvery(fetchMediaItems.type, handleGetUserMediaItems);
+/**Notification Api saga */
+  yield takeEvery(fetchUserNotifications.type, handleGetUserNotifications);
+  yield takeEvery(markNotificationRead.type, updateNotificationOpened);
 /**Profile Api saga */
   yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
   yield takeEvery(persistUserInfoAction.type, saveProfileInfoEffect);

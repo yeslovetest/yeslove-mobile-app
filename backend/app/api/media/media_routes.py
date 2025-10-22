@@ -40,6 +40,8 @@ class UploadMedia(Resource):
 
 @api.route("/user/<int:user_id>")
 class GetUserMedia(Resource):
+    from .media_models import MediaListResponse
+    @api.response(200, "Success", MediaListResponse)
     def get(self, user_id):
         from app.services.media.media_service import MediaService
         media_list = MediaService.get_user_media(user_id)

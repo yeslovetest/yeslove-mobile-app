@@ -31,19 +31,30 @@ const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFi
           setSelectedFile({
             uri: result.assets[0].uri,
             type: result.assets[0].type ?? "image/jpeg",
-            name: result.assets[0].fileName ?? 'photo.jpg',
+            name: result.assets[0].fileName ?? "photo.jpg",
           });
         }
-      } else {
+      } 
+      else if (type === "video") {  
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Videos,  
+          quality: 1,
+        });
+        if (!result.canceled) {
+          setSelectedFile({
+            uri: result.assets[0].uri,
+            type: result.assets[0].type ?? "video/mp4",  
+            name: result.assets[0].fileName ?? "video.mp4", 
+          });
+        }
+      } 
+      else {
         const result = await DocumentPicker.getDocumentAsync({
           type:
-            type === "video"
-              ? "video/*"
-              : type === "audio"
+            type === "audio"
               ? "audio/*"
               : "application/pdf",
         });
-
         if (result.assets && result.assets[0]) {
           setSelectedFile({
             uri: result.assets[0].uri,
@@ -56,6 +67,7 @@ const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFi
       console.error("File picking error:", err);
     }
   };
+
 
   return (
     <View style={styles.userPostBoxContainer}>

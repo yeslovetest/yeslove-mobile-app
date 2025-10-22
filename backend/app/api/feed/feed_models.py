@@ -15,6 +15,7 @@ Post = api.model('Post', {
     'author_pic': fields.String(description='URL to author\'s profile picture'),
     'content': fields.String(description='Text content of the post'),
     'image': fields.String(description='URL to image in the post'),
+    'video_url': fields.String(description='URL to video in the post'),
     'timestamp': fields.String(description='Timestamp of the post in ISO format'),
     'likes': fields.Integer(description='Number of likes'),
     'comments': fields.Integer(description='Number of comments'),

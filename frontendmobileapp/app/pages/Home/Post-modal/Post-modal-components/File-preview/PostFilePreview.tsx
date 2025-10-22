@@ -22,7 +22,7 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
         source={{ uri: file.uri }}
         style={styles.previewVideo}
         useNativeControls
-        resizeMode="cover"
+        resizeMode="contain"
       />
     );
   }

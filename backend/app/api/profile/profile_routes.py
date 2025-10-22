@@ -35,6 +35,9 @@ class UserProfile(Resource):
             "bio": user.bio or "",
             "profile_pic": user.profile_pic_url or "",
             "user_type": user.user_type or "standard",
+            "user_posts": len(user.posts),
+            "user_followers": len(user.followers),
+            "user_following": len(user.following),
             "contact_info": {
                 "name": user.username or "",
                 "email": user.email or "",
@@ -171,7 +174,7 @@ class GetUserKeycloakIDFlexible(Resource):
 
         logger.info(f"✅ Found user: {user.username} (Keycloak ID: {user.keycloak_id})")
 
-        return {"keycloak_id": user.keycloak_id}, 200
+        return {"keycloak_id": user.keycloak_id, "user_id": user.id}, 200
 
 @api.route("/profile_visibility")
 class ProfileVisibility(Resource):

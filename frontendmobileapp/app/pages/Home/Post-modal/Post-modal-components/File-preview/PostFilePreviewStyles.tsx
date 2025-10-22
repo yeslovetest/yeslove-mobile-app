@@ -9,7 +9,14 @@ const styles = StyleSheet.create({
      resizeMode: 'contain',
      aspectRatio: 1.5,
     },
-  previewVideo: { width: 200, height: 150, borderRadius: 10, marginTop: 10 },
+  previewVideo: { 
+    width: '100%', 
+    height: Dimensions.get('window').height ,
+    borderRadius: 10, 
+    marginTop: 10,
+    resizeMode: 'cover'
+    
+  },
   text: { marginTop: 10, fontSize: 16 },
 });
 

@@ -14,6 +14,7 @@ const feedSlice = createSlice({
         postReactionTab: 'comments',
         userPosts: { comments: [] as Comment[], reactions: [] as ReactionResponse[] },
         followedUsers: {} as Record<string, [string, string, string]>, //list of followed users with 'username' as the key
+        detailedPost: {} as Post,
     },
     reducers: {
         setActiveHomeTabAction: (state, action: PayloadAction<FeedTabs>) => {
@@ -40,6 +41,10 @@ const feedSlice = createSlice({
         },
         updatePostsForFeedAction: (state, action: PayloadAction<{feedType: string, perPage?: number, page?: number}>) => {},
         postNewPostAction: (state, action: PayloadAction<{ requestForm: FormData }>) => {},
+        retrieveOnePost: (state, action: PayloadAction<{postID: number}>) => {},
+        setDetailedPost: (state, action: PayloadAction<Post>) => {
+            state.detailedPost = action.payload;
+        },
         postComment: (state, action: PayloadAction<{postId: number, content: string}>) => {},
         setPostReactionTab: (state, action: PayloadAction<string>) => {
             state.postReactionTab = action.payload;
@@ -70,7 +75,7 @@ const feedSlice = createSlice({
 
 export const { setActiveHomeTabAction, setFeedDataAction, updatePostsForFeedAction, 
     postNewPostAction, postComment, setPostReactionTab, 
-    postLikePost, postReactionToPost, setComments, 
+    postLikePost, postReactionToPost, setComments, retrieveOnePost, setDetailedPost,
     setReactions, retrievePostReactions, setScrollViewPosition, 
     triggerScrollToTopAction, fetchFollowedUsers, setFollowing, SendFollowUser } = feedSlice.actions;
 export default feedSlice.reducer;

@@ -95,6 +95,7 @@ class Feed(Resource):
                 "author_pic": post.author.profile_pic_url,
                 "content": post.content,
                 "image": post.image_url,
+                "video_url": post.video_url,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
@@ -121,10 +122,9 @@ class Feed(Resource):
 
 @api.route("/post")
 class CreatePost(Resource):
-    """Create a new post (supports text + optional image upload)."""
+    """Create a new post (supports text + optional image or video upload)."""
     from .feed_models import CreatePostRequest
 
-    
     post_parser.add_argument(
         'content',
         type=str,
@@ -133,11 +133,11 @@ class CreatePost(Resource):
         help='Content of the post'
     )
     post_parser.add_argument(
-        'image',
+        'media', 
         type=FileStorage,
         required=False,
         location='files',
-        help='Optional image file'
+        help='Optional image or video file (jpg, png, gif, mp4, mov, avi)'
     )
 
     @require_auth()
@@ -156,17 +156,12 @@ class CreatePost(Resource):
         logger.info("Content-Type header: %s", request.content_type)
         logger.info("Request form keys: %s", list(request.form.keys()))
         logger.info("Request files keys: %s", list(request.files.keys()))
-        logger.info("Raw request content length: %s", request.content_length)
-        # Optionally log request.files.get('image') repr
-        logger.info("request.files.get('image'): %r", request.files.get('image'))
-        
 
-        # ✅ Parse form data (text + file)
         args = post_parser.parse_args()
         content = args.get("content", "")
-        file = args.get("image")
+        file = args.get("media")
         logger.info(f'file found: {file}')
-        
+
         # ✅ Validate user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
@@ -176,44 +171,54 @@ class CreatePost(Resource):
             return {"message": "Post content cannot be empty"}, 400
 
         image_url = None
-        media_id = None
+        video_url = None  
 
         # ✅ Handle file upload (S3 or local)
         if file:
-            logger.info('check 1')
             try:
-                logger.info('check 2')
+                # ✅ detect file type by mimetype or filename extension
+                filename = file.filename.lower()
+                is_video = filename.endswith((".mp4", ".mov", ".avi"))
+                is_image = filename.endswith((".jpg", ".jpeg", ".png", ".gif"))
+
+                if not (is_image or is_video):
+                    return {"message": "Unsupported file type. Upload image or video only."}, 400
+
                 if current_app.config.get("USE_S3_STORAGE", False):
-                    logger.info('image file going to S3')
                     upload_result = MediaService.upload_file(
                         file=file,
                         user_id=user.id,
                         folder="posts"
                     )
-                    image_url = upload_result.get("s3_url")
+                    file_url = upload_result.get("s3_url")
                 else:
-                    logger.info('image file going to local storage')
                     result = MediaService.store_file(file=file, user_id=user.id)
-                    media_id = result.get("media_id")
-                    image_url = result.get("media_url")
-                logger.info('image file uploaded')    
-            except Exception as e:
-                logger.error(f"Image upload/store failed: {e}")
+                    file_url = result.get("media_url")
 
-        # ✅ Create post record
+                # ✅ Assign correct field
+                if is_video:
+                    video_url = file_url
+                    logger.info('video file uploaded')
+                else:
+                    image_url = file_url
+                    logger.info('image file uploaded')
+
+            except Exception as e:
+                logger.error(f"Media upload/store failed: {e}")
+
+        # ✅ Create post record 
         post = Post(
             content=content,
             user_id=user.id,
             image_url=image_url,
-            media_id=media_id
+            video_url=video_url,  
         )
         db.session.add(post)
         db.session.commit()
 
-        # ✅ Track post creation metric
+        # ✅ tracking, fanout, notifications...
         track_post_creation()
 
-        # ✅ Add post to Neptune graph
         if hasattr(current_app, 'graph_repository'):
             try:
                 current_app.graph_repository.merge_post_node(
@@ -227,11 +232,9 @@ class CreatePost(Resource):
             except Exception as e:
                 logger.warning(f"Neptune post creation failed: {e}")
 
-        # ✅ Fanout post to followers
         fanout_service = FanoutService()
         fanout_service.fanout_post(post.id, user.id)
 
-        # ✅ Push notifications to followers
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
@@ -241,7 +244,7 @@ class CreatePost(Resource):
                     user_ids=follower_user_ids,
                     title="New Post",
                     body=f"{user.username}: {content[:50]}...",
-                    data={"type": "new_post", "post_id": post.id},
+                    data={"type": "new_post", "post_id": post.id, 'image': user.profile_pic_url},
                     notification_type="posts"
                 )
             except Exception as e:
@@ -252,10 +255,36 @@ class CreatePost(Resource):
             "post": {
                 "id": post.id,
                 "content": post.content,
-                "media_id": media_id,
                 "image_url": image_url,
+                "video_url": video_url,  
             }
         }, 201
+
+
+@api.route("/post/<int:post_id>")
+class GetPost(Resource):
+    from .feed_models import Post
+    @api.response(code=200, description="Post details", model=Post)
+    def get(self, post_id):
+        """Fetch a single post by ID."""
+        from app.models import Post, Reaction, User
+        post = Post.query.get_or_404(post_id)
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+
+        user_reaction = Reaction.query.filter_by(post_id=post_id, user_id=user.id).first()
+        return {
+            "id": post.id,
+            "author": post.author.username,
+            "author_id": post.author.keycloak_id,
+            "author_pic": post.author.profile_pic_url,
+            "content": post.content,
+            "image": post.image_url,
+            "video_url": post.video_url,
+            "timestamp": post.timestamp.isoformat(),
+            "likes": len(post.likes),
+            "comments": len(post.comments),
+            "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
+        }, 200
     
 # -------------------------
 # 🚀 Reaction ROUTES
@@ -361,7 +390,7 @@ class LikePost(Resource):
                 logger.warning(f"Neptune like failed: {e}")
         
         # Notify post author about like
-        from app.models import Post
+        from app.models import Post, Notification
         post = Post.query.get(post_id)
         if post and post.user_id != user.id:
             from app.services.push_notification_service import PushNotificationService
@@ -369,7 +398,7 @@ class LikePost(Resource):
                 user_id=post.user_id,
                 title="New Like",
                 body=f"{user.username} liked your post",
-                data={"type": "like", "post_id": post_id},
+                data={"type": "like", "post_id": post_id, 'image': user.profile_pic_url},
                 notification_type="likes"
             )
         
@@ -412,7 +441,7 @@ class AddComment(Resource):
                 user_id=post.user_id,
                 title="New Comment",
                 body=f"{user.username} commented on your post",
-                data={"type": "comment", "post_id": post_id},
+                data={"type": "comment", "post_id": post_id, 'image': user.profile_pic_url},
                 notification_type="comments"
             )
         

@@ -20,13 +20,6 @@ import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 
 export const BASE_PATH = "http://localhost".replace(/\/+$/, "");
-const PORT = 5000;
-
-// Add port to base path
-const withPort = `${BASE_PATH}:${PORT}`;
-
-// Export the final base url (remove trailing slashes) - this base url will be appended to image url paths when retrieved from backend
-export const BASE_URL  = withPort.replace(/\/+$/, "");    
 
 /**
  *
