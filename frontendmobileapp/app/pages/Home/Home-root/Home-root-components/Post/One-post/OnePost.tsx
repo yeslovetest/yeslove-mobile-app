@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
+import { Video } from 'expo-av';
 import styles from './OnePostStyles';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -9,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
 import { retrievePostReactions, postReactionToPost, setPostReactionTab, SendFollowUser } from '@/app/store/Home-store/feedSlice';
-
+import { BASE_URL } from '@/app/index';
 
 export interface Props {
     post: PostData,
@@ -158,6 +159,21 @@ const OnePost = (props: Props) => {
             <Text style={styles.postContent}>
                 {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
             </Text>
+
+            {props.post.image &&  ( 
+               <Image style={styles.postImage} 
+                    source={{ uri: `${BASE_URL}${props.post.image.startsWith('/') ? '' : '/'}${props.post.image}` }} 
+               /> 
+    
+            )}  
+            {props.post.video_url && (
+               <Video
+                    source={{ uri: `${BASE_URL}${props.post.video_url.startsWith('/') ? '' : '/'}${props.post.video_url}` }}
+                    style={styles.postVideo}
+                    useNativeControls
+                    resizeMode={"contain" as any}
+                /> 
+            )}  
 
             <View style={styles.seeLessAndLikeContainer} onPointerLeave={() => setPopUpState('hidden')}>
                 <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >

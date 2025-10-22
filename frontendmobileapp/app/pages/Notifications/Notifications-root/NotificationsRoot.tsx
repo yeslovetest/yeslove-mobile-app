@@ -13,6 +13,12 @@ const NotificationsRoot = () => {
     (state) => state.user.name ?? ""
   );
 
+  const notificationList = useAppSelector(state => state.notification.allNotifications);
+  const currentPage = useAppSelector(state => state.notification.currentPage);
+  const perPage = useAppSelector(state => state.notification.perPage);
+  const totalNotifications = useAppSelector(state => state.notification.totalNotifications);
+  const unreadNotifications = useAppSelector(state => state.notification.unreadNotifications);
+
   return (
     <>
       <Header mainTitle={userName} />
@@ -22,20 +28,10 @@ const NotificationsRoot = () => {
       >
         <View style={styles.headerRow}>
           <Text style={styles.title}>Notifications</Text>
-          <Text style={styles.noOfNotifications}>You have <Text style={styles.blueText}>2 notfications</Text> today</Text>
-          <Text style={styles.todayAndThisWeekText}>Today</Text>
+          <Text style={styles.noOfNotifications}>You have <Text style={styles.blueText}>{unreadNotifications} unread notfications</Text></Text>
         </View>
 
-        {NotificationsPlaceholders.map((notification, index) => (
-          <OneNotification notification={notification} key={index} />
-        ))}
-
-        <View style={styles.headerRow}>
-
-          <Text style={styles.todayAndThisWeekText}>This week</Text>
-        </View>
-        
-        {NotificationsPlaceholders.map((notification, index) => (
+        {notificationList.map((notification, index) => (
           <OneNotification notification={notification} key={index} />
         ))}
       </ScrollView>

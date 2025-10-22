@@ -1,4 +1,5 @@
 import uuid
+import json
 from flask_sqlalchemy import SQLAlchemy
 from pgvector.sqlalchemy import Vector
 from datetime import datetime
@@ -119,7 +120,8 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images
+    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images (if any)
+    video_url = db.Column(db.String(500), nullable=True) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 
@@ -299,6 +301,40 @@ class NotificationSettings(db.Model):
     comments_enabled = db.Column(db.Boolean, default=True)
     events_enabled = db.Column(db.Boolean, default=True)
     blogs_enabled = db.Column(db.Boolean, default=True)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(50), nullable=False)  # e.g., 'like', 'comment', 'blog'
+    data = db.Column(db.Text)  # Store JSON as text
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, user_id, title, body, notification_type, data=None, **kwargs):
+        self.user_id = user_id
+        self.title = title
+        self.body = body
+        self.notification_type = notification_type
+        # Convert dict → JSON automatically
+        if isinstance(data, dict):
+            self.data = json.dumps(data)
+        elif isinstance(data, str):
+            self.data = data
+        elif data is None:
+            self.data = None
+        else:
+            raise TypeError("Notification 'data' must be dict, str, or None")
+        super().__init__(**kwargs)
+
+    def get_data(self):
+        """Return data as Python dict."""
+        try:
+            return json.loads(self.data) if self.data else {}
+        except json.JSONDecodeError:
+            return {}   
 
 
 # ------------------------- Create Vector DB Model -------------------------

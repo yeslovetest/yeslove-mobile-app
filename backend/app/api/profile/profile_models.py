@@ -22,6 +22,9 @@ UserProfile = api.model("UserProfile", {
         "bio": fields.String(description="User bio"),
         "profile_pic": fields.String(description="Profile picture URL"),
         "user_type": fields.String(description="User type: professional or standard"),
+        "user_posts": fields.Integer(description="Number of Posts from User"),
+        "user_followers": fields.Integer(description="Number of User followers"),\
+        "user_following": fields.Integer(description="Number of other users followed by current User"),
         "contact_info": fields.Nested(ContactInfo),
         "education_info": fields.Nested(EducationInfo),
     })
@@ -39,7 +42,8 @@ UserQuery = api.model("UserQuery", {
     })
     
 UserQueryResponse = api.model("UserQueryResponse", {
-        "keycloak_id": fields.String(description="User's Keycloak ID")
+        "keycloak_id": fields.String(description="User's Keycloak ID"),
+        "user_id": fields.Integer(description="User's database ID"),
     })
 
 ProfileVisibilitySetting = api.model("ProfileVisibilitySetting", {

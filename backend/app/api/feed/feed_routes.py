@@ -1,5 +1,6 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
+from werkzeug.datastructures import FileStorage
 
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
@@ -9,6 +10,7 @@ from datetime import datetime
 from app.utils.rate_limiter import read_rate_limit, write_rate_limit
 
 logger = setup_logger()
+post_parser = reqparse.RequestParser()
 
 api = Namespace("feed", description="API Endpoints")
 
@@ -91,7 +93,8 @@ class Feed(Resource):
                 "author": post.author.username,
                 "author_pic": post.author.profile_pic_url,
                 "content": post.content,
-                "image_url": post.image_url,
+                "image": post.image_url,
+                "video_url": post.video_url,
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
@@ -116,30 +119,63 @@ class Feed(Resource):
         return feed_data, 200
 
 
-
 @api.route("/post")
 class CreatePost(Resource):
+    """Create a new post (supports text + optional image or video upload)."""
     from .feed_models import CreatePostRequest
-    #@write_rate_limit
+
+    post_parser.add_argument(
+        'content',
+        type=str,
+        required=True,
+        location='form',
+        help='Content of the post'
+    )
+    post_parser.add_argument(
+        'media', 
+        type=FileStorage,
+        required=False,
+        location='files',
+        help='Optional image or video file (jpg, png, gif, mp4, mov, avi)'
+    )
+
     @require_auth()
     @api.doc(security='Bearer')
-    @api.expect(CreatePostRequest)
+    @api.expect(post_parser)
     @api.response(201, "Post created successfully")
     def post(self):
-        """Create a new post with automatic moderation."""
-        from app.models import User, Post, ModerationLog, db
+        """Create a new post."""
+        from app.services.media.media_service import MediaService
+        from app.services.fanout_service import FanoutService
+        from app.services.push_notification_service import PushNotificationService
+        from app.monitoring.metrics import track_post_creation
+        from app.models import User, Post, Follow, db, Media, ModerationLog
+        from app.notifications import send_push_notification_to_users
         from datetime import datetime
 
-        data = request.json
-        content = data.get("content")
+        logger.info("Content-Type header: %s", request.content_type)
+        logger.info("Request form keys: %s", list(request.form.keys()))
+        logger.info("Request files keys: %s", list(request.files.keys()))
+
+        args = post_parser.parse_args()
+        content = args.get("content", "")
+        file = args.get("media")
+        logger.info(f'file found: {file}')
+
+       
+        """Create a new post with automatic moderation."""
 
         if not content:
             return {"message": "Post content cannot be empty"}, 400
-
+          
+         # ✅ Validate user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
 
+        if not content.strip():
+            return {"message": "Post content cannot be empty"}, 400
+          
         # Check if user is suspended
         if check_user_suspension(user.id):
             return {"message": "Account suspended. Cannot create posts."}, 403
@@ -161,25 +197,53 @@ class CreatePost(Resource):
         status = moderation_result["status"]
         score = moderation_result["score"]
 
-        # Handle image upload to S3 if provided
         image_url = None
-        if 'image' in request.files:
-            from app.services.media.media_service import MediaService
+        video_url = None  
+
+        # ✅ Handle file upload (S3 or local)
+        if file:
             try:
-                upload_result = MediaService.upload_file(
-                    file=request.files['image'],
-                    user_id=user.id,
-                    folder='posts'
-                )
-                image_url = upload_result.get('s3_url') if upload_result else None
+                # ✅ detect file type by mimetype or filename extension
+                filename = file.filename.lower()
+                is_video = filename.endswith((".mp4", ".mov", ".avi"))
+                is_image = filename.endswith((".jpg", ".jpeg", ".png", ".gif"))
+
+                if not (is_image or is_video):
+                    return {"message": "Unsupported file type. Upload image or video only."}, 400
+
+                if current_app.config.get("USE_S3_STORAGE", False):
+                    upload_result = MediaService.upload_file(
+                        file=file,
+                        user_id=user.id,
+                        folder="posts"
+                    )
+                    file_url = upload_result.get("s3_url")
+                else:
+                    result = MediaService.store_file(file=file, user_id=user.id)
+                    file_url = result.get("media_url")
+
+                # ✅ Assign correct field
+                if is_video:
+                    video_url = file_url
+                    logger.info('video file uploaded')
+                else:
+                    image_url = file_url
+                    logger.info('image file uploaded')
+
             except Exception as e:
-                logger.error(f"Post image upload failed: {e}")
-        
+                logger.error(f"Media upload/store failed: {e}")
+
+        # ✅ Create post record 
         # Create post with moderation status
-        post = Post(content=content, user_id=user.id, status=status, image_url=image_url)
+        post = Post(
+            content=content,
+            user_id=user.id,
+            image_url=image_url,
+            video_url=video_url,  
+        )
         db.session.add(post)
         db.session.commit()
-
+        
         message = {
             "visible": "Post created successfully.",
             "flagged": "Post was flagged for review.",
@@ -190,20 +254,20 @@ class CreatePost(Resource):
         # Track post creation metric
         from app.monitoring.metrics import track_post_creation
         track_post_creation()
-        
-        # Add post to Neptune graph
+
         if hasattr(current_app, 'graph_repository'):
             try:
                 current_app.graph_repository.merge_post_node(
                     post_id=post.id,
                     author_id=user.keycloak_id,
-                    props={"content": data["content"][:100], "timestamp": post.timestamp.isoformat()}
+                    props={
+                        "content": content[:100],
+                        "timestamp": post.timestamp.isoformat()
+                    }
                 )
             except Exception as e:
                 logger.warning(f"Neptune post creation failed: {e}")
-        
-        # Fanout post to followers
-        from app.services.fanout_service import FanoutService
+
         fanout_service = FanoutService()
         fanout_service.fanout_post(post.id, user.id)
 
@@ -213,13 +277,12 @@ class CreatePost(Resource):
         follower_user_ids = [f.follower_id for f in follower_links]
         
         if follower_user_ids:
-            from app.services.push_notification_service import PushNotificationService
             try:
                 PushNotificationService.send_to_multiple_users(
                     user_ids=follower_user_ids,
                     title="New Post",
                     body=f"{user.username}: {content[:50]}...",
-                    data={"type": "new_post", "post_id": post.id},
+                    data={"type": "new_post", "post_id": post.id, 'image': user.profile_pic_url},
                     notification_type="posts"
                 )
             except Exception as e:
@@ -231,6 +294,34 @@ class CreatePost(Resource):
             "post_id": post.id,
             "status": status
         }, 201
+      
+
+
+@api.route("/post/<int:post_id>")
+class GetPost(Resource):
+    from .feed_models import Post
+    @api.response(code=200, description="Post details", model=Post)
+    def get(self, post_id):
+        """Fetch a single post by ID."""
+        from app.models import Post, Reaction, User
+        post = Post.query.get_or_404(post_id)
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+
+        user_reaction = Reaction.query.filter_by(post_id=post_id, user_id=user.id).first()
+        return {
+            "id": post.id,
+            "author": post.author.username,
+            "author_id": post.author.keycloak_id,
+            "author_pic": post.author.profile_pic_url,
+            "content": post.content,
+            "image": post.image_url,
+            "video_url": post.video_url,
+            "timestamp": post.timestamp.isoformat(),
+            "likes": len(post.likes),
+            "comments": len(post.comments),
+            "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
+        }, 200
+
     
 # -------------------------
 # 🚀 Reaction ROUTES
@@ -337,7 +428,7 @@ class LikePost(Resource):
                 logger.warning(f"Neptune like failed: {e}")
         
         # Notify post author about like
-        from app.models import Post
+        from app.models import Post, Notification
         post = Post.query.get(post_id)
         if post and post.user_id != user.id:
             from app.services.push_notification_service import PushNotificationService
@@ -345,7 +436,7 @@ class LikePost(Resource):
                 user_id=post.user_id,
                 title="New Like",
                 body=f"{user.username} liked your post",
-                data={"type": "like", "post_id": post_id},
+                data={"type": "like", "post_id": post_id, 'image': user.profile_pic_url},
                 notification_type="likes"
             )
         
@@ -417,7 +508,7 @@ class AddComment(Resource):
                 user_id=post.user_id,
                 title="New Comment",
                 body=f"{user.username} commented on your post",
-                data={"type": "comment", "post_id": post_id},
+                data={"type": "comment", "post_id": post_id, 'image': user.profile_pic_url},
                 notification_type="comments"
             )
         
@@ -472,9 +563,12 @@ class FollowUser(Resource):
         follow_action = request.json.get("action", "follow")  # Default to "follow"
 
         if follow_action == "unfollow":
-            existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
-            if existing_follow:
-                db.session.delete(existing_follow)
+            if followby_current_user:
+                db.session.delete(followby_current_user)
+                logger.info(f"User {user.username} unfollowed {target_user.username}")
+                if followby_target_user and followby_target_user.follow_type == 'friend':
+                   db.session.delete(followby_target_user) 
+                   logger.info('Also removed reverse friend follow')
                 db.session.commit()
                 
                 # Remove from Neptune

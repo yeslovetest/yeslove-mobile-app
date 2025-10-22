@@ -4,6 +4,7 @@ import styles from './CommentsAndReactionsStyles';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
+import { Video } from 'expo-av';
 import { setPostReactionTab, postReactionToPost } from '@/app/store/Home-store/feedSlice';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
@@ -14,6 +15,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Header from '@/app/Universal-components/Header/Header';
+import { BASE_URL } from '@/app/index';
 
 export interface Post {
     id: number;
@@ -22,6 +24,7 @@ export interface Post {
     author_pic: string;
     content: string;
     image: string;
+    video_url: string;
     likes: number;
     comments: number;
     timestamp: string;
@@ -107,6 +110,21 @@ const IndividualPost = () => {
                         <Text style={styles.postContent}>
                             {individualPost.content}
                         </Text>
+                        {individualPost.image &&  (
+                            <Image style={styles.postImage} 
+                                source={{ uri: `${BASE_URL}${individualPost.image.startsWith('/') ? '' : '/'}${individualPost.image}` }}
+                            /> 
+                             
+                        )}
+
+                        {individualPost.video_url && (
+                            <Video
+                                source={{ uri: `${BASE_URL}${individualPost.video_url.startsWith('/') ? '' : '/'}${individualPost.video_url}` }}
+                                style={styles.postVideo}
+                                useNativeControls
+                                resizeMode={"contain" as any}
+                            /> 
+                        )}
 
                         <View style={{ ...styles.seeLessAndLikeContainer, borderTopWidth: 0 }} onPointerLeave={() => setPopUpState('hidden')}>
                             <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >
