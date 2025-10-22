@@ -652,6 +652,51 @@ class EventManagement(Resource):
             return {"message": "Error deleting event"}, 500
 
 
+@api.route("/events")
+class GetEvents(Resource):
+    from .events_models import EventsListResponse
+    @api.param("page", "Page number for pagination", type='integer', default=1)
+    @api.param("per_page", "Number of events per page", type='integer', default=20)
+    @api.param("type", "Event type: 'upcoming', 'past', 'all'", type='string', default='upcoming')
+    @api.response(200, "Success", EventsListResponse)
+    def get(self):
+        """Get list of all events with pagination and filtering"""
+        from app.models import Event
+        from app.utils.common_helpers import paginate_query
+        
+        try:
+            event_type = request.args.get("type", "upcoming").lower()
+            
+            query = Event.query.order_by(Event.event_time.desc())
+            
+            now = datetime.utcnow()
+            if event_type == "upcoming":
+                query = query.filter(Event.event_time > now)
+            elif event_type == "past":
+                query = query.filter(Event.event_time < now)
+            
+            result = paginate_query(query)
+            
+            return {
+                "events": [{
+                    "id": event.id,
+                    "name": event.name,
+                    "description": event.description,
+                    "location": event.location,
+                    "event_time": event.event_time.isoformat(),
+                    "creator": event.creator.username,
+                    "creator_id": event.creator_id,
+                    "image_url": event.image_url,
+                    "attendees_count": len(event.attendees),
+                    "address": event.address.to_dict() if event.address else None
+                } for event in result["items"]],
+                "pagination": result["pagination"]
+            }, 200
+            
+        except Exception as e:
+            logger.error(f"Error fetching events: {e}")
+            return {"message": "Error fetching events"}, 500
+
 @api.route("/professionals")
 class GetProfessionals(Resource):
     """Lists verified professionals for the event page/Get-help page"""

@@ -36,7 +36,14 @@ class MediaService:
         # ✅ Extract metadata (width, height, etc.)
         metadata = MediaValidator.extract_image_metadata(content, file.content_type)
 
+       
+        '''
+        # Extract metadata
+        metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
+        '''
+        
         # ✅ Upload to S3 if enabled
+        # Upload to S3 (optional)
         s3_url = None
         if current_app.config.get("USE_S3_STORAGE", False):
             s3 = S3Storage()
@@ -51,6 +58,7 @@ class MediaService:
             file_size=len(content),
             width=metadata.get("width"),
             height=metadata.get("height"),
+            #duration=metadata.get('duration'),
             user_id=user_id,
             s3_url=s3_url,
         )
@@ -130,6 +138,9 @@ class MediaService:
         if file.content_type.startswith('image/'):
             content = MediaProcessor.compress_image(content)
         
+        # Extract metadata
+        metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
+        
         # Upload to S3
         from flask import current_app
         s3_url = None
@@ -143,7 +154,10 @@ class MediaService:
             's3_url': s3_url,
             'filename': file.filename,
             'content_type': file.content_type,
-            'file_size': len(content)
+            'file_size': len(content),
+            'width': metadata.get('width'),
+            'height': metadata.get('height'),
+            'duration': metadata.get('duration')
         }
     
     @staticmethod

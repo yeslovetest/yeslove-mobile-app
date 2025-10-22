@@ -3,7 +3,12 @@ from flask_restx import fields
 
 SendMessageRequest = api.model("SendMessageRequest", {
         "receiver_id": fields.String(required=True, description="keycloak ID of the recipient user"),
-        "message": fields.String(required=True, description="Message content")
+        "message": fields.String(required=False, description="Message content (required if no media_id)"),
+        "media_id": fields.String(required=False, description="Media ID for attachments (required if no message)")
+    })
+
+SendMessageResponse = api.model("SendMessageResponse", {
+        "message": fields.String(description="Success confirmation message")
     })
 
 GetMessagesRequest = api.model("GetMessagesRequest", {})
@@ -12,6 +17,9 @@ Chat = api.model("Chat", {
         "sender": fields.String(description="Sender Username"),
         "receiver": fields.String(description="Receiver Username"),
         "content": fields.String(description="Message content"),
+        "media_id": fields.String(description="Media attachment ID"),
+        "media_url": fields.String(description="URL to access media"),
+        "media_type": fields.String(description="MIME type of media"),
         "opened": fields.Boolean(description="Whether the message has been opened"),
         "timestamp": fields.String(description="Timestamp of the message ISO format")})
 

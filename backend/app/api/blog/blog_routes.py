@@ -10,14 +10,19 @@ api = Namespace("blog", description="API Endpoints")
 logger = setup_logger() 
 
 @api.route("/blog-posts")
-class CreateBlog(Resource):
-    from .blog_models import CreateBlogPost
-    """Endpoint for creating blog posts for the Get Educated page (Admins only)."""   
+class BlogPosts(Resource):
+    from .blog_models import CreateBlogPost, BlogPostModel, BlogPostList
+    
     @require_auth()
-    @api.doc(security='Bearer')
+    @api.doc(security='Bearer', description="Create a new blog post (Admin only)")
     @api.expect(CreateBlogPost)
+    @api.response(201, "Blog post created successfully")
+    @api.response(400, "Title and content are required")
+    @api.response(403, "Access denied. Admins only")
+    @api.response(404, "Authenticated user not found")
+    @api.response(500, "An error occurred while creating the blog post")
     def post(self):
-        """Create a blog post for the Get Educated page (Admins only)."""
+        """Create a blog post for the Get Educated page (Admin only)."""
         from app.models import BlogPost, User, db
         try:
             # ✅ Get Keycloak roles and log them
@@ -28,24 +33,13 @@ class CreateBlog(Resource):
                 logger.warning(f"Unauthorized blog post creation attempt by user {request.user.get('keycloak_id')}")
                 return {"message": "Access denied. Admins only."}, 403
 
-            data = request.get_json() or {}
+            data = request.get_json()
             title = data.get("title")
             content = data.get("content")
             summary = data.get("summary")
             
             # Handle image upload to S3 if provided
             image_url = data.get("image_url")
-            if 'image' in request.files:
-                from app.services.media.media_service import MediaService
-                try:
-                    upload_result = MediaService.upload_file(
-                        file=request.files['image'],
-                        user_id=user.id,
-                        folder='blogs'
-                    )
-                    image_url = upload_result.get('s3_url') if upload_result else None
-                except Exception as e:
-                    logger.error(f"Blog image upload failed: {e}")
 
             # ✅ Basic validation
             if not title or not content:
@@ -66,25 +60,6 @@ class CreateBlog(Resource):
             )
             db.session.add(post)
             db.session.commit()
-            
-            # Send push notification to all users about new blog post
-            from app.models import User as AllUsers
-            from app.services.push_notification_service import PushNotificationService
-            
-            # Get all user IDs (or you could target specific user groups)
-            all_user_ids = [u.id for u in AllUsers.query.all()]
-            
-            if all_user_ids:
-                try:
-                    PushNotificationService.send_to_multiple_users(
-                        user_ids=all_user_ids,
-                        title="New Blog Post",
-                        body=f"New article: {title[:50]}...",
-                        data={"type": "new_blog", "blog_id": post.id},
-                        notification_type="blogs"
-                    )
-                except Exception as e:
-                    logger.error(f"Blog notification failed: {e}")
 
             logger.info(f"Blog post created by user {user.id}: {post.id}")
 
@@ -108,47 +83,15 @@ class CreateBlog(Resource):
             db.session.rollback()
             return {"message": "An error occurred while creating the blog post."}, 500
 
-
-@api.route("/blog-posts/<int:post_id>")
-class GetSingleBlog(Resource):
-    """Gets a single blog post by ID"""
-
-    from .blog_models import BlogPostModel, BlogPostList
-    @api.doc(description="Retrieve a single blog post by its ID")
-    @api.response(200, "Success", BlogPostModel)
-    @api.response(404, "Blog post not found")
-    @api.marshal_with(BlogPostModel)
-    def get(self, post_id):
-        from app.models import BlogPost
-        post = BlogPost.query.get(post_id)
-        if not post:
-            return {"message": "Blog post not found"}, 404
-
-        return {
-            "id": post.id,
-            "title": post.title,
-            "content": post.content,
-            "summary": getattr(post, "summary", None),
-            "image_url": getattr(post, "image_url", None),
-            "author_id": post.author_id,
-            "author": post.author.username if post.author else None,
-            "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
-        }, 200
-
-
-@api.route("/blog-posts")
-class ListBlogs(Resource):
-    """Lists blog posts with optional pagination and search"""
-
-    from .blog_models import BlogPostModel, BlogPostList
     @api.doc(description="List blog posts with pagination, search, and filtering")
     @api.param("page", "Page number (default 1)", type="integer")
     @api.param("per_page", "Items per page (default 10, max 100)", type="integer")
-    @api.param("q", "Search string for author name, title, or content")  # 🔄 updated doc
+    @api.param("q", "Search string for author name, title, or content")
     @api.response(200, "Success", BlogPostList)
     @api.marshal_with(BlogPostList)
     def get(self):
-        from app.models import BlogPost, User   # 🔄 import User to filter by name
+        """List blog posts with pagination, search, and filtering."""
+        from app.models import BlogPost, User
         # Query parameters
         try:
             page = max(int(request.args.get("page", 1)), 1)
@@ -165,7 +108,7 @@ class ListBlogs(Resource):
         q = request.args.get("q")
 
         # Base query
-        query = BlogPost.query.join(User, BlogPost.author)   
+        query = BlogPost.query.join(User, BlogPost.author)
 
         # Search filter
         if q:
@@ -173,7 +116,7 @@ class ListBlogs(Resource):
             query = query.filter(
                 (BlogPost.title.ilike(ilike)) |
                 (BlogPost.content.ilike(ilike)) |
-                (User.username.ilike(ilike))   
+                (User.username.ilike(ilike))
             )
 
         # Order newest first
@@ -201,4 +144,31 @@ class ListBlogs(Resource):
             "page": page,
             "per_page": per_page
         }, 200
-    
+
+
+@api.route("/blog-posts/<int:post_id>")
+class GetSingleBlog(Resource):
+    """Gets a single blog post by ID"""
+
+    from .blog_models import BlogPostModel
+    @api.doc(description="Retrieve a single blog post by its ID")
+    @api.response(200, "Success", BlogPostModel)
+    @api.response(404, "Blog post not found")
+    @api.marshal_with(BlogPostModel)
+    def get(self, post_id):
+        from app.models import BlogPost
+        post = BlogPost.query.get(post_id)
+        if not post:
+            return {"message": "Blog post not found"}, 404
+
+        return {
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "summary": getattr(post, "summary", None),
+            "image_url": getattr(post, "image_url", None),
+            "author_id": post.author_id,
+            "author": post.author.username if post.author else None,
+            "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
+        }, 200
+

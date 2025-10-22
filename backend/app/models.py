@@ -5,19 +5,15 @@ from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app import db  # ✅ Import the same db instance
 
-# db = SQLAlchemy()
+# Association table for event attendees
+event_attendees = db.Table('attendees',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+)
 
 # -------------------------
 # 🚀 User Model (Keycloak Integrated)
 # -------------------------
-
-# association table for event attendees
-event_attendees = db.Table('attendees',
-                           db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-                           db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
-                           )
-
-
 class User(db.Model):
     id              = db.Column(db.Integer, primary_key=True)
     keycloak_id     = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
@@ -34,19 +30,20 @@ class User(db.Model):
 
 
     # ✅ Relationships
-    posts = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
-    followers = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
-    following = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
+    posts       = db.relationship("Post", backref="author", lazy=True, cascade="all, delete-orphan")
+    followers   = db.relationship("Follow", foreign_keys="[Follow.followed_id]", backref="followed", lazy=True)
+    following   = db.relationship("Follow", foreign_keys="[Follow.follower_id]", backref="follower", lazy=True)
     created_events = db.relationship("Event", foreign_keys="[Event.creator_id]", back_populates="creator", lazy=True)
+    attending_events = db.relationship("Event", secondary=event_attendees, back_populates="attendees")
 
     # ✅ One-to-One Relationship with ProfessionalDetails
     professional_details = db.relationship(
         "ProfessionalDetails", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
 
-    # Many-to-Many with Events via association table above
-    attending_events = db.relationship("Event", secondary=event_attendees, back_populates="attendees")
-
+    # Warning and suspension to user
+    warnings = db.Column(db.Integer, default=0)
+    is_suspended = db.Column(db.Boolean, default=False)
 
 # -------------------------
 # 🚀 Professional Details Model (One-to-One Relationship with User..)
@@ -128,6 +125,8 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    status = db.Column(db.String(20), default="visible")  # visible, removed, flagged
+    
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")
@@ -165,7 +164,6 @@ class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     followed_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-    follow_type = db.Column(db.String(10), default="basic")  # basic or friend
 
     # ✅ Unique Constraint (Prevent duplicate follows)
     __table_args__ = (db.UniqueConstraint("follower_id", "followed_id", name="unique_follow"),)
@@ -177,15 +175,18 @@ class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-    message = db.Column(db.Text, nullable=False)
+    message = db.Column(db.Text, nullable=True)
+    media_id = db.Column(db.String(36), db.ForeignKey("media.id"), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    opened = db.Column(db.Boolean, default=False)
     sender = db.relationship("User", foreign_keys=[sender_id])
     receiver = db.relationship("User", foreign_keys=[receiver_id])
+    media = db.relationship("Media", backref="chat_messages")
 
-    # ✅ Prevent users from messaging themselves
-    __table_args__ = (db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),)
-
+    # ✅ Prevent users from messaging themselves and ensure message or media exists
+    __table_args__ = (
+        db.CheckConstraint("sender_id != receiver_id", name="check_no_self_message"),
+        db.CheckConstraint("message IS NOT NULL OR media_id IS NOT NULL", name="check_message_or_media")
+    )
 
 class EmailNotificationSettings(db.Model):
     __tablename__ = "email_notification_settings"
@@ -194,7 +195,6 @@ class EmailNotificationSettings(db.Model):
     user_id = db.Column(db.String, db.ForeignKey("user.keycloak_id"), nullable=False)
     setting_id = db.Column(db.String, nullable=False)
     value = db.Column(db.Boolean, default=True)
-
 
 class ProfileVisibilitySettings(db.Model):
     __tablename__ = "profile_visibility_settings"
@@ -205,14 +205,12 @@ class ProfileVisibilitySettings(db.Model):
     value = db.Column(db.String, nullable=False)  # e.g., "visible", "hidden"
     category = db.Column(db.String, nullable=False)  # "Contact" or "Education And Other Information"
 
-
 class Reaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     reaction_type = db.Column(db.String(50), nullable=False)  # like, love, laugh, angry, etc.
-
-    # Relationships 
+     
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
@@ -226,7 +224,6 @@ class Event(db.Model):
 
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # Event image
 
     # relationships
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -245,7 +242,6 @@ class Event(db.Model):
             "location": self.location,
             "event_time": self.event_time.isoformat(),
             "creator_id": self.creator_id,
-            "image_url": self.image_url,
             "address": self.address.to_dict() if self.address else None,
             "attendees": [user.id for user in self.attendees]
         }
@@ -353,6 +349,23 @@ class Document(db.Model):
     embedding   = db.Column(Vector(1536), nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.now)
 
+    
+
+##### ModerationLog model with explanations #####
+class ModerationLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True) # 🔹 Unique ID for each moderation event
+    user_id = db.Column(db.Integer, nullable=True) # 🔹 ID of the user who submitted the content (can be null for anonymous or deleted users)
+    content_type = db.Column(db.String(50))  # e.g., 'post', 'comment', 'message'
+    content = db.Column(db.Text)   # 🔹 The actual text/content that was flagged
+    score = db.Column(db.Float) # 🔹 The main moderation score (e.g., toxicity) used in the decision
+    attributes = db.Column(db.JSON) # 🔹 Full set of moderation attributes (TOXICITY, INSULT, THREAT, etc.) returned from Perspective API
+    severity = db.Column(db.String(20)) # 🔹 Severity level decided by the system (e.g., 'low', 'medium', 'high')
+    auto_action = db.Column(db.String(20)) # 🔹 What action was automatically taken by the system (e.g., 'blocked', 'allowed', 'review')
+    admin_override = db.Column(db.String(20), nullable=True) # 🔹 What the admin decided later (e.g., 'approved', 'rejected', 'escalated')
+    admin_notes = db.Column(db.Text, nullable=True)  # 🔹 Optional notes from the admin explaining their override
+    reviewed_by = db.Column(db.Integer, nullable=True) # 🔹 Admin user ID who reviewed and overrode the moderation decision
+    reviewed_at = db.Column(db.DateTime) # 🔹 Timestamp when the admin reviewed it
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow) # 🔹 When the moderation log entry was created (automatically set)
     
 def generate_uuid():
     return str(uuid.uuid4())
