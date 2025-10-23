@@ -1,7 +1,6 @@
 import uuid
 import json
 from flask_sqlalchemy import SQLAlchemy
-from pgvector.sqlalchemy import Vector
 from datetime import datetime
 from app import db  # ✅ Import the same db instance
 
@@ -339,17 +338,7 @@ class Notification(db.Model):
             return {}   
 
 
-# ------------------------- Create Vector DB Model -------------------------
-
-class Document(db.Model):
-    __tablename__ = "documents"
-
-    id          = db.Column(db.Integer, primary_key=True)
-    source      = db.Column(db.Text, nullable=False)
-    chunk_index = db.Column(db.Integer, nullable=False)
-    content     = db.Column(db.Text, nullable=False)
-    embedding   = db.Column(Vector(1536), nullable=False)
-    created_at  = db.Column(db.DateTime, default=datetime.now)
+# Vector DB model removed - pgvector not compatible with SQLite
 
     
 
