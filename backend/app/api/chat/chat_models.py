@@ -1,6 +1,12 @@
 from .chat_routes import api
 from flask_restx import fields
 
+UploadChatMediaResponse = api.model("UploadChatMediaResponse", {
+        "media_id": fields.String(description="Unique ID of uploaded media"),
+        "media_url": fields.String(description="URL to access the uploaded media"),
+        "content_type": fields.String(description="MIME type of the uploaded file")
+    })
+
 SendMessageRequest = api.model("SendMessageRequest", {
         "receiver_id": fields.String(required=True, description="keycloak ID of the recipient user"),
         "message": fields.String(required=False, description="Message content (required if no media_id)"),

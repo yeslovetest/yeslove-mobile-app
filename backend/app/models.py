@@ -178,6 +178,7 @@ class Chat(db.Model):
     message = db.Column(db.Text, nullable=True)
     media_id = db.Column(db.String(36), db.ForeignKey("media.id"), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    opened = db.Column(db.Boolean, default=False)
     sender = db.relationship("User", foreign_keys=[sender_id])
     receiver = db.relationship("User", foreign_keys=[receiver_id])
     media = db.relationship("Media", backref="chat_messages")
@@ -384,6 +385,20 @@ class Media(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
+
+class PostMedia(db.Model):
+    __tablename__ = 'post_media'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete='CASCADE'), nullable=False)
+    media_id = db.Column(db.String(36), db.ForeignKey('media.id', ondelete='CASCADE'), nullable=False)
+    order_index = db.Column(db.Integer, default=0)  # For ordering media in posts
+    
+    # Relationships
+    post = db.relationship('Post', backref='post_media')
+    media = db.relationship('Media', backref='post_attachments')
+    
+    __table_args__ = (db.UniqueConstraint('post_id', 'media_id', name='unique_post_media'),)
 
 class BlogView(db.Model):
     __tablename__ = 'blog_view'

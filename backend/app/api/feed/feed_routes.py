@@ -93,8 +93,12 @@ class Feed(Resource):
                 "author": post.author.username,
                 "author_pic": post.author.profile_pic_url,
                 "content": post.content,
-                "image": post.image_url,
-                "video_url": post.video_url,
+                "media": [{
+                    "id": pm.media_id,
+                    "url": f"/api/media/{pm.media_id}",
+                    "type": pm.media.content_type,
+                    "filename": pm.media.filename
+                } for pm in post.post_media],
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
@@ -136,7 +140,8 @@ class CreatePost(Resource):
         type=FileStorage,
         required=False,
         location='files',
-        help='Optional image or video file (jpg, png, gif, mp4, mov, avi)'
+        action='append',
+        help='Multiple media files (images/videos/audio)'
     )
 
     @require_auth()
@@ -159,8 +164,10 @@ class CreatePost(Resource):
 
         args = post_parser.parse_args()
         content = args.get("content", "")
-        file = args.get("media")
-        logger.info(f'file found: {file}')
+        files = args.get("media") or []
+        if not isinstance(files, list):
+            files = [files] if files else []
+        logger.info(f'files found: {len(files)}')
 
        
         """Create a new post with automatic moderation."""
@@ -197,51 +204,33 @@ class CreatePost(Resource):
         status = moderation_result["status"]
         score = moderation_result["score"]
 
-        image_url = None
-        video_url = None  
-
-        # ✅ Handle file upload (S3 or local)
-        if file:
-            try:
-                # ✅ detect file type by mimetype or filename extension
-                filename = file.filename.lower()
-                is_video = filename.endswith((".mp4", ".mov", ".avi"))
-                is_image = filename.endswith((".jpg", ".jpeg", ".png", ".gif"))
-
-                if not (is_image or is_video):
-                    return {"message": "Unsupported file type. Upload image or video only."}, 400
-
-                if current_app.config.get("USE_S3_STORAGE", False):
-                    upload_result = MediaService.upload_file(
-                        file=file,
-                        user_id=user.id,
-                        folder="posts"
-                    )
-                    file_url = upload_result.get("s3_url")
-                else:
+        media_ids = []
+        
+        # ✅ Handle multiple file uploads
+        if files:
+            for file in files:
+                try:
                     result = MediaService.store_file(file=file, user_id=user.id)
-                    file_url = result.get("media_url")
+                    media_ids.append(result.get("media_id"))
+                    logger.info(f'Media file uploaded: {result.get("media_id")}')
+                except Exception as e:
+                    logger.error(f"Media upload failed for {file.filename}: {e}")
 
-                # ✅ Assign correct field
-                if is_video:
-                    video_url = file_url
-                    logger.info('video file uploaded')
-                else:
-                    image_url = file_url
-                    logger.info('image file uploaded')
-
-            except Exception as e:
-                logger.error(f"Media upload/store failed: {e}")
-
-        # ✅ Create post record 
-        # Create post with moderation status
+        # ✅ Create post record
         post = Post(
             content=content,
-            user_id=user.id,
-            image_url=image_url,
-            video_url=video_url,  
+            user_id=user.id
         )
         db.session.add(post)
+        db.session.flush()  # Get post.id
+        
+        # ✅ Link media to post
+        if media_ids:
+            from app.models import PostMedia
+            for media_id in media_ids:
+                post_media = PostMedia(post_id=post.id, media_id=media_id)
+                db.session.add(post_media)
+        
         db.session.commit()
         
         message = {
@@ -292,7 +281,8 @@ class CreatePost(Resource):
             "message": message,
             "toxicity_score": score,
             "post_id": post.id,
-            "status": status
+            "status": status,
+            "media_count": len(media_ids)
         }, 201
       
 
