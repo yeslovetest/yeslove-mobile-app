@@ -12,6 +12,8 @@ Flask-cors
 
 Flask-restx
 
+Flask-SocketIO
+
 requests 
 
 SQLAlchemy 

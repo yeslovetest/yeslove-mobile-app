@@ -69,11 +69,50 @@ class SendMessage(Resource):
                 }, 400
 
         # ✅ Save the message (even if flagged)
-        new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
         media_id = data.get("media_id")
         new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_id)
         db.session.add(new_message)
         db.session.commit()
+
+        # Send realtime message + notifications
+        from app.services.notification_service import NotificationService
+        from app.services.push_notification_service import PushNotificationService
+        from flask import current_app
+        
+        message_data = {
+            "id": new_message.id,
+            "sender": user.username,
+            "sender_id": user.id,
+            "content": message,
+            "media_id": media_id,
+            "timestamp": new_message.timestamp.isoformat()
+        }
+        
+        try:
+            # Send realtime message via WebSocket
+            if hasattr(current_app, 'websocket_service'):
+                is_online = current_app.websocket_service.send_message_realtime(receiver.id, message_data)
+                if not is_online:
+                    # User offline, send push notification
+                    PushNotificationService.send_to_user(
+                        user_id=receiver.id,
+                        title="New Message",
+                        body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
+                        data={"type": "message", "sender_id": user.id, "chat_id": new_message.id},
+                        notification_type="messages"
+                    )
+            
+            # Always create in-app notification
+            NotificationService.create_notification(
+                user_id=receiver.id,
+                title="New Message",
+                body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
+                notification_type="messages",
+                data={"type": "message", "sender_id": user.id, "chat_id": new_message.id}
+            )
+            
+        except Exception as e:
+            logger.error(f"Realtime/notification failed for message {new_message.id}: {e}")
 
         response_msg = "Message sent successfully"
         score = 0.0
@@ -85,7 +124,8 @@ class SendMessage(Resource):
 
         return {
             "message": response_msg,
-            "toxicity_score": score
+            "toxicity_score": score,
+            "message_data": message_data
         }, 201
 
 
