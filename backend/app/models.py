@@ -299,6 +299,7 @@ class NotificationSettings(db.Model):
     posts_enabled = db.Column(db.Boolean, default=True)
     likes_enabled = db.Column(db.Boolean, default=True)
     comments_enabled = db.Column(db.Boolean, default=True)
+    follows_enabled = db.Column(db.Boolean, default=True)
     events_enabled = db.Column(db.Boolean, default=True)
     blogs_enabled = db.Column(db.Boolean, default=True)
 

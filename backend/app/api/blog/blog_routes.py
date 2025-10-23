@@ -3,7 +3,7 @@ from flask_restx import Namespace, Resource
 from app.logging_setup import setup_logger
 from app.utils import require_auth
 from datetime import datetime
-from app.notifications import send_push_notification_to_all_users
+# Removed: from app.notifications import send_push_notification_to_all_users
 
 api = Namespace("blog", description="API Endpoints")
 
@@ -63,15 +63,27 @@ class BlogPosts(Resource):
 
             logger.info(f"Blog post created by user {user.id}: {post.id}")
 
-            # Send push notification to all users
+            # Send notification to all users via SQS
             try:
-                send_push_notification_to_all_users(
-                    title="New Blog Post",
-                    message=f"{title}",
-                    data={"post_id": post.id}
-                )
+                from app.services.sqs_service import SQSService
+                from app.models import User
+                
+                # Get all user IDs for batch notification
+                all_users = User.query.with_entities(User.id).all()
+                user_ids = [user.id for user in all_users]
+                
+                if user_ids:
+                    sqs = SQSService()
+                    sqs.send_message({
+                        'job_type': 'notification_batch',
+                        'user_ids': user_ids,
+                        'title': 'New Blog Post',
+                        'body': f'{title}',
+                        'notification_type': 'blogs',
+                        'data': {'type': 'blog', 'post_id': post.id}
+                    })
             except Exception as notify_err:
-                logger.error(f"Failed to send push notification for blog post {post.id}: {notify_err}")
+                logger.error(f"Failed to queue blog notification for post {post.id}: {notify_err}")
 
             return {
                 "message": "Blog post created successfully",
