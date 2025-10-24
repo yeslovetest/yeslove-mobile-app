@@ -150,7 +150,7 @@ class CreatePost(Resource):
         from app.services.push_notification_service import PushNotificationService
         from app.monitoring.metrics import track_post_creation
         from app.models import User, Post, Follow, db, Media, ModerationLog
-        from app.notifications import send_push_notification_to_users
+
         from datetime import datetime
 
         logger.info("Content-Type header: %s", request.content_type)
@@ -428,16 +428,16 @@ class LikePost(Resource):
                 logger.warning(f"Neptune like failed: {e}")
         
         # Notify post author about like
-        from app.models import Post, Notification
+        from app.models import Post
+        from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
         if post and post.user_id != user.id:
-            from app.services.push_notification_service import PushNotificationService
-            PushNotificationService.send_to_user(
+            NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Like",
                 body=f"{user.username} liked your post",
-                data={"type": "like", "post_id": post_id, 'image': user.profile_pic_url},
-                notification_type="likes"
+                notification_type="likes",
+                data={"type": "like", "post_id": post_id, "user_id": user.id}
             )
         
         logger.info(f"✅ User {user.username} liked post {post_id}")
@@ -501,15 +501,15 @@ class AddComment(Resource):
 
         # Notify post author about comment
         from app.models import Post
+        from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
         if post and post.user_id != user.id:
-            from app.services.push_notification_service import PushNotificationService
-            PushNotificationService.send_to_user(
+            NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Comment",
                 body=f"{user.username} commented on your post",
-                data={"type": "comment", "post_id": post_id, 'image': user.profile_pic_url},
-                notification_type="comments"
+                notification_type="comments",
+                data={"type": "comment", "post_id": post_id, "user_id": user.id}
             )
         
         return {
@@ -647,6 +647,16 @@ class FollowUser(Resource):
         new_follow = Follow(follower_id=user.id, followed_id=user_id)
         db.session.add(new_follow)
         db.session.commit()
+        
+        # Notify user about new follower
+        from app.services.notification_service import NotificationService
+        NotificationService.create_notification(
+            user_id=user_id,
+            title="New Follower",
+            body=f"{user.username} started following you",
+            notification_type="follows",
+            data={"type": "follow", "user_id": user.id}
+        )
         
         # Create follow in Neptune
         safe_neptune_operation(
