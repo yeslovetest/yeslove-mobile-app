@@ -561,6 +561,17 @@ class FollowUser(Resource):
             return {"message": "Target user not found"}, 404
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
+        follow_type = request.json.get("follow_type", "basic")
+        
+        # Get existing follow relationships (both directions)
+        follows = Follow.query.filter(
+            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) | 
+            ((Follow.follower_id == target_user.id) & (Follow.followed_id == user.id))
+        ).all()
+        existing = {(f.follower_id, f.followed_id): f for f in follows}
+
+        followby_current_user = existing.get((user.id, target_user.id))
+        followby_target_user = existing.get((target_user.id, user.id))
 
         if follow_action == "unfollow":
             if followby_current_user:
@@ -649,12 +660,14 @@ class FollowUser(Resource):
 class GetFollowers(Resource):
     from .feed_models import GetFollowersRequest, GetFollowersResponse
     @api.doc(security='Bearer')
+    @require_auth()
     @api.expect(GetFollowersRequest)  # ✅ Attach model
     @api.response(code=200, description="List of followers", model=GetFollowersResponse)
-    def get(self, user_id):
+    def get(self, keycloak_id):
         """Fetch all followers of a user."""
-        from app.models import Follow
-        followers = Follow.query.filter_by(followed_id=user_id).all()
+        from app.models import Follow, User
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
+        followers = Follow.query.filter_by(followed_id=user.id).all()
         return [
             {"id": follow.follower_id, "username": follow.follower.username}
             for follow in followers
@@ -665,9 +678,10 @@ class GetFollowers(Resource):
 class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest, GetFollowingResponse
     @api.doc(security='Bearer')
+    @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
-    def get(self, user_id):
+    def get(self, keycloak_id):
         """Fetch all users the current user is following."""
         from app.models import Follow, User
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()

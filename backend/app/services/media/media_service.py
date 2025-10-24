@@ -58,7 +58,7 @@ class MediaService:
             file_size=len(content),
             width=metadata.get("width"),
             height=metadata.get("height"),
-            #duration=metadata.get('duration'),
+            duration=metadata.get('duration'),
             user_id=user_id,
             s3_url=s3_url,
         )
