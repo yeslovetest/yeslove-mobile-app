@@ -14,7 +14,8 @@ const eventSlice = createSlice({
             totalEvents: 0,
             eventPage: 1,
             eventsPerPage: 10,
-        }
+        },
+        oneEvent: {} as EventsModelResponse | undefined,
         
     },
     reducers: {
@@ -38,11 +39,16 @@ const eventSlice = createSlice({
         }, 
         addAttendeeToEvent: (state, action:PayloadAction<{eventId: number}>) => {},     
         removeAttendeeFromEvent: (state, action:PayloadAction<{eventId: number}>) => {},
+        fetchOneEvent: (state, action:PayloadAction<{eventId: number}>) => {},     
+        setOneEvent: (state, action:PayloadAction<EventsModelResponse | undefined>) => {
+            state.oneEvent = action.payload;    
+        },    
     }      
 })
 
 export const {
     setActiveEventsTabAction, fetchAllEvents, setAllEvents, 
-    fetchUserEvents, setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent
+    fetchUserEvents, setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent,
+    fetchOneEvent, setOneEvent
 } = eventSlice.actions;
 export default eventSlice.reducer;

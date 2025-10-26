@@ -24,6 +24,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const [isRendered, setIsRendered] = useState(visible);
   const [userPost, setUserPost] = useState("");
+  const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null);
 
   const userName = useAppSelector(
     (state) => state.user.name ?? ""
@@ -54,13 +55,59 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const handleClose = () => {
     onClose();
     setUserPost("");
+    setSelectedFile(null);
   };
 
-  const handlePost = () => {
+  function dataURLtoFile(dataUrl: string, filename: string) {
+      // covert base64/URLEncoded data component to raw binary data held in a string - 
+      // for web browser testing (not needed on mobile)
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)![1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+  }
+
+  const handlePost = async () => {
     if (!userPost.trim()) return;
-    dispatch(postNewPostAction({ content: userPost }));
+
+    const formData = new FormData();
+    formData.append("content", userPost);
+
+    console.log("Selected file for upload:", selectedFile);
+
+    if (selectedFile) {
+      const fieldName = "media"; 
+
+      // detect if it's base64 or file URI
+      if (selectedFile.uri.startsWith("file:")) {
+        // handle both image and video here
+        const file = selectedFile;
+        formData.append(fieldName, {
+          uri: file.uri,
+          type: file.type, // "image/jpeg" or "video/mp4"
+          name: file.name || (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"), 
+        } as any);
+      } 
+      else if (selectedFile.uri.startsWith("data:")) {
+        // handle base64 (e.g., for web)
+        const file: File | any = dataURLtoFile(
+          selectedFile.uri,
+          selectedFile.name ??
+            (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
+        );
+        formData.append(fieldName, file);
+      }
+    }
+
+    dispatch(postNewPostAction({ requestForm: formData as any }));
     handleClose();
   };
+
 
   return (
     <Modal transparent visible={isRendered} animationType="none">
@@ -86,7 +133,11 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
           </View>
           <View style={{ flex: 1 }}>
             <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
-            <PostInput userPost={userPost} setUserPost={setUserPost} />
+            <PostInput 
+              userPost={userPost} 
+              setUserPost={setUserPost} 
+              selectedFile={selectedFile}
+              setSelectedFile={setSelectedFile}/>
           </View>
         </Animated.View>
       </View>

@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const userSlice = createSlice({
     name: "user",
-    initialState: { name: " ", id: "", password: "" }, //defines initial state
+    initialState: { name: " ", id: "", password: "", userDBID: -1 }, //defines initial state
     reducers: {
         setName: (state, action) => {
             state.name = action.payload; // updates name state
@@ -12,9 +12,13 @@ const userSlice = createSlice({
         },
         setPassword: (state, action) => {
             state.password = action.payload;
+        },
+        setUserDBID: (state, action) => {  // user's database id
+            state.userDBID = action.payload;
         }
+
     },
 })
 
-export const { setName, setUserId, setPassword } = userSlice.actions; 
+export const { setName, setUserId, setPassword, setUserDBID } = userSlice.actions; 
 export default userSlice.reducer;

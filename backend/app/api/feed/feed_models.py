@@ -15,6 +15,7 @@ Post = api.model('Post', {
     'author_pic': fields.String(description='URL to author\'s profile picture'),
     'content': fields.String(description='Text content of the post'),
     'image': fields.String(description='URL to image in the post'),
+    'video_url': fields.String(description='URL to video in the post'),
     'timestamp': fields.String(description='Timestamp of the post in ISO format'),
     'likes': fields.Integer(description='Number of likes'),
     'comments': fields.Integer(description='Number of comments'),
@@ -23,9 +24,10 @@ Post = api.model('Post', {
 
 FeedResponse = api.model('PostResponse', {'posts': fields.List(fields.Nested(Post))})
 
-CreatePostRequest= api.model("CreatePostRequest", {
-        "content": fields.String(required=True, description="Content of the post"),
-    })
+CreatePostRequest = api.model("CreatePostRequest", {
+    "content": fields.String(required=True, description="Content of the post"),
+    "image": fields.Raw(required=False, description="Image file to upload")
+})
 
 LikePostRequest = api.model("LikePostRequest", {
         "post_id": fields.Integer(required=True, description="ID of the post to like or unlike"),

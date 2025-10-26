@@ -13,20 +13,11 @@ const ProfileHeaderAndBio = () => {
   const tabStack = useAppSelector((state) => state.navigation.tabStack);
   const userName = useAppSelector((state) => state.profile.profiles[userId]?.username ?? "");
   const bio = useAppSelector((state) => state.profile.profiles[userId]?.bio ?? "");
-  const dispatch = useAppDispatch();
-
-  useFocusEffect(React.useCallback(() => {
-    ProfileApiFactory()
-      .getUserProfile(userId)
-      .then((response) => {
-        dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
-      });
-  }, [tabStack]));
+  const userPosts = useAppSelector((state) => state.profile.profiles[userId]?.user_posts ?? 0);
+  const userFollowers = useAppSelector((state) => state.profile.profiles[userId]?.user_followers ?? 0);
+  const userFollowing = useAppSelector((state) => state.profile.profiles[userId]?.user_following ?? 0);
 
  
-
-
-
 
   return (
     <View>
@@ -36,9 +27,9 @@ const ProfileHeaderAndBio = () => {
           <ProfilePicture />
           <Text style={styles.userName}>{userName}</Text>
           <View style={styles.userStatsContainer}>
-            <Text style={styles.userStats}>Posts: <Text style={styles.userStatsNumber}>0</Text></Text>
-            <Text style={styles.userStats}>Comments: <Text style={styles.userStatsNumber}>0</Text></Text>
-            <Text style={styles.userStats}>Views: <Text style={styles.userStatsNumber}>0</Text></Text>
+            <Text style={styles.userStats}>Posts: <Text style={styles.userStatsNumber}>{userPosts}</Text></Text>
+            <Text style={styles.userStats}>Followers: <Text style={styles.userStatsNumber}>{userFollowers}</Text></Text>
+            <Text style={styles.userStats}>Following: <Text style={styles.userStatsNumber}>{userFollowing}</Text></Text>
           </View>
         </ImageBackground>
       </View>

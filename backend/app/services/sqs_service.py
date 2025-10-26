@@ -88,3 +88,32 @@ class SQSService:
         except Exception as e:
             current_app.logger.error(f"SQS delete error: {e}")
             return False
+    
+    def change_message_visibility(self, receipt_handle: str, visibility_timeout: int) -> bool:
+        """Change message visibility timeout for retry"""
+        try:
+            self.sqs.change_message_visibility(
+                QueueUrl=self.queue_url,
+                ReceiptHandle=receipt_handle,
+                VisibilityTimeout=visibility_timeout
+            )
+            return True
+        except Exception as e:
+            current_app.logger.error(f"SQS visibility change error: {e}")
+            return False
+    
+    def send_to_dlq(self, message_body: str) -> bool:
+        """Send message to dead letter queue"""
+        dlq_url = os.getenv('SQS_DLQ_URL')
+        if not dlq_url:
+            return False
+        
+        try:
+            self.sqs.send_message(
+                QueueUrl=dlq_url,
+                MessageBody=message_body
+            )
+            return True
+        except Exception as e:
+            current_app.logger.error(f"DLQ send error: {e}")
+            return False

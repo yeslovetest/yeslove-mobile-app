@@ -1,4 +1,5 @@
 import uuid
+import json
 from flask_sqlalchemy import SQLAlchemy
 from pgvector.sqlalchemy import Vector
 from datetime import datetime
@@ -119,7 +120,8 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images
+    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images (if any)
+    video_url = db.Column(db.String(500), nullable=True) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
 
@@ -162,6 +164,7 @@ class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     followed_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    follow_type = db.Column(db.String(10), default="basic")  # basic or friend
 
     # ✅ Unique Constraint (Prevent duplicate follows)
     __table_args__ = (db.UniqueConstraint("follower_id", "followed_id", name="unique_follow"),)
@@ -176,6 +179,7 @@ class Chat(db.Model):
     message = db.Column(db.Text, nullable=True)
     media_id = db.Column(db.String(36), db.ForeignKey("media.id"), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    opened = db.Column(db.Boolean, default=False)
     sender = db.relationship("User", foreign_keys=[sender_id])
     receiver = db.relationship("User", foreign_keys=[receiver_id])
     media = db.relationship("Media", backref="chat_messages")
@@ -194,6 +198,7 @@ class EmailNotificationSettings(db.Model):
     setting_id = db.Column(db.String, nullable=False)
     value = db.Column(db.Boolean, default=True)
 
+
 class ProfileVisibilitySettings(db.Model):
     __tablename__ = "profile_visibility_settings"
 
@@ -203,12 +208,14 @@ class ProfileVisibilitySettings(db.Model):
     value = db.Column(db.String, nullable=False)  # e.g., "visible", "hidden"
     category = db.Column(db.String, nullable=False)  # "Contact" or "Education And Other Information"
 
+
 class Reaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     reaction_type = db.Column(db.String(50), nullable=False)  # like, love, laugh, angry, etc.
-     
+
+    # Relationships 
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
@@ -222,6 +229,7 @@ class Event(db.Model):
 
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
+    image_url = db.Column(db.String(500), nullable=True)  # Event image
 
     # relationships
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -240,6 +248,7 @@ class Event(db.Model):
             "location": self.location,
             "event_time": self.event_time.isoformat(),
             "creator_id": self.creator_id,
+            "image_url": self.image_url,
             "address": self.address.to_dict() if self.address else None,
             "attendees": [user.id for user in self.attendees]
         }
@@ -297,8 +306,43 @@ class NotificationSettings(db.Model):
     posts_enabled = db.Column(db.Boolean, default=True)
     likes_enabled = db.Column(db.Boolean, default=True)
     comments_enabled = db.Column(db.Boolean, default=True)
+    follows_enabled = db.Column(db.Boolean, default=True)
     events_enabled = db.Column(db.Boolean, default=True)
     blogs_enabled = db.Column(db.Boolean, default=True)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    notification_type = db.Column(db.String(50), nullable=False)  # e.g., 'like', 'comment', 'blog'
+    data = db.Column(db.Text)  # Store JSON as text
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, user_id, title, body, notification_type, data=None, **kwargs):
+        self.user_id = user_id
+        self.title = title
+        self.body = body
+        self.notification_type = notification_type
+        # Convert dict → JSON automatically
+        if isinstance(data, dict):
+            self.data = json.dumps(data)
+        elif isinstance(data, str):
+            self.data = data
+        elif data is None:
+            self.data = None
+        else:
+            raise TypeError("Notification 'data' must be dict, str, or None")
+        super().__init__(**kwargs)
+
+    def get_data(self):
+        """Return data as Python dict."""
+        try:
+            return json.loads(self.data) if self.data else {}
+        except json.JSONDecodeError:
+            return {}   
 
 
 # ------------------------- Create Vector DB Model -------------------------
