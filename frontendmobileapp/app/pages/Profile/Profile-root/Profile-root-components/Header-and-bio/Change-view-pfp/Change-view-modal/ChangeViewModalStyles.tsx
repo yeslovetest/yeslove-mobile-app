@@ -2,8 +2,8 @@ import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-        settingsSubSection: {
-        padding: 20,
+        changeViewSubSection: {
+        padding: 10,
         justifyContent: 'center',
         alignItems: 'center',
         borderBottomWidth: 1,

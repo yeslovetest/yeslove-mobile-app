@@ -43,7 +43,7 @@ const ChangeViewModal: React.FC<ChangeViewModalProps> = ({ visible, onClose }) =
                             { transform: [{ translateY: slideAnim }] },
                         ]}
                     >
-                        <View style={styles.settingsSubSection}>
+                        <View style={styles.changeViewSubSection}>
                             <TouchableOpacity style={styles.changeViewButton}>
                                 <Text style={styles.changeViewButtonText}>Change Profile Picture</Text>
                             </TouchableOpacity>
