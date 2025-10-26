@@ -26,14 +26,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderRadius: 15
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: "50%",
-    borderWidth: 5,
-    borderStyle: "solid",
-    borderColor: "#fff"
-  },
+
   userName: {
    color: "#fff",
    fontSize: 20,
