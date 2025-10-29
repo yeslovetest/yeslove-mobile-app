@@ -29,7 +29,7 @@ FeedResponse = api.model('PostResponse', {'posts': fields.List(fields.Nested(Pos
         "total_posts": fields.Integer(description="Total number of posts"),
         "total_pages": fields.Integer(description="Total number of pages"),
         "has_next": fields.Boolean(description="Is there a next page?"),
-        "has_prev": fields.Boolean(description="Is there a previous page?")
+        #"has_prev": fields.Boolean(description="Is there a previous page?")
     }))
 })
 
