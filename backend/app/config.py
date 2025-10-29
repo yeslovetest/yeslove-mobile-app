@@ -1,4 +1,8 @@
 import os
+try:
+    from app.aws_config import get_config_value
+except ImportError:
+    get_config_value = lambda key, default=None: os.getenv(key, default)
 
 
 class Config:
@@ -92,6 +96,18 @@ class ProductionConfig(Config):
     KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET")
+    KEYCLOAK_ADMIN_PASS = os.getenv('KEYCLOAK_ADMIN_PASS')
+    
+    # AWS Secrets Manager integration (for future production use)
+    @classmethod
+    def init_aws_secrets(cls):
+        """Initialize AWS secrets when ready for production"""
+        try:
+            cls.SECRET_KEY = get_config_value('SECRET_KEY') or cls.SECRET_KEY
+            cls.KEYCLOAK_CLIENT_SECRET = get_config_value('KEYCLOAK_CLIENT_SECRET') or cls.KEYCLOAK_CLIENT_SECRET
+            cls.SQLALCHEMY_DATABASE_URI = get_config_value('DATABASE_URL') or cls.SQLALCHEMY_DATABASE_URI
+        except Exception:
+            pass  # Fallback to environment variables
     
     @staticmethod
     def keycloak_issuer():

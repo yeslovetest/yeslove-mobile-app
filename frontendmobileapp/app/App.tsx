@@ -24,11 +24,11 @@ import General from "./pages/Profile/Settings/General/General";
 import ExportData from "./pages/Profile/Settings/Export-data/ExportData";
 import MessagesRoot from "./pages/Home/Messages/Messages-root/MessagesRoot";
 import Conversation from "./pages/Home/Messages/Conversation/Conversation";
-import ChatSection from "./pages/Notifications/ChatSection";
 import EditProfileInformation from "./pages/Profile/Edit-profile-information/EditProfileInformation";
 import ProfileInformation from "./pages/Profile/Profile-information/ProfileInformation";
 import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
 import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
+import Chatbot from "./pages/Home/Messages/Chatbot/Chatbot";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -79,6 +79,7 @@ const App = () => {
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
                  MESSAGES: <MessagesRoot></MessagesRoot>,
                     CONVERSATION: <Conversation></Conversation>,
+                       CHATBOT: <Chatbot></Chatbot>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,
