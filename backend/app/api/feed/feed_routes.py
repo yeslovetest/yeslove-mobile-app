@@ -462,7 +462,7 @@ class GetComments(Resource):
                     "id": comment.id,
                     "content": comment.content,
                     "author": comment.user.username,
-                    "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
+                    #"timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
                 }
             for comment in comments]
             }, 200
