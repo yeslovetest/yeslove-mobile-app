@@ -2,11 +2,9 @@ from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
-from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
 
 from app.utils import require_auth
-from datetime import datetime
 from app.utils.rate_limiter import read_rate_limit, write_rate_limit
 
 logger = setup_logger()
@@ -16,16 +14,17 @@ api = Namespace("feed", description="API Endpoints")
 
 @api.route("/feed")
 class Feed(Resource):
-    from .feed_models import FeedQuery
+    from .feed_models import FeedQuery, FeedResponse
     @read_rate_limit
     @require_auth()
     @api.doc(security='Bearer')
     @api.param("feed_type", "Type of feed: 'all', 'mentions', 'favorites', 'friends', 'groups'", type='string', default='all')
     @api.param("page", "Page number for pagination", type='integer', default=1)
     @api.param("per_page", "Number of posts per page", type='integer', default=10)
+    @api.response(code=200, description="", model=FeedResponse)
     def get(self):
         """Fetch posts based on selected feed type (All Updates, Mentions, Favorites, Friends, Groups) with pagination."""
-        from app.models import User, Post, Like
+        from app.models import User, Post, Like, Reaction
         from app.services.feed_cache_service import FeedCacheService
         
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -46,6 +45,7 @@ class Feed(Resource):
         '''    
 
         # Build query based on feed type
+        
         if feed_type == "mentions":
             query = Post.query.filter(Post.content.contains(f"@{user.username}")).order_by(Post.timestamp.desc())
         elif feed_type == "favorites":
@@ -71,26 +71,27 @@ class Feed(Resource):
             
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
-        else:  # "all"
+        else:
             following = [follow.followed_id for follow in user.following]
             following.append(user.id)
-            query = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc())
-
+            query = Post.query.order_by(Post.timestamp.desc())    
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
 
         post_ids = [post.id for post in posts]
 
         # Fetch all reactions by the current user for these posts and create map for quick lookup
-        from app.models import Reaction
         reactions = Reaction.query.filter(
             Reaction.post_id.in_(post_ids), Reaction.user_id == user.id).all()
         reaction_map = {reaction.post_id: reaction for reaction in reactions}
+
+       
 
         feed_data = {
             "posts": [{
                 "id": post.id,
                 "author": post.author.username,
+                "author_id": post.author.keycloak_id,
                 "author_pic": post.author.profile_pic_url,
                 "content": post.content,
                 "image": post.image_url,
@@ -98,7 +99,7 @@ class Feed(Resource):
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
-                "user_reaction": reaction_map.get(post.id).reaction_type if post.id in reaction_map else None
+                "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
                 "page": paginated_posts.page,
@@ -149,9 +150,8 @@ class CreatePost(Resource):
         from app.services.fanout_service import FanoutService
         from app.services.push_notification_service import PushNotificationService
         from app.monitoring.metrics import track_post_creation
-        from app.models import User, Post, Follow, db, Media, ModerationLog
+        from app.models import User, Post, Follow, db, Media
         from app.notifications import send_push_notification_to_users
-        from datetime import datetime
 
         logger.info("Content-Type header: %s", request.content_type)
         logger.info("Request form keys: %s", list(request.form.keys()))
@@ -162,40 +162,13 @@ class CreatePost(Resource):
         file = args.get("media")
         logger.info(f'file found: {file}')
 
-       
-        """Create a new post with automatic moderation."""
-
-        if not content:
-            return {"message": "Post content cannot be empty"}, 400
-          
-         # ✅ Validate user
+        # ✅ Validate user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
 
         if not content.strip():
             return {"message": "Post content cannot be empty"}, 400
-          
-        # Check if user is suspended
-        if check_user_suspension(user.id):
-            return {"message": "Account suspended. Cannot create posts."}, 403
-
-        # Moderate content
-        moderation_result = handle_content_moderation(content, user.id, "post")
-        
-        if moderation_result["status"] == "error":
-            return {"message": moderation_result["message"]}, 500
-        
-        # Handle blocked content
-        if not moderation_result["allowed"]:
-            return {
-                "message": moderation_result["message"],
-                "toxicity_score": moderation_result["score"],
-                "triggered": moderation_result.get("triggered", {})
-            }, 400
-        
-        status = moderation_result["status"]
-        score = moderation_result["score"]
 
         image_url = None
         video_url = None  
@@ -234,7 +207,6 @@ class CreatePost(Resource):
                 logger.error(f"Media upload/store failed: {e}")
 
         # ✅ Create post record 
-        # Create post with moderation status
         post = Post(
             content=content,
             user_id=user.id,
@@ -243,16 +215,8 @@ class CreatePost(Resource):
         )
         db.session.add(post)
         db.session.commit()
-        
-        message = {
-            "visible": "Post created successfully.",
-            "flagged": "Post was flagged for review.",
-            "removed": "Your post was removed for violating guidelines."
-        }.get(status, "Post created successfully.")
 
-        
-        # Track post creation metric
-        from app.monitoring.metrics import track_post_creation
+        # ✅ tracking, fanout, notifications...
         track_post_creation()
 
         if hasattr(current_app, 'graph_repository'):
@@ -271,8 +235,6 @@ class CreatePost(Resource):
         fanout_service = FanoutService()
         fanout_service.fanout_post(post.id, user.id)
 
-        # Send push notification to followers
-        from app.models import Follow
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
@@ -289,12 +251,14 @@ class CreatePost(Resource):
                 logger.error(f"Push notification failed: {e}")
 
         return {
-            "message": message,
-            "toxicity_score": score,
-            "post_id": post.id,
-            "status": status
+            "message": "Post created successfully",
+            "post": {
+                "id": post.id,
+                "content": post.content,
+                "image_url": image_url,
+                "video_url": video_url,  
+            }
         }, 201
-      
 
 
 @api.route("/post/<int:post_id>")
@@ -321,7 +285,6 @@ class GetPost(Resource):
             "comments": len(post.comments),
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
-
     
 # -------------------------
 # 🚀 Reaction ROUTES
@@ -343,9 +306,8 @@ class GetReactions(Resource):
                     "author": reaction.user.username,
                     "picture": reaction.user.profile_pic_url,
                 }
-                for reaction in reactions
-            ]
-        }, 200
+            for reaction in reactions]
+            }, 200
     
 @api.route("/post/<int:post_id>/reaction")
 class ReactToPost(Resource):
@@ -450,15 +412,12 @@ class LikePost(Resource):
 @api.route("/post/<int:post_id>/comment")
 class AddComment(Resource):
     from .feed_models import AddCommentRequest
-
     @require_auth()
     @api.doc(security='Bearer')
     @api.expect(AddCommentRequest)
     def post(self, post_id):
-        """Add a comment to a post with moderation."""
-        from app.models import User, Comment, ModerationLog, db
-        from datetime import datetime
-
+        """Add a comment to a post."""
+        from app.models import User, Comment, db
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
@@ -469,36 +428,10 @@ class AddComment(Resource):
         if not content:
             return {"message": "Comment cannot be empty"}, 400
 
-        # Check if user is suspended
-        if check_user_suspension(user.id):
-            return {"message": "Account suspended. Cannot add comments."}, 403
-
-        # Moderate content
-        moderation_result = handle_content_moderation(content, user.id, "comment")
-        
-        if moderation_result["status"] == "error":
-            return {"message": moderation_result["message"]}, 500
-        
-        if not moderation_result["allowed"]:
-            db.session.commit()  # Save moderation log
-            return {
-                "message": moderation_result["message"],
-                "toxicity_score": moderation_result["score"],
-                "triggered": moderation_result.get("triggered", {})
-            }, 400
-        
-        score = moderation_result["score"]
-        status = moderation_result["status"]
-
-        # ✅ Save comment anyway, maybe flagged
         comment = Comment(content=content, user_id=user.id, post_id=post_id)
         db.session.add(comment)
         db.session.commit()
-
-        message = "Comment added"
-        if status == "flagged":
-            message += " (flagged for review)"
-
+        
         # Notify post author about comment
         from app.models import Post
         post = Post.query.get(post_id)
@@ -512,10 +445,7 @@ class AddComment(Resource):
                 notification_type="comments"
             )
         
-        return {
-            "message": message,
-            "toxicity_score": score
-        }, 201
+        return {"message": "Comment added"}, 201
 
 
 @api.route("/post/<int:post_id>/comments")
@@ -526,16 +456,17 @@ class GetComments(Resource):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
-        return [
-            {
-                "id": comment.id,
-                "content": comment.content,
-                "author": comment.user.username,
-                "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
-            }
-            for comment in comments
-        ], 200
-
+        return {
+            "comments": [
+                {
+                    "id": comment.id,
+                    "content": comment.content,
+                    "author": comment.user.username,
+                    "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
+                }
+            for comment in comments]
+            }, 200
+    
 
 # -------------------------
 # 🚀 FOLLOW ROUTES
@@ -547,7 +478,7 @@ class FollowUser(Resource):
     @require_auth()
     @api.doc(security='Bearer')
     @api.expect(FollowUserRequest)  # ✅ Attach model
-    def post(self, user_id):
+    def post(self, keycloak_id):
         """Follow or unfollow a user."""
         from app.models import User, Follow, db
         from app.utils.common_helpers import get_current_user, safe_neptune_operation
@@ -556,12 +487,24 @@ class FollowUser(Resource):
         if error_response:
             return error_response, status_code
             
-        target_user = User.query.get(user_id)
+        target_user = User.query.filter_by(keycloak_id=keycloak_id).first()
         if not target_user:
             return {"message": "Target user not found"}, 404
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
+        follow_type = request.json.get("follow_type", "basic")
+        
+        # Get existing follow relationships (both directions)
+        follows = Follow.query.filter(
+            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) | 
+            ((Follow.follower_id == target_user.id) & (Follow.followed_id == user.id))
+        ).all()
+        existing = {(f.follower_id, f.followed_id): f for f in follows}
 
+        followby_current_user = existing.get((user.id, target_user.id))
+        followby_target_user = existing.get((target_user.id, user.id))
+
+        # Unfollow
         if follow_action == "unfollow":
             if followby_current_user:
                 db.session.delete(followby_current_user)
@@ -627,14 +570,6 @@ class FollowUser(Resource):
 
         # Basic follow
         db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
-
-        # Follow the user
-        existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
-        if existing_follow:
-            return {"message": "Already following"}, 400
-
-        new_follow = Follow(follower_id=user.id, followed_id=user_id)
-        db.session.add(new_follow)
         db.session.commit()
         
         # Create follow in Neptune
@@ -642,32 +577,36 @@ class FollowUser(Resource):
             lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "basic")
         )
         
-        return {"message": "Followed successfully"}, 201
+        return {"message": "Following Successfully"}, 201
 
 
 @api.route("/followers/<string:keycloak_id>")
 class GetFollowers(Resource):
     from .feed_models import GetFollowersRequest, GetFollowersResponse
+    @require_auth()
     @api.doc(security='Bearer')
     @api.expect(GetFollowersRequest)  # ✅ Attach model
     @api.response(code=200, description="List of followers", model=GetFollowersResponse)
-    def get(self, user_id):
+    def get(self, keycloak_id):
         """Fetch all followers of a user."""
-        from app.models import Follow
-        followers = Follow.query.filter_by(followed_id=user_id).all()
-        return [
+        from app.models import Follow, User
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        followers = Follow.query.filter_by(followed_id=user.id).all()
+        return {
+           "followers": [
             {"id": follow.follower_id, "username": follow.follower.username}
             for follow in followers
-        ], 200
+        ]}, 200
 
 
 @api.route("/following/<string:keycloak_id>")
 class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest, GetFollowingResponse
+    @require_auth()
     @api.doc(security='Bearer')
     @api.expect(GetFollowingRequest)  # ✅ Attach model
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
-    def get(self, user_id):
+    def get(self, keycloak_id):
         """Fetch all users the current user is following."""
         from app.models import Follow, User
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()

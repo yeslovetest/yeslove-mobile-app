@@ -3,10 +3,9 @@ from PIL import Image
 import io
 
 class MediaValidator:
-    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi', 'mp3', 'wav', 'm4a', 'ogg', 'aac'}
+    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi'}
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
     MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB
-    MAX_AUDIO_SIZE = 25 * 1024 * 1024  # 25MB
     
     @staticmethod
     def validate_file(file):
@@ -23,13 +22,7 @@ class MediaValidator:
         size = file.tell()
         file.seek(0)  # Reset
         
-        if ext in {'jpg', 'jpeg', 'png', 'gif'}:
-            max_size = MediaValidator.MAX_IMAGE_SIZE
-        elif ext in {'mp3', 'wav', 'm4a', 'ogg', 'aac'}:
-            max_size = MediaValidator.MAX_AUDIO_SIZE
-        else:
-            max_size = MediaValidator.MAX_FILE_SIZE
-            
+        max_size = MediaValidator.MAX_IMAGE_SIZE if ext in {'jpg', 'jpeg', 'png', 'gif'} else MediaValidator.MAX_FILE_SIZE
         if size > max_size:
             abort(400, f"File too large. Max size: {max_size // (1024*1024)}MB")
         

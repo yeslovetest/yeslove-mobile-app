@@ -9,8 +9,6 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { fetchFriendList } from '@/app/store/Chat/chatSlice';
-import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile';
-import theme from '@/assets/variables/Variables';
 
 export interface Props {
   mainTitle?: string;
@@ -43,26 +41,14 @@ export default function Header(props: Props) {
   };
 
   return (
-    <View
-    style={[
-      styles.header,
-      currentTab === TabType.CHATBOT && { backgroundColor: theme.colors.primaryBlue }, 
-    ]}
-  >
-      {hasTabToGoBackTo && currentTab !== TabType.CHATBOT && (
+    <View style={styles.header}>
+      {hasTabToGoBackTo && (
         <View style={styles.headerDistribution}>
           <FontAwesome5 onPress={returnToPreviousTab} name="chevron-left" size={20} />
           {hasTabToGoBackTo && currentTab === TabType.MESSAGES && (
             <Text style={styles.title}>{props.mainTitle}</Text>
           )}
           <View />
-        </View>
-      )}
-
-       {hasTabToGoBackTo && currentTab === TabType.CHATBOT && (
-        <View style={styles.headerDistribution}>
-          <ChatbotProfile></ChatbotProfile>
-          <Ionicons onPress={returnToPreviousTab} name="close" size={32} color="white" />
         </View>
       )}
 
