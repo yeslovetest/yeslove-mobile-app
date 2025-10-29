@@ -354,7 +354,7 @@ class Document(db.Model):
     source      = db.Column(db.Text, nullable=False)
     chunk_index = db.Column(db.Integer, nullable=False)
     content     = db.Column(db.Text, nullable=False)
-    embedding   = db.Column(Vector(1536), nullable=False)
+    #embedding   = db.Column(Vector(1536), nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.now)
 
     

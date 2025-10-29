@@ -14,7 +14,8 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   MediaApiFactory,
   NotificationsApiFactory,
   NotificationListResponse,
-  Post, EventInfoResponse, BlogPostModel
+  Post, EventInfoResponse, BlogPostModel,
+  ChatbotApiFactory
   } from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
@@ -34,7 +35,9 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    SendFollowUser, retrieveOnePost, setDetailedPost
  } from "../Home-store/feedSlice";
 import { changeTabAction, TabType } from "../Navigation/navigationSlice";
-import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList } from "../Chat/chatSlice";
+import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList,
+   sendChatbotMessage, setChatbotResponse
+ } from "../Chat/chatSlice";
 import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals,
     fetchOneBlogPost, setOneBlogPost
  } from "../Get-help-store/getHelpSlice";
@@ -212,6 +215,15 @@ function* updateChatOpened(action: PayloadAction<string>){
 function* handleGetFriendList(action: PayloadAction<string>){
   const friends = ((yield call(ChatApiFactory().getGetFriends, action.payload, {'keycloak_id': action.payload})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
   yield put(setFriendList(friends.friends ?? []));
+}
+
+function* handleSendChatbotMessage(action: PayloadAction<{prompt: string}>){
+  try{  
+    const response = ((yield call(ChatbotApiFactory().postSendChatbotMessage, {message: action.payload.prompt})) as AxiosResponse<{response: string}>).data as {response: string};
+    yield put(setChatbotResponse(response.response ?? ''));
+  }catch (error) {  
+    console.error('falied to send message to chatbot', error);  
+  } 
 }
 
 
@@ -473,6 +485,7 @@ function* appSaga() {
   yield takeEvery(sendChatMessage.type, handlePostSendMessage);
   yield takeEvery(markChatOpened.type, updateChatOpened);
   yield takeEvery(fetchFriendList.type, handleGetFriendList);
+  yield takeEvery(sendChatbotMessage.type, handleSendChatbotMessage);
 /**BlogPost APi saga */  
   yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
   yield takeEvery(fetchOneBlogPost.type, handleGetOneBlogPost);

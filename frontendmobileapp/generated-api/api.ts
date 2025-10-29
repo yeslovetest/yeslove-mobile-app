@@ -1114,7 +1114,7 @@ export interface MediaListResponse {
  */
 export interface MessageRequest {
     /**
-     * Message content
+     * Message content for Chatbot
      * @type {string}
      * @memberof MessageRequest
      */
