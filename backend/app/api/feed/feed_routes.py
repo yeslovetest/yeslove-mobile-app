@@ -526,16 +526,17 @@ class GetComments(Resource):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
-        return [
-            {
-                "id": comment.id,
-                "content": comment.content,
-                "author": comment.user.username,
-                "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
-            }
-            for comment in comments
-        ], 200
-
+        return {
+            "comments": [
+                {
+                    "id": comment.id,
+                    "content": comment.content,
+                    "author": comment.user.username,
+                    "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
+                }
+            for comment in comments]
+            }, 200
+    
 
 # -------------------------
 # 🚀 FOLLOW ROUTES
