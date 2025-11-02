@@ -16,6 +16,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Header from '@/app/Universal-components/Header/Header';
 import { BASE_URL } from '@/app/index';
+import PostFilePreview from '../Post-modal/Post-modal-components/File-preview/PostFilePreview';
 
 export interface Post {
     id: number;
@@ -110,6 +111,9 @@ const IndividualPost = () => {
                         <Text style={styles.postContent}>
                             {individualPost.content}
                         </Text>
+                        {individualPost.media_files && (
+                            <PostFilePreview file={individualPost.media_files} />
+                        )}
                         {individualPost.image &&  (
                             <Image style={styles.postImage} 
                                 source={{ uri: `${BASE_URL}${individualPost.image.startsWith('/') ? '' : '/'}${individualPost.image}` }}

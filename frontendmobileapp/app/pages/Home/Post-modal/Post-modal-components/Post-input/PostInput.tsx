@@ -11,10 +11,9 @@ import PostFilePreview from "../File-preview/PostFilePreview";
 
 interface PostInputProps {
   userPost: string;
-  selectedFile: { uri: string; type: string; name?: string } | null;
-  setSelectedFile: (file: { uri: string; type: string; name?: string } | null) => void;
+  selectedFile: { uri: string; type: string; name?: string }[] | null;
+  setSelectedFile: (file: { uri: string; type: string; name?: string }[] | null) => void;
   setUserPost: (text: string) => void;
-
 }
 
 const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFile, setSelectedFile }) => {
@@ -28,11 +27,11 @@ const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFi
           quality: 1,
         });
         if (!result.canceled) {
-          setSelectedFile({
+          setSelectedFile((prev) => [...(prev || []), { 
             uri: result.assets[0].uri,
             type: result.assets[0].type ?? "image/jpeg",
             name: result.assets[0].fileName ?? "photo.jpg",
-          });
+          }]);
         }
       } 
       else if (type === "video") {  
@@ -41,11 +40,11 @@ const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFi
           quality: 1,
         });
         if (!result.canceled) {
-          setSelectedFile({
+          setSelectedFile(prev => [...(prev || []), {
             uri: result.assets[0].uri,
             type: result.assets[0].type ?? "video/mp4",  
             name: result.assets[0].fileName ?? "video.mp4", 
-          });
+          }]);
         }
       } 
       else {
@@ -56,11 +55,11 @@ const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFi
               : "application/pdf",
         });
         if (result.assets && result.assets[0]) {
-          setSelectedFile({
+          setSelectedFile(prev => [...(prev || []),  {
             uri: result.assets[0].uri,
             type: result.assets[0].mimeType ?? "file",
             name: result.assets[0].name,
-          });
+          }]);
         }
       }
     } catch (err) {

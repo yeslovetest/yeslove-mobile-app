@@ -20,6 +20,7 @@ const ProfileNavbar = () => {
   useFocusEffect(
     React.useCallback(() => {
       // Fetch media items when the Media tab is active and userDBID is available
+      console.log(userDBID)
       if (activeTab === "Media" && userDBID !== -1) {
         dispatch(fetchMediaItems(userDBID));
       }

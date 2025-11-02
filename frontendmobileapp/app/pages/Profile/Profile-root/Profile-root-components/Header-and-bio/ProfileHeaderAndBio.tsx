@@ -1,12 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ImageBackground, Text, View, Image } from 'react-native';
 import styles from './ProfileHeaderAndBioStyles';
 import { useFocusEffect } from "@react-navigation/native";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { ProfileApiFactory } from '@/generated-api';
-import { setProfileInformationAction, getEmailNotificationSettings, getProfileVisibilitySettings } from '@/app/store/Profile-store/profileSlice';
+import { setProfileInformationAction, getEmailNotificationSettings, getProfileVisibilitySettings, updateProfile } from '@/app/store/Profile-store/profileSlice';
 import axios from 'axios';
+import { uploadMedia } from '@/app/store/Profile-store/mediaSlice';
 
+function dataURLtoFile(dataUrl: string, filename: string) {
+    // covert base64/URLEncoded data component to raw binary data held in a string - 
+    // for web browser testing (not needed on mobile)
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)![1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
 
 const ProfileHeaderAndBio = () => {
   const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
@@ -18,6 +32,7 @@ const ProfileHeaderAndBio = () => {
   const userFollowers = useAppSelector((state) => state.profile.profiles[userId]?.user_followers ?? 0);
   const userFollowing = useAppSelector((state) => state.profile.profiles[userId]?.user_following ?? 0);
   const dispatch = useAppDispatch();
+  const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null);
 
   useFocusEffect(React.useCallback(() => {
     ProfileApiFactory()
@@ -25,11 +40,33 @@ const ProfileHeaderAndBio = () => {
       .then((response) => {
         dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
       });
-  }, [tabStack]));
+  }, [tabStack]));  
+  
+  const uploadProfilePic = (text: string) => {
+    const mediaData = new FormData(); // form data for profile pic upload
 
- 
-
-
+    if (selectedFile) {
+      const fieldName = "profile_pic"; 
+      
+      // detect if it's base64 or file URI
+      if (selectedFile.uri.startsWith("file:")) {
+        // handle both image and video here
+        const file = selectedFile;
+        mediaData.append(fieldName, file as any);
+      } 
+      else if (selectedFile.uri.startsWith("data:")) {
+        // handle base64 (e.g., for web)
+        const file: File | any = dataURLtoFile(
+          selectedFile.uri,
+          selectedFile.name ??
+            (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
+        );
+        mediaData.append(fieldName, file);
+      }
+    
+      dispatch(updateProfile({file: mediaData}));  
+    }
+  };
 
 
   return (
@@ -58,3 +95,5 @@ const ProfileHeaderAndBio = () => {
 }
 
 export default ProfileHeaderAndBio
+
+
