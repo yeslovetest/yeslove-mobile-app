@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import styles from './ConversationTextInputStyles';
+import { TextInput, View } from 'react-native';
 
-const ConversationTextInput = ( onSend?: (text: string) => void,
-   openMedia?: (type: string) => void) => {
+interface Props {
+    onSend?: (text: string) => void;
+    openMedia?: (type: string) => void;
+};
+
+const ConversationTextInput = ( props: Props) => {
 
   const [text, setText] = useState('');
   
@@ -11,15 +16,15 @@ const ConversationTextInput = ( onSend?: (text: string) => void,
   const send = (msg: string) => {
     const trimmed = msg.trim();
     if (trimmed) {
-      onSend?.(trimmed);
+      props.onSend?.(trimmed);
       setText('');
     }
   };
 
-  const selectMedia =  (type: "media" ) => {
+  const selectMedia =  (type: string) => {
     if (type === "media") {
         // Allow both images and videos 
-        openMedia?.(type);
+        props.openMedia?.(type);
     }    
   }
           

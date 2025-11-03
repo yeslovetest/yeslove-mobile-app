@@ -12,21 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import { uploadBulkMedia, uploadMedia } from '@/app/store/Profile-store/mediaSlice';
 import MediaFilePreview from './Conversation-components/MediaPreview/mediaPreview';
-
-
-  function dataURLtoFile(dataUrl: string, filename: string) {
-      // covert base64/URLEncoded data component to raw binary data held in a string - 
-      // for web browser testing (not needed on mobile)
-      const arr = dataUrl.split(',');
-      const mime = arr[0].match(/:(.*?);/)![1];
-      const bstr = atob(arr[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      return new File([u8arr], filename, { type: mime });
-  }
+import dataURLtoFile from '@/utils/mediaUrlConverter';
 
 const Conversation = () => {
 
@@ -106,12 +92,12 @@ const Conversation = () => {
     }
   };
 
-  const selectMedia = async (type: "media" ) => {
+  const selectMedia = async (type: string ) => {
     try {
       if (type === "media") {
         // Allow both images and videos
         const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All, // 👈 allows both
+          mediaTypes: ImagePicker.MediaTypeOptions.All, 
           quality: 1,
         });
 
@@ -159,13 +145,15 @@ const Conversation = () => {
           }
           contentContainerStyle={styles.contentContainer}
         />
-
-        {selectedFiles && (
-          <MediaFilePreview file={selectedFiles}/>
-        )}
        
-      <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
-        <ConversationTextInput onSend={handleSend} openMedia={selectMedia}/>
+        <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
+          {selectedFiles && (
+            <View style={styles.mediaPreviewContainer}>
+              <MediaFilePreview file={selectedFiles}/>
+            </View>
+          
+          )}
+          <ConversationTextInput onSend={handleSend} openMedia={selectMedia}/>
         </View>
       </View>
     </KeyboardAvoidingView>

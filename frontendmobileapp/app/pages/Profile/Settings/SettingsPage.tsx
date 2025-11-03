@@ -80,7 +80,7 @@ const SettingsPage = () => {
                 <View style={settingsSharedStyles.settingsOptionContainer}>
                     <TouchableOpacity onPress={openNotificationPreferences} style={settingsSharedStyles.settingsOptionButton}>
                         <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <Fontisto name="low-vision" size={24} color="black" />
+                            <Fontisto name="bell" size={24} color="black" />
                             <Text style={settingsSharedStyles.settingsOptionText}>Push Notification Settings</Text>
                         </View>
                         <AntDesign name="right" size={24} color="black" />

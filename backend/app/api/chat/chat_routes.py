@@ -230,9 +230,8 @@ class GetFriends(Resource):
             'keycloak_id': 'Keycloak ID of the current user'
         }
     )
-    @api.response(200, "List of friends with last message")
-    @api.response(404, "User not found")
     @api.response(code=200, description="List of friends with last message", model=GetFriendsResponse)
+    @api.response(404, "User not found")
     @api.response(code=404, description="User not found")
     def get(self, keycloak_id):
         """

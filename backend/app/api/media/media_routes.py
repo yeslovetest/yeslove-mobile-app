@@ -50,11 +50,7 @@ class GetMedia(Resource):
 class UploadMedia(Resource):
     @require_auth()
     @api.doc(
-        description="Upload media files for general use",
-        params={
-            'file': 'Media file to upload',
-            'post_id': 'Optional post ID if uploading media for a post'
-        }
+        description="Upload media files for general use"
     )
     @api.response(201, 'Media uploaded successfully')
     @api.response(400, 'Bad request')

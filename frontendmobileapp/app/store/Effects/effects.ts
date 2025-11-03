@@ -167,7 +167,7 @@ function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
  * */
 function* handleGetBlogPost(action: PayloadAction<{searchquery?: string, perPage?: number, currentPage?: number}>){
   try {
-    const response = ((yield call(BlogApiFactory().getListBlogs, action.payload.searchquery ?? undefined,
+    const response = ((yield call(BlogApiFactory().getBlogPosts, action.payload.searchquery ?? undefined,
                     action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined 
                   ))  as AxiosResponse<BlogPostList>).data as BlogPostList;
     yield put(setBlogPosts({blogs: response}));
