@@ -11,6 +11,7 @@ import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSl
 import dayjs from 'dayjs';
 import { retrievePostReactions, postReactionToPost, setPostReactionTab, SendFollowUser } from '@/app/store/Home-store/feedSlice';
 import { BASE_URL } from '@/app/index';
+import PostFilePreview from '@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview';
 
 export interface Props {
     post: PostData,
@@ -159,6 +160,10 @@ const OnePost = (props: Props) => {
             <Text style={styles.postContent}>
                 {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
             </Text>
+
+            {props.post.media_files && (
+               <PostFilePreview file={props.post.media_files} />
+            )}
 
             {props.post.image &&  ( 
                <Image style={styles.postImage} 

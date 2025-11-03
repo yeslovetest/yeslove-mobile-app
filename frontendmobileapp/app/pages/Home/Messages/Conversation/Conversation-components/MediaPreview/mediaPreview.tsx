@@ -1,33 +1,32 @@
 import React, { useState } from "react";
 import { View, Text, FlatList, Image, Modal, Pressable, StyleSheet } from "react-native";
 import { Video } from "expo-av";
-import styles from "./PostFilePreviewStyles";
+import styles from "./mediaPreviewStyles";
 
 interface FilePreviewProps {
-  file: { uri: string; type: string; name?: string }[];
+  file: { uri?: string, type?: string, media_url?: string, name?: string }[];
 }
 
 
-const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
+const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
   if (!file) return null;
 
   const [modalVisible, setModalVisible] = useState(false);
-
+   
   const remainingCount = file.length - 2;
 
   const renderFileItem = ({ item }) => (
     <View style={styles.previewContainer}>
       {item.type.startsWith("image") ? (
-        <Image source={{ uri: item.uri }} style={styles.previewImage} />
+        <Image source={{ uri: item.uri || item.media_url }} style={styles.previewImage} />
       ) : (
         <Video
-          source={{ uri: item.uri }}
+          source={{ uri: item.uri || item.media_url  }}
           style={styles.previewVideo}
           useNativeControls
           resizeMode="contain"
         />
       )}
-      <Text style={styles.text}>📄 {item.name || "File selected"}</Text>
     </View>
   );
 
@@ -44,14 +43,14 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
             return (
               <Pressable onPress={() => setModalVisible(true)}>
                 <View style={styles.previewContainer}>
-                  {item.type.startsWith("image") ? (
+                  {item?.type.startsWith("image") ? (
                     <Image
-                      source={{ uri: item.uri }}
+                      source={{ uri: item.uri || item.media_url  }}
                       style={[styles.previewImage, { opacity: 0.4 }]}
                     />
                   ) : (
                     <Video
-                      source={{ uri: item.uri }}
+                      source={{ uri: item.uri || item.media_url  }}
                       style={[styles.previewVideo, { opacity: 0.4 }]}
                       resizeMode="cover"
                       muted
@@ -96,28 +95,4 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
 
 
 
-/*
-  if (file.at(-1)?.type.startsWith("image")) {
-    console.log("Rendering image preview for:", file.uri);
-    return <Image source={{ uri: file.uri }} style={styles.previewImage} />;
-  }
-
-  if (file.type.startsWith("video")) {
-    return (
-      <Video
-        source={{ uri: file.uri }}
-        style={styles.previewVideo}
-        useNativeControls
-        resizeMode="contain"
-      />
-    );
-  }
-
-  if (file.type.startsWith("audio")) {
-    return <Text style={styles.text}>🎵 {file.name || "Audio file selected"}</Text>;
-  } **/
-
-
-
-
-export default PostFilePreview;
+export default MediaFilePreview;

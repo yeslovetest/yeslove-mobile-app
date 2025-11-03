@@ -1,4 +1,4 @@
-from flask import request
+from flask import current_app, request
 from flask_restx import Namespace, Resource
 from typing import Dict, Any
 
@@ -80,19 +80,24 @@ class UpdateProfile(Resource):
 
         user.bio = data.get("bio", user.bio)
         
-        # Handle profile picture upload to S3
+        # Handle profile picture upload to S3 or to local storage
         if 'profile_pic' in request.files:
             from app.services.media.media_service import MediaService
-            try:
-                upload_result = MediaService.upload_file(
-                    file=request.files['profile_pic'],
-                    user_id=user.id,
-                    folder='profiles'
-                )
-                user.profile_pic_url = upload_result.get('s3_url') if upload_result else None
-            except Exception as e:
-                logger.error(f"Profile pic upload failed: {e}")
-        
+            if current_app.config.get("USE_S3_STORAGE", False):
+                try:
+                    upload_result = MediaService.upload_file(
+                        file=request.files['profile_pic'],
+                        user_id=user.id,
+                        folder='profiles'
+                    )
+                    user.profile_pic_url = upload_result.get('s3_url') if upload_result else None
+                except Exception as e:
+                    logger.error(f"Profile pic upload failed: {e}")
+            else:
+                result = MediaService.store_file(file=request.files['profile_pic'], user_id=user.id)
+                file_url = result.get("media_url")
+                user.profile_pic_url = file_url
+
         db.session.commit()
         return {"message": "Profile updated successfully"}, 200
     

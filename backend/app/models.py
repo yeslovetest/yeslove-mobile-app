@@ -388,9 +388,13 @@ class Media(db.Model):
     height = db.Column(db.Integer)
     duration = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
+
+    # relationship
+    post = db.relationship('Post', backref='media_files')   # creates one-to-many relationship with Post
 
 class BlogView(db.Model):
     __tablename__ = 'blog_view'

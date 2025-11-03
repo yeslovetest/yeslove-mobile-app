@@ -98,46 +98,81 @@ class SendMessage(Resource):
 
 @api.route("/get_messages/<string:receiver_id>")
 class GetMessages(Resource):
+    from datetime import timedelta
     from .chat_models import GetMessagesRequest, GetMessagesResponse
+
     @require_auth()
     @api.doc(
-        description="Fetch chat messages between current user and specified receiver, including media attachments",
-        params={
-            'receiver_id': 'Keycloak ID of the message recipient'
-        }
+        description="Fetch chat messages between current user and specified receiver, combining media with same caption if sent within 10 seconds",
+        params={'receiver_id': 'Keycloak ID of the message recipient'}
     )
-    
-    @api.response(200, 'Success')
+    @api.response(200, 'Success', GetMessagesResponse)
     @api.response(404, 'User not found')
     @api.response(401, 'Unauthorized')
-    @api.response(200, 'Success', GetMessagesResponse) 
     def get(self, receiver_id):
-        """Fetch chat messages between two users."""
+        """Fetch chat messages between two users, grouped by caption and sender (within 10s)."""
         from app.models import User, Chat
+
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         receiver = User.query.filter_by(keycloak_id=receiver_id).first()
 
         if not user or not receiver:
             return {"message": "User not found"}, 404
 
+        # Fetch all messages between users
         messages = Chat.query.filter(
             ((Chat.sender_id == user.id) & (Chat.receiver_id == receiver.id))
             | ((Chat.sender_id == receiver.id) & (Chat.receiver_id == user.id))
         ).order_by(Chat.timestamp.asc()).all()
 
-        return {"messages": [
-            {
-                "sender": msg.sender.username,
-                "receiver": msg.receiver.username,
-                "content": msg.message,
-                "media_id": msg.media_id,
-                "media_url": f"/api/media/{msg.media_id}" if msg.media_id else None,
-                "media_type": msg.media.content_type if msg.media else None,
-                "opened": msg.opened,
-                "timestamp": msg.timestamp.isoformat(),
-            }
-            for msg in messages
-        ]}, 200
+        grouped_msgs = []
+        current_group = None
+
+        for msg in messages:
+            media_url = f"/api/media/{msg.media_id}" if msg.media_id else None
+            media_type = msg.media.content_type if msg.media else None
+            sender = msg.sender.username
+            receiver_name = msg.receiver.username
+            content = msg.message
+            timestamp = msg.timestamp
+
+            # If starting new group or conditions don’t match, start fresh
+            if (
+                current_group is None
+                or current_group["sender"] != sender
+                or current_group["content"] != content
+                or (timestamp - current_group["last_timestamp"]) > timedelta(seconds=10)
+            ):
+                # Push previous group
+                if current_group:
+                    grouped_msgs.append(current_group)
+
+                # Start new group
+                current_group = {
+                    "sender": sender,
+                    "receiver": receiver_name,
+                    "content": content,
+                    "media": [{'uri': media_url, 'type': media_type}] if media_url else [],
+                    "opened": msg.opened,
+                    "timestamp": timestamp.isoformat(),
+                    "last_timestamp": timestamp,  # track last timestamp for comparison
+                }
+            else:
+                # Same group — add media and update last timestamp
+                if media_url:
+                    current_group["media"].append({'uri': media_url, 'type': media_type})
+                current_group["last_timestamp"] = timestamp
+
+        # Append final group
+        if current_group:
+            grouped_msgs.append(current_group)
+
+        # Remove the internal tracking key before returning
+        for g in grouped_msgs:
+            g.pop("last_timestamp", None)
+
+        return {"messages": grouped_msgs}, 200
+
 
 
 @api.route("/mark_chat_opened/<string:receiver_id>")
@@ -195,9 +230,8 @@ class GetFriends(Resource):
             'keycloak_id': 'Keycloak ID of the current user'
         }
     )
-    @api.response(200, "List of friends with last message")
-    @api.response(404, "User not found")
     @api.response(code=200, description="List of friends with last message", model=GetFriendsResponse)
+    @api.response(404, "User not found")
     @api.response(code=404, description="User not found")
     def get(self, keycloak_id):
         """

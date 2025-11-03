@@ -7,13 +7,17 @@ const chatSlice = createSlice({
         messages: [] as Chat[],
         friends: [] as FriendInfo[],
         chatbotResponse: "",
+        mediaData: { mediaFormData: null as FormData | null },
     },
     reducers: {
         fetchChatMessages: (state, action: PayloadAction<string>) => {},
         setChatMessages: (state, action: PayloadAction<Chat[]>) => {
             state.messages = action.payload
         },
-        sendChatMessage: (state, action: PayloadAction<{id: string, message: string}>) => {},
+        sendChatMessage: (state, action: PayloadAction<{id: string, message: string, mediaID?: string | undefined}>) => {},
+        setMediaFormData: (state, action: PayloadAction<{ mediaFormData: FormData | null}>) => {
+            state.mediaData.mediaFormData = action.payload.mediaFormData
+        },
         markChatOpened: (state, action: PayloadAction<string>) => {},
         fetchFriendList: (state, action: PayloadAction<string>) => {},
         setFriendList: (state, action: PayloadAction<FriendInfo[]>) => {
@@ -29,7 +33,7 @@ const chatSlice = createSlice({
 export const {
     fetchChatMessages, setChatMessages, sendChatMessage, 
     markChatOpened, fetchFriendList, setFriendList,
-    sendChatbotMessage, setChatbotResponse
+    sendChatbotMessage, setChatbotResponse, setMediaFormData
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
