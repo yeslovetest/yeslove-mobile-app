@@ -1515,18 +1515,6 @@
       }
     },
     "/api/notifications/preferences": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Get user's notification preferences",
-        "operationId": "get_notification_preferences_resource",
-        "tags": [
-          "notifications"
-        ]
-      },
       "put": {
         "responses": {
           "200": {
@@ -1545,6 +1533,18 @@
             }
           }
         ],
+        "tags": [
+          "notifications"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get user's notification preferences",
+        "operationId": "get_notification_preferences_resource",
         "tags": [
           "notifications"
         ]
@@ -1701,6 +1701,39 @@
         "security": [
           {
             "Bearer": []
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/profile/timeline": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Timeline response containing current user post with pagination",
+            "schema": {
+              "$ref": "#/definitions/TimelineResponse"
+            }
+          }
+        },
+        "summary": "retrieve all posts authored by the current user to be displayed on timeline",
+        "operationId": "get_user_timeline",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 20,
+            "in": "query",
+            "description": "Number of posts per page",
+            "name": "per_page"
+          },
+          {
+            "type": "integer",
+            "default": 1,
+            "in": "query",
+            "description": "Page number for pagination",
+            "name": "page"
           }
         ],
         "tags": [
@@ -2111,6 +2144,103 @@
       },
       "type": "object"
     },
+    "TimelineResponse": {
+      "properties": {
+        "total": {
+          "type": "integer",
+          "description": "Total number of posts"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of posts per page"
+        },
+        "current_page": {
+          "type": "integer",
+          "description": "Current page number"
+        },
+        "posts": {
+          "type": "array",
+          "description": "List of posts",
+          "items": {
+            "$ref": "#/definitions/UserPost"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "UserPost": {
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Post ID"
+        },
+        "author_pic": {
+          "type": "string",
+          "description": "URL to author's profile picture"
+        },
+        "content": {
+          "type": "string",
+          "description": "Text content of the post"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "URL to image in the post"
+        },
+        "video_url": {
+          "type": "string",
+          "description": "URL to video in the post"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of the post in ISO format"
+        },
+        "likes": {
+          "type": "integer",
+          "description": "Number of likes"
+        },
+        "comments": {
+          "type": "integer",
+          "description": "Number of comments"
+        },
+        "media_files": {
+          "type": "array",
+          "description": "List of media file URLs associated with the post",
+          "items": {
+            "$ref": "#/definitions/MediaFile"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "MediaFile": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique media ID"
+        },
+        "url": {
+          "type": "string",
+          "description": "Media URL (local or S3)"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Original filename"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "MIME type of the media"
+        },
+        "file_size": {
+          "type": "integer",
+          "description": "Size of the file in bytes"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Timestamp when the media was uploaded"
+        }
+      },
+      "type": "object"
+    },
     "LoginRequest": {
       "required": [
         "password",
@@ -2416,35 +2546,6 @@
         "current_user_reaction": {
           "type": "string",
           "description": "Current user's reaction to the post, if any"
-        }
-      },
-      "type": "object"
-    },
-    "MediaFile": {
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique media ID"
-        },
-        "url": {
-          "type": "string",
-          "description": "Media URL (local or S3)"
-        },
-        "filename": {
-          "type": "string",
-          "description": "Original filename"
-        },
-        "content_type": {
-          "type": "string",
-          "description": "MIME type of the media"
-        },
-        "file_size": {
-          "type": "integer",
-          "description": "Size of the file in bytes"
-        },
-        "created_at": {
-          "type": "string",
-          "description": "Timestamp when the media was uploaded"
         }
       },
       "type": "object"

@@ -65,4 +65,29 @@ EmailNotificationSettings = api.model("EmailNotificationSettings", {
         "settings": fields.List(fields.Nested(EmailNotificationSetting), description="List of email notification settings")
     })
 
+MediaFile = api.model("MediaFile", {
+        "uri": fields.String(description="URL of the media file"),
+        "type": fields.String(description="Type of the media file: 'image', 'video', etc.")
+})
+
+UserPost = api.model('UserPost', {
+    'id': fields.Integer(description='Post ID'),
+    'author_pic': fields.String(description='URL to author\'s profile picture'),
+    'content': fields.String(description='Text content of the post'),
+    'image_url': fields.String(description='URL to image in the post'),
+    'video_url': fields.String(description='URL to video in the post'),
+    'timestamp': fields.String(description='Timestamp of the post in ISO format'),
+    'likes': fields.Integer(description='Number of likes'),
+    'comments': fields.Integer(description='Number of comments'),
+    'media_files': fields.List(fields.Nested(MediaFile), description='List of media file URLs associated with the post')  
+})
+
+TimelineResponse = api.model('TimelineResponse', 
+{
+    "total": fields.Integer(description="Total number of posts"),
+    "per_page": fields.Integer(description="Number of posts per page"),
+    "current_page": fields.Integer(description="Current page number"),
+    "posts": fields.List(fields.Nested(UserPost), description="List of posts"),
+})
+
 
