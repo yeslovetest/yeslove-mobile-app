@@ -4,12 +4,17 @@ import ChatbotScrollView from './Chatbot-components/ScrollView/ChatbotScrollView
 import TextInputContainer from './Chatbot-components/Text-input/TextInputContainer';
 import styles from './SharedChatbotStyles';
 import Header from '@/app/Universal-components/Header/Header';
+import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
+import { sendChatbotMessage } from '@/app/store/Chat/chatSlice';
 
 const ChatbotRoot = () => {
-  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([]);
+  const dispatch = useAppDispatch();
+  
+  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string; createdAt?: Date }[]>([]);
   const [loading, setLoading] = useState(false);
   const screenHeight = Dimensions.get('window').height;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+  const chatBotResponse = useAppSelector((state) => state.chat.chatbotResponse);
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -23,6 +28,7 @@ const ChatbotRoot = () => {
     setLoading(true);
     const now = new Date();
     setMessages((prev) => [...prev, { role: 'user', text: prompt, createdAt: now }]);
+    dispatch(sendChatbotMessage({prompt: prompt}));
 
     try {
       const res = await fetch('http://localhost:8080/demo-1.0-SNAPSHOT/api/chat', {
@@ -36,7 +42,7 @@ const ChatbotRoot = () => {
 
       setMessages((prev) => [
         ...prev,
-        { role: 'bot', text: reply, createdAt: new Date() },
+        { role: 'bot', text: chatBotResponse, createdAt: new Date() },
       ]);
     } catch (err) {
       console.error('error:', err);

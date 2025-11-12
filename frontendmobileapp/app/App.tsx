@@ -28,7 +28,8 @@ import EditProfileInformation from "./pages/Profile/Edit-profile-information/Edi
 import ProfileInformation from "./pages/Profile/Profile-information/ProfileInformation";
 import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
 import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
-import ChatbotRoot from "./pages/Home/Messages/Chatbot/ChatbotRoot";
+import NotificationPreferences from "./pages/Profile/Settings/Preferences/Notifications";
+import Chatbot from "./pages/Home/Messages/Chatbot/Chatbot";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -74,6 +75,7 @@ const App = () => {
                  GENERAL: <General></General>,
                  EMAIL: <EmailNtfnSettings></EmailNtfnSettings>,
                  PROFILE_VISIBILITY: <ProfileVisibilitySettings></ProfileVisibilitySettings>,
+                 NOTIFICATION_PREFERENCES: <NotificationPreferences></NotificationPreferences>,
                  EXPORT_DATA: <ExportData></ExportData>,
 
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,

@@ -12,7 +12,7 @@ logger = setup_logger()
 class MediaService:
     @staticmethod
     @SecurityService.rate_limit_uploads()
-    def store_file(file, user_id=None):
+    def store_file(file, user_id=None, post_id=None):
         from flask import current_app
         
         if not file:
@@ -60,6 +60,7 @@ class MediaService:
             height=metadata.get("height"),
             duration=metadata.get('duration'),
             user_id=user_id,
+            post_id=post_id,
             s3_url=s3_url,
         )
 
@@ -108,15 +109,15 @@ class MediaService:
         } for m in media_list]
     
     @staticmethod
-    def store_multiple_files(files, user_id):
+    def store_multiple_files(files, user_id, post_id=None):
         if not files:
             abort(400, "No files uploaded")
         
         media_ids = []
         for file in files:
             if file:
-                media_id = MediaService.store_file(file, user_id)
-                media_ids.append(media_id)
+                media = MediaService.store_file(file, user_id, post_id)
+                media_ids.append(media.get("media_id"))
         
         return media_ids
     

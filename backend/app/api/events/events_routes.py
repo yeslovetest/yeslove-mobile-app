@@ -654,11 +654,11 @@ class EventManagement(Resource):
 
 @api.route("/events")
 class GetEvents(Resource):
-    from .events_models import EventsListResponse
+    from .events_models import EventListResponse
     @api.param("page", "Page number for pagination", type='integer', default=1)
     @api.param("per_page", "Number of events per page", type='integer', default=20)
     @api.param("type", "Event type: 'upcoming', 'past', 'all'", type='string', default='upcoming')
-    @api.response(200, "Success", EventsListResponse)
+    @api.response(200, "Success", EventListResponse)
     def get(self):
         """Get list of all events with pagination and filtering"""
         from app.models import Event

@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 5616ccd336ed
+Revision ID: 0ed84cb9a115
 Revises: 
-Create Date: 2025-10-12 17:04:06.766413
+Create Date: 2025-08-22 22:13:02.376079
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5616ccd336ed'
+revision = '0ed84cb9a115'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,7 +23,7 @@ def upgrade():
     sa.Column('source', sa.Text(), nullable=False),
     sa.Column('chunk_index', sa.Integer(), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
-    sa.Column('embedding', pgvector.sqlalchemy.vector.VECTOR(dim=1536), nullable=False),
+   # sa.Column('embedding', pgvector.sqlalchemy.vector.VECTOR(dim=1536), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -41,6 +41,11 @@ def upgrade():
     sa.Column('reviewed_by', sa.Integer(), nullable=True),
     sa.Column('reviewed_at', sa.DateTime(), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
+    )
+    op.create_table('media',
+    sa.Column('id', sa.String(length=36), nullable=False),
+    sa.Column('content', sa.LargeBinary(), nullable=False),
+    sa.Column('content_type', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
@@ -54,17 +59,14 @@ def upgrade():
     sa.Column('birthday', sa.Date(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('bio', sa.String(length=250), nullable=True),
-    sa.Column('profile_pic_url', sa.String(length=500), nullable=True),
+    sa.Column('profile_pic', sa.String(length=200), nullable=True),
     sa.Column('user_type', sa.String(length=20), nullable=True),
-    sa.Column('warnings', sa.Integer(), nullable=True),
-    sa.Column('is_suspended', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
     )
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_user_keycloak_id'), ['keycloak_id'], unique=True)
-
     op.create_table('blog_posts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=False),
@@ -76,14 +78,27 @@ def upgrade():
     sa.ForeignKeyConstraint(['author_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('chat',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('sender_id', sa.Integer(), nullable=False),
+    sa.Column('receiver_id', sa.Integer(), nullable=False),
+    sa.Column('message', sa.Text(), nullable=False),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.CheckConstraint('sender_id != receiver_id', name='check_no_self_message'),
+    sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    with op.batch_alter_table('chat', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_chat_receiver_id'), ['receiver_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_chat_sender_id'), ['sender_id'], unique=False)
+
     op.create_table('device_token',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('token', sa.String(length=255), nullable=False),
     sa.Column('platform', sa.String(length=50), nullable=True),
-    sa.Column('device_id', sa.String(length=255), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('last_used', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('token')
@@ -96,22 +111,11 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['user.keycloak_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('event',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('location', sa.String(length=100), nullable=False),
-    sa.Column('event_time', sa.DateTime(), nullable=False),
-    sa.Column('creator_id', sa.Integer(), nullable=False),
-    sa.Column('address_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['address_id'], ['address.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['creator_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('follow',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('follower_id', sa.Integer(), nullable=False),
     sa.Column('followed_id', sa.Integer(), nullable=False),
+    sa.Column('follow_type', sa.String(length=10), nullable=True),
     sa.ForeignKeyConstraint(['followed_id'], ['user.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['follower_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
@@ -121,40 +125,12 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_follow_followed_id'), ['followed_id'], unique=False)
         batch_op.create_index(batch_op.f('ix_follow_follower_id'), ['follower_id'], unique=False)
 
-    op.create_table('media',
-    sa.Column('id', sa.String(length=36), nullable=False),
-    sa.Column('content', sa.LargeBinary(), nullable=True),
-    sa.Column('content_type', sa.String(length=50), nullable=False),
-    sa.Column('filename', sa.String(length=255), nullable=True),
-    sa.Column('file_size', sa.Integer(), nullable=True),
-    sa.Column('width', sa.Integer(), nullable=True),
-    sa.Column('height', sa.Integer(), nullable=True),
-    sa.Column('duration', sa.Integer(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('is_public', sa.Boolean(), nullable=True),
-    sa.Column('s3_url', sa.String(length=500), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('notification_settings',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('posts_enabled', sa.Boolean(), nullable=True),
-    sa.Column('likes_enabled', sa.Boolean(), nullable=True),
-    sa.Column('comments_enabled', sa.Boolean(), nullable=True),
-    sa.Column('events_enabled', sa.Boolean(), nullable=True),
-    sa.Column('blogs_enabled', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('post',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
-    sa.Column('image_url', sa.String(length=500), nullable=True),
+    sa.Column('image', sa.String(length=200), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.String(length=20), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
@@ -185,42 +161,6 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['user.keycloak_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('attendees',
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('event_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['event_id'], ['event.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'event_id')
-    )
-    op.create_table('blog_view',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('blog_id', sa.Integer(), nullable=False),
-    sa.Column('viewed_at', sa.DateTime(), nullable=True),
-    sa.Column('read_duration', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['blog_id'], ['blog_posts.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('user_id', 'blog_id', name='unique_user_blog_view')
-    )
-    op.create_table('chat',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('sender_id', sa.Integer(), nullable=False),
-    sa.Column('receiver_id', sa.Integer(), nullable=False),
-    sa.Column('message', sa.Text(), nullable=True),
-    sa.Column('media_id', sa.String(length=36), nullable=True),
-    sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.CheckConstraint('message IS NOT NULL OR media_id IS NOT NULL', name='check_message_or_media'),
-    sa.CheckConstraint('sender_id != receiver_id', name='check_no_self_message'),
-    sa.ForeignKeyConstraint(['media_id'], ['media.id'], ),
-    sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    with op.batch_alter_table('chat', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_chat_receiver_id'), ['receiver_id'], unique=False)
-        batch_op.create_index(batch_op.f('ix_chat_sender_id'), ['sender_id'], unique=False)
-
     op.create_table('comment',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
@@ -273,34 +213,28 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_comment_post_id'))
 
     op.drop_table('comment')
-    with op.batch_alter_table('chat', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_chat_sender_id'))
-        batch_op.drop_index(batch_op.f('ix_chat_receiver_id'))
-
-    op.drop_table('chat')
-    op.drop_table('blog_view')
-    op.drop_table('attendees')
     op.drop_table('profile_visibility_settings')
     op.drop_table('professional_details')
     with op.batch_alter_table('post', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_post_user_id'))
 
     op.drop_table('post')
-    op.drop_table('notification_settings')
-    op.drop_table('media')
     with op.batch_alter_table('follow', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_follow_follower_id'))
         batch_op.drop_index(batch_op.f('ix_follow_followed_id'))
 
     op.drop_table('follow')
-    op.drop_table('event')
     op.drop_table('email_notification_settings')
     op.drop_table('device_token')
+    with op.batch_alter_table('chat', schema=None) as batch_op:
+        batch_op.drop_index(batch_op.f('ix_chat_sender_id'))
+        batch_op.drop_index(batch_op.f('ix_chat_receiver_id'))
+
+    op.drop_table('chat')
     op.drop_table('blog_posts')
     with op.batch_alter_table('user', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_user_keycloak_id'))
 
     op.drop_table('user')
-    op.drop_table('moderation_log')
-    op.drop_table('documents')
+    op.drop_table('media')
     # ### end Alembic commands ###

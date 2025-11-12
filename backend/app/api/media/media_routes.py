@@ -50,19 +50,21 @@ class GetMedia(Resource):
 class UploadMedia(Resource):
     @require_auth()
     @api.doc(
-        description="Upload media files for general use",
-        params={
-            'file': 'Media file to upload'
-        }
+        description="Upload media files for general use"
     )
     @api.response(201, 'Media uploaded successfully')
     @api.response(400, 'Bad request')
     @api.response(401, 'Unauthorized')
     def post(self):
+        from app.models import User
         from app.services.media.media_service import MediaService
         file = request.files.get("file")
-        media_id = MediaService.store_file(file, request.user_id)
-        return {"id": media_id}, 201
+        post_id = request.form.get("post_id")
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+        result = MediaService.store_file(file, user.id, post_id)
+        return {"media_id": result.get('media_id')}, 201
 
 
 @api.route("/user/<int:user_id>")
@@ -79,9 +81,14 @@ class GetUserMedia(Resource):
 class BulkUploadMedia(Resource):
     @require_auth()
     def post(self):
+        from app.models import User
         from app.services.media.media_service import MediaService
-        files = request.files.getlist("files")
-        media_ids = MediaService.store_multiple_files(files, request.user_id)
+        files = request.files.getlist("file")
+        post_id = request.form.get("post_id")
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+        media_ids = MediaService.store_multiple_files(files, user.id, post_id)
         return {"ids": media_ids}, 201
 
 
