@@ -226,15 +226,14 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
     image_url = db.Column(db.String(500), nullable=True)  # Event image
-
-    # relationships
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    creator = db.relationship('User', back_populates='created_events')
     address_id = db.Column(db.Integer, db.ForeignKey("address.id", ondelete='SET NULL'))  # nullable as could be online?
+    
+    # relationships
+    creator = db.relationship('User', back_populates='created_events')
     address = db.relationship('Address', back_populates='events')
 
     # Attendees many-many relationship

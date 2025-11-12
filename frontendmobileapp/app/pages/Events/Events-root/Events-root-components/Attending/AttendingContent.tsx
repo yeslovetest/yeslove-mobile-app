@@ -11,9 +11,9 @@ const AttendingContent = () => {
 
     const dispatch = useAppDispatch();
     const [dates, setDates] = useState<{ startDate?: string; endDate?: string }>({});
-    const currentPage = useAppSelector(state => state.events.allEvents.eventPage);
-    const totalEvents = useAppSelector(state => state.events.allEvents.totalEvents);
-    const eventsPerPage = useAppSelector(state => state.events.allEvents.eventsPerPage);
+    const currentPage = useAppSelector(state => state.events.userEvents.eventPage);
+    const totalEvents = useAppSelector(state => state.events.userEvents.totalEvents);
+    const eventsPerPage = useAppSelector(state => state.events.userEvents.eventsPerPage);
     const totalPages = Math.ceil(totalEvents / eventsPerPage); // Calculate total pages
 
     useFocusEffect(React.useCallback(() => {
