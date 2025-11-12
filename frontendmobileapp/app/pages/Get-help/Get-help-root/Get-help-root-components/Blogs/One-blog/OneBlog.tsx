@@ -6,6 +6,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAppDispatch } from "@/app/store/hooks"
 import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSlice"
 import { BlogPostModel } from "@/generated-api";
+import dayjs from "dayjs";
 
 
 export interface Props {
@@ -35,7 +36,7 @@ const OneBlog = (props: Props) => {
                 </View>
                 <View style={styles.authorContainer}>
                     <FontAwesome name="calendar" size={21} style={styles.authorIcon} color="black" />
-                    <Text style={styles.dateAndAuthorText}>{props.blog?.timestamp}</Text>
+                    <Text style={styles.dateAndAuthorText}>{dayjs(props.blog?.timestamp).format('MMM D, YYYY h:mm A')}</Text>
                 </View>
             </View>
             <Text style={styles.blogSummary}>{props.blog?.summary ?? ''}</Text>
