@@ -130,6 +130,14 @@ class Post(db.Model):
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "author": self.author.username if self.author else "Unknown",
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
 
 
 # -------------------------
@@ -284,6 +292,15 @@ class BlogPost(db.Model):
     summary = db.Column(db.String(1000))
     # Relationships 
     author = db.relationship("User", backref="blogs")
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "author": self.author.username if self.author else "YesLove",
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
     
 class DeviceToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)

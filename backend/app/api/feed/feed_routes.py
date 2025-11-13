@@ -233,6 +233,8 @@ class CreatePost(Resource):
         
         db.session.commit()
         
+        # Posts are not synced to chatbot - only blogs are synced
+        
         message = {
             "visible": "Post created successfully.",
             "flagged": "Post was flagged for review.",

@@ -38,7 +38,7 @@ prometheus-flask-exporter
 
 psutil
 
-openai
+openai==1.51.0
 
 # Graph database dependencies
 gremlinpython>=3.6.0
