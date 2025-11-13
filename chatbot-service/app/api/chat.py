@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_restx import Namespace, Resource, fields
 from app.core.rag_engine import RAGEngine
+from app.utils.auth import require_auth
 
 api = Namespace("chat", description="Chat API with Priority-Based RAG")
 
@@ -29,11 +30,13 @@ def get_rag_engine():
 
 @api.route('/message')
 class ChatMessage(Resource):
+    @require_auth
     @api.expect(chat_request)
     @api.marshal_with(chat_response)
     @api.doc(responses={
         200: 'Success',
         400: 'Bad Request - Missing message',
+        401: 'Unauthorized - Authentication required',
         500: 'Internal Server Error'
     })
     def post(self):
@@ -59,11 +62,17 @@ class ChatMessage(Resource):
         session_id = data.get('session_id', 'default')
         
         try:
+            # Use authenticated user ID for session management
+            user_id = getattr(request, 'user_id', 'anonymous')
+            if session_id == 'default':
+                session_id = f"user_{user_id}_{hash(message) % 10000}"
+            
             response = get_rag_engine().generate_response(message, history)
             
             return {
                 'response': response,
                 'session_id': session_id,
+                'user_id': user_id,
                 'sources': 'Multiple credible relationship advice sources'
             }
         except Exception as e:
