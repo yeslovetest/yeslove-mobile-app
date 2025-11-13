@@ -8,6 +8,11 @@ FeedQuery = api.model("FeedQuery", {
         )
     })
 
+MediaFile = api.model("MediaFile", {
+        "uri": fields.String(description="URL of the media file"),
+        "type": fields.String(description="Type of the media file: 'image', 'video', etc.")
+})
+
 Post = api.model('Post', {
     'id': fields.Integer(description='Post ID'),
     'author': fields.String(description='Username of the author'),
@@ -19,10 +24,20 @@ Post = api.model('Post', {
     'timestamp': fields.String(description='Timestamp of the post in ISO format'),
     'likes': fields.Integer(description='Number of likes'),
     'comments': fields.Integer(description='Number of comments'),
+    'media_files': fields.List(fields.Nested(MediaFile), description='List of media file URLs associated with the post'),
     'current_user_reaction': fields.String(description="Current user's reaction to the post, if any"),  
 })
 
-FeedResponse = api.model('PostResponse', {'posts': fields.List(fields.Nested(Post))})
+FeedResponse = api.model('PostResponse', {'posts': fields.List(fields.Nested(Post), description='List of posts'),
+    'pagination': fields.Nested(api.model('Pagination', {
+        "page": fields.Integer(description="Current page number"),  
+        "per_page": fields.Integer(description="Number of posts per page"),
+        "total_posts": fields.Integer(description="Total number of posts"),
+        "total_pages": fields.Integer(description="Total number of pages"),
+        "has_next": fields.Boolean(description="Is there a next page?"),
+        "has_prev": fields.Boolean(description="Is there a previous page?")
+    }))
+})
 
 CreatePostRequest = api.model("CreatePostRequest", {
     "content": fields.String(required=True, description="Content of the post"),

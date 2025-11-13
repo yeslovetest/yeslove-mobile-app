@@ -10,29 +10,30 @@ import dayjs from 'dayjs';
 
 const EventsInfoHeader = () => {
   const dispatch = useAppDispatch();
-  const [isAttending, setIsAttending] = useState(false)
-
   const event: EventsModelResponse = useAppSelector(state => state.navigation.tabStack.at(-1)?.data) as EventsModelResponse;
+  const [isAttending, setIsAttending] = useState(event.is_attending);
 
-  const toggleAttending = (status: boolean) => {
+  const toggleAttending = (status: boolean | undefined) => {
     if (status) {
       dispatch(removeAttendeeFromEvent({eventId: event.id ?? 0}));
     }
     else {  
       dispatch(addAttendeeToEvent({eventId: event.id ?? 0}));
     } 
+    setIsAttending(prev => !prev);
   };
 
   // Compare if the event is in the future
   const isFuture = dayjs(event.event_time).isAfter(dayjs());
+  console.log(event)
 
   return (
     <View>
       <View style={styles.indEventContainer}>
               <ImageBackground style={styles.indEventImg} source={event.image_url ?? ''} >
                 {isFuture && (
-                  <Pressable onPress={() => toggleAttending(event.is_attending ?? false)} style={styles.favouriteContainer}>
-                  {event.is_attending ? (
+                  <Pressable onPress={() => toggleAttending(isAttending)} style={styles.favouriteContainer}>
+                  {isAttending ? (
                     <><Text style={styles.addToEventText}>Attending ✔️</Text></>
                   ) : (
                     <><Text style={styles.addToEventText}>Add Event ➕</Text></>

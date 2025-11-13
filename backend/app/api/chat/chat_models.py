@@ -23,9 +23,10 @@ Chat = api.model("Chat", {
         "sender": fields.String(description="Sender Username"),
         "receiver": fields.String(description="Receiver Username"),
         "content": fields.String(description="Message content"),
-        "media_id": fields.String(description="Media attachment ID"),
-        "media_url": fields.String(description="URL to access media"),
-        "media_type": fields.String(description="MIME type of media"),
+        "media": fields.List(fields.Nested(api.model("MediaFile", {
+            "uri": fields.String(description="URL of the media file"),  
+            "type": fields.String(description="Type of the media file: 'image', 'video', etc.")
+        })), description="List of media files associated with the message"),
         "opened": fields.Boolean(description="Whether the message has been opened"),
         "timestamp": fields.String(description="Timestamp of the message ISO format")})
 

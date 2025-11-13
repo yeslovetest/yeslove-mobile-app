@@ -172,6 +172,7 @@ class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     followed_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    follow_type = db.Column(db.String(10), default="basic")  # basic or friend
 
     # ✅ Unique Constraint (Prevent duplicate follows)
     __table_args__ = (db.UniqueConstraint("follower_id", "followed_id", name="unique_follow"),)
@@ -205,6 +206,7 @@ class EmailNotificationSettings(db.Model):
     setting_id = db.Column(db.String, nullable=False)
     value = db.Column(db.Boolean, default=True)
 
+
 class ProfileVisibilitySettings(db.Model):
     __tablename__ = "profile_visibility_settings"
 
@@ -214,12 +216,14 @@ class ProfileVisibilitySettings(db.Model):
     value = db.Column(db.String, nullable=False)  # e.g., "visible", "hidden"
     category = db.Column(db.String, nullable=False)  # "Contact" or "Education And Other Information"
 
+
 class Reaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     reaction_type = db.Column(db.String(50), nullable=False)  # like, love, laugh, angry, etc.
-     
+
+    # Relationships 
     user = db.relationship("User", backref="reactions")
     post = db.relationship("Post", backref="reactions")
 
@@ -230,14 +234,14 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
-
-    # relationships
+    image_url = db.Column(db.String(500), nullable=True)  # Event image
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    creator = db.relationship('User', back_populates='created_events')
     address_id = db.Column(db.Integer, db.ForeignKey("address.id", ondelete='SET NULL'))  # nullable as could be online?
+    
+    # relationships
+    creator = db.relationship('User', back_populates='created_events')
     address = db.relationship('Address', back_populates='events')
 
     # Attendees many-many relationship
@@ -251,6 +255,7 @@ class Event(db.Model):
             "location": self.location,
             "event_time": self.event_time.isoformat(),
             "creator_id": self.creator_id,
+            "image_url": self.image_url,
             "address": self.address.to_dict() if self.address else None,
             "attendees": [user.id for user in self.attendees]
         }
@@ -365,7 +370,7 @@ class Document(db.Model):
     source      = db.Column(db.Text, nullable=False)
     chunk_index = db.Column(db.Integer, nullable=False)
     content     = db.Column(db.Text, nullable=False)
-    embedding   = db.Column(Vector(1536), nullable=False)
+    #embedding   = db.Column(Vector(1536), nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.now)
 
     
@@ -399,6 +404,7 @@ class Media(db.Model):
     height = db.Column(db.Integer)
     duration = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage

@@ -10,6 +10,7 @@ const profileSlice = createSlice({
     settings: { emailNotificationSettings: [] as EmailNotificationSetting[], 
                 profileVisibilitySettings: [] as ProfileVisibilitySetting[],
                  DefaultValue: true },
+    profilePicData: null as FormData | null ,             
 
   }, //defines initial state
   reducers: {
@@ -19,6 +20,8 @@ const profileSlice = createSlice({
     ) => {
       state.profiles[action.payload.id] = action.payload.data;
     },
+    updateProfile: (state, action: PayloadAction<{data?: Partial<UserProfile>, 
+      file?: FormData }>) => {},
     setActiveTabAction: (state, action: PayloadAction<string>) => {
       state.view.activeTab = action.payload;
     },
@@ -79,6 +82,7 @@ export const {
   persistUserInfoAction,
   fetchUserDataAction,
   storeUserDataAction, 
+  updateProfile,
   setEmailNotificationSettings,
   setEmailNotification,
   getEmailNotificationSettings,
