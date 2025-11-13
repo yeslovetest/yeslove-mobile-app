@@ -357,6 +357,12 @@ export interface Chat {
      */
     'content'?: string;
     /**
+     * List of media files associated with the message
+     * @type {Array<MediaFile>}
+     * @memberof Chat
+     */
+    'media'?: Array<MediaFile>;
+    /**
      * Whether the message has been opened
      * @type {boolean}
      * @memberof Chat
@@ -1126,7 +1132,6 @@ export interface MessageRequest {
  * @interface Notification
  */
 export interface Notification {
-    notification_type: string;
     /**
      * Notification ID
      * @type {number}
@@ -1247,6 +1252,49 @@ export interface NotificationPreferences {
 /**
  * 
  * @export
+ * @interface Pagination
+ */
+export interface Pagination {
+    /**
+     * Current page number
+     * @type {number}
+     * @memberof Pagination
+     */
+    'page'?: number;
+    /**
+     * Number of posts per page
+     * @type {number}
+     * @memberof Pagination
+     */
+    'per_page'?: number;
+    /**
+     * Total number of posts
+     * @type {number}
+     * @memberof Pagination
+     */
+    'total_posts'?: number;
+    /**
+     * Total number of pages
+     * @type {number}
+     * @memberof Pagination
+     */
+    'total_pages'?: number;
+    /**
+     * Is there a next page?
+     * @type {boolean}
+     * @memberof Pagination
+     */
+    'has_next'?: boolean;
+    /**
+     * Is there a previous page?
+     * @type {boolean}
+     * @memberof Pagination
+     */
+    'has_prev'?: boolean;
+}
+/**
+ * 
+ * @export
  * @interface Post
  */
 export interface Post {
@@ -1311,6 +1359,12 @@ export interface Post {
      */
     'comments'?: number;
     /**
+     * List of media file URLs associated with the post
+     * @type {Array<MediaFile>}
+     * @memberof Post
+     */
+    'media_files'?: Array<MediaFile>;
+    /**
      * Current user\'s reaction to the post, if any
      * @type {string}
      * @memberof Post
@@ -1324,11 +1378,17 @@ export interface Post {
  */
 export interface PostResponse {
     /**
-     * 
+     * List of posts
      * @type {Array<Post>}
      * @memberof PostResponse
      */
     'posts'?: Array<Post>;
+    /**
+     * 
+     * @type {Pagination}
+     * @memberof PostResponse
+     */
+    'pagination'?: Pagination;
 }
 /**
  * 
@@ -1557,11 +1617,17 @@ export interface SendMessageRequest {
      */
     'receiver_id': string;
     /**
-     * Message content
+     * Message content (required if no media_id)
      * @type {string}
      * @memberof SendMessageRequest
      */
-    'message': string;
+    'message'?: string;
+    /**
+     * Media ID for attachments (required if no message)
+     * @type {string}
+     * @memberof SendMessageRequest
+     */
+    'media_id'?: string;
 }
 /**
  * 
@@ -2549,47 +2615,8 @@ export class AuthApi extends BaseAPI {
 export const BlogApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Retrieve a single blog post by its ID
-         * @param {number} postId 
-         * @param {string} [xFields] An optional fields mask
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getGetSingleBlog: async (postId: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'postId' is not null or undefined
-            assertParamExists('getGetSingleBlog', 'postId', postId)
-            const localVarPath = `/api/blog/blog-posts/{post_id}`
-                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication Bearer required
-            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
-
-
-    
-            if (xFields != null) {
-                localVarHeaderParameter['X-Fields'] = String(xFields);
-            }
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * List blog posts with pagination, search, and filtering
+         * @summary List blog posts with pagination, search, and filtering
          * @param {string} [q] Search string for author name, title, or content
          * @param {number} [perPage] Items per page (default 10, max 100)
          * @param {number} [page] Page number (default 1)
@@ -2597,7 +2624,7 @@ export const BlogApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getListBlogs: async (q?: string, perPage?: number, page?: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getBlogPosts: async (q?: string, perPage?: number, page?: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/blog/blog-posts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2639,6 +2666,85 @@ export const BlogApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Retrieve a single blog post by its ID
+         * @param {number} postId 
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetSingleBlog: async (postId: number, xFields?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('getGetSingleBlog', 'postId', postId)
+            const localVarPath = `/api/blog/blog-posts/{post_id}`
+                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            if (xFields != null) {
+                localVarHeaderParameter['X-Fields'] = String(xFields);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Create a new blog post (Admin only)
+         * @summary Create a blog post for the Get Educated page (Admin only)
+         * @param {CreateBlogPost} payload 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postBlogPosts: async (payload: CreateBlogPost, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'payload' is not null or undefined
+            assertParamExists('postBlogPosts', 'payload', payload)
+            const localVarPath = `/api/blog/blog-posts`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -2649,6 +2755,22 @@ export const BlogApiAxiosParamCreator = function (configuration?: Configuration)
 export const BlogApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = BlogApiAxiosParamCreator(configuration)
     return {
+        /**
+         * List blog posts with pagination, search, and filtering
+         * @summary List blog posts with pagination, search, and filtering
+         * @param {string} [q] Search string for author name, title, or content
+         * @param {number} [perPage] Items per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getBlogPosts(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BlogPostList>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlogPosts(q, perPage, page, xFields, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BlogApi.getBlogPosts']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
         /**
          * Retrieve a single blog post by its ID
          * @param {number} postId 
@@ -2663,18 +2785,16 @@ export const BlogApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List blog posts with pagination, search, and filtering
-         * @param {string} [q] Search string for author name, title, or content
-         * @param {number} [perPage] Items per page (default 10, max 100)
-         * @param {number} [page] Page number (default 1)
-         * @param {string} [xFields] An optional fields mask
+         * Create a new blog post (Admin only)
+         * @summary Create a blog post for the Get Educated page (Admin only)
+         * @param {CreateBlogPost} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getListBlogs(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<BlogPostList>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getListBlogs(q, perPage, page, xFields, options);
+        async postBlogPosts(payload: CreateBlogPost, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postBlogPosts(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlogApi.getListBlogs']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlogApi.postBlogPosts']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2688,6 +2808,19 @@ export const BlogApiFactory = function (configuration?: Configuration, basePath?
     const localVarFp = BlogApiFp(configuration)
     return {
         /**
+         * List blog posts with pagination, search, and filtering
+         * @summary List blog posts with pagination, search, and filtering
+         * @param {string} [q] Search string for author name, title, or content
+         * @param {number} [perPage] Items per page (default 10, max 100)
+         * @param {number} [page] Page number (default 1)
+         * @param {string} [xFields] An optional fields mask
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBlogPosts(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<BlogPostList> {
+            return localVarFp.getBlogPosts(q, perPage, page, xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Retrieve a single blog post by its ID
          * @param {number} postId 
          * @param {string} [xFields] An optional fields mask
@@ -2698,16 +2831,14 @@ export const BlogApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.getGetSingleBlog(postId, xFields, options).then((request) => request(axios, basePath));
         },
         /**
-         * List blog posts with pagination, search, and filtering
-         * @param {string} [q] Search string for author name, title, or content
-         * @param {number} [perPage] Items per page (default 10, max 100)
-         * @param {number} [page] Page number (default 1)
-         * @param {string} [xFields] An optional fields mask
+         * Create a new blog post (Admin only)
+         * @summary Create a blog post for the Get Educated page (Admin only)
+         * @param {CreateBlogPost} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getListBlogs(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<BlogPostList> {
-            return localVarFp.getListBlogs(q, perPage, page, xFields, options).then((request) => request(axios, basePath));
+        postBlogPosts(payload: CreateBlogPost, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postBlogPosts(payload, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2719,6 +2850,21 @@ export const BlogApiFactory = function (configuration?: Configuration, basePath?
  * @extends {BaseAPI}
  */
 export class BlogApi extends BaseAPI {
+    /**
+     * List blog posts with pagination, search, and filtering
+     * @summary List blog posts with pagination, search, and filtering
+     * @param {string} [q] Search string for author name, title, or content
+     * @param {number} [perPage] Items per page (default 10, max 100)
+     * @param {number} [page] Page number (default 1)
+     * @param {string} [xFields] An optional fields mask
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof BlogApi
+     */
+    public getBlogPosts(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig) {
+        return BlogApiFp(this.configuration).getBlogPosts(q, perPage, page, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Retrieve a single blog post by its ID
      * @param {number} postId 
@@ -2732,17 +2878,15 @@ export class BlogApi extends BaseAPI {
     }
 
     /**
-     * List blog posts with pagination, search, and filtering
-     * @param {string} [q] Search string for author name, title, or content
-     * @param {number} [perPage] Items per page (default 10, max 100)
-     * @param {number} [page] Page number (default 1)
-     * @param {string} [xFields] An optional fields mask
+     * Create a new blog post (Admin only)
+     * @summary Create a blog post for the Get Educated page (Admin only)
+     * @param {CreateBlogPost} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof BlogApi
      */
-    public getListBlogs(q?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig) {
-        return BlogApiFp(this.configuration).getListBlogs(q, perPage, page, xFields, options).then((request) => request(this.axios, this.basePath));
+    public postBlogPosts(payload: CreateBlogPost, options?: RawAxiosRequestConfig) {
+        return BlogApiFp(this.configuration).postBlogPosts(payload, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2757,7 +2901,7 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
          * @summary Fetch all friends of the current user along with
-         * @param {string} keycloakId 
+         * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2798,18 +2942,15 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * 
-         * @summary Fetch chat messages between two users
-         * @param {string} receiverId 
-         * @param {object} payload 
+         * Fetch chat messages between current user and specified receiver, combining media with same caption if sent within 10 seconds
+         * @summary Fetch chat messages between two users, grouped by caption and sender (within 10s)
+         * @param {string} receiverId Keycloak ID of the message recipient
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages: async (receiverId: string, payload: object, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getGetMessages: async (receiverId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'receiverId' is not null or undefined
             assertParamExists('getGetMessages', 'receiverId', receiverId)
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('getGetMessages', 'payload', payload)
             const localVarPath = `/api/chat/get_messages/{receiver_id}`
                 .replace(`{${"receiver_id"}}`, encodeURIComponent(String(receiverId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -2828,12 +2969,9 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
 
 
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2841,8 +2979,8 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * 
-         * @summary Send a private message
+         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * @summary Send a private message with moderation
          * @param {SendMessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2929,7 +3067,7 @@ export const ChatApiFp = function(configuration?: Configuration) {
         /**
          * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
          * @summary Fetch all friends of the current user along with
-         * @param {string} keycloakId 
+         * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2941,22 +3079,21 @@ export const ChatApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Fetch chat messages between two users
-         * @param {string} receiverId 
-         * @param {object} payload 
+         * Fetch chat messages between current user and specified receiver, combining media with same caption if sent within 10 seconds
+         * @summary Fetch chat messages between two users, grouped by caption and sender (within 10s)
+         * @param {string} receiverId Keycloak ID of the message recipient
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, payload, options);
+        async getGetMessages(receiverId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetMessagesResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetMessages(receiverId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.getGetMessages']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Send a private message
+         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * @summary Send a private message with moderation
          * @param {SendMessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2993,7 +3130,7 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
         /**
          * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
          * @summary Fetch all friends of the current user along with
-         * @param {string} keycloakId 
+         * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3002,19 +3139,18 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.getGetFriends(keycloakId, payload, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Fetch chat messages between two users
-         * @param {string} receiverId 
-         * @param {object} payload 
+         * Fetch chat messages between current user and specified receiver, combining media with same caption if sent within 10 seconds
+         * @summary Fetch chat messages between two users, grouped by caption and sender (within 10s)
+         * @param {string} receiverId Keycloak ID of the message recipient
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
-            return localVarFp.getGetMessages(receiverId, payload, options).then((request) => request(axios, basePath));
+        getGetMessages(receiverId: string, options?: RawAxiosRequestConfig): AxiosPromise<GetMessagesResponse> {
+            return localVarFp.getGetMessages(receiverId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Send a private message
+         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * @summary Send a private message with moderation
          * @param {SendMessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3045,7 +3181,7 @@ export class ChatApi extends BaseAPI {
     /**
      * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
      * @summary Fetch all friends of the current user along with
-     * @param {string} keycloakId 
+     * @param {string} keycloakId Keycloak ID of the current user
      * @param {GetFriendsRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3056,21 +3192,20 @@ export class ChatApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Fetch chat messages between two users
-     * @param {string} receiverId 
-     * @param {object} payload 
+     * Fetch chat messages between current user and specified receiver, combining media with same caption if sent within 10 seconds
+     * @summary Fetch chat messages between two users, grouped by caption and sender (within 10s)
+     * @param {string} receiverId Keycloak ID of the message recipient
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ChatApi
      */
-    public getGetMessages(receiverId: string, payload: object, options?: RawAxiosRequestConfig) {
-        return ChatApiFp(this.configuration).getGetMessages(receiverId, payload, options).then((request) => request(this.axios, this.basePath));
+    public getGetMessages(receiverId: string, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).getGetMessages(receiverId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * 
-     * @summary Send a private message
+     * Send a message with optional media attachment. Either message or media_id must be provided.
+     * @summary Send a private message with moderation
      * @param {SendMessageRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3526,6 +3661,54 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
+         * 
+         * @summary Get list of all events with pagination and filtering
+         * @param {string} [type] Event type: \&#39;upcoming\&#39;, \&#39;past\&#39;, \&#39;all\&#39;
+         * @param {number} [perPage] Number of events per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetEvents: async (type?: string, perPage?: number, page?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/events/events`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Get a paginated list of verified professionals for the event page/Get-help page
          * @summary Retrieve verified professionals with pagination
          * @param {number} [perPage] Professionals per page (default 20, max 100)
@@ -3793,6 +3976,21 @@ export const EventsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @summary Get list of all events with pagination and filtering
+         * @param {string} [type] Event type: \&#39;upcoming\&#39;, \&#39;past\&#39;, \&#39;all\&#39;
+         * @param {number} [perPage] Number of events per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetEvents(type?: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EventListResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetEvents(type, perPage, page, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EventsApi.getGetEvents']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Get a paginated list of verified professionals for the event page/Get-help page
          * @summary Retrieve verified professionals with pagination
          * @param {number} [perPage] Professionals per page (default 20, max 100)
@@ -3927,6 +4125,18 @@ export const EventsApiFactory = function (configuration?: Configuration, basePat
          */
         getEventList(endDate?: string, startDate?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig): AxiosPromise<EventListResponse> {
             return localVarFp.getEventList(endDate, startDate, perPage, page, xFields, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get list of all events with pagination and filtering
+         * @param {string} [type] Event type: \&#39;upcoming\&#39;, \&#39;past\&#39;, \&#39;all\&#39;
+         * @param {number} [perPage] Number of events per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetEvents(type?: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig): AxiosPromise<EventListResponse> {
+            return localVarFp.getGetEvents(type, perPage, page, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a paginated list of verified professionals for the event page/Get-help page
@@ -4064,6 +4274,20 @@ export class EventsApi extends BaseAPI {
      */
     public getEventList(endDate?: string, startDate?: string, perPage?: number, page?: number, xFields?: string, options?: RawAxiosRequestConfig) {
         return EventsApiFp(this.configuration).getEventList(endDate, startDate, perPage, page, xFields, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get list of all events with pagination and filtering
+     * @param {string} [type] Event type: \&#39;upcoming\&#39;, \&#39;past\&#39;, \&#39;all\&#39;
+     * @param {number} [perPage] Number of events per page
+     * @param {number} [page] Page number for pagination
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof EventsApi
+     */
+    public getGetEvents(type?: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig) {
+        return EventsApiFp(this.configuration).getGetEvents(type, perPage, page, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4370,7 +4594,7 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Add a comment to a post
+         * @summary Add a comment to a post with moderation
          * @param {number} postId 
          * @param {AddCommentRequest} payload 
          * @param {*} [options] Override http request option.
@@ -4683,7 +4907,7 @@ export const FeedApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Add a comment to a post
+         * @summary Add a comment to a post with moderation
          * @param {number} postId 
          * @param {AddCommentRequest} payload 
          * @param {*} [options] Override http request option.
@@ -4827,7 +5051,7 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Add a comment to a post
+         * @summary Add a comment to a post with moderation
          * @param {number} postId 
          * @param {AddCommentRequest} payload 
          * @param {*} [options] Override http request option.
@@ -4968,7 +5192,7 @@ export class FeedApi extends BaseAPI {
 
     /**
      * 
-     * @summary Add a comment to a post
+     * @summary Add a comment to a post with moderation
      * @param {number} postId 
      * @param {AddCommentRequest} payload 
      * @param {*} [options] Override http request option.
@@ -5041,8 +5265,8 @@ export class FeedApi extends BaseAPI {
 export const MediaApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @param {string} mediaId 
+         * Delete media file
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5077,8 +5301,8 @@ export const MediaApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * 
-         * @param {string} mediaId 
+         * Get media file by ID
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5113,8 +5337,8 @@ export const MediaApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * 
-         * @param {string} mediaId 
+         * Get media file metadata
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5217,7 +5441,45 @@ export const MediaApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * 
+         * Upload media files for chat messages (images, videos, audio)
+         * @summary Upload media for chat messages
+         * @param {string} [file] Media file to upload (jpg, png, gif, mp4, mov, avi, mp3, wav, m4a, ogg, aac)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postChatMediaUpload: async (file?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/media/chat-upload`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (file !== undefined) {
+                localVarQueryParameter['file'] = file;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Upload media files for general use
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5259,8 +5521,8 @@ export const MediaApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = MediaApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @param {string} mediaId 
+         * Delete media file
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5271,8 +5533,8 @@ export const MediaApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @param {string} mediaId 
+         * Get media file by ID
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5283,8 +5545,8 @@ export const MediaApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @param {string} mediaId 
+         * Get media file metadata
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5318,7 +5580,20 @@ export const MediaApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Upload media files for chat messages (images, videos, audio)
+         * @summary Upload media for chat messages
+         * @param {string} [file] Media file to upload (jpg, png, gif, mp4, mov, avi, mp3, wav, m4a, ogg, aac)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postChatMediaUpload(file?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postChatMediaUpload(file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MediaApi.postChatMediaUpload']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Upload media files for general use
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5339,8 +5614,8 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
     const localVarFp = MediaApiFp(configuration)
     return {
         /**
-         * 
-         * @param {string} mediaId 
+         * Delete media file
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5348,8 +5623,8 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.deleteGetMedia(mediaId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @param {string} mediaId 
+         * Get media file by ID
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5357,8 +5632,8 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.getGetMedia(mediaId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @param {string} mediaId 
+         * Get media file metadata
+         * @param {string} mediaId Unique media identifier
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5383,7 +5658,17 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.postBulkUploadMedia(options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Upload media files for chat messages (images, videos, audio)
+         * @summary Upload media for chat messages
+         * @param {string} [file] Media file to upload (jpg, png, gif, mp4, mov, avi, mp3, wav, m4a, ogg, aac)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postChatMediaUpload(file?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postChatMediaUpload(file, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Upload media files for general use
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5401,8 +5686,8 @@ export const MediaApiFactory = function (configuration?: Configuration, basePath
  */
 export class MediaApi extends BaseAPI {
     /**
-     * 
-     * @param {string} mediaId 
+     * Delete media file
+     * @param {string} mediaId Unique media identifier
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MediaApi
@@ -5412,8 +5697,8 @@ export class MediaApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @param {string} mediaId 
+     * Get media file by ID
+     * @param {string} mediaId Unique media identifier
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MediaApi
@@ -5423,8 +5708,8 @@ export class MediaApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @param {string} mediaId 
+     * Get media file metadata
+     * @param {string} mediaId Unique media identifier
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MediaApi
@@ -5455,7 +5740,19 @@ export class MediaApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Upload media files for chat messages (images, videos, audio)
+     * @summary Upload media for chat messages
+     * @param {string} [file] Media file to upload (jpg, png, gif, mp4, mov, avi, mp3, wav, m4a, ogg, aac)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MediaApi
+     */
+    public postChatMediaUpload(file?: string, options?: RawAxiosRequestConfig) {
+        return MediaApiFp(this.configuration).postChatMediaUpload(file, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Upload media files for general use
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MediaApi

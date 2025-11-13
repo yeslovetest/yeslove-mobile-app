@@ -10,6 +10,7 @@ import { useAppDispatch } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
 import { useFocusEffect } from "@react-navigation/native";
 import { getEmailNotificationSettings, getProfileVisibilitySettings } from '@/app/store/Profile-store/profileSlice'
+import { fetchNotificationPreferences } from '@/app/store/Notification-store/notificationSlice'
 
 const SettingsPage = () => {
     const dispatch = useAppDispatch()
@@ -17,6 +18,7 @@ const SettingsPage = () => {
     useFocusEffect(React.useCallback(() => {
         dispatch(getEmailNotificationSettings());
         dispatch(getProfileVisibilitySettings());
+        dispatch(fetchNotificationPreferences());
     }, []));
 
 
@@ -31,6 +33,10 @@ const SettingsPage = () => {
 
     const openProfileVisibility = () => {
     dispatch(openTabOnTopAction( { type: TabType.PROFILE_VISIBILITY } ))
+    }
+
+    const openNotificationPreferences = () => {
+    dispatch(openTabOnTopAction( { type: TabType.NOTIFICATION_PREFERENCES} ))
     }
 
     const openExportData = () => {
@@ -66,6 +72,16 @@ const SettingsPage = () => {
                         <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
                             <Fontisto name="low-vision" size={24} color="black" />
                             <Text style={settingsSharedStyles.settingsOptionText}>Profile Visibility</Text>
+                        </View>
+                        <AntDesign name="right" size={24} color="black" />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={settingsSharedStyles.settingsOptionContainer}>
+                    <TouchableOpacity onPress={openNotificationPreferences} style={settingsSharedStyles.settingsOptionButton}>
+                        <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
+                            <Fontisto name="bell" size={24} color="black" />
+                            <Text style={settingsSharedStyles.settingsOptionText}>Push Notification Settings</Text>
                         </View>
                         <AntDesign name="right" size={24} color="black" />
                     </TouchableOpacity>

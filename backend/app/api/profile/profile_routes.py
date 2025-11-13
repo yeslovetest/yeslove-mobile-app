@@ -1,4 +1,4 @@
-from flask import request
+from flask import current_app, request
 from flask_restx import Namespace, Resource
 from typing import Dict, Any
 
@@ -80,19 +80,24 @@ class UpdateProfile(Resource):
 
         user.bio = data.get("bio", user.bio)
         
-        # Handle profile picture upload to S3
+        # Handle profile picture upload to S3 or to local storage
         if 'profile_pic' in request.files:
             from app.services.media.media_service import MediaService
-            try:
-                upload_result = MediaService.upload_file(
-                    file=request.files['profile_pic'],
-                    user_id=user.id,
-                    folder='profiles'
-                )
-                user.profile_pic_url = upload_result.get('s3_url') if upload_result else None
-            except Exception as e:
-                logger.error(f"Profile pic upload failed: {e}")
-        
+            if current_app.config.get("USE_S3_STORAGE", False):
+                try:
+                    upload_result = MediaService.upload_file(
+                        file=request.files['profile_pic'],
+                        user_id=user.id,
+                        folder='profiles'
+                    )
+                    user.profile_pic_url = upload_result.get('s3_url') if upload_result else None
+                except Exception as e:
+                    logger.error(f"Profile pic upload failed: {e}")
+            else:
+                result = MediaService.store_file(file=request.files['profile_pic'], user_id=user.id)
+                file_url = result.get("media_url")
+                user.profile_pic_url = file_url
+
         db.session.commit()
         return {"message": "Profile updated successfully"}, 200
     
@@ -262,3 +267,70 @@ class EmailNotifications(Resource):
         db.session.commit()
         return {"message": "Email notification settings updated"}, 200
 
+
+# -------------------------
+# TimeLine
+# -------------------------
+@api.route('/timeline')
+class UserTimeline(Resource):
+    from .profile_models import TimelineResponse
+    @require_auth()
+    @api.param("page", "Page number for pagination", type='integer', default=1)
+    @api.param("per_page", "Number of posts per page", type='integer', default=20)
+    @api.response(code=200, description="Timeline response containing current user post with pagination", model=TimelineResponse)
+    def get(self):
+        '''
+        retrieve all posts authored by the current user to be displayed on timeline
+        '''
+        from app.models import Post, User
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        # Pagination parameters
+        try:
+            page = int(request.args.get("page", 1))
+            per_page = int(request.args.get("per_page", 20))
+        except ValueError:
+            page = 1
+            per_page = 20
+
+        if page < 1:
+            page = 1
+        if per_page < 1:
+            per_page = 20
+
+        # Total posts
+        total_posts = Post.query.filter_by(user_id=user.id).count()
+
+        # Paginated query
+        posts = (
+            Post.query
+            .filter_by(user_id=user.id)
+            .order_by(Post.timestamp.desc())
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+            .all()
+        )
+
+        data =  [{
+            "id": post.id,
+            "author_pic": post.author.profile_pic_url,
+            "content": post.content,
+            "image_url": post.image_url,
+            "video_url": post.video_url,
+            "timestamp": post.timestamp.isoformat(),
+            "likes": len(post.likes),
+            "comments": len(post.comments),
+            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type} for media in post.media_files if post.media_files]
+        } for post in posts]
+
+        logger.info('list of posts succesfully retrieved')
+
+        return {
+            "total": total_posts,
+            "per_page": per_page,
+            "current_page": page,
+            "posts": data,
+        }, 200    
+       

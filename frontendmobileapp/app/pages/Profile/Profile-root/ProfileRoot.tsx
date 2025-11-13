@@ -24,10 +24,6 @@ export default function ProfileRoot() {
   );
 
  
-
-
-
-
   return (
     <>
       <Header mainTitle={userName} />
