@@ -292,6 +292,7 @@ class CreatePost(Resource):
 @api.route("/post/<int:post_id>")
 class GetPost(Resource):
     from .feed_models import Post
+    @require_auth()
     @api.response(code=200, description="Post details", model=Post)
     def get(self, post_id):
         """Fetch a single post by ID."""
@@ -681,7 +682,6 @@ class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest, GetFollowingResponse
     @require_auth()
     @api.doc(security='Bearer')
-    @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
     def get(self, keycloak_id):

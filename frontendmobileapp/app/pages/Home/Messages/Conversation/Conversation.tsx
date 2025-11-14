@@ -36,7 +36,7 @@ const Conversation = () => {
     }, [])
   );
   
-  
+  console.log(messages)
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
 
@@ -48,14 +48,24 @@ const Conversation = () => {
 
   // This effect will run once when messages become available
   }, [messages.length]);
-     
+    
+  // this function is used only when message conatins media files to be uploaded
+  const uploadMediaAsync = (formData: FormData) => {
+    return new Promise<string[]>((resolve, reject) => {
+      if (formData.getAll("file").length === 1) {
+        dispatch(uploadMedia({ requestBody: formData }, { resolve, reject }));
+      } else {
+        dispatch(uploadBulkMedia({ requestBody: formData }, { resolve, reject }));
+      }
+    });
+  };
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
+      let mediaIds : string[] = []
       const mediaData = new FormData(); // form data for Media upload
   
       if (selectedFiles) {
         const fieldName = "file"; 
-        
 
         selectedFiles.forEach((selectedFile) => {
            // detect if it's base64 or file URI
@@ -74,22 +84,23 @@ const Conversation = () => {
             mediaData.append(fieldName, file);
           }
         });  
-
-        if (mediaData.getAll(fieldName).length === 1) {
-          dispatch(uploadMedia({requestBody: mediaData}));  
-        } else if (mediaData.getAll(fieldName).length > 1) {
-          dispatch(uploadBulkMedia({requestBody: mediaData}));  
-        }
-      
+        setSelectedFiles([]); //clear selected media files
       }
-    
-    if (uploadedMediaId && uploadedMediaId.length > 0) {
-      uploadedMediaId.forEach((mediaId) => {
-        dispatch(sendChatMessage({id: otherUserId, message: text, mediaID: mediaId}));
+
+    // Upload media first
+    if (mediaData.getAll("file").length > 0) {
+      mediaIds = await uploadMediaAsync(mediaData); 
+    }
+
+    // send chat messages AFTER upload is done
+    if (mediaIds.length > 0) {
+      mediaIds.forEach((id) => {
+        dispatch(sendChatMessage({ id: otherUserId, message: text, mediaID: id }));
       });
     } else {
-      dispatch(sendChatMessage({id: otherUserId, message: text}));
-    }
+        dispatch(sendChatMessage({ id: otherUserId, message: text }));
+    }  
+    
   };
 
   const selectMedia = async (type: string ) => {

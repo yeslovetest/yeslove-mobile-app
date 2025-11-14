@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { View, Text, FlatList, Image, Modal, Pressable, StyleSheet } from "react-native";
 import { Video } from "expo-av";
 import styles from "./mediaPreviewStyles";
+import { MediaFile } from "@/generated-api";
+import { BASE_URL } from '@/app/index';
 
 interface FilePreviewProps {
-  file: { uri?: string, type?: string, media_url?: string, name?: string }[];
+  file: { uri?: string, type?: string, media_url?: string, name?: string }[] | MediaFile[];
 }
 
 
@@ -18,10 +20,12 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
   const renderFileItem = ({ item }) => (
     <View style={styles.previewContainer}>
       {item.type.startsWith("image") ? (
-        <Image source={{ uri: item.uri || item.media_url }} style={styles.previewImage} />
+        <Image 
+        source={{ uri: item.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }} 
+        style={styles.previewImage} />
       ) : (
         <Video
-          source={{ uri: item.uri || item.media_url  }}
+          source={{ uri: item.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }}
           style={styles.previewVideo}
           useNativeControls
           resizeMode="contain"
@@ -45,12 +49,12 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
                 <View style={styles.previewContainer}>
                   {item?.type.startsWith("image") ? (
                     <Image
-                      source={{ uri: item.uri || item.media_url  }}
+                      source={{ uri: item?.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }}
                       style={[styles.previewImage, { opacity: 0.4 }]}
                     />
                   ) : (
                     <Video
-                      source={{ uri: item.uri || item.media_url  }}
+                      source={{ uri: item?.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }}
                       style={[styles.previewVideo, { opacity: 0.4 }]}
                       resizeMode="cover"
                       muted
