@@ -10,7 +10,8 @@ API_KEY = os.getenv("PERSPECTIVE_API_KEY")
 def analyze_text(text, *, languages=None, attributes=None):
     """Send text to Perspective API and return the response JSON."""
     if not API_KEY:
-        raise RuntimeError("PERSPECTIVE_API_KEY not configured")
+        #raise RuntimeError("PERSPECTIVE_API_KEY not configured")
+        return None  # 👈 Allow Feeds API to work (only for development) if no API KEY found
     url = (
         "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze"
         f"?key={API_KEY}"

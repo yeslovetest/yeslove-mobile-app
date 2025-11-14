@@ -5,7 +5,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 class TokenRefreshService{
 
     static REFRESH_TOKEN_KEY = "refreshToken";
-    static USERID_KEY = "userId";
+    static USERID_KEY = "userId";   // Keycloak Id
+    static USER_DBID: string = "";  // user Database Id
     private intervalId: ReturnType<typeof setTimeout> | null = null;
 
 
@@ -46,6 +47,14 @@ class TokenRefreshService{
 
     loadUserIdFromLocalStorage(): Promise<string | null> {
         return AsyncStorage.getItem(TokenRefreshService.USERID_KEY);
+    }
+
+    saveUserDBIDToLocalStorage(userDBID: number): Promise<void> {
+        return AsyncStorage.setItem(TokenRefreshService.USER_DBID, String(userDBID));
+    }
+
+    loadUserDBIDFromLocalStorage(): Promise<string | null> {
+        return AsyncStorage.getItem(TokenRefreshService.USER_DBID)
     }
 }
 

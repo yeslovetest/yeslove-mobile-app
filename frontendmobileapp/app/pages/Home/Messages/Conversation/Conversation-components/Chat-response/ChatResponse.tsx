@@ -3,11 +3,12 @@ import { View, Text, Image } from 'react-native';
 import styles from './ChatResponseStyles';
 import UserProfile from '../UserProfile/UserProfile';
 import MediaFilePreview from '../MediaPreview/mediaPreview';
+import { MediaFile } from '@/generated-api';
 
 interface Props {
   text: string;
   time: string;
-  media: { uri?: string, type?: string, media_url?: string, name?: string }[];
+  media: { uri?: string, type?: string, media_url?: string, name?: string }[] | MediaFile[];
 }
 
 const ChatResponse = ({ text, time, media }: Props) => {

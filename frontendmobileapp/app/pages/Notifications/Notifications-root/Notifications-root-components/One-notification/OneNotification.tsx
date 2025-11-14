@@ -8,9 +8,10 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { BASE_URL } from '@/app/index';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
-import { retrieveOnePost } from '@/app/store/Home-store/feedSlice';
+import { retrieveOnePost, setPostReactionTab } from '@/app/store/Home-store/feedSlice';
 import { fetchOneBlogPost } from '@/app/store/Get-help-store/getHelpSlice';
 import { fetchOneEvent } from '@/app/store/Events-store/eventsSlice';
+import { markNotificationRead } from '@/app/store/Notification-store/notificationSlice';
 
 
 dayjs.extend(relativeTime);
@@ -28,17 +29,23 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification }) => {
   const imageUrl = `${BASE_URL}${notification.data?.image?.startsWith('/') ? '' : '/'}${notification.data?.image}`;
   
   const handleNotificationPress = () => {
-    if (['posts', 'comments', 'likes'].includes(notification.notification_type)) {
+    if (['posts', 'comments', 'likes'].includes(notification.type)) {
         dispatch(retrieveOnePost({ postID: notification.data?.post_id ?? 0}));
-        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: onePost}));
+        if (notification.type === 'likes'){
+          dispatch(setPostReactionTab('reactions')); 
+        }
+        else {
+          dispatch(setPostReactionTab('comments'));
+        }
+        dispatch(markNotificationRead(notification.id));
     }
-    else if (notification.notification_type === 'blogs') { 
+    else if (notification.type === 'blogs') { 
         dispatch(fetchOneBlogPost({ blogId: notification.data?.blog_id ?? 0}));
-        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_BLOG, data: oneBlog}));
+        dispatch(markNotificationRead(notification.id))
     }
-    else if (notification.notification_type === 'events') { 
+    else if (notification.type === 'events') { 
         dispatch(fetchOneEvent({ eventId: notification.data?.event_id ?? 0}));
-        dispatch(openTabOnTopAction({ type: TabType.INDIVIDUAL_EVENT, data: oneEvent}));
+        dispatch(markNotificationRead(notification.id))
     }  
   };
   
