@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontFamily: "sans-serif",
         color: "#1e1e1e",
+        marginVertical: 10,
     },
 
     timeSentResponseContainer: {

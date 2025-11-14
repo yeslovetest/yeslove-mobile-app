@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { View, Text, FlatList, Image, Modal, Pressable, StyleSheet } from "react-native";
 import { Video } from "expo-av";
 import styles from "./PostFilePreviewStyles";
+import { MediaFile } from "@/generated-api";
+import { BASE_URL } from '@/app/index';
 
 interface FilePreviewProps {
-  file: { uri: string; type: string; name?: string }[];
+  file: { uri: string; type: string; name?: string }[] | MediaFile[];
 }
 
 
@@ -14,20 +16,26 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const remainingCount = file.length - 2;
+  console.log(file);
 
   const renderFileItem = ({ item }) => (
     <View style={styles.previewContainer}>
       {item.type.startsWith("image") ? (
-        <Image source={{ uri: item.uri }} style={styles.previewImage} />
+        <Image source={{ 
+          uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri
+         }} 
+         style={styles.previewImage} />
       ) : (
         <Video
-          source={{ uri: item.uri }}
+          source={{ 
+            uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri 
+          }}
           style={styles.previewVideo}
           useNativeControls
           resizeMode="contain"
         />
       )}
-      <Text style={styles.text}>📄 {item.name || "File selected"}</Text>
+      <Text style={styles.text}> {item.name? `📄${item.name}` : null}</Text>
     </View>
   );
 
@@ -46,12 +54,16 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
                 <View style={styles.previewContainer}>
                   {item.type.startsWith("image") ? (
                     <Image
-                      source={{ uri: item.uri }}
+                      source={{ 
+                        uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri 
+                      }}
                       style={[styles.previewImage, { opacity: 0.4 }]}
                     />
                   ) : (
                     <Video
-                      source={{ uri: item.uri }}
+                      source={{ 
+                        uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri 
+                      }}
                       style={[styles.previewVideo, { opacity: 0.4 }]}
                       resizeMode="cover"
                       muted

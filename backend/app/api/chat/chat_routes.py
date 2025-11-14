@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from flask import request
 from flask_restx import Namespace, Resource
 from sqlalchemy import func, or_, and_
@@ -98,7 +98,7 @@ class SendMessage(Resource):
 
 @api.route("/get_messages/<string:receiver_id>")
 class GetMessages(Resource):
-    from datetime import timedelta
+    
     from .chat_models import GetMessagesRequest, GetMessagesResponse
 
     @require_auth()
