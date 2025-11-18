@@ -10,7 +10,7 @@ UploadChatMediaResponse = api.model("UploadChatMediaResponse", {
 SendMessageRequest = api.model("SendMessageRequest", {
         "receiver_id": fields.String(required=True, description="keycloak ID of the recipient user"),
         "message": fields.String(required=False, description="Message content (required if no media_id)"),
-        "media_id": fields.String(required=False, description="Media ID for attachments (required if no message)")
+        "media_id": fields.List(fields.String(required=False, description="List of Media ID for attachments (required if no message)"))
     })
 
 SendMessageResponse = api.model("SendMessageResponse", {
