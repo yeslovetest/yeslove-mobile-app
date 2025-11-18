@@ -1,5 +1,5 @@
 import Header from '@/app/Universal-components/Header/Header';
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import * as ImagePicker from "expo-image-picker";
 import { View, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
 import ChatResponse from './Conversation-components/Chat-response/ChatResponse';
@@ -25,6 +25,7 @@ const Conversation = () => {
   );
   const uploadedMediaId = useAppSelector(state => state.media.uploadedMediaId);
   const [selectedFiles, setSelectedFiles] = useState<Array<{ uri: string; type: string; name?: string }> | null>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -53,9 +54,9 @@ const Conversation = () => {
   const uploadMediaAsync = (formData: FormData) => {
     return new Promise<string[]>((resolve, reject) => {
       if (formData.getAll("file").length === 1) {
-        dispatch(uploadMedia({ requestBody: formData }, { resolve, reject }));
+        dispatch(uploadMedia({ requestBody: formData, resolve, reject }));
       } else {
-        dispatch(uploadBulkMedia({ requestBody: formData }, { resolve, reject }));
+        dispatch(uploadBulkMedia({ requestBody: formData, resolve, reject }));
       }
     });
   };
@@ -89,14 +90,9 @@ const Conversation = () => {
 
     // Upload media first
     if (mediaData.getAll("file").length > 0) {
-      mediaIds = await uploadMediaAsync(mediaData); 
-    }
-
-    // send chat messages AFTER upload is done
-    if (mediaIds.length > 0) {
-      mediaIds.forEach((id) => {
-        dispatch(sendChatMessage({ id: otherUserId, message: text, mediaID: id }));
-      });
+        mediaIds = await uploadMediaAsync(mediaData); 
+        // send chat messages AFTER upload is done
+        dispatch(sendChatMessage({ id: otherUserId, message: text, mediaID: mediaIds ?? undefined }));
     } else {
         dispatch(sendChatMessage({ id: otherUserId, message: text }));
     }  
@@ -141,6 +137,7 @@ const Conversation = () => {
       <View style={styles.chatContainer}>
        
         <FlatList
+          ref={flatListRef}
           data={messages}
           keyExtractor={(_, idx) => idx.toString()}
           renderItem={({ item }) =>
@@ -155,6 +152,8 @@ const Conversation = () => {
             )
           }
           contentContainerStyle={styles.contentContainer}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
         />
        
         <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>

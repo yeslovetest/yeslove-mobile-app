@@ -201,7 +201,7 @@ function* handleGetMessages(action: PayloadAction<string>){
   yield put(setChatMessages(messages.messages ?? []));
 }
 
-function* handlePostSendMessage(action: PayloadAction<{id: string, message: string, mediaID?: string | undefined}>) {
+function* handlePostSendMessage(action: PayloadAction<{id: string, message: string, mediaID?: string[] | undefined}>) {
   try{
     yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, 
       message: action.payload.message, media_id: action.payload.mediaID}); 
@@ -319,10 +319,11 @@ function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, curr
  * Feed Api 
  * */
 function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | undefined, page: number | undefined}>){
-  const posts = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
+  const response = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
   console.log(action.payload.feedType)
-  console.log(posts)
-  yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload.feedType}));
+  console.log(response)
+  yield put(setFeedDataAction({post: response.posts ?? [], 
+    feedType: action.payload.feedType, pagination: response.pagination}));
 }
 
 function* handleGetOnePost(action: PayloadAction<{postID: number}>){
@@ -447,15 +448,15 @@ function* handleUploadMedia(action){
     yield put({ type: "uploadMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
 
     // Resolve promise - required for posting message when it contains media
-    if (action.meta?.resolve) {
-      action.meta.resolve([response.data.media_id]);
+    if (action.payload?.resolve) {
+      action.payload.resolve([response.data.media_id]);
     }
   }
   catch (error) {
     console.error('failed to upload media', error);
     yield put({ type: "uploadMediaFailure" });
-    if (action.meta?.reject) {
-      action.meta.reject(error);
+    if (action.payload?.reject) {
+      action.payload.reject(error);
     }
   }
    
@@ -469,15 +470,15 @@ function* handleUploadBulkMedia(action){
     yield put({ type: "uploadBulkMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
 
     // Resolve promise - required for posting message when it contains media
-    if (action.meta?.resolve) {
-      action.meta.resolve(response.data.ids);
+     if (action.payload?.resolve) {
+      action.payload.resolve(response.data.ids);
     }
   }
   catch (error) {
     console.error('failed to upload bulk media', error);
     yield put({ type: "uploadBulkMediaFailure" });
-    if (action.meta?.reject) {
-      action.meta.reject(error);
+    if (action.payload?.reject) {
+      action.payload.reject(error);
     }
   }
 }  
