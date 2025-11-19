@@ -42,7 +42,7 @@ class UserProfile(Resource):
             "contact_info": {
                 "name": user.username or "",
                 "email": user.email or "",
-                "phone": getattr(user, 'phone', None) or "",
+                "phone": getattr(user, 'phone_number', None) or "",
                 "address": getattr(user, 'address', None) or "",
                 "website": getattr(user, 'website', None) or "",
             },
@@ -80,6 +80,15 @@ class UpdateProfile(Resource):
             return {"message": "User not found"}, 404
 
         user.bio = data.get("bio", user.bio)
+        new_userinfo = data.get("contact_info", None)
+        logger.info(f"✅ sent Data: {new_userinfo}")
+        if new_userinfo:
+            # To do: 👇 updating of username and email might require KeyCloak
+            #user.username = new_userinfo['name']
+            #user.email = new_userinfo['email']
+            user.phone_number = new_userinfo['phone']
+            user.address = new_userinfo['address']
+            user.website = new_userinfo['website']
         
         # Handle profile picture upload to object storage or local storage
         if 'profile_pic' in request.files:
