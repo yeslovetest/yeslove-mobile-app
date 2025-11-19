@@ -16,12 +16,24 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 50
     },
-
+ 
     saveButtonText: {
         color: "#eee",
         textAlign: "center",
         fontSize: 19
     },
+    displayMsgBox: {
+        alignItems: 'center',
+        paddingVertical: 15,
+        marginVertical: 4,
+        paddingHorizontal: 50,
+    },
+    displayMsgText : {
+        color: theme.colors.primaryBlue,
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: '500',
+    }
 })
 
 export default styles
