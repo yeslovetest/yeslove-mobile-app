@@ -3,6 +3,7 @@ import { useAppDispatch } from '../app/store/hooks';
 import { logInAction, setLoginStateAction, LoginState, setErrorMessage } from '../app/store/Auth-store/authSlice';
 import axios from 'axios';
 import theme from '@/assets/variables/Variables';
+import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice';
 
 axios.defaults.baseURL = "http://localhost:5001";
 
@@ -36,6 +37,7 @@ export const useLogin = () => {
     const [result, field] = validateInputs();
     if (result){
       dispatch(logInAction({ username, password }));
+      dispatch(activateLoadingScreen(true));
     }
     else if (field == 'username') {
       setUsernameBdColor(['red', 'red']);

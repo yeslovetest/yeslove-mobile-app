@@ -5,39 +5,62 @@ import styles from "./PostFilePreviewStyles";
 import { MediaFile } from "@/generated-api";
 import { BASE_URL } from '@/app/index';
 
-interface FilePreviewProps {
-  file: { uri: string; type: string; name?: string }[] | MediaFile[];
+interface FileItem {
+  uri: string;
+  type: string;
+  name?: string;
 }
 
+interface Props {
+  file: FileItem[];
+  editable?: boolean;
+  delFunc?: (index: number) => void;
+}
 
-const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
-  if (!file) return null;
-
+const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const remainingCount = file.length - 2;
-  console.log(file);
+  const deleteItem = (index: number) => {
+    delFunc?.(index);
+  };
 
-  const renderFileItem = ({ item }) => (
-    <View style={styles.previewContainer}>
-      {item.type.startsWith("image") ? (
-        <Image source={{ 
-          uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri
-         }} 
-         style={styles.previewImage} />
-      ) : (
-        <Video
-          source={{ 
-            uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri 
-          }}
-          style={styles.previewVideo}
-          useNativeControls
-          resizeMode="contain"
-        />
-      )}
-      <Text style={styles.text}> {item.name? `📄${item.name}` : null}</Text>
-    </View>
-  );
+  const renderFile = ({ item, index }: { item: FileItem, index: number }) => {
+    const isImage = item.type.startsWith("image");
+    const uri = item.uri.startsWith("/api") ? `${BASE_URL}${item.uri}` : item.uri;
+
+    return (
+      <View style={styles.previewContainer}>
+        
+        {/* DELETE ICON */}
+        {editable && (
+          <Pressable style={styles.deleteWrapper} onPress={() => deleteItem(index)}>
+            <Text style={styles.deleteIcon}>✖</Text>
+          </Pressable>
+        )}
+
+        {isImage ? (
+          <Image source={{ uri }} style={styles.previewImage} />
+        ) : (
+          <Video
+            source={{ uri }}
+            style={styles.previewVideo}
+            useNativeControls
+            resizeMode="contain"
+          />
+        )}
+
+        {/* FILE NAME */}
+        {item.name && (
+          <Text numberOfLines={1} style={styles.fileName}>
+            📄 {item.name}
+          </Text>
+        )}
+      </View>
+    );
+  };
+
+  /** Show only first 2, but second one shows +more overlay */
+  const remaining = file.length - 2;
 
   return (
     <View>
@@ -46,57 +69,51 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
         horizontal
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item, index }) => {
-          const isLastVisible = index === 1 && remainingCount > 0;
+          const isLastVisible = index === 1 && remaining > 0;
 
           if (isLastVisible) {
+            const previewUri = item.uri.startsWith("/api")
+              ? `${BASE_URL}${item.uri}`
+              : item.uri;
+
             return (
               <Pressable onPress={() => setModalVisible(true)}>
                 <View style={styles.previewContainer}>
-                  {item.type.startsWith("image") ? (
-                    <Image
-                      source={{ 
-                        uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri 
-                      }}
-                      style={[styles.previewImage, { opacity: 0.4 }]}
-                    />
-                  ) : (
-                    <Video
-                      source={{ 
-                        uri: item.uri.startsWith("/api")? `${BASE_URL}${item.uri}` : item.uri 
-                      }}
-                      style={[styles.previewVideo, { opacity: 0.4 }]}
-                      resizeMode="cover"
-                      muted
-                    />
-                  )}
+                  <Image
+                    source={{ uri: previewUri }}
+                    style={[styles.previewImage, { opacity: 0.4 }]}
+                  />
                   <View style={styles.overlay}>
-                    <Text style={styles.overlayText}>+{remainingCount}</Text>
+                    <Text style={styles.overlayText}>+{remaining}</Text>
                   </View>
                 </View>
               </Pressable>
             );
           }
 
-          // Normal first item
-          return renderFileItem({ item });
+          return renderFile({ item, index });
         }}
       />
 
-      {/* Modal to show all files */}
+      {/* MODAL */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>All Files</Text>
 
-            <FlatList
+            <FlatList  
               data={file}
               keyExtractor={(_, index) => index.toString()}
-              renderItem={renderFileItem}
-              numColumns={2}
+              renderItem={({ item, index }) => renderFile({ item, index })}
+              numColumns={3}
               contentContainerStyle={{ gap: 10 }}
             />
+            
 
-            <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
               <Text style={styles.closeText}>Close</Text>
             </Pressable>
           </View>
@@ -104,32 +121,6 @@ const PostFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
       </Modal>
     </View>
   );
-}
-
-
-
-/*
-  if (file.at(-1)?.type.startsWith("image")) {
-    console.log("Rendering image preview for:", file.uri);
-    return <Image source={{ uri: file.uri }} style={styles.previewImage} />;
-  }
-
-  if (file.type.startsWith("video")) {
-    return (
-      <Video
-        source={{ uri: file.uri }}
-        style={styles.previewVideo}
-        useNativeControls
-        resizeMode="contain"
-      />
-    );
-  }
-
-  if (file.type.startsWith("audio")) {
-    return <Text style={styles.text}>🎵 {file.name || "Audio file selected"}</Text>;
-  } **/
-
-
-
+};
 
 export default PostFilePreview;

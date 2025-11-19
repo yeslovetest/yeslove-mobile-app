@@ -83,6 +83,39 @@ previewContainer: {
     color: "#fff",
     textAlign: "center",
   },
+  previewHeader: {
+    backgroundColor: 'white',
+    zIndex: 10000,
+  },
+  deleteWrapper: {
+  position: "absolute",
+  top: 4,
+  right: 4,
+  backgroundColor: "rgba(0,0,0,0.6)",
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 10,
+},
+
+deleteIcon: {
+  color: "white",
+  fontSize: 14,
+  fontWeight: "bold",
+  lineHeight: 14,
+},
+
+fileName: {
+  marginTop: 4,
+  fontSize: 12,
+  color: "#555",
+  width: 90,
+  textAlign: "center",
+},
+
+
 });
 
 

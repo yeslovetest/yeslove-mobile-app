@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, ScrollView } from 'react-native'
 import styles from './ProfileInformationStyles'
 import Header from '@/app/Universal-components/Header/Header'
 import { useAppSelector } from '@/app/store/hooks'
@@ -16,6 +16,7 @@ const ProfileInformation = () => {
     <>
     <Header></Header>
     <View style={styles.container}>
+        <ScrollView>
           <View style={styles.viewItemContainer}>
             <Text style={styles.viewItemText}>Name</Text>
             <Text style={styles.viewItemInfo}>{name}</Text>
@@ -61,6 +62,7 @@ const ProfileInformation = () => {
               </View>
             </View>
           </View>
+        </ScrollView>  
         </View>
     </>
   )

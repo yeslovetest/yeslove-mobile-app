@@ -1,6 +1,7 @@
 import { UserProfile, EmailNotificationSetting, EmailNotificationSettings, 
         ProfileVisibilitySetting, ProfileVisibilitySettings } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { useAppSelector } from "../hooks";
 
 const profileSlice = createSlice({
   name: "profile",
@@ -10,7 +11,9 @@ const profileSlice = createSlice({
     settings: { emailNotificationSettings: [] as EmailNotificationSetting[], 
                 profileVisibilitySettings: [] as ProfileVisibilitySetting[],
                  DefaultValue: true },
-    profilePicData: null as FormData | null ,             
+    profilePicData: null as FormData | null , 
+    loadingScreenActive: false,
+    isCurrentUserProfile: false, //default value            
 
   }, //defines initial state
   reducers: {
@@ -29,7 +32,7 @@ const profileSlice = createSlice({
       state.view.activeAboutTab = action.payload;
     },
     persistUserInfoAction: (state, action: PayloadAction<void>) => {},
-    fetchUserDataAction: (state, action: PayloadAction<{id: string}>) => {},
+    fetchUserDataAction: (state, action: PayloadAction<{id: string, isCurrentUser: boolean}>) => {},
     storeUserDataAction: (state, action: PayloadAction<{id: string, profile: UserProfile}>)=>{
       state.profiles[action.payload.id] = action.payload.profile;
     },
@@ -71,7 +74,11 @@ const profileSlice = createSlice({
       }
     },
     updateProfileVisibilitySettings: (state, action: PayloadAction<ProfileVisibilitySettings>) => {},
-
+    activateLoadingScreen: (state, action:PayloadAction<boolean>) => {
+      state.loadingScreenActive = action.payload},
+    setUserProfileState: (state, action: PayloadAction<boolean>) => {
+      state.isCurrentUserProfile = action.payload
+    },
   },
 });
 
@@ -90,6 +97,8 @@ export const {
   getProfileVisibilitySettings,
   setProfileVisibilitySettings,
   setProfileVisibility,
-  updateProfileVisibilitySettings
+  updateProfileVisibilitySettings,
+  activateLoadingScreen,
+  setUserProfileState
 } = profileSlice.actions;
 export default profileSlice.reducer;

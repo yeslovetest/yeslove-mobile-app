@@ -4,6 +4,8 @@ import styles from '../GeneralStyles';
 import { useAppDispatch } from '@/app/store/hooks';
 import { logoutAction } from '@/app/store/Auth-store/authSlice';
 import { TOKEN_REFRESH_SERVICE } from '@/ts/token-service';
+import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice';
+
 
 interface LogoutModalProps {
     visible: boolean;
@@ -12,14 +14,16 @@ interface LogoutModalProps {
 
 const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose }) => {
     const slideAnim = useRef(new Animated.Value(300)).current;
-    const [isRendered, setIsRendered] = useState(visible);
     const dispatch = useAppDispatch()
-
+    const [isRendered, setIsRendered] = useState(visible);
+    
 
     const logOut = async () => {
         try {
             const refreshToken = await TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage();
             dispatch(logoutAction(refreshToken || ''));
+            dispatch(activateLoadingScreen(true));
+            onClose();
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -48,7 +52,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose }) => {
 
 
     return (
-        <Modal transparent visible={isRendered} animationType="none">
+        <Modal transparent visible={isRendered} animationType="none" >
             <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
                 <TouchableOpacity activeOpacity={1}>
                     <Animated.View

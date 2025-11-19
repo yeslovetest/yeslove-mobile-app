@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import styles from './EditProfileInformationStyles'
 import Header from '@/app/Universal-components/Header/Header'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
@@ -81,16 +81,18 @@ const EditProfileInformation = () => {
     <>
       <Header></Header>
       <View style={styles.container}>
-        <TextInputField label="Name" value={editedName} onChange={(value: string) => handleFieldChange("Name", value)} />
-        <TextInputField label="Bio" value={editedBio} onChange={(value: string) => handleFieldChange("Bio", value)} />
-        <TextInputField label="Email" value={editedEmail} onChange={(value: string) => handleFieldChange("Email", value)} />
-        <TextInputField label="Phone" value={editedPhone} onChange={(value: string) => handleFieldChange("Phone", value)} />
-        <TextInputField label="Address" value={editedAddress} onChange={(value: string) => handleFieldChange("Address", value)} />
-        <TextInputField label="Website" value={editedWebsite} onChange={(value: string) => handleFieldChange("Website", value)} />
+        <ScrollView>
+          <TextInputField label="Name" value={editedName} onChange={(value: string) => handleFieldChange("Name", value)} />
+          <TextInputField label="Bio" value={editedBio} onChange={(value: string) => handleFieldChange("Bio", value)} />
+          <TextInputField label="Email" value={editedEmail} onChange={(value: string) => handleFieldChange("Email", value)} />
+          <TextInputField label="Phone" value={editedPhone} onChange={(value: string) => handleFieldChange("Phone", value)} />
+          <TextInputField label="Address" value={editedAddress} onChange={(value: string) => handleFieldChange("Address", value)} />
+          <TextInputField label="Website" value={editedWebsite} onChange={(value: string) => handleFieldChange("Website", value)} />
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </>
   )
