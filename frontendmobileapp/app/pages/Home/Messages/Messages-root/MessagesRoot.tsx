@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
 import AskChatbotButton from './Messages-root-components/Ask-chatbot-button/AskChatbotButton'
 import { fetchChatMessages } from '@/app/store/Chat/chatSlice'
+import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice'
 
 const Messages = () => {
     const dispatch = useAppDispatch()
@@ -17,12 +18,11 @@ const Messages = () => {
     const userName = useAppSelector(
         (state) => state.profile.profiles[userId]?.username ?? ""
     );
-
     const friendList = useAppSelector(state => state.chat.friends) || [];
 
-    const openConversation = (otherUserId: string) => {
+    const openConversation = (otherUserId: string, profilePic: string) => {
         dispatch(fetchChatMessages(otherUserId ?? ''));
-        dispatch(openTabOnTopAction({ type: TabType.CONVERSATION, data: { userId: otherUserId } }));
+        dispatch(openTabOnTopAction({ type: TabType.CONVERSATION, data: { userId: otherUserId, profile_pic: profilePic } }));
     }
     // Apply filter to friendList
     const filteredFriendList = friendList.filter(friend => {
@@ -87,14 +87,12 @@ const Messages = () => {
             <ScrollView contentContainerStyle={messagesSharedStyles.contentContainer} style={messagesSharedStyles.container}>
                 <View style={{width: '100%'}}>
                 {filteredFriendList.map((friend, key) => (
-                    <TouchableOpacity onPress={() => openConversation(friend.id ?? '')} key={friend.id ?? key}>
+                    <TouchableOpacity onPress={() => openConversation(friend.id  ?? '', friend.profile_pic ?? '')} 
+                        key={friend.id ?? key}>
                         <OneMessage message={friend}  key={friend.id ?? key}></OneMessage>
                     </TouchableOpacity>)
                 )}
-                </View>
-                
-
-                
+                </View>   
             </ScrollView>
         </>
     )

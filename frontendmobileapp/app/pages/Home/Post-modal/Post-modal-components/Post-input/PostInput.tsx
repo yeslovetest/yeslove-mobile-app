@@ -1,7 +1,4 @@
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Entypo from "@expo/vector-icons/Entypo";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { FontAwesome, Entypo, AntDesign, Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity, Platform, ScrollView } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
@@ -9,64 +6,78 @@ import * as ImagePicker from "expo-image-picker";
 import styles from "./PostInputStyles";
 import PostFilePreview from "../File-preview/PostFilePreview";
 
+interface FileItem {
+  uri: string;
+  type: string;
+  name?: string;
+}
+
 interface PostInputProps {
   userPost: string;
-  selectedFile: { uri: string; type: string; name?: string }[] | null;
-  setSelectedFile: (file: { uri: string; type: string; name?: string }[] | null) => void;
+  selectedFile: FileItem[] | null;
+  setSelectedFile: (files: FileItem[] | null) => void;
   setUserPost: (text: string) => void;
 }
 
-const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFile, setSelectedFile }) => {
-  //const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null);
+const PostInput: React.FC<PostInputProps> = ({
+  userPost,
+  setUserPost,
+  selectedFile,
+  setSelectedFile,
+}) => {
+  
+  const appendFile = (file: FileItem) => {
+    setSelectedFile((prev) => [...(prev || []), file]);
+  };
 
   const pickFile = async (type: "image" | "video" | "audio" | "pdf") => {
     try {
-      if (type === "image") {
+      if (type === "image" || type === "video") {
         const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes:
+            type === "image"
+              ? ImagePicker.MediaTypeOptions.Images
+              : ImagePicker.MediaTypeOptions.Videos,
           quality: 1,
         });
+
         if (!result.canceled) {
-          setSelectedFile((prev) => [...(prev || []), { 
-            uri: result.assets[0].uri,
-            type: result.assets[0].type ?? "image/jpeg",
-            name: result.assets[0].fileName ?? "photo.jpg",
-          }]);
+          const asset = result.assets[0];
+          appendFile({
+            uri: asset.uri,
+            type: asset.type ?? (type === "image" ? "image/jpeg" : "video/mp4"),
+            name: asset.fileName ?? `${type}.${type === "image" ? "jpg" : "mp4"}`
+          });
         }
-      } 
-      else if (type === "video") {  
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Videos,  
-          quality: 1,
+        return;
+      }
+
+      // AUDIO OR PDF
+      const result = await DocumentPicker.getDocumentAsync({
+        type: type === "audio" ? "audio/*" : "application/pdf",
+      });
+
+      if (result.assets && result.assets[0]) {
+        const asset = result.assets[0];
+        appendFile({
+          uri: asset.uri,
+          type: asset.mimeType ?? "file",
+          name: asset.name,
         });
-        if (!result.canceled) {
-          setSelectedFile(prev => [...(prev || []), {
-            uri: result.assets[0].uri,
-            type: result.assets[0].type ?? "video/mp4",  
-            name: result.assets[0].fileName ?? "video.mp4", 
-          }]);
-        }
-      } 
-      else {
-        const result = await DocumentPicker.getDocumentAsync({
-          type:
-            type === "audio"
-              ? "audio/*"
-              : "application/pdf",
-        });
-        if (result.assets && result.assets[0]) {
-          setSelectedFile(prev => [...(prev || []),  {
-            uri: result.assets[0].uri,
-            type: result.assets[0].mimeType ?? "file",
-            name: result.assets[0].name,
-          }]);
-        }
       }
     } catch (err) {
       console.error("File picking error:", err);
     }
   };
 
+  const deleteSelectedFile = (index: number) => {
+    setSelectedFile(prev => {
+      if (!prev) return prev;
+      const copy = [...prev];
+      copy.splice(index, 1);     
+      return copy;
+    });
+  };
 
   return (
     <View style={styles.userPostBoxContainer}>
@@ -80,21 +91,29 @@ const PostInput: React.FC<PostInputProps> = ({ userPost, setUserPost, selectedFi
           placeholderTextColor="gray"
         />
 
-        {/* File preview */}
-        {selectedFile && <PostFilePreview file={selectedFile} />}
+        {selectedFile && selectedFile.length > 0 && (
+          <PostFilePreview
+            file={selectedFile}
+            editable
+            delFunc={deleteSelectedFile}
+          />
+        )}
       </ScrollView>
-      
 
+      {/* ACTION BUTTONS */}
       <View style={styles.postIcons}>
         <TouchableOpacity onPress={() => pickFile("image")}>
           <FontAwesome name="picture-o" size={24} color="black" />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => pickFile("video")}>
           <Entypo name="video-camera" size={24} color="black" />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => pickFile("audio")}>
           <AntDesign name="sound" size={24} color="black" />
         </TouchableOpacity>
+
         <TouchableOpacity onPress={() => pickFile("pdf")}>
           <Ionicons name="newspaper" size={24} color="black" />
         </TouchableOpacity>

@@ -31,6 +31,7 @@ class UserProfile(Resource):
 
         # ✅ Ensure all fields are JSON-serializable
         response_data = {
+            "user_id": user.id,
             "username": user.username or "",
             "bio": user.bio or "",
             "profile_pic": user.profile_pic_url or "",
@@ -271,19 +272,19 @@ class EmailNotifications(Resource):
 # -------------------------
 # TimeLine
 # -------------------------
-@api.route('/timeline')
+@api.route('/timeline/<string:keycloak_id>')
 class UserTimeline(Resource):
     from .profile_models import TimelineResponse
     @require_auth()
     @api.param("page", "Page number for pagination", type='integer', default=1)
     @api.param("per_page", "Number of posts per page", type='integer', default=20)
-    @api.response(code=200, description="Timeline response containing current user post with pagination", model=TimelineResponse)
-    def get(self):
+    @api.response(code=200, description="Timeline response containing user post with pagination", model=TimelineResponse)
+    def get(self, keycloak_id):
         '''
-        retrieve all posts authored by the current user to be displayed on timeline
+        retrieve all posts authored by a particular user to  displayed on timeline
         '''
         from app.models import Post, User
-        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
         if not user:
             return {"message": "User not found"}, 404
 

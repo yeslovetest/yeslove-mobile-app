@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { uploadBulkMedia, uploadMedia } from '@/app/store/Profile-store/mediaSlice';
 import MediaFilePreview from './Conversation-components/MediaPreview/mediaPreview';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
+import LoadingOverlay from '@/app/Universal-components/LoadingScreen/Screen';
 
 const Conversation = () => {
 
@@ -23,8 +24,11 @@ const Conversation = () => {
   const otherUserId = useAppSelector(
     (state) => state.navigation.tabStack.at(-1)?.data?.userId
   );
+  const otherUserProfilePic = useAppSelector(
+    (state) => state.navigation.tabStack.at(-1)?.data?.profile_pic);
   const uploadedMediaId = useAppSelector(state => state.media.uploadedMediaId);
   const [selectedFiles, setSelectedFiles] = useState<Array<{ uri: string; type: string; name?: string }> | null>(null);
+  const [loadingVisible, setLoadingVisible] = useState(true);
   const flatListRef = useRef<FlatList>(null);
 
   useFocusEffect(
@@ -47,8 +51,13 @@ const Conversation = () => {
       dispatch(fetchFriendList(currentUserId ?? ''));  // Refresh friend list
     }
 
-  // This effect will run once when messages become available
+    // This effect will run once when messages become available
   }, [messages.length]);
+
+  useEffect(() => {
+    //hide loading screen once messages are loaded
+    setLoadingVisible(false)
+  }, [messages])
     
   // this function is used only when message conatins media files to be uploaded
   const uploadMediaAsync = (formData: FormData) => {
@@ -60,7 +69,7 @@ const Conversation = () => {
       }
     });
   };
-
+  
   const handleSend = async (text: string) => {
       let mediaIds : string[] = []
       const mediaData = new FormData(); // form data for Media upload
@@ -90,10 +99,13 @@ const Conversation = () => {
 
     // Upload media first
     if (mediaData.getAll("file").length > 0) {
+        setLoadingVisible(true)
         mediaIds = await uploadMediaAsync(mediaData); 
         // send chat messages AFTER upload is done
         dispatch(sendChatMessage({ id: otherUserId, message: text, mediaID: mediaIds ?? undefined }));
+
     } else {
+        setLoadingVisible(true)
         dispatch(sendChatMessage({ id: otherUserId, message: text }));
     }  
     
@@ -127,12 +139,22 @@ const Conversation = () => {
       console.error("File picking error:", err);
     }};
 
+    const deleteSelectedFile = (index: number) => {
+      setSelectedFiles(prev => {
+        if (!prev) return prev;
+        const copy = [...prev];
+        copy.splice(index, 1);     
+        return copy;
+      });
+    };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={60}
     >
+      <LoadingOverlay visible={loadingVisible}/>
       <Header />
       <View style={styles.chatContainer}>
        
@@ -144,6 +166,7 @@ const Conversation = () => {
             item?.sender !== userName ? (
               <ChatResponse text={item?.content ?? ''} 
               time={dayjs(item?.timestamp ?? '').format('MMM D, YYYY h:mm A')}
+              profilePic={otherUserProfilePic}
               media={item?.media ?? []}/>
             ) : (
               <Message prompt={item?.content ?? ''} 
@@ -152,19 +175,23 @@ const Conversation = () => {
             )
           }
           contentContainerStyle={styles.contentContainer}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onContentSizeChange={() => {
+            setTimeout(() => {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }, 90);
+          }}
         />
        
         <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
           {selectedFiles && (
             <View style={styles.mediaPreviewContainer}>
-              <MediaFilePreview file={selectedFiles}/>
+              <MediaFilePreview file={selectedFiles} editable={true} deleteMedia={deleteSelectedFile}/>
             </View>
           
           )}
           <ConversationTextInput onSend={handleSend} openMedia={selectMedia}/>
         </View>
+        
       </View>
     </KeyboardAvoidingView>
   );

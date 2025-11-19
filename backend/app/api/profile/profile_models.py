@@ -18,6 +18,7 @@ EducationInfo = api.model("EducationInfo", {
 
 # ✅ Profile Model (Now using pre-defined nested models)
 UserProfile = api.model("UserProfile", {
+        "user_id": fields.Integer(description="User's database ID"),
         "username": fields.String(description="User's username"),
         "bio": fields.String(description="User bio"),
         "profile_pic": fields.String(description="Profile picture URL"),

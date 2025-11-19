@@ -1,5 +1,5 @@
 import { call, put, take, takeEvery } from "redux-saga/effects";
-import { fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
+import { activateLoadingScreen, fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, setUserProfileState, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
   TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
   GetReactionsResponse, ReactToPostResponse,
@@ -73,9 +73,11 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     yield put(setName(request.username));
     yield put(setPassword(request.password));
     yield put(setLoginStateAction(LoginState.LOGGED_IN));
+    yield put(activateLoadingScreen(false));
   }catch (error) {
     console.error('Login failed:', error);
     yield put(setErrorMessage('user does not exist'));
+    yield put(activateLoadingScreen(false));
   }
 }
 
@@ -133,9 +135,11 @@ function* handleLogout(action: PayloadAction<string>) {
     yield put(setProfileVisibilitySettings([]));
     yield put(setChatMessages([]));
     yield put(setFriendList([]));
+    yield put(activateLoadingScreen(false));
 
   } catch (error) {
     console.error('Logout Failed!', error);
+    yield put(activateLoadingScreen(false));
   }
 }
 
@@ -416,14 +420,6 @@ function* handleReactionToPost(action: PayloadAction<{postId: number, reactionTy
   
 }
 
-function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
-  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
-  if(!info){
-    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
-    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
-  }
-
-}
 
 function* fetchPostReactions (action: PayloadAction<{postId: number}>){
   const comments = ((yield call(FeedApiFactory().getGetComments, action.payload.postId)) as AxiosResponse<GetCommentResponse>).data as GetCommentResponse;
@@ -536,6 +532,16 @@ function* saveProfileInfoEffect(action: any) {
   ProfileApiFactory()
     .putUpdateProfile(info)
     .catch((reason) => console.log("Failed to update user profile: " + reason));
+}
+
+function* fetchUserProfileData(action: PayloadAction<{id: string, isCurrentUser: boolean}> ){
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
+  yield put(setUserProfileState(action.payload.isCurrentUser));
+  if(!info){
+    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
+    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
+  }
+
 }
 
 function* updateUserProfile(action: PayloadAction<{data: Partial<UserProfile>, 
