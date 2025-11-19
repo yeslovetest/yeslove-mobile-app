@@ -28,22 +28,22 @@ const feedSlice = createSlice({
         triggerScrollToTopAction: (state, action: PayloadAction<number>) => {
             state.scrollToTopAction = !state.scrollToTopAction;
         },
-        setFeedDataAction: (state, action: PayloadAction<{post: Post[], feedType: string, pagination: PaginationType}>) => {
+        setFeedDataAction: (state, action: PayloadAction<{post: Post[], feedType: string, pagination?: Partial<PaginationType>}>) => {
             console.log("Setting feed data for type:", action.payload.feedType);
             console.log(action.payload.post)
 
             if (action.payload.feedType === 'all'){
-                state.feed.posts =  (action.payload.pagination.page === 1? 
+                state.feed.posts =  (action.payload.pagination?.page === 1? 
                     action.payload.post : state.feed.posts.concat(action.payload.post));
                 //console.log(post)
             }
             else if (action.payload.feedType === 'friends'){
-                state.feed.friends = (action.payload.pagination.page === 1? 
+                state.feed.friends = (action.payload.pagination?.page === 1? 
                     action.payload.post : state.feed.friends.concat(action.payload.post));
             }
-            state.paginationValues.currentPage = action.payload.pagination.page;
-            state.paginationValues.hasNextPage = action.payload.pagination.has_next;
-            state.paginationValues.totalPages = action.payload.pagination.total_pages;
+            state.paginationValues.currentPage = action.payload.pagination?.page;
+            state.paginationValues.hasNextPage = action.payload.pagination?.has_next;
+            state.paginationValues.totalPages = action.payload.pagination?.total_pages;
             
         },
         updatePostsForFeedAction: (state, action: PayloadAction<{feedType: string, perPage?: number, page?: number}>) => {},

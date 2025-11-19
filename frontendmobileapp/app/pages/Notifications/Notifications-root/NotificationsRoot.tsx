@@ -33,7 +33,7 @@ const NotificationsRoot = () => {
     }, [])
   );
 
-  const THRESHOLD = 400; // how close to bottom before fetching more Notifications
+  const THRESHOLD = 400; // how close to the bottom of the page before fetching more Notifications
   
   const handleScroll = (event) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;

@@ -5,6 +5,7 @@ const styles = StyleSheet.create({
 previewContainer: {
     position: "relative",
     marginRight: 8,
+    marginBottom: 8,
   },
   previewImage: {
     width: 100,
@@ -65,6 +66,26 @@ previewContainer: {
     color: "#fff",
     textAlign: "center",
   },
+  deleteWrapper: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+
+  deleteIcon: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+    lineHeight: 14,
+  },
+
 });
 
 
