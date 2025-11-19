@@ -4,6 +4,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 const notificationSlice = createSlice({
     name: " notification",
     initialState: {
+        scrollViewPosition: 0,   //default initial value
         allNotifications: [] as Notification[],
         currentPage: 1,
         perPage: 20,
@@ -18,9 +19,17 @@ const notificationSlice = createSlice({
         }, // example preferences
     },
     reducers: {
+        setScrollViewPosition: (state, action: PayloadAction<number>) => {
+            state.scrollViewPosition = action.payload;
+        },
         fetchUserNotifications: (state, action: PayloadAction<{perPage?: number, currentPage?: number}>) => {},
         setUserNotification: (state, action: PayloadAction<NotificationListResponse>) => {
-            state.allNotifications = action.payload.notifications || [];
+            if (action.payload.current_page === 1){
+                state.allNotifications = action.payload.notifications || [];
+            }
+            else if (action.payload.current_page > 1){
+                state.allNotifications = state.allNotifications.concat(action.payload.notifications)
+            }
             state.currentPage = action.payload.current_page || 1;
             state.perPage = action.payload.per_page || 20;
             state.totalNotifications = action.payload.total || 0;
@@ -42,7 +51,7 @@ const notificationSlice = createSlice({
 export const {
     fetchUserNotifications, setUserNotification, markNotificationRead, 
     fetchNotificationPreferences, setNotificationPreferences, updateNotificationPreferences, 
-    changeNotificationPreference
+    changeNotificationPreference, setScrollViewPosition
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;
