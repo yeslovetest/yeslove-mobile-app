@@ -6,12 +6,13 @@ import ChangeModal from './Change-modal/ChangeModal';
 interface ChangeViewModalProps {
     visible: boolean;
     onClose: () => void;
+    onCameraPress: () => void; 
 }
 
 const ChangeViewModal: React.FC<ChangeViewModalProps> = ({ visible, onClose }) => {
     const slideAnim = useRef(new Animated.Value(300)).current;
     const [isRendered, setIsRendered] = useState(visible);
-    const [changeModal, setChangeModal] = useState(false)
+    const [changeModal, setChangeModal] = useState(false);
 
     useEffect(() => {
         if (visible) {
@@ -45,6 +46,7 @@ const ChangeViewModal: React.FC<ChangeViewModalProps> = ({ visible, onClose }) =
         setChangeModal(false);
         onClose();
     };
+
 
 
 

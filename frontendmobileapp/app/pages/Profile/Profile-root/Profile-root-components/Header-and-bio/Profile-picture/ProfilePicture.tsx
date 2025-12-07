@@ -1,23 +1,61 @@
 import axios from 'axios'
 import React, { useState } from 'react'
-import { Image, TouchableOpacity } from 'react-native'
+import { Image, TouchableOpacity, View } from 'react-native'
 import styles from './ProfilePictureStyles'
 import { useAppSelector } from '@/app/store/hooks'
-import ChangeViewModal from '../Change-view-pfp/Change-view-modal/ChangeViewModal'
+import * as ImagePicker from "expo-image-picker"
+import ChangeModal from '../Change-view-pfp/Change-view-modal/Change-modal/ChangeModal'
+import placeholder from "./Profile-Images/profile-image.jpg"
 
 const ProfilePicture = () => {
 const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
  const profileImage = useAppSelector((state) => state.profile.profiles[userId]?.profile_pic ?? "");
-const [changeViewModal, setChangeViewModal] = useState(false)
+    const [changeModal, setChangeModal] = useState(false);
+    const [image, setImage] = useState()
+
+
+const uploadImage = async () => {
+  try {
+    await ImagePicker.requestCameraPermissionsAsync();
+
+    let result = await ImagePicker.launchCameraAsync({
+      cameraType: ImagePicker.CameraType.front,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      console.log("Image taken:", result.assets[0].uri);
+    }
+
+  } catch (error: any) {
+    alert("Error uploading image: " + error.message);
+  }
+};
+
+    const saveImage = async (image) => {
+        try {
+      setImage(image);
+      setChangeModal(false)
+        } catch (error) {
+            throw error
+        }
+    }
+
 
   return (
     <>
-     <TouchableOpacity onPress={() => setChangeViewModal(true)} >
-    <Image style={styles.profileImage} source={{ uri:   axios.defaults.baseURL + "/api/media/" +  profileImage}} />
+     <TouchableOpacity onPress={() => setChangeModal(true)} >
+    {image ? (
+  <Image style={styles.profileImage} source={{ uri: image }} />
+) : (
+  <View style={[styles.profileImage, { backgroundColor: "transparent" }]} />
+)}
         </TouchableOpacity>
         
-                <ChangeViewModal  visible={changeViewModal}
-                    onClose={() => setChangeViewModal(false)}></ChangeViewModal>
+                <ChangeModal onCameraPress={uploadImage} visible={changeModal}
+                    onClose={() => setChangeModal(false)}></ChangeModal>
 
         </>
   )

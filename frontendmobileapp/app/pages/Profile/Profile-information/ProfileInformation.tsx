@@ -10,7 +10,7 @@ const ProfileInformation = () => {
   const email = useAppSelector(state => state.profile.profiles[userId].contact_info?.email ?? "");
   const phone = useAppSelector(state => state.profile.profiles[userId].contact_info?.phone ?? "");
   const address = useAppSelector(state => state.profile.profiles[userId].contact_info?.address ?? "");
-  const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? "");
+  const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? ""); 
 
   return (
     <>
