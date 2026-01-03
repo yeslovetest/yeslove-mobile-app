@@ -37,7 +37,7 @@ AboutResponse = api.model("AboutResponse", {
     }, strict=False)
 
 UserQuery = api.model("UserQuery", {
-    "username": fields.String(required=True, descriptions="User's username (Required)"),
+    "username": fields.String(required=True, description="User's username (Required)"),
     "email": fields.String(description="User's email (Optional)"),
     "user_id": fields.Integer(description="User's database ID (Optional)"),
     })
@@ -90,5 +90,6 @@ TimelineResponse = api.model('TimelineResponse',
     "current_page": fields.Integer(description="Current page number"),
     "posts": fields.List(fields.Nested(UserPost), description="List of posts"),
 })
+
 
 
