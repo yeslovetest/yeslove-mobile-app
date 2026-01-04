@@ -102,20 +102,20 @@ def require_auth():
             auth_header = request.headers.get("Authorization", None)
             if not auth_header:
                 logger.warning("❌ Missing Authorization Header")
-                return jsonify({"message": "❌ Missing Authorization Header"}), 401
+                return ({"message": "❌ Missing Authorization Header"}), 401
 
             token = auth_header.split(" ")[1] if " " in auth_header else auth_header
             decoded_token = verify_jwt(token)
 
             if not decoded_token:
                 logger.warning("❌ Invalid or expired token")
-                return jsonify({"message": "❌ Invalid or expired token"}), 401
+                return ({"message": "❌ Invalid or expired token"}), 401
 
             # ✅ Ensure `sub` (Keycloak user ID) is available
             keycloak_id = decoded_token.get("sub")
             if not keycloak_id:
                 logger.error("❌ Invalid token: Missing 'sub' (Keycloak ID)")
-                return jsonify({"message": "❌ Invalid token: Missing 'sub' (Keycloak ID)"}), 401
+                return ({"message": "❌ Invalid token: Missing 'sub' (Keycloak ID)"}), 401
 
             # ✅ Attach user details to request context
             request.user = {
