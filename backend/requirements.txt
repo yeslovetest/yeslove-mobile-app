@@ -37,11 +37,12 @@ python-dateutil
 prometheus-flask-exporter
 
 psutil
-
+gunicorn==23.0.0
 openai==1.51.0
 
-# Graph client
+# Graph database dependencies
 neo4j>=5.24.0
+gremlinpython>=3.6.0
 
 # Object storage client
 minio>=7.2.0
