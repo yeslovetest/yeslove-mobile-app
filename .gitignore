@@ -49,3 +49,9 @@ node_modules/
 # Build outputs
 build/
 dist/
+# deployment scratch files
+**/td*.json
+**/task-def*.json
+**/td_list.txt
+**/body.json
+
