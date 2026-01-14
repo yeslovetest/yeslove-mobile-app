@@ -41,7 +41,7 @@ const Conversation = () => {
     }, [])
   );
   
-  console.log(messages)
+  //console.log(messages)
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
 
@@ -162,6 +162,7 @@ const Conversation = () => {
           ref={flatListRef}
           data={messages}
           keyExtractor={(_, idx) => idx.toString()}
+          contentContainerStyle={{padding: 20}}
           renderItem={({ item }) =>
             item?.sender !== userName ? (
               <ChatResponse text={item?.content ?? ''} 
@@ -174,7 +175,7 @@ const Conversation = () => {
                media={item?.media ?? []}/>
             )
           }
-          contentContainerStyle={styles.contentContainer}
+          
           onContentSizeChange={() => {
             setTimeout(() => {
               flatListRef.current?.scrollToEnd({ animated: false });

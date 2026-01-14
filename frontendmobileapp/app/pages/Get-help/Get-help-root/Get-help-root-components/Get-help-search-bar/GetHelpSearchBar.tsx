@@ -18,7 +18,7 @@ const GetHelpSearchBar = (props:Props) => {
     if (props.currentSection === 'professionals') {
       //search professional logic 
       dispatch(setSearchQuery(searchWord));
-      console.log("search professional")
+      
       return;
     }
 
@@ -26,8 +26,7 @@ const GetHelpSearchBar = (props:Props) => {
       //search blog logic
       dispatch(fetchBlogPosts({searchquery: searchWord}));
       dispatch(setSearchQuery(searchWord));
-      console.log("search blog")
-      
+      return;      
     }
    
   }

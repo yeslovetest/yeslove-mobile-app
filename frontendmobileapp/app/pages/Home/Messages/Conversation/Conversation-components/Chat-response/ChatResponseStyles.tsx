@@ -2,9 +2,9 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
    chatResponseContainer: {
-        width: "90%",
+        width: "100%",
         marginRight: "auto",
-        padding: 20,
+        padding: 2,
         display: "flex",
         justifyContent: "flex-start",
         alignItems: "center",

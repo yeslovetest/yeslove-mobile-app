@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "flex-start",
-    padding: 20,
+    padding: 10,
     borderRadius: 15,
     elevation: 3,
     shadowColor: "#000",
@@ -45,14 +45,15 @@ const styles = StyleSheet.create({
   postContent: {
     color: theme.colors.blackText,
     paddingHorizontal: 3,
+    marginTop: 10,
     paddingBottom: 10,
     width: "100%",
     fontSize: 15,
   },
 
   profileImage: {
-    width: 55,
-    height: 55,
+    width: 35,
+    height: 35,
     borderRadius: 60,
     borderWidth: 1,
     borderColor: "#ccc",

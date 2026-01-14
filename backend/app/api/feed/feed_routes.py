@@ -105,7 +105,7 @@ class Feed(Resource):
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
-                "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type} for media in post.media_files if post.media_files],
+                "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
                 "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
@@ -312,7 +312,7 @@ class GetPost(Resource):
             "timestamp": post.timestamp.isoformat(),
             "likes": len(post.likes),
             "comments": len(post.comments),
-            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type} for media in post.media_files if post.media_files],
+            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
     

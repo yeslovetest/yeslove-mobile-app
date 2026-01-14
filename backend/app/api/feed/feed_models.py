@@ -10,7 +10,9 @@ FeedQuery = api.model("FeedQuery", {
 
 MediaFile = api.model("MediaFile", {
         "uri": fields.String(description="URL of the media file"),
-        "type": fields.String(description="Type of the media file: 'image', 'video', etc.")
+        "type": fields.String(description="Type of the media file: 'image', 'video', etc."),
+        "width": fields.Integer(description="Width of the media file"),
+        "height": fields.Integer(description="Height of the media file"),
 })
 
 Post = api.model('Post', {

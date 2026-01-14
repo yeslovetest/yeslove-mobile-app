@@ -40,6 +40,6 @@ const AttendedContent = () => {
                 )}
         </View>
     )
-}
+};
 
-export default AttendedContent
+export default AttendedContent;
