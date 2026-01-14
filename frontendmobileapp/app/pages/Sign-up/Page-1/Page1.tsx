@@ -42,7 +42,7 @@ const Page1 = () => {
   return (
     <ImageBackground source={image} style={sharedStyles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
         <View style={sharedStyles.innerContainer}>
-        <Text style={sharedStyles.title}>SIGN UP TO YESLOVE!</Text>
+        <Text style={sharedStyles.title}>SIGN UP</Text>
 
             <Text style={{...sharedStyles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
             <Text style={sharedStyles.label}>Email</Text>
@@ -73,7 +73,7 @@ const Page1 = () => {
             />
 
             <TouchableOpacity style={sharedStyles.buttonNext} onPress={signupAction.moveToNext}>
-            <Text style={sharedStyles.buttonText}><Text style={sharedStyles.greyText}>Let's get to know you more!.</Text> Next</Text>
+              <Text style={sharedStyles.buttonText}><Text style={sharedStyles.greyText}>Let's get to know you more!.</Text> Next</Text>
             </TouchableOpacity> 
 
     

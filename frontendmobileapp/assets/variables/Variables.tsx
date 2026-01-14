@@ -27,8 +27,8 @@ const theme = {
   
     spacing: {
         /*width of posts, postbox, banner, and most component parent elements*/
-        postWidth: vw(90),
-        standardPageContentWidth: "90%",
+        postWidth: vw(95),
+        standardPageContentWidth: "95%",
         eventTextBoxPadding: 15,
     }
 }

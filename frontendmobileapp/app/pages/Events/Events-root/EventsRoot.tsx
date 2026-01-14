@@ -31,6 +31,6 @@ export default function EventsPage() {
       </ScrollView>
     </>
   );
-}
+};
 
 

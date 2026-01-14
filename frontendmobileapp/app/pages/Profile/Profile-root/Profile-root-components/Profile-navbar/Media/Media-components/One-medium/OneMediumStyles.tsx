@@ -4,24 +4,23 @@ const styles = StyleSheet.create({
   mediumContainer: {
     display: 'flex',
     justifyContent: 'flex-start',
-    width: "30%",    
-    aspectRatio: 1,   
-    marginBottom: 8,
+    width: Dimensions.get('window').width * 0.3,   
+    marginBottom: 2,
   },
 
   imageMedium: {
-    borderRadius: 10,
-    width: Dimensions.get('window').width * 0.3, 
-    marginTop: 10,
-    resizeMode: 'contain',
+    borderRadius: 5,
+    width: '100%', 
+    marginTop: 2,
+    resizeMode: 'cover',
     aspectRatio: 1.5,
   },
   videoMedium: { 
-      width: Dimensions.get('window').width * 0.3, 
-      height: Dimensions.get('window').height * 0.5,
-      borderRadius: 10, 
-      marginTop: 10,
-      resizeMode: 'contain'
+      width: '100%', 
+      borderRadius: 5, 
+      marginTop: 2,
+      resizeMode: 'cover',
+      aspectRatio: 1.5,
   },
 })
 
