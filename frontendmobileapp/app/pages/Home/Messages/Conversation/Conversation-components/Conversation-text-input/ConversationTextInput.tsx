@@ -33,7 +33,7 @@ const ConversationTextInput = ( props: Props) => {
 
   return (
     <View style={styles.textInputContainer}>
-    
+      <AntDesign onPress={() => selectMedia('media')} style={styles.sendIcon} name="camera" size={18} />
       <TextInput
         style={[styles.textInput, { outlineWidth: 0, outlineColor: 'transparent' }]}
         placeholder="Type message"
@@ -48,7 +48,7 @@ const ConversationTextInput = ( props: Props) => {
         }}
         multiline
       />
-      <AntDesign onPress={() => selectMedia('media')} style={styles.sendIcon} name="camera" size={18} />
+      
       <AntDesign onPress={() => send(text)} style={styles.sendIcon} name="arrowup" size={18} />
     </View>
   );

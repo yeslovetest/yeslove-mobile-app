@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
         width: theme.spacing.postWidth,
         justifyContent: "center",
         backgroundColor: "#fff",
-        paddingVertical: 3,
+        
         borderRadius: 10,
         elevation: 3,
         shadowColor: "#000",

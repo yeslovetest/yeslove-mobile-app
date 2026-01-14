@@ -2,7 +2,7 @@ import theme from "@/assets/variables/Variables";
 import { Dimensions, StyleSheet } from "react-native";
 
 const sharedStyles = StyleSheet.create({
-     container: {
+  container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -11,7 +11,6 @@ const sharedStyles = StyleSheet.create({
   },
   innerContainer: {
     width: theme.spacing.postWidth - 30,
-    height: Dimensions.get('window').height * 0.87,
     marginTop: 10,
     backgroundColor: theme.colors.mainBkgColor,
     padding: 15,
@@ -30,7 +29,7 @@ const sharedStyles = StyleSheet.create({
     
  },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     color: theme.colors.primaryBlue,
@@ -44,7 +43,7 @@ const sharedStyles = StyleSheet.create({
     marginBottom: 5,
     color: theme.colors.primaryBlue,
   },
-    errorMessage: {
+  errorMessage: {
     fontSize: 16,
     margin: 5,
     color: 'red',
@@ -58,7 +57,7 @@ const sharedStyles = StyleSheet.create({
   button: {
     backgroundColor: theme.colors.mainBkgColor,
     paddingVertical: 12,
-    paddingHorizontal: 40,
+    paddingHorizontal: 90,
     borderRadius: 8,
     marginTop: 10,
     display: "flex",
@@ -72,11 +71,11 @@ const sharedStyles = StyleSheet.create({
     color: theme.colors.primaryBlue,
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center'
   },
-   buttonNext: {
+  buttonNext: {
     backgroundColor: theme.colors.mainBkgColor,
-    paddingVertical: 8,
-    width: '50%',
+    padding: 8,
     borderRadius: 8,
     margin: 30,
     display: "flex",
@@ -94,7 +93,7 @@ const sharedStyles = StyleSheet.create({
     textAlign: 'center',
     color: theme.colors.footerFontColor,
     marginTop: 20,
-    paddingTop: 12,
+    paddingTop: 10,
     fontSize: 16,
     borderTopWidth: 1,
     borderColor: theme.colors.footerBdColor,

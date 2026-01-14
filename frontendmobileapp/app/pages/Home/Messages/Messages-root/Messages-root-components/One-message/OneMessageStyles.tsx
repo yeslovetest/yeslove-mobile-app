@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "80%",
         paddingHorizontal: 10,
-        height: 100,
+        height: 90,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
        
@@ -25,10 +25,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff"
     },
     profilePicture: {
-        width: 70,
-        height: 70,
+        width: 40,
+        height: 40,
         borderRadius: "50%",
-        marginRight: 2,
+        marginRight: 4,
         borderWidth: 1,
     },
     messageContainer: {
@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
 
     },
     userUnopened: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 600,
         color: theme.colors.primaryBlue
     },
     userOpened: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 400,
         color: theme.colors.blackText,
         marginBottom: 3
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     },
 
     timeContainer: {
-        width: "15%",
+        width: "35%",
     },
 
     time: {
