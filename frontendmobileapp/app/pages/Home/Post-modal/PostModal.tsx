@@ -65,15 +65,17 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   };
 
 
-  const handlePost = async () => {
+  const handlePost = async (anonymous?: boolean) => {
     if (!userPost.trim()) return;
 
     const postData = new FormData(); //form data for Post
     const mediaData = new FormData(); // form data for Media upload
 
+    postData.append("anonymous", anonymous ?? false)
     postData.append("content", userPost);
+    
 
-    console.log("Selected file for upload:", selectedFile);
+    //console.log("Selected file for upload:", selectedFile);
 
     if (selectedFile) {
       const fieldName = "file"; 
@@ -123,10 +125,17 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
               color="black"
             />
             <Text style={styles.createPost}>Create post</Text>
-            <TouchableOpacity onPress={handlePost}>
-              <Text>Share
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.actionButtonsContainer}>
+              <TouchableOpacity style={styles.actionButtons} onPress={() => handlePost(false)}>
+                <Text style={styles.actionButtonsText}>Share
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
+                <Text style={styles.actionButtonsText}>Post Anonymous
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
           </View>
           <View style={{ flex: 1 }}>
             <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
