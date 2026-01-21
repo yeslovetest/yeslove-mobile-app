@@ -124,9 +124,8 @@ class Post(db.Model):
     video_url = db.Column(db.String(500), nullable=True) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-
     status = db.Column(db.String(20), default="visible")  # visible, removed, flagged
-    
+    is_anonymous = db.Column(db.Boolean, default=False) # specify if Post is Anonymous
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")

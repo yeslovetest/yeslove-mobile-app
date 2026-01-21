@@ -1359,6 +1359,12 @@ export interface Post {
      */
     'comments'?: number;
     /**
+     * is this post anonymous
+     * @type {boolean}
+     * @memberof Post
+     */
+    'anonymous'?: boolean;
+    /**
      * List of media file URLs associated with the post
      * @type {Array<MediaFile>}
      * @memberof Post
@@ -4737,11 +4743,12 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
+         * @param {boolean} [anonymous] if post is to be anonymous
          * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost: async (content: string, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postCreatePost: async (content: string, anonymous?: boolean, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'content' is not null or undefined
             assertParamExists('postCreatePost', 'content', content)
             const localVarPath = `/api/feed/post`;
@@ -4763,6 +4770,10 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
 
             if (content !== undefined) { 
                 localVarFormParams.append('content', content as any);
+            }
+    
+            if (anonymous !== undefined) { 
+                localVarFormParams.append('anonymous', String(anonymous) as any);
             }
     
             if (media !== undefined) { 
@@ -5021,12 +5032,13 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
+         * @param {boolean} [anonymous] if post is to be anonymous
          * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, media, options);
+        async postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, anonymous, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postCreatePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -5162,12 +5174,13 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
+         * @param {boolean} [anonymous] if post is to be anonymous
          * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postCreatePost(content, media, options).then((request) => request(axios, basePath));
+        postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postCreatePost(content, anonymous, media, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5305,13 +5318,14 @@ export class FeedApi extends BaseAPI {
      * 
      * @summary Create a new post
      * @param {string} content Content of the post
+     * @param {boolean} [anonymous] if post is to be anonymous
      * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).postCreatePost(content, media, options).then((request) => request(this.axios, this.basePath));
+    public postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).postCreatePost(content, anonymous, media, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

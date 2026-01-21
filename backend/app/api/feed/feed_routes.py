@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-
+from sqlalchemy import true
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
 
@@ -68,7 +68,10 @@ class Feed(Resource):
                         friend_ids = [u.id for u in rec_users]
                 except Exception as e:
                     logger.warning(f"Neo4j recommendations failed: {e}")
-            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
+            query = Post.query.filter(
+                Post.is_anonymous != true(),
+                Post.user_id.in_(friend_ids)
+            ).order_by(Post.timestamp.desc())
             
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
@@ -92,9 +95,9 @@ class Feed(Resource):
         feed_data = {
             "posts": [{
                 "id": post.id,
-                "author": post.author.username,
-                "author_id": post.author.keycloak_id,
-                "author_pic": post.author.profile_pic_url,
+                "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+                "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+                "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
                 "content": post.content,
                 "media": [{
                     "id": pm.media_id,
@@ -105,6 +108,7 @@ class Feed(Resource):
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
+                "anonymous": post.is_anonymous,
                 "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
                 "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
@@ -140,6 +144,13 @@ class CreatePost(Resource):
         help='Content of the post'
     )
     post_parser.add_argument(
+        'anonymous',
+        type=bool,
+        required=False,
+        location='form',
+        help='if post is to be anonymous'
+    )
+    post_parser.add_argument(
         'media', 
         type=FileStorage,
         required=False,
@@ -168,6 +179,7 @@ class CreatePost(Resource):
 
         args = post_parser.parse_args()
         content = args.get("content", "")
+        is_anonymous = args.get("anonymous", False)
         files = args.get("media") or []
         if not isinstance(files, list):
             files = [files] if files else []
@@ -220,7 +232,9 @@ class CreatePost(Resource):
         # ✅ Create post record
         post = Post(
             content=content,
-            user_id=user.id
+            user_id=user.id,
+            is_anonymous = is_anonymous,
+        
         )
         db.session.add(post)
         db.session.flush()  # Get post.id
@@ -268,7 +282,7 @@ class CreatePost(Resource):
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
-        if follower_user_ids:
+        if follower_user_ids and not is_anonymous:   # don't send notification if post is anonymous
             try:
                 PushNotificationService.send_to_multiple_users(
                     user_ids=follower_user_ids,
@@ -303,15 +317,16 @@ class GetPost(Resource):
         user_reaction = Reaction.query.filter_by(post_id=post_id, user_id=user.id).first()
         return {
             "id": post.id,
-            "author": post.author.username,
-            "author_id": post.author.keycloak_id,
-            "author_pic": post.author.profile_pic_url,
+            "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+            "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+            "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
             "content": post.content,
             "image": post.image_url,
             "video_url": post.video_url,
             "timestamp": post.timestamp.isoformat(),
             "likes": len(post.likes),
             "comments": len(post.comments),
+            "anonymous": post.is_anonymous,
             "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
@@ -333,8 +348,8 @@ class GetReactions(Resource):
                 {
                     "id": reaction.id,
                     "type": reaction.reaction_type,
-                    "author": reaction.user.username,
-                    "picture": reaction.user.profile_pic_url,
+                    "author": reaction.user.username if not reaction.post.is_anonymous else 'Anonymous User',
+                    "picture": reaction.user.profile_pic_url if not reaction.post.is_anonymous else None,
                 }
                 for reaction in reactions
             ]
@@ -423,7 +438,7 @@ class LikePost(Resource):
         from app.models import Post
         from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
-        if post and post.user_id != user.id:
+        if post and post.user_id != user.id and not post.is_anonymous:
             NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Like",
@@ -494,7 +509,8 @@ class AddComment(Resource):
         from app.models import Post
         from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
-        if post and post.user_id != user.id:
+
+        if post and post.user_id != user.id and not post.is_anonymous:
             NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Comment",
@@ -517,12 +533,13 @@ class GetComments(Resource):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
+        
         return {
             "comments": [
                 {
                     "id": comment.id,
                     "content": comment.content,
-                    "author": comment.user.username,
+                    "author": comment.user.username if not comment.post.is_anonymous else 'Anonymous User',
                     "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
                 }
             for comment in comments]

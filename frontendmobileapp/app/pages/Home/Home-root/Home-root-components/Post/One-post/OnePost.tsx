@@ -66,7 +66,10 @@ const OnePost = (props: Props) => {
     };
 
     const openProfile = () => {
-        dispatch(openTabOnTopAction({ type: TabType.PROFILE, data: { "userId": props.post.author_id } }))
+        if (props.post.author_id) {
+            dispatch(openTabOnTopAction({ type: TabType.PROFILE, data: { "userId": props.post.author_id } }))   
+        }
+        
     }
 
     const displayIndividualPost = (tab: string) => {
@@ -113,7 +116,7 @@ const OnePost = (props: Props) => {
                         <Text style={styles.timePosted}>{props.post.timestamp ? dayjs(props.post.timestamp).format('MMM D, YYYY h:mm A') : 'Unknown date'}</Text>
                     </View>
                 </View>
-                {props.post.author_id !== currentUserId && (
+                {(props.post.author_id && props.post.author_id !== currentUserId) &&  (
                     <View style={styles.followUser}>
                         <TouchableOpacity onPress={() => setFollowMenu('visible')}>
                             {props?.follow ? (

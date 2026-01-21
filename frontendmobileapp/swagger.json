@@ -224,46 +224,6 @@
       }
     },
     "/api/blog/blog-posts": {
-      "post": {
-        "responses": {
-          "500": {
-            "description": "An error occurred while creating the blog post"
-          },
-          "404": {
-            "description": "Authenticated user not found"
-          },
-          "403": {
-            "description": "Access denied. Admins only"
-          },
-          "400": {
-            "description": "Title and content are required"
-          },
-          "201": {
-            "description": "Blog post created successfully"
-          }
-        },
-        "summary": "Create a blog post for the Get Educated page (Admin only)",
-        "description": "Create a new blog post (Admin only)",
-        "operationId": "post_blog_posts",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/CreateBlogPost"
-            }
-          }
-        ],
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "tags": [
-          "blog"
-        ]
-      },
       "get": {
         "responses": {
           "200": {
@@ -301,6 +261,46 @@
             "type": "string",
             "format": "mask",
             "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "blog"
+        ]
+      },
+      "post": {
+        "responses": {
+          "500": {
+            "description": "An error occurred while creating the blog post"
+          },
+          "404": {
+            "description": "Authenticated user not found"
+          },
+          "403": {
+            "description": "Access denied. Admins only"
+          },
+          "400": {
+            "description": "Title and content are required"
+          },
+          "201": {
+            "description": "Blog post created successfully"
+          }
+        },
+        "summary": "Create a blog post for the Get Educated page (Admin only)",
+        "description": "Create a new blog post (Admin only)",
+        "operationId": "post_blog_posts",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateBlogPost"
+            }
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -675,28 +675,6 @@
       }
     },
     "/api/events/event_info": {
-      "post": {
-        "responses": {
-          "201": {
-            "description": "Success"
-          }
-        },
-        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.\n                        Image will be uploaded to S3 if provided.",
-        "operationId": "post_event_info",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/AddEventRequest"
-            }
-          }
-        ],
-        "tags": [
-          "events"
-        ]
-      },
       "get": {
         "responses": {
           "200": {
@@ -715,6 +693,28 @@
             "in": "body",
             "schema": {
               "$ref": "#/definitions/EventInfoQuery"
+            }
+          }
+        ],
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "Success"
+          }
+        },
+        "description": "Add event to events table,\n                        Can take an address id if the address is already within in the database,\n                        otherwise can be added line by line. Address isn't required to allow for online events.\n                        Image will be uploaded to S3 if provided.",
+        "operationId": "post_event_info",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/AddEventRequest"
             }
           }
         ],
@@ -1072,6 +1072,12 @@
             "type": "string",
             "required": true,
             "description": "Content of the post"
+          },
+          {
+            "name": "anonymous",
+            "in": "formData",
+            "type": "boolean",
+            "description": "if post is to be anonymous"
           },
           {
             "name": "media",
@@ -1515,6 +1521,18 @@
       }
     },
     "/api/notifications/preferences": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get user's notification preferences",
+        "operationId": "get_notification_preferences_resource",
+        "tags": [
+          "notifications"
+        ]
+      },
       "put": {
         "responses": {
           "200": {
@@ -1533,18 +1551,6 @@
             }
           }
         ],
-        "tags": [
-          "notifications"
-        ]
-      },
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Get user's notification preferences",
-        "operationId": "get_notification_preferences_resource",
         "tags": [
           "notifications"
         ]
@@ -1581,6 +1587,26 @@
       }
     },
     "/api/profile/email_notifications": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/EmailNotificationSettings"
+            }
+          }
+        },
+        "summary": "Get email notification settings",
+        "operationId": "get_email_notifications",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
       "post": {
         "responses": {
           "200": {
@@ -1599,26 +1625,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      },
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/EmailNotificationSettings"
-            }
-          }
-        },
-        "summary": "Get email notification settings",
-        "operationId": "get_email_notifications",
         "security": [
           {
             "Bearer": []
@@ -1660,6 +1666,26 @@
       }
     },
     "/api/profile/profile_visibility": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ProfileVisibilitySettings"
+            }
+          }
+        },
+        "summary": "Get profile visibility settings",
+        "operationId": "get_profile_visibility",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
       "post": {
         "responses": {
           "200": {
@@ -1678,26 +1704,6 @@
             }
           }
         ],
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "tags": [
-          "profile"
-        ]
-      },
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/ProfileVisibilitySettings"
-            }
-          }
-        },
-        "summary": "Get profile visibility settings",
-        "operationId": "get_profile_visibility",
         "security": [
           {
             "Bearer": []
@@ -2548,6 +2554,10 @@
           "type": "integer",
           "description": "Number of comments"
         },
+        "anonymous": {
+          "type": "boolean",
+          "description": "is this post anonymous"
+        },
         "media_files": {
           "type": "array",
           "description": "List of media file URLs associated with the post",
@@ -2963,6 +2973,29 @@
       },
       "type": "object"
     },
+    "EventInfoQuery": {
+      "required": [
+        "event_ids"
+      ],
+      "properties": {
+        "event_ids": {
+          "type": "array",
+          "description": "takes list of Ids for event to be fetched",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "page": {
+          "type": "integer",
+          "description": "Page Number, default = 1"
+        },
+        "per_page": {
+          "type": "integer",
+          "description": "Number of Events per page, default = 20"
+        }
+      },
+      "type": "object"
+    },
     "AddEventRequest": {
       "required": [
         "event_time",
@@ -3019,29 +3052,6 @@
         "post_code": {
           "type": "string",
           "description": "post code"
-        }
-      },
-      "type": "object"
-    },
-    "EventInfoQuery": {
-      "required": [
-        "event_ids"
-      ],
-      "properties": {
-        "event_ids": {
-          "type": "array",
-          "description": "takes list of Ids for event to be fetched",
-          "items": {
-            "type": "integer"
-          }
-        },
-        "page": {
-          "type": "integer",
-          "description": "Page Number, default = 1"
-        },
-        "per_page": {
-          "type": "integer",
-          "description": "Number of Events per page, default = 20"
         }
       },
       "type": "object"

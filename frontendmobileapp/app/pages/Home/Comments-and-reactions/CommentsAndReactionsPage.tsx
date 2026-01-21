@@ -61,9 +61,10 @@ const IndividualPost = () => {
 
 
     const openProfile = () => {
-        dispatch(openTabOnTopAction({ type: TabType.PROFILE, data: { "userId": individualPost.author_id } }))
-    }
-
+        if (individualPost.author_id) {
+            dispatch(openTabOnTopAction({ type: TabType.PROFILE, data: { "userId": individualPost.author_id } }))
+        }
+    }    
 
     const changeReaction = (reaction: string) => {
         if (reaction === 'reverseReaction' && reactionType === 'default') {

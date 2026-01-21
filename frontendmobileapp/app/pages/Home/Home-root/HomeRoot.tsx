@@ -48,6 +48,7 @@ export default function HomeRoot() {
     dispatch(setScrollViewPosition(contentOffset.y));
 
     if (isCloseToBottom) {
+      // update feed when user is close to the bottom of the page
       if (paginationValues.hasNextPage) {
         if (activeHomeTab=== FeedTabs.ALL_UPDATES){
           dispatch(updatePostsForFeedAction({feedType: 'all', page: paginationValues?.currentPage + 1}));
