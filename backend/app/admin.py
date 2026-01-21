@@ -58,7 +58,6 @@ def init_admin(app):
     admin = Admin(
         app, 
         name="Internal Admin",
-        template_mode = "bootstrap4",
         url="/internal-admin"
     )
     admin.add_view(ProfessionalDetailsAdmin(ProfessionalDetails, db.session, category="Users"))

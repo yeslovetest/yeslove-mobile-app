@@ -19,7 +19,17 @@ class Chatbot:
         os.environ["OPENAI_API_KEY"] = api_key
 
         #Initialise opneAI client
-        self.openai = OpenAI(api_key=api_key)
+        try:
+            self.openai = OpenAI(api_key=api_key)
+        except TypeError as e:
+            # Handle version compatibility issues
+            if 'proxies' in str(e):
+                import openai
+                # Use older initialization method
+                openai.api_key = api_key
+                self.openai = openai
+            else:
+                raise e
         self.model = model
         self.top_k = top_k
         self.system_message = (

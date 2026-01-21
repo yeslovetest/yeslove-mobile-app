@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Main YesLove Application
+  main-app:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - CHATBOT_SERVICE_URL=http://chatbot-service:8000
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - main-db
+      - redis
+      - chatbot-service
+    volumes:
+      - ./backend:/app
+    command: python run.py
+
+  # Independent Chatbot Microservice
+  chatbot-service:
+    build: ./chatbot-service
+    ports:
+      - "8000:8000"
+    environment:
+      - VECTOR_DATABASE_URL=postgresql://chatbot_user:chatbot_pass@vector-db:5432/chatbot_vectors
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PORT=8000
+    depends_on:
+      - vector-db
+    volumes:
+      - ./chatbot-service:/app
+    command: python main.py
+
+  # Main Application Database
+  main-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=yeslove_main
+      - POSTGRES_USER=main_user
+      - POSTGRES_PASSWORD=main_pass
+    volumes:
+      - main_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Independent Vector Database for Chatbot
+  vector-db:
+    image: pgvector/pgvector:pg15
+    environment:
+      - POSTGRES_DB=chatbot_vectors
+      - POSTGRES_USER=chatbot_user
+      - POSTGRES_PASSWORD=chatbot_pass
+    volumes:
+      - vector_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  # Redis for Celery tasks
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Celery Worker for async tasks
+  celery-worker:
+    build: ./backend
+    command: celery -A app.tasks.chatbot_sync worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CHATBOT_SERVICE_URL=http://chatbot-service:8000
+    depends_on:
+      - redis
+      - main-db
+      - chatbot-service
+    volumes:
+      - ./backend:/app
+
+volumes:
+  main_db_data:
+  vector_db_data:

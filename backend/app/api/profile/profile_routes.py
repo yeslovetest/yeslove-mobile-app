@@ -145,51 +145,85 @@ class About(Resource):
         }
         return response_data, 200
     
+# @api.route("/user/keycloak_id")
+# class GetUserKeycloakIDFlexible(Resource):
+#     from app.api.profile.profile_models import UserQuery, UserQueryResponse
+#     @require_auth()
+#     @api.doc(security='Bearer')
+#     @api.expect(UserQuery)  # ✅ Require Authorization Header
+#     @api.response(200, "Success", UserQueryResponse)  # ✅ Ensure correct model
+#     def post(self):
+#         """Retrieve a user's Keycloak ID by username (required), with optional email or user ID."""
+#         from app.models import User
+#         data = request.json or {}
+#         username = data.get("username")
+#         email = data.get("email")
+#         user_id = data.get("user_id")
+
+#         user_data: Dict[str, Any] = getattr(request, 'user', {})
+#         logger.info(f"🔍 User Keycloak ID Lookup initiated by {user_data.get('username', 'unknown')}")
+
+#         # ✅ Enforce username requirement
+#         if not username:
+#             logger.warning("❌ Missing required parameter: username")
+#             return {"message": "Username is required"}, 400
+
+#         # ✅ Build the query dynamically
+#         query = User.query.filter_by(username=username)
+#         log_filters = {"username": username}
+
+#         if email:
+#             query = query.filter_by(email=email)
+#             log_filters["email"] = email
+#         if user_id:
+#             query = query.filter_by(id=user_id)
+#             log_filters["user_id"] = user_id
+
+#         logger.info(f"🔹 Querying database with filters: {log_filters}")
+
+#         user = query.first()
+
+#         if not user:
+#             logger.warning(f"❌ User not found with filters: {log_filters}")
+#             return {"message": "User not found"}, 404
+
+#         logger.info(f"✅ Found user: {user.username} (Keycloak ID: {user.keycloak_id})")
+
+#         return {"keycloak_id": user.keycloak_id, "user_id": user.id}, 200
+
 @api.route("/user/keycloak_id")
-class GetUserKeycloakIDFlexible(Resource):
-    from app.api.profile.profile_models import UserQuery, UserQueryResponse
+class GetUserKeycloakID(Resource):
     @require_auth()
     @api.doc(security='Bearer')
-    @api.expect(UserQuery)  # ✅ Require Authorization Header
-    @api.response(200, "Success", UserQueryResponse)  # ✅ Ensure correct model
     def post(self):
-        """Retrieve a user's Keycloak ID by username (required), with optional email or user ID."""
-        from app.models import User
-        data = request.json or {}
-        username = data.get("username")
-        email = data.get("email")
-        user_id = data.get("user_id")
+        """
+        Return authenticated user's Keycloak ID directly from JWT.
+        This endpoint must NOT depend on database state.
+        """
 
-        user_data: Dict[str, Any] = getattr(request, 'user', {})
-        logger.info(f"🔍 User Keycloak ID Lookup initiated by {user_data.get('username', 'unknown')}")
+        user_data = getattr(request, "user", None)
 
-        # ✅ Enforce username requirement
-        if not username:
-            logger.warning("❌ Missing required parameter: username")
-            return {"message": "Username is required"}, 400
+        if not user_data:
+            logger.error("❌ request.user missing after authentication")
+            return {"message": "Unauthorized"}, 401
 
-        # ✅ Build the query dynamically
-        query = User.query.filter_by(username=username)
-        log_filters = {"username": username}
+        keycloak_id = user_data.get("sub") or user_data.get("keycloak_id")
+        username = user_data.get("preferred_username") or user_data.get("username")
+        email = user_data.get("email")
 
-        if email:
-            query = query.filter_by(email=email)
-            log_filters["email"] = email
-        if user_id:
-            query = query.filter_by(id=user_id)
-            log_filters["user_id"] = user_id
 
-        logger.info(f"🔹 Querying database with filters: {log_filters}")
+        if not keycloak_id:
+            logger.error("❌ Keycloak ID missing in token payload")
+            return {"message": "Invalid token"}, 401
 
-        user = query.first()
+        logger.info(f"✅ Authenticated user resolved from JWT: {username} ({keycloak_id})")
 
-        if not user:
-            logger.warning(f"❌ User not found with filters: {log_filters}")
-            return {"message": "User not found"}, 404
+        return {
+            "keycloak_id": keycloak_id,
+            "username": username,
+            "email": email
+        }, 200
 
-        logger.info(f"✅ Found user: {user.username} (Keycloak ID: {user.keycloak_id})")
-
-        return {"keycloak_id": user.keycloak_id, "user_id": user.id}, 200
 
 @api.route("/profile_visibility")
 class ProfileVisibility(Resource):

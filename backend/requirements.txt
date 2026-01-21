@@ -12,6 +12,8 @@ Flask-cors
 
 Flask-restx
 
+Flask-SocketIO
+
 requests 
 
 SQLAlchemy 
@@ -35,8 +37,9 @@ python-dateutil
 prometheus-flask-exporter
 
 psutil
+gunicorn==23.0.0
+openai==1.51.0
 
-openai
 
 # Graph database dependencies
 gremlinpython>=3.6.0

@@ -129,6 +129,14 @@ class Post(db.Model):
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "author": self.author.username if self.author else "Unknown",
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
 
 
 # -------------------------
@@ -289,6 +297,15 @@ class BlogPost(db.Model):
     # Relationships 
     author = db.relationship("User", backref="blogs")
     
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "author": self.author.username if self.author else "YesLove",
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
+    
 class DeviceToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -391,8 +408,19 @@ class Media(db.Model):
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
 
-    # relationship
-    post = db.relationship('Post', backref='media_files')   # creates one-to-many relationship with Post
+class PostMedia(db.Model):
+    __tablename__ = 'post_media'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete='CASCADE'), nullable=False)
+    media_id = db.Column(db.String(36), db.ForeignKey('media.id', ondelete='CASCADE'), nullable=False)
+    order_index = db.Column(db.Integer, default=0)  # For ordering media in posts
+    
+    # Relationships
+    post = db.relationship('Post', backref='post_media')
+    media = db.relationship('Media', backref='post_attachments')
+    
+    __table_args__ = (db.UniqueConstraint('post_id', 'media_id', name='unique_post_media'),)
 
 class BlogView(db.Model):
     __tablename__ = 'blog_view'
