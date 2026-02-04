@@ -129,6 +129,8 @@ class Post(db.Model):
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")
+    # one-to-many relationship with Media
+    media_files = db.relationship("Media", backref="post", cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -361,7 +363,7 @@ class Notification(db.Model):
 
 
 # ------------------------- Create Vector DB Model -------------------------
-
+''' Vector database has been moved to its own service for scalability and performance.
 class Document(db.Model):
     __tablename__ = "documents"
 
@@ -369,9 +371,9 @@ class Document(db.Model):
     source      = db.Column(db.Text, nullable=False)
     chunk_index = db.Column(db.Integer, nullable=False)
     content     = db.Column(db.Text, nullable=False)
-    #embedding   = db.Column(Vector(1536), nullable=False)
+    embedding   = db.Column(Vector(1536), nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.now)
-
+'''
     
 
 ##### ModerationLog model with explanations #####

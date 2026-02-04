@@ -70,8 +70,8 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
 
     const postData = new FormData(); //form data for Post
     const mediaData = new FormData(); // form data for Media upload
-
-    postData.append("anonymous", anonymous ?? false)
+    console.log(anonymous);
+    postData.append("anonymous", anonymous ? "true" : "false");
     postData.append("content", userPost);
     
 
