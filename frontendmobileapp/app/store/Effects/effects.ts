@@ -351,11 +351,11 @@ function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
 
     // ✅ Extract post details and image from FormData
     const content = action.payload.requestForm.get("content") as string;
-    const anonymous = action.payload.requestForm.get("anonymous") as boolean | null;
+    const anonymous = action.payload.requestForm.get("anonymous") as string | null;
     const media = action.payload.requestForm.get("media") as File | null; // not in use - form data only returns Content
 
     // ✅ Call API using its expected parameters
-    const response = yield call([api, api.postCreatePost], content, anonymous ?? false, media ?? undefined);
+    const response = yield call([api, api.postCreatePost], content, anonymous ?? "false", media ?? undefined);
 
     let mediaData: FormData = yield appSelect(state => state.feed.mediaData.mediaFormData);
     if (mediaData && mediaData.getAll("file").length === 1) {

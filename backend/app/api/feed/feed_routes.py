@@ -107,7 +107,15 @@ class Feed(Resource):
                 "likes": len(post.likes),
                 "comments": len(post.comments),
                 "anonymous": post.is_anonymous,
-                "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
+                "media_files": [
+                    {
+                        "uri": f"/api/media/{media.id}",
+                        "type": media.content_type,
+                        "width": media.width,
+                        "height": media.height
+                    }
+                    for media in (post.media_files or [])
+                ],
                 "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
@@ -143,7 +151,7 @@ class CreatePost(Resource):
     )
     post_parser.add_argument(
         'anonymous',
-        type=bool,
+        type=str,
         required=False,
         location='form',
         help='if post is to be anonymous'
@@ -178,7 +186,9 @@ class CreatePost(Resource):
         args = post_parser.parse_args()
         content = args.get("content", "")
         files = args.get("media") or []
-        is_anonymous = args.get("anonymous", False)
+        is_anonymous = str(args.get("anonymous")).lower() == "true"
+
+        logger.info("is_anonymous: %s", is_anonymous)
               
         if not isinstance(files, list):
             files = [files] if files else []
