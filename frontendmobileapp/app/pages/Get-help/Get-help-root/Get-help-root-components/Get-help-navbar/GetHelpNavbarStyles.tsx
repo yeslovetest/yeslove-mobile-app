@@ -15,7 +15,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: theme.spacing.postWidth,
     justifyContent: "center",
-    borderWidth: 2,
     backgroundColor: "#fff",
     borderRadius: 10,
     elevation: 3,

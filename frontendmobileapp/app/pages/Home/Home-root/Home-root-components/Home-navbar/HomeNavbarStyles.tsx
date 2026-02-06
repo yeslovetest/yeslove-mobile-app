@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
     homeNavBar: {
         flexDirection: "row",
         flexWrap: "wrap",
-        borderWidth: 2,
         width: theme.spacing.postWidth,
         justifyContent: "center",
         backgroundColor: "#fff", 
