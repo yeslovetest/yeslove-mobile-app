@@ -20,6 +20,7 @@ useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollToEnd({ animated: true });
     }
+  
   }, [messages.length, loading]);
   
   return (

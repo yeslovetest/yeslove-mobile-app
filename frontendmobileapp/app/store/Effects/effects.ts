@@ -15,7 +15,7 @@ import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiF
   NotificationsApiFactory,
   NotificationListResponse,
   Post, EventInfoResponse, BlogPostModel,
-  ChatbotApiFactory, NotificationPreferences
+  NotificationPreferences
   } from "@/generated-api";
 import { appSelect } from "../hooks";
 import { attemptRefreshFromLocalStorageAction, logInAction, 
@@ -50,7 +50,7 @@ import { fetchUserNotifications, markNotificationRead, setUserNotification,
    fetchNotificationPreferences, setNotificationPreferences,
    updateNotificationPreferences
  } from "../Notification-store/notificationSlice";
-
+import { ChatRequest, ChatResponse as ChatbotApiResponse, apiFactory as chatbotApiFactory } from "@/chatbot-client-api/api";
 
 
 /** 
@@ -62,6 +62,7 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   try{
     const loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<TokenResponse>).data as TokenResponse;
     axios.defaults.headers.common['Authorization'] = loginResponse.access_token ?? "";
+    localStorage.setItem('authToken', loginResponse.access_token ?? ""); // Store access token for (chatbot microservice) API client interceptor
     TOKEN_REFRESH_SERVICE.startRefreshingToken(loginResponse.refresh_token ?? "");
     yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, loginResponse.refresh_token ?? "");
     const userQueryResponse: UserQueryResponse  = ((yield call(ProfileApiFactory().postGetUserKeycloakIdFlexible, {username: request.username})) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
@@ -231,13 +232,17 @@ function* handleGetFriendList(action: PayloadAction<string>){
   yield put(setFriendList(friends.friends ?? []));
 }
 
+
+/** 
+ * Chatbot (Microservice) Api 
+ * */
 function* handleSendChatbotMessage(action: PayloadAction<{prompt: string}>){
-  try{  
-    const response = ((yield call(ChatbotApiFactory().postSendChatbotMessage, {message: action.payload.prompt})) as AxiosResponse<{response: string}>).data as {response: string};
-    yield put(setChatbotResponse(response.response ?? ''));
-  }catch (error) {  
-    console.error('falied to send message to chatbot', error);  
-  } 
+  try{
+    const response = ((yield call(chatbotApiFactory.sendMessage, {message: action.payload.prompt})) as AxiosResponse<ChatbotApiResponse>).data as ChatbotApiResponse;  
+    yield put(setChatbotResponse(response));
+  }catch (error) {
+    console.error('failed to send chatbot response', error);
+  }
 }
 
 
@@ -351,11 +356,11 @@ function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
 
     // ✅ Extract post details and image from FormData
     const content = action.payload.requestForm.get("content") as string;
-    const anonymous = action.payload.requestForm.get("anonymous") as boolean | null;
+    const anonymous = action.payload.requestForm.get("anonymous") as string | null;
     const media = action.payload.requestForm.get("media") as File | null; // not in use - form data only returns Content
 
     // ✅ Call API using its expected parameters
-    const response = yield call([api, api.postCreatePost], content, anonymous ?? false, media ?? undefined);
+    const response = yield call([api, api.postCreatePost], content, anonymous ?? "false", media ?? undefined);
 
     let mediaData: FormData = yield appSelect(state => state.feed.mediaData.mediaFormData);
     if (mediaData && mediaData.getAll("file").length === 1) {
@@ -601,15 +606,16 @@ function* appSaga() {
   yield takeEvery(setUserPassword.type, handlePasswordChange);
   yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
   yield takeEvery(logoutAction.type, handleLogout);
+/**BlogPost APi saga */  
+  yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
+  yield takeEvery(fetchOneBlogPost.type, handleGetOneBlogPost);
 /**Chat Api saga */
   yield takeEvery(fetchChatMessages.type, handleGetMessages);
   yield takeEvery(sendChatMessage.type, handlePostSendMessage);
   yield takeEvery(markChatOpened.type, updateChatOpened);
   yield takeEvery(fetchFriendList.type, handleGetFriendList);
+/**Chatbot Api saga */
   yield takeEvery(sendChatbotMessage.type, handleSendChatbotMessage);
-/**BlogPost APi saga */  
-  yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
-  yield takeEvery(fetchOneBlogPost.type, handleGetOneBlogPost);
 /**Events APi saga */  
   yield takeEvery(fetchAllEvents.type, handleGetEventsList);
   yield takeEvery(fetchUserEvents.type, handleGetAttendingEvents);  
