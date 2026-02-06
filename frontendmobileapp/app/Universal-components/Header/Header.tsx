@@ -108,8 +108,7 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          {/*bot icon that will later direct to the chatbot */}
-          <MaterialCommunityIcons name="robot-love" size={25} color="black" />
+          <View></View>
         </View>
       )}
 
