@@ -1,0 +1,347 @@
+{
+  "swagger": "2.0",
+  "basePath": "/",
+  "paths": {
+    "/api/v1/admin/sync/start": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SyncResponse"
+            }
+          }
+        },
+        "summary": "Start automated sync scheduler (daily at 2 AM)",
+        "operationId": "post_start_auto_sync",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/sync/stop": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SyncResponse"
+            }
+          }
+        },
+        "summary": "Stop automated sync scheduler",
+        "operationId": "post_stop_auto_sync",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/sync/trigger": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SyncResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Manually trigger content sync from all external sources",
+        "description": "Syncs content from:\n• 23 approved relationship advice sources\n• RSS feeds from partner organizations\n• Configured external URLs",
+        "operationId": "post_trigger_sync",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/chat/message": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ChatResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing message"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication required"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Send message to chatbot with priority-based RAG retrieval",
+        "description": "**Authentication Required**: Bearer token from YesLove app login\n\nFeatures:\n- User authentication via JWT token\n- Priority-based source retrieval (YesLove → Core → Abuse → Youth → Cultural → Contextual)\n- Crisis detection for abuse/harm queries\n- Source attribution in responses\n- 23 approved relationship advice sources\n- User-specific session management",
+        "operationId": "post_chat_message",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ChatRequest"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Health check endpoint",
+        "operationId": "get_health_check",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/migrate/documents": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Migrate documents from main app to chatbot service",
+        "operationId": "post_migrate_documents",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/MigrateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "migrate"
+        ]
+      }
+    },
+    "/api/v1/sync/blogs": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SyncResponse"
+            }
+          }
+        },
+        "summary": "Sync blog posts from main application",
+        "operationId": "post_sync_blogs",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostSyncRequest"
+            }
+          },
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "sync"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "YesLove Chatbot Service",
+    "version": "1.0.0",
+    "description": "Enhanced RAG Chatbot Service with Priority-Based Retrieval\n        \n        Features:\n        • 23 approved relationship advice sources\n        • Priority-based content retrieval (YesLove → Core → Abuse → Youth → Cultural → Contextual)\n        • Crisis detection for abuse/harm queries\n        • Multiple sync methods (scheduled, webhook, RSS, manual)\n        • Source attribution and transparency\n        • Cultural intelligence from diverse sources\n        \n        Base URL: http://127.0.0.1:8000\n        ",
+    "contact": {
+      "name": "YesLove Development Team",
+      "email": null,
+      "url": "https://www.yeslove.co.uk"
+    }
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "chat",
+      "description": "Chat API with Priority-Based RAG"
+    },
+    {
+      "name": "sync",
+      "description": "Data Sync API"
+    },
+    {
+      "name": "health",
+      "description": "Health Check API"
+    },
+    {
+      "name": "migrate",
+      "description": "Migration API"
+    },
+    {
+      "name": "admin",
+      "description": "Administrative Operations"
+    }
+  ],
+  "definitions": {
+    "ChatRequest": {
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "User message",
+          "example": "How do I build trust in a relationship?"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Chat session ID",
+          "example": "session-123"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "User ID",
+          "example": 1
+        },
+        "history": {
+          "type": "array",
+          "description": "Previous chat messages",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "type": "object"
+    },
+    "ChatResponse": {
+      "properties": {
+        "response": {
+          "type": "string",
+          "description": "AI-generated response with source attribution"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Chat session ID"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Authenticated user ID"
+        },
+        "sources": {
+          "type": "string",
+          "description": "Source attribution for transparency"
+        }
+      },
+      "type": "object"
+    },
+    "PostSyncRequest": {
+      "required": [
+        "posts"
+      ],
+      "properties": {
+        "posts": {
+          "type": "array",
+          "description": "List of posts to sync",
+          "items": {
+            "type": "object"
+          }
+        },
+        "action": {
+          "type": "string",
+          "description": "Action: create, update, delete"
+        }
+      },
+      "type": "object"
+    },
+    "SyncResponse": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Operation status",
+          "example": "sync_triggered"
+        }
+      },
+      "type": "object"
+    },
+    "MigrateRequest": {
+      "required": [
+        "documents"
+      ],
+      "properties": {
+        "documents": {
+          "type": "array",
+          "description": "List of documents to migrate",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "type": "object"
+    }
+  },
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
+}

@@ -14,7 +14,8 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const screenHeight = Dimensions.get('window').height;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
-  const chatBotResponse = useAppSelector((state) => state.chat.chatbotResponse);
+  const chatBotResponse = useAppSelector((state) => state.chat.chatbotResponse.response ?? "");
+  const chatBotResponseSources = useAppSelector((state) => state.chat.chatbotResponse.sources ?? "");
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -26,30 +27,31 @@ const Chatbot = () => {
 
   const postPrompt = async (prompt: string) => {
     setLoading(true);
+
     const now = new Date();
-    setMessages((prev) => [...prev, { role: 'user', text: prompt, createdAt: now }]);
-    dispatch(sendChatbotMessage({prompt: prompt}));
 
-    try {
-      const res = await fetch('http://localhost:8080/demo-1.0-SNAPSHOT/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
-      });
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", text: prompt, createdAt: now },
+    ]);
 
-      const json = await res.json();
-      const reply = json.response ?? json;
-
-      setMessages((prev) => [
-        ...prev,
-        { role: 'bot', text: chatBotResponse, createdAt: new Date() },
-      ]);
-    } catch (err) {
-      console.error('error:', err);
-    } finally {
-      setLoading(false);
-    }
+    dispatch(sendChatbotMessage({ prompt }));
   };
+
+  useEffect(() => {
+    if (!chatBotResponse) return;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "bot",
+        text: `${chatBotResponse}. Sources: ${chatBotResponseSources}`,
+        createdAt: new Date(),
+      },
+    ]);
+
+    setLoading(false);
+  }, [chatBotResponse, chatBotResponseSources]);
 
   const handleSend = (text: string) => {
     if (!text.trim()) return;
