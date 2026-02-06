@@ -14,10 +14,10 @@ const styles = StyleSheet.create({
     homeNavBar: {
         flexDirection: "row",
         flexWrap: "wrap",
+        borderWidth: 2,
         width: theme.spacing.postWidth,
         justifyContent: "center",
-        backgroundColor: "#fff",
-        
+        backgroundColor: "#fff", 
         borderRadius: 10,
         elevation: 3,
         shadowColor: "#000",

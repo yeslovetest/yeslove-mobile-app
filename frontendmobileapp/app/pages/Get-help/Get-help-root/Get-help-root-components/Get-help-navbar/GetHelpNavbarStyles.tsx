@@ -15,8 +15,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: theme.spacing.postWidth,
     justifyContent: "center",
+    borderWidth: 2,
     backgroundColor: "#fff",
-    paddingVertical: 10,
     borderRadius: 10,
     elevation: 3,
     shadowColor: "#000",
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   },
   navItem: {
     width: "50%",
-    paddingVertical: 10,
+    paddingVertical: 15,
     alignItems: "center",
   },
   navText: {
