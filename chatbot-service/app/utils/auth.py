@@ -40,13 +40,13 @@ def require_auth(f):
         auth_header = request.headers.get('Authorization')
         
         if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Authentication required'}), 401
+            return {'error': 'Authentication required'}, 401
         
         token = auth_header.split(' ')[1]
         payload = verify_jwt_token(token)
         
         if not payload:
-            return jsonify({'error': 'Invalid token'}), 401
+            return {'error': 'Invalid token'}, 401
         
         # Add user info to request context
         request.user_id = payload.get('sub')

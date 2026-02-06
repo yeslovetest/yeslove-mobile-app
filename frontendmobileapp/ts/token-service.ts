@@ -19,6 +19,8 @@ class TokenRefreshService{
                 currentRefreshToken = response.data.refresh_token ?? "";
                 expiresIn = response.data.expires_in ?? 10_000;
                 axios.defaults.headers.common['Authorization'] = response.data.access_token ?? "";
+                // Store the new access token in localStorage - to be used by the (chatbot microservice) API client interceptor
+                localStorage.setItem('authToken', response.data.access_token ?? "");
             }).catch ((error) => {
                 this.stopRefreshingToken()
             })

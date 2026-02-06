@@ -1,4 +1,5 @@
 import { Chat, FriendInfo } from "@/generated-api";
+import { ChatResponse as chatbotApiResponse } from "@/chatbot-client-api/api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const chatSlice = createSlice({
@@ -6,7 +7,12 @@ const chatSlice = createSlice({
     initialState: {
         messages: [] as Chat[],
         friends: [] as FriendInfo[],
-        chatbotResponse: "",
+        chatbotResponse: {
+            response: '',
+            user_id: '',
+            session_id: '',
+            sources: ''
+        },
         mediaData: { mediaFormData: null as FormData | null },
     },
     reducers: {
@@ -24,8 +30,20 @@ const chatSlice = createSlice({
             state.friends = action.payload
         },
         sendChatbotMessage: (state, action: PayloadAction<{prompt: string}>) => {},
-        setChatbotResponse: (state, action: PayloadAction<string>) => {
-            state.chatbotResponse = action.payload
+        setChatbotResponse: (state, action: PayloadAction<chatbotApiResponse | null>) => {
+            if (action.payload) {
+                state.chatbotResponse.response = action.payload.response;
+                state.chatbotResponse.user_id = action.payload.user_id;
+                state.chatbotResponse.session_id = action.payload.session_id;
+                state.chatbotResponse.sources = action.payload.sources;
+            } else {
+                state.chatbotResponse = {
+                    response: '',
+                    user_id: '',
+                    session_id: '',
+                    sources: ''
+                };
+            }
         },
     }    
 })
