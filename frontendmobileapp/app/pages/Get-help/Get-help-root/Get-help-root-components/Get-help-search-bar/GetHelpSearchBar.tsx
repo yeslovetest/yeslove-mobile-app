@@ -40,7 +40,6 @@ const GetHelpSearchBar = (props:Props) => {
         <TouchableOpacity style={styles.searchButton}  onPress={searchAction}>
            <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
-      
       </View>
     </View>
   )
