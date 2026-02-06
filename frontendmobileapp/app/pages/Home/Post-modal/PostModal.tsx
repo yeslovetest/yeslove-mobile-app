@@ -12,7 +12,6 @@ import { postNewPostAction, storeMediaFormData } from "@/app/store/Home-store/fe
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import PostInput from "./Post-modal-components/Post-input/PostInput";
 import PostingUserProfile from "./Post-modal-components/Posting-user-profile/PostingUserProfile";
-import { uploadMedia } from "@/app/store/Profile-store/mediaSlice";
 import dataURLtoFile from '@/utils/mediaUrlConverter';
 
 interface PostModalProps {
@@ -61,7 +60,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
     setUserPost("");
     setSelectedFile(null);
     console.log('media id:', mediaID);
-   
+
   };
 
 
@@ -73,35 +72,35 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
 
     postData.append("anonymous", anonymous ?? false)
     postData.append("content", userPost);
-    
+
 
     //console.log("Selected file for upload:", selectedFile);
 
     if (selectedFile) {
-      const fieldName = "file"; 
-     
+      const fieldName = "file";
+
       selectedFile.forEach((selectedFile) => {
-         // detect if it's base64 or file URI
+        // detect if it's base64 or file URI
         if (selectedFile.uri.startsWith("file:")) {
           // handle both image and video here
           const file = selectedFile;
           mediaData.append(fieldName, file as any);
-        } 
+        }
         else if (selectedFile.uri.startsWith("data:")) {
           // handle base64 (e.g., for web)
           const file: File | any = dataURLtoFile(
             selectedFile.uri,
             selectedFile.name ??
-              (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
+            (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg")
           );
           mediaData.append(fieldName, file);
         }
-      });  
-      dispatch(storeMediaFormData({mediaFormData: mediaData}));
+      });
+      dispatch(storeMediaFormData({ mediaFormData: mediaData }));
     }
 
     dispatch(postNewPostAction({ requestForm: postData as any }));
-    
+
     //dispatch(uploadMedia({requestBody: mediaData as any}));
     handleClose();
   };
@@ -124,26 +123,26 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
               size={32}
               color="black"
             />
-            <Text style={styles.createPost}>Create post</Text>
             <View style={styles.actionButtonsContainer}>
+              <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
+                <Text style={styles.actionButtonsText}>Share Anonymously
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.actionButtons} onPress={() => handlePost(false)}>
                 <Text style={styles.actionButtonsText}>Share
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
-                <Text style={styles.actionButtonsText}>Post Anonymous
-                </Text>
-              </TouchableOpacity>
+
             </View>
-            
+
           </View>
           <View style={{ flex: 1 }}>
             <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
-            <PostInput 
-              userPost={userPost} 
-              setUserPost={setUserPost} 
+            <PostInput
+              userPost={userPost}
+              setUserPost={setUserPost}
               selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}/>
+              setSelectedFile={setSelectedFile} />
           </View>
         </Animated.View>
       </View>

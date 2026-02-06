@@ -3,15 +3,22 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   userPostBoxContainer: {
     flex: 1,
-    padding: 16,
+    borderWidth: 1,
+    height: 200,
+    borderColor: "#ddd",
+    borderRadius: 8,
   },
   postInput: {
     flex: 1,
     fontSize: 16,
-    textAlignVertical: "top", 
+    textAlignVertical: "top",
     borderRadius: 8,
+    height: 300,
+    width: "100%",
     marginBottom: 16,
-    outlineColor: "#fff",
+    height: "100%",
+    padding: 5,
+
   },
   postIcons: {
     flexDirection: "row",

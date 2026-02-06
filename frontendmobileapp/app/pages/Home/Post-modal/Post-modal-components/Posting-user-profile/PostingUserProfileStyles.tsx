@@ -7,8 +7,6 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         width: "100%",
         alignItems: "center",
-        borderBottomWidth: 1,
-        borderColor: "#ddd",
     },
     profileName: {
         marginBottom: 7,

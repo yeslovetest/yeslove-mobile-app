@@ -26,12 +26,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
   },
-  createPost: {
-    color: theme.colors.primaryBlue,
-    fontSize: 18,
-    fontWeight: "600",
-    width: "38%"
-  },
   actionButtonsContainer: {
     flexDirection: 'row'
   },
@@ -39,7 +33,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 15,
-    backgroundColor: 'rgba(241, 236, 236, 0.2)',
     marginLeft: 2,
     borderRadius: 5,
 
@@ -47,7 +40,7 @@ const styles = StyleSheet.create({
   actionButtonsText : {
     textAlign: 'center',
     fontWeight: 'bold',
-    color: 'grey',
+    color: theme.colors.primaryBlue,
     fontSize: 14
   }
   

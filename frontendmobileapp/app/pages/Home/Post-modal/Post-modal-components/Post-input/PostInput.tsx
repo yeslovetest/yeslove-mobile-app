@@ -80,6 +80,7 @@ const PostInput: React.FC<PostInputProps> = ({
   };
 
   return (
+    <>
     <View style={styles.userPostBoxContainer}>
       <ScrollView>
         <TextInput
@@ -99,6 +100,7 @@ const PostInput: React.FC<PostInputProps> = ({
           />
         )}
       </ScrollView>
+          </View>
 
       {/* ACTION BUTTONS */}
       <View style={styles.postIcons}>
@@ -118,7 +120,8 @@ const PostInput: React.FC<PostInputProps> = ({
           <Ionicons name="newspaper" size={24} color="black" />
         </TouchableOpacity>
       </View>
-    </View>
+
+    </>
   );
 };
 
