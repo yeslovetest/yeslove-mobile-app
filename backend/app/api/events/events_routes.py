@@ -371,7 +371,7 @@ class EventAttendees(Resource):
         if attendee in event.attendees:
             return {"message": "User is already attending this event"}, 400
 
-        event.attending.append(attendee)
+        event.attendees.append(attendee)
 
         db.session.commit()
 
@@ -482,13 +482,23 @@ class AttendingEvents(Resource):
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
         events = [event.to_dict() for event in pagination.items]
 
+                # Pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        events = pagination.items
+
+        # Add is_attending flag for each event
+        items = []
+        for event in events:
+            event_dict = event.to_dict()
+            event_dict["is_attending"] = any(u.id == user.id for u in event.attendees)
+            items.append(event_dict)
+
         return {
-            "items": events,
+            "items": items,
             "total": pagination.total,
             "page": page,
             "per_page": per_page
         }, 200
-
 
 
 @api.route("/event_attendees/remove")
@@ -520,10 +530,10 @@ class RemoveAttendee(Resource):
         if not attendee:
             return {"message": "User not found"}, 404
 
-        if attendee not in event.attending:
+        if attendee not in event.attendees:
             return {"message": "User is not attending this event"}, 400
 
-        event.attending.remove(attendee)
+        event.attendees.remove(attendee)
         db.session.commit()
 
         return {"message": "User removed from event successfully"}, 204

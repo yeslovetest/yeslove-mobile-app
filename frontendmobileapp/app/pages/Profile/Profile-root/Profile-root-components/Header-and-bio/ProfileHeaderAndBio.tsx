@@ -4,7 +4,7 @@ import styles from './ProfileHeaderAndBioStyles';
 import { useFocusEffect } from "@react-navigation/native";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { ProfileApiFactory } from '@/generated-api';
-import { setProfileInformationAction, getEmailNotificationSettings, getProfileVisibilitySettings, updateProfile } from '@/app/store/Profile-store/profileSlice';
+import { updateProfile } from '@/app/store/Profile-store/profileSlice';
 import axios from 'axios';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
 import { uploadMedia } from '@/app/store/Profile-store/mediaSlice';
@@ -13,7 +13,6 @@ import ProfilePicture from './Profile-picture/ProfilePicture';
 const ProfileHeaderAndBio = () => {
 
   const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
-  const tabStack = useAppSelector((state) => state.navigation.tabStack);
   const userName = useAppSelector((state) => state.profile.profiles[userId]?.username ?? "");
   const bio = useAppSelector((state) => state.profile.profiles[userId]?.bio ?? "");
 
@@ -22,17 +21,17 @@ const ProfileHeaderAndBio = () => {
   const userFollowers = useAppSelector((state) => state.profile.profiles[userId]?.user_followers ?? 0);
   const userFollowing = useAppSelector((state) => state.profile.profiles[userId]?.user_following ?? 0);
   const dispatch = useAppDispatch();
-  const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null);
-{/* 
-useFocusEffect(React.useCallback(() => {
+  const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null)
+
+  /** 
+  useFocusEffect(React.useCallback(() => {
     ProfileApiFactory()
       .getUserProfile(userId)
       .then((response) => {
         dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
       });
   }, [tabStack]));  
-  */}
-  
+
   const uploadProfilePic = (text: string) => {
     const mediaData = new FormData(); // form data for profile pic upload
 
@@ -79,7 +78,8 @@ useFocusEffect(React.useCallback(() => {
       {/* User bio */}
 
       <View style={styles.userBioContainer}>
-        <Text style={styles.userBioText}>{bio}</Text></View>
+        <Text style={styles.userBioText}>{bio}</Text>
+      </View>
     </View>
 
   )

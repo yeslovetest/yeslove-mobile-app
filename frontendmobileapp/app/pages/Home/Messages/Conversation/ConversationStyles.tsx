@@ -3,16 +3,19 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '90%',
+    width: '100%',
    
+    
   },
   chatContainer: {
     flex: 1,
+    width: '100%',
+   
   },
   contentContainer: {
-    flexGrow: 1,
-    justifyContent: "flex-end",
-    paddingVertical: 40,
+    flexGrow: 10,
+    
+    paddingVertical: 10,
   },
   mediaPreviewContainer: {
     display: 'flex', 

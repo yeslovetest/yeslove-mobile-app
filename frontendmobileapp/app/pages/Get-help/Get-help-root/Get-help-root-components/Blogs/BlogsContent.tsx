@@ -27,8 +27,8 @@ const BlogsContent = () => {
     }   
 
     return (
-        <View>
-            <GetHelpSearchBar placeholder="Enter Keyword..." currentSection='blogs'/>
+        <View style={{width: "100%"}}>
+            <GetHelpSearchBar placeholder="Enter keyword..." currentSection='blogs'/>
             <BlogsList />
             {totalPages > 0 && (
                 <BlogPaginator currentPage={currentPage ?? 1} totalPages={totalPages ?? 1} 

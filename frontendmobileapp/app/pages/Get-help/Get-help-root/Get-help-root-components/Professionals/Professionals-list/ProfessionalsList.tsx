@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useAppSelector } from '@/app/store/hooks';
 import styles from './ProfessionalsListStyles';
-import PlaceholderProfessionals from './PlaceholderProfessionals';
 
 const ProfessionalsList = () => {
   const professionals = useAppSelector(state => state.getHelp.professionals);

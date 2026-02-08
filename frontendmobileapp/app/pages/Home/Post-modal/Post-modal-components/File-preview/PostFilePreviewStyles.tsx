@@ -1,90 +1,108 @@
 import { StyleSheet, Dimensions } from "react-native";
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
-  /*
-  previewImage: {
-     width: Dimensions.get('window').width * 0.3, 
-     borderRadius: 10, 
-     marginTop: 10,
-     resizeMode: 'contain',
-     aspectRatio: 1.5,
-    },
-  previewVideo: { 
-    width: '100%', 
-    height: Dimensions.get('window').height ,
-    borderRadius: 10, 
-    marginTop: 10,
-    resizeMode: 'cover'
-    
-  },
-  text: { marginTop: 10, fontSize: 16 },
-*/
-previewContainer: {
-    position: "relative",
+  previewContainer: {
+    position: 'relative',
     marginRight: 8,
   },
   previewImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   previewVideo: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   overlay: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
   },
   overlayText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 18,
   },
   text: {
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 4,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
-    width: "90%",
-    maxHeight: "80%",
+    width: '90%',
+    maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 12,
-    textAlign: "center",
+    textAlign: 'center',
   },
   closeButton: {
     marginTop: 16,
-    backgroundColor: "#000",
+    backgroundColor: '#000',
     paddingVertical: 10,
     borderRadius: 8,
   },
   closeText: {
-    color: "#fff",
-    textAlign: "center",
+    color: '#fff',
+    textAlign: 'center',
+  },
+  deleteWrapper: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  deleteIcon: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 16,
+  },
+  fileName: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#555',
+    width: SCREEN_WIDTH * 0.3,
+    textAlign: 'center',
+  },
+  arrowWrapper: {
+    position: 'absolute',
+    top: '45%',
+    width: SCREEN_WIDTH,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+  },
+  arrowText: {
+    fontSize: 40,
+    color: '#fff',
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
 });
 
-
-
-export default styles
+export default styles;

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import styles from './EditProfileInformationStyles'
 import Header from '@/app/Universal-components/Header/Header'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { setProfileInformationAction, persistUserInfoAction, setActiveAboutTabAction } from '@/app/store/Profile-store/profileSlice'
 import TextInputField from './TextInputField/TextInputField'
+import { useMsgToggle } from "@/hooks/messageToggle";
 
 const EditProfileInformation = () => {
   const dispatch = useAppDispatch()
@@ -16,6 +17,7 @@ const EditProfileInformation = () => {
   const address = useAppSelector(state => state.profile.profiles[userId].contact_info?.address ?? "");
   const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? "");
   const bio = useAppSelector(state => state.profile.profiles[userId].bio ?? "");
+  const msgToggle = useMsgToggle();
 
   const [editedName, setEditedName] = useState(name);
   const [editedEmail, setEditedEmail] = useState(email);
@@ -23,6 +25,7 @@ const EditProfileInformation = () => {
   const [editedAddress, setEditedAddress] = useState(address);
   const [editedWebsite, setEditedWebsite] = useState(website);
   const [editedBio, setEditedBio] = useState(bio);
+  const [displayMsg, setDisplayMsg] = useState('');
 
   useEffect(() => {
     setEditedName(name);
@@ -59,7 +62,7 @@ const EditProfileInformation = () => {
   };
 
   const handleSave = () => {
-    // Update the profile data in the store
+    // Update the profile data in the store (username and email direct update not allowed - KeyCloak)
     let updatedProfile = {
       ...profileData,
       contact_info: {
@@ -74,23 +77,36 @@ const EditProfileInformation = () => {
     };
     dispatch(setProfileInformationAction({ id: userId, data: updatedProfile }));
     dispatch(persistUserInfoAction());
-
+    setDisplayMsg('Profile Update Successful!')
     dispatch(setActiveAboutTabAction("View"))
   }
+
+  useEffect(() => {
+    // make the message appear for 3s
+    msgToggle.toggleMsg(displayMsg);
+  }, [displayMsg, profileData]);
+  
   return (
     <>
       <Header></Header>
       <View style={styles.container}>
-        <TextInputField label="Name" value={editedName} onChange={(value: string) => handleFieldChange("Name", value)} />
-        <TextInputField label="Bio" value={editedBio} onChange={(value: string) => handleFieldChange("Bio", value)} />
-        <TextInputField label="Email" value={editedEmail} onChange={(value: string) => handleFieldChange("Email", value)} />
-        <TextInputField label="Phone" value={editedPhone} onChange={(value: string) => handleFieldChange("Phone", value)} />
-        <TextInputField label="Address" value={editedAddress} onChange={(value: string) => handleFieldChange("Address", value)} />
-        <TextInputField label="Website" value={editedWebsite} onChange={(value: string) => handleFieldChange("Website", value)} />
-
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
+        <ScrollView>
+          <TextInputField label="Name" value={editedName} onChange={(value: string) => handleFieldChange("Name", value)} />
+          <TextInputField label="Bio" value={editedBio} onChange={(value: string) => handleFieldChange("Bio", value)} />
+          <TextInputField label="Email" value={editedEmail} onChange={(value: string) => handleFieldChange("Email", value)} />
+          <TextInputField label="Phone" value={editedPhone} onChange={(value: string) => handleFieldChange("Phone", value)} />
+          <TextInputField label="Address" value={editedAddress} onChange={(value: string) => handleFieldChange("Address", value)} />
+          <TextInputField label="Website" value={editedWebsite} onChange={(value: string) => handleFieldChange("Website", value)} />
+          {msgToggle.msg && 
+            <View style={styles.displayMsgBox}>
+              <Text style={styles.displayMsgText}>{msgToggle.msg}</Text>
+            </View>
+          }
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+          
+        </ScrollView>
       </View>
     </>
   )

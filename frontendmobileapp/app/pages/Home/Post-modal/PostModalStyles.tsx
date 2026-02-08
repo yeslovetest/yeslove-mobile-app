@@ -17,21 +17,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     height: 50,
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     alignItems: "center",
-     borderBottomWidth: 1,
+    borderBottomWidth: 1,
     borderColor: "#ddd",
   },
   closeIcon: {
     position: "absolute",
     left: 0,
   },
-  createPost: {
-    color: theme.colors.primaryBlue,
-    fontSize: 18,
-    fontWeight: "600",
-    width: "51%"
+  actionButtonsContainer: {
+    flexDirection: 'row'
   },
+  actionButtons: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    marginLeft: 2,
+    borderRadius: 5,
+
+  },
+  actionButtonsText : {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    color: theme.colors.primaryBlue,
+    fontSize: 14
+  }
   
 });
 

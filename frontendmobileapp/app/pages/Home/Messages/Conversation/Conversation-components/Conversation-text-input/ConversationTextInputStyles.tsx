@@ -19,7 +19,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3.84,
-        elevation: 5
+        elevation: 5,
+        zIndex: 10000
     },
     textInput: {
         width: "90%",

@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native";
 const sharedStyles = StyleSheet.create({
   container: {
     flex: 1,
-    width: theme.spacing.standardPageContentWidth
+    width: theme.spacing.standardPageContentWidth,
   },
   contentContainer: {
     justifyContent: "flex-start",

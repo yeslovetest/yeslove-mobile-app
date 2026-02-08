@@ -177,3 +177,9 @@ cython_debug/
 
 # Log Files
 *.log
+
+# deployment scratch (local only)
+td*.json
+task-def*.json
+td_list.txt
+body.json

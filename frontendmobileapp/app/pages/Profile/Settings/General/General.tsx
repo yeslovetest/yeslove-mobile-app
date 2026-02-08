@@ -9,13 +9,14 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import DeleteAccountModal from './Delete-account/DeleteAccountModal'
 import ChangePasswordModal from './Change-password/ChangePasswordModal'
 import LogoutModal from './Logout/LogoutModal'
+import LoadingOverlay from '@/app/Universal-components/LoadingScreen/Screen';
+import { useAppSelector } from '@/app/store/hooks'
 
 const General = () => {
     const [changePasswordSection, setChangePasswordSection] = useState(false);
     const [deleteAccountSection, setDeleteAccountSection] = useState(false);
     const [logoutSection, setLogoutSection] = useState(false)
-
-
+    const loadingActive = useAppSelector(state => state.profile.loadingScreenActive); //display loading screen when user logging out
 
     return (
         <>
@@ -57,10 +58,10 @@ const General = () => {
                     </TouchableOpacity>
                 </View>
 
+                {/* Modals */}
                 <LogoutModal  visible={logoutSection}
                     onClose={() => setLogoutSection(false)}></LogoutModal>
 
-                {/* Modals */}
                 <ChangePasswordModal
                     visible={changePasswordSection}
                     onClose={() => setChangePasswordSection(false)}
@@ -70,7 +71,9 @@ const General = () => {
                     visible={deleteAccountSection}
                     onClose={() => setDeleteAccountSection(false)}
                 />
+                
             </View>
+            <LoadingOverlay visible={loadingActive} />
         </>
     )
 }

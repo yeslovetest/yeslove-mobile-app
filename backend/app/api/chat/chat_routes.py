@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from flask import request
 from flask_restx import Namespace, Resource
 from sqlalchemy import func, or_, and_
@@ -12,12 +12,48 @@ logger = setup_logger()
 
 api = Namespace("chat", description="API Endpoints")
 
+@api.route("/upload_media")
+class UploadChatMedia(Resource):
+    from .chat_models import UploadChatMediaResponse
+    @require_auth()
+    @api.doc(description="Upload media file for chat message", security='Bearer')
+    @api.expect(api.parser().add_argument('file', location='files', type='file', required=True, help='Media file to upload'))
+    @api.response(201, 'Media uploaded successfully', UploadChatMediaResponse)
+    @api.response(400, 'Bad request - invalid file')
+    @api.response(404, 'User not found')
+    def post(self):
+        """Upload media file for chat."""
+        from app.models import User
+        from app.services.media.media_service import MediaService
+        
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+            
+        if 'file' not in request.files:
+            return {"message": "No file provided"}, 400
+            
+        file = request.files['file']
+        if not file.filename:
+            return {"message": "No file selected"}, 400
+            
+        try:
+            result = MediaService.store_file(file=file, user_id=user.id)
+            return {
+                "media_id": result.get("media_id"),
+                "media_url": result.get("media_url"),
+                "content_type": result.get("content_type")
+            }, 201
+        except Exception as e:
+            logger.error(f"Chat media upload failed: {e}")
+            return {"message": "Upload failed"}, 500
+
 @api.route("/send_message")
 class SendMessage(Resource):
     from .chat_models import SendMessageRequest
     @require_auth() 
     @api.doc(
-        description="Send a message with optional media attachment. Either message or media_id must be provided."
+        description="Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided."
     )
     @api.expect(SendMessageRequest)  # ✅ Attach model
     @api.response(201, 'Message sent successfully')
@@ -77,10 +113,56 @@ class SendMessage(Resource):
 
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
-        media_id = data.get("media_id")
-        new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_id)
-        db.session.add(new_message)
+        media_id = data.get("media_id") 
+        print(media_id)
+        if media_id:  
+            for id in media_id:
+              new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=id)
+              db.session.add(new_message)
+        else:
+            new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message)  
+            db.session.add(new_message)    
         db.session.commit()
+
+        # Send realtime message + notifications
+        from app.services.notification_service import NotificationService
+        from app.services.push_notification_service import PushNotificationService
+        from flask import current_app
+        
+        message_data = {
+            "id": new_message.id,
+            "sender": user.username,
+            "sender_id": user.id,
+            "content": message,
+            "media_id": media_id,
+            "timestamp": new_message.timestamp.isoformat()
+        }
+        
+        try:
+            # Send realtime message via WebSocket
+            if hasattr(current_app, 'websocket_service'):
+                is_online = current_app.websocket_service.send_message_realtime(receiver.id, message_data)
+                if not is_online:
+                    # User offline, send push notification
+                    PushNotificationService.send_to_user(
+                        user_id=receiver.id,
+                        title="New Message",
+                        body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
+                        data={"type": "message", "sender_id": user.id, "chat_id": new_message.id},
+                        notification_type="messages"
+                    )
+            
+            # Always create in-app notification
+            NotificationService.create_notification(
+                user_id=receiver.id,
+                title="New Message",
+                body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
+                notification_type="messages",
+                data={"type": "message", "sender_id": user.id, "chat_id": new_message.id}
+            )
+            
+        except Exception as e:
+            logger.error(f"Realtime/notification failed for message {new_message.id}: {e}")
 
         response_msg = "Message sent successfully"
         score = 0.0
@@ -92,13 +174,14 @@ class SendMessage(Resource):
 
         return {
             "message": response_msg,
-            "toxicity_score": score
+            "toxicity_score": score,
+            "message_data": message_data
         }, 201
 
 
 @api.route("/get_messages/<string:receiver_id>")
 class GetMessages(Resource):
-    from datetime import timedelta
+    
     from .chat_models import GetMessagesRequest, GetMessagesResponse
 
     @require_auth()

@@ -1,5 +1,5 @@
 import Header from '@/app/Universal-components/Header/Header';
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import * as ImagePicker from "expo-image-picker";
 import { View, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
 import ChatResponse from './Conversation-components/Chat-response/ChatResponse';
@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { uploadBulkMedia, uploadMedia } from '@/app/store/Profile-store/mediaSlice';
 import MediaFilePreview from './Conversation-components/MediaPreview/mediaPreview';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
+import LoadingOverlay from '@/app/Universal-components/LoadingScreen/Screen';
 
 const Conversation = () => {
 
@@ -23,8 +24,12 @@ const Conversation = () => {
   const otherUserId = useAppSelector(
     (state) => state.navigation.tabStack.at(-1)?.data?.userId
   );
+  const otherUserProfilePic = useAppSelector(
+    (state) => state.navigation.tabStack.at(-1)?.data?.profile_pic);
   const uploadedMediaId = useAppSelector(state => state.media.uploadedMediaId);
   const [selectedFiles, setSelectedFiles] = useState<Array<{ uri: string; type: string; name?: string }> | null>(null);
+  const [loadingVisible, setLoadingVisible] = useState(true);
+  const flatListRef = useRef<FlatList>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -36,7 +41,7 @@ const Conversation = () => {
     }, [])
   );
   
-  
+  //console.log(messages)
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
 
@@ -46,16 +51,31 @@ const Conversation = () => {
       dispatch(fetchFriendList(currentUserId ?? ''));  // Refresh friend list
     }
 
-  // This effect will run once when messages become available
+    // This effect will run once when messages become available
   }, [messages.length]);
-     
 
-  const handleSend = (text: string) => {
+  useEffect(() => {
+    //hide loading screen once messages are loaded
+    setLoadingVisible(false)
+  }, [messages])
+    
+  // this function is used only when message conatins media files to be uploaded
+  const uploadMediaAsync = (formData: FormData) => {
+    return new Promise<string[]>((resolve, reject) => {
+      if (formData.getAll("file").length === 1) {
+        dispatch(uploadMedia({ requestBody: formData, resolve, reject }));
+      } else {
+        dispatch(uploadBulkMedia({ requestBody: formData, resolve, reject }));
+      }
+    });
+  };
+  
+  const handleSend = async (text: string) => {
+      let mediaIds : string[] = []
       const mediaData = new FormData(); // form data for Media upload
   
       if (selectedFiles) {
         const fieldName = "file"; 
-        
 
         selectedFiles.forEach((selectedFile) => {
            // detect if it's base64 or file URI
@@ -74,22 +94,21 @@ const Conversation = () => {
             mediaData.append(fieldName, file);
           }
         });  
-
-        if (mediaData.getAll(fieldName).length === 1) {
-          dispatch(uploadMedia({requestBody: mediaData}));  
-        } else if (mediaData.getAll(fieldName).length > 1) {
-          dispatch(uploadBulkMedia({requestBody: mediaData}));  
-        }
-      
+        setSelectedFiles([]); //clear selected media files
       }
-    
-    if (uploadedMediaId && uploadedMediaId.length > 0) {
-      uploadedMediaId.forEach((mediaId) => {
-        dispatch(sendChatMessage({id: otherUserId, message: text, mediaID: mediaId}));
-      });
+
+    // Upload media first
+    if (mediaData.getAll("file").length > 0) {
+        setLoadingVisible(true)
+        mediaIds = await uploadMediaAsync(mediaData); 
+        // send chat messages AFTER upload is done
+        dispatch(sendChatMessage({ id: otherUserId, message: text, mediaID: mediaIds ?? undefined }));
+
     } else {
-      dispatch(sendChatMessage({id: otherUserId, message: text}));
-    }
+        setLoadingVisible(true)
+        dispatch(sendChatMessage({ id: otherUserId, message: text }));
+    }  
+    
   };
 
   const selectMedia = async (type: string ) => {
@@ -120,22 +139,35 @@ const Conversation = () => {
       console.error("File picking error:", err);
     }};
 
+    const deleteSelectedFile = (index: number) => {
+      setSelectedFiles(prev => {
+        if (!prev) return prev;
+        const copy = [...prev];
+        copy.splice(index, 1);     
+        return copy;
+      });
+    };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={60}
     >
+      <LoadingOverlay visible={loadingVisible}/>
       <Header />
       <View style={styles.chatContainer}>
        
         <FlatList
+          ref={flatListRef}
           data={messages}
           keyExtractor={(_, idx) => idx.toString()}
+          contentContainerStyle={{padding: 20}}
           renderItem={({ item }) =>
             item?.sender !== userName ? (
               <ChatResponse text={item?.content ?? ''} 
               time={dayjs(item?.timestamp ?? '').format('MMM D, YYYY h:mm A')}
+              profilePic={otherUserProfilePic}
               media={item?.media ?? []}/>
             ) : (
               <Message prompt={item?.content ?? ''} 
@@ -143,18 +175,24 @@ const Conversation = () => {
                media={item?.media ?? []}/>
             )
           }
-          contentContainerStyle={styles.contentContainer}
+          
+          onContentSizeChange={() => {
+            setTimeout(() => {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }, 90);
+          }}
         />
        
         <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
           {selectedFiles && (
             <View style={styles.mediaPreviewContainer}>
-              <MediaFilePreview file={selectedFiles}/>
+              <MediaFilePreview file={selectedFiles} editable={true} deleteMedia={deleteSelectedFile}/>
             </View>
           
           )}
           <ConversationTextInput onSend={handleSend} openMedia={selectMedia}/>
         </View>
+        
       </View>
     </KeyboardAvoidingView>
   );

@@ -1359,6 +1359,12 @@ export interface Post {
      */
     'comments'?: number;
     /**
+     * is this post anonymous
+     * @type {boolean}
+     * @memberof Post
+     */
+    'anonymous'?: boolean;
+    /**
      * List of media file URLs associated with the post
      * @type {Array<MediaFile>}
      * @memberof Post
@@ -1623,11 +1629,11 @@ export interface SendMessageRequest {
      */
     'message'?: string;
     /**
-     * Media ID for attachments (required if no message)
-     * @type {string}
+     * 
+     * @type {Array<string>}
      * @memberof SendMessageRequest
      */
-    'media_id'?: string;
+    'media_id'?: Array<string>;
 }
 /**
  * 
@@ -1782,6 +1788,37 @@ export interface SignupResponse {
 /**
  * 
  * @export
+ * @interface TimelineResponse
+ */
+export interface TimelineResponse {
+    /**
+     * Total number of posts
+     * @type {number}
+     * @memberof TimelineResponse
+     */
+    'total'?: number;
+    /**
+     * Number of posts per page
+     * @type {number}
+     * @memberof TimelineResponse
+     */
+    'per_page'?: number;
+    /**
+     * Current page number
+     * @type {number}
+     * @memberof TimelineResponse
+     */
+    'current_page'?: number;
+    /**
+     * List of posts
+     * @type {Array<UserPost>}
+     * @memberof TimelineResponse
+     */
+    'posts'?: Array<UserPost>;
+}
+/**
+ * 
+ * @export
  * @interface TokenResponse
  */
 export interface TokenResponse {
@@ -1874,9 +1911,76 @@ export interface UpdateEventRequest {
 /**
  * 
  * @export
+ * @interface UserPost
+ */
+export interface UserPost {
+    /**
+     * Post ID
+     * @type {number}
+     * @memberof UserPost
+     */
+    'id'?: number;
+    /**
+     * URL to author\'s profile picture
+     * @type {string}
+     * @memberof UserPost
+     */
+    'author_pic'?: string;
+    /**
+     * Text content of the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'content'?: string;
+    /**
+     * URL to image in the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'image_url'?: string;
+    /**
+     * URL to video in the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'video_url'?: string;
+    /**
+     * Timestamp of the post in ISO format
+     * @type {string}
+     * @memberof UserPost
+     */
+    'timestamp'?: string;
+    /**
+     * Number of likes
+     * @type {number}
+     * @memberof UserPost
+     */
+    'likes'?: number;
+    /**
+     * Number of comments
+     * @type {number}
+     * @memberof UserPost
+     */
+    'comments'?: number;
+    /**
+     * List of media file URLs associated with the post
+     * @type {Array<MediaFile>}
+     * @memberof UserPost
+     */
+    'media_files'?: Array<MediaFile>;
+}
+/**
+ * 
+ * @export
  * @interface UserProfile
  */
 export interface UserProfile {
+    /**
+     * User\'s database ID
+     * @type {number}
+     * @memberof UserProfile
+     */
+    'user_id'?: number;
     /**
      * User\'s username
      * @type {string}
@@ -2979,7 +3083,7 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
          * @summary Send a private message with moderation
          * @param {SendMessageRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3092,7 +3196,7 @@ export const ChatApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
          * @summary Send a private message with moderation
          * @param {SendMessageRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3149,7 +3253,7 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.getGetMessages(receiverId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
          * @summary Send a private message with moderation
          * @param {SendMessageRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3204,7 +3308,7 @@ export class ChatApi extends BaseAPI {
     }
 
     /**
-     * Send a message with optional media attachment. Either message or media_id must be provided.
+     * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
      * @summary Send a private message with moderation
      * @param {SendMessageRequest} payload 
      * @param {*} [options] Override http request option.
@@ -4639,11 +4743,12 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
+         * @param {boolean} [anonymous] if post is to be anonymous
          * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost: async (content: string, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postCreatePost: async (content: string, anonymous?: boolean, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'content' is not null or undefined
             assertParamExists('postCreatePost', 'content', content)
             const localVarPath = `/api/feed/post`;
@@ -4665,6 +4770,10 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
 
             if (content !== undefined) { 
                 localVarFormParams.append('content', content as any);
+            }
+    
+            if (anonymous !== undefined) { 
+                localVarFormParams.append('anonymous', String(anonymous) as any);
             }
     
             if (media !== undefined) { 
@@ -4923,12 +5032,13 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
+         * @param {boolean} [anonymous] if post is to be anonymous
          * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, media, options);
+        async postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, anonymous, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postCreatePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -5064,12 +5174,13 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
+         * @param {boolean} [anonymous] if post is to be anonymous
          * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postCreatePost(content, media, options).then((request) => request(axios, basePath));
+        postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postCreatePost(content, anonymous, media, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5207,13 +5318,14 @@ export class FeedApi extends BaseAPI {
      * 
      * @summary Create a new post
      * @param {string} content Content of the post
+     * @param {boolean} [anonymous] if post is to be anonymous
      * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).postCreatePost(content, media, options).then((request) => request(this.axios, this.basePath));
+    public postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).postCreatePost(content, anonymous, media, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6243,6 +6355,53 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary retrieve all posts authored by a particular user to  displayed on timeline
+         * @param {string} keycloakId 
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserTimeline: async (keycloakId: string, perPage?: number, page?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'keycloakId' is not null or undefined
+            assertParamExists('getUserTimeline', 'keycloakId', keycloakId)
+            const localVarPath = `/api/profile/timeline/{keycloak_id}`
+                .replace(`{${"keycloak_id"}}`, encodeURIComponent(String(keycloakId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Update email notification settings
          * @param {EmailNotificationSettings} payload 
          * @param {*} [options] Override http request option.
@@ -6459,6 +6618,21 @@ export const ProfileApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary retrieve all posts authored by a particular user to  displayed on timeline
+         * @param {string} keycloakId 
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserTimeline(keycloakId: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TimelineResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserTimeline(keycloakId, perPage, page, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProfileApi.getUserTimeline']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Update email notification settings
          * @param {EmailNotificationSettings} payload 
          * @param {*} [options] Override http request option.
@@ -6559,6 +6733,18 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary retrieve all posts authored by a particular user to  displayed on timeline
+         * @param {string} keycloakId 
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserTimeline(keycloakId: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig): AxiosPromise<TimelineResponse> {
+            return localVarFp.getUserTimeline(keycloakId, perPage, page, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Update email notification settings
          * @param {EmailNotificationSettings} payload 
          * @param {*} [options] Override http request option.
@@ -6651,6 +6837,20 @@ export class ProfileApi extends BaseAPI {
      */
     public getUserProfile(keycloakId: string, options?: RawAxiosRequestConfig) {
         return ProfileApiFp(this.configuration).getUserProfile(keycloakId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary retrieve all posts authored by a particular user to  displayed on timeline
+     * @param {string} keycloakId 
+     * @param {number} [perPage] Number of posts per page
+     * @param {number} [page] Page number for pagination
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProfileApi
+     */
+    public getUserTimeline(keycloakId: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig) {
+        return ProfileApiFp(this.configuration).getUserTimeline(keycloakId, perPage, page, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -3,13 +3,13 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
       searchBarContainer: {
-        width: theme.spacing.postWidth,
+        width: "100%",
         borderRadius: 15,
         padding: 15,
         backgroundColor: "#fff",
         justifyContent: "center",
         alignItems: "center",
-        flexDirection: 'row'
+        flexDirection: 'row',
       },
     
       searchBar: {

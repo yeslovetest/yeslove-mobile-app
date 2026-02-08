@@ -2,26 +2,49 @@ import React, { useState } from "react";
 import { View, Text, FlatList, Image, Modal, Pressable, StyleSheet } from "react-native";
 import { Video } from "expo-av";
 import styles from "./mediaPreviewStyles";
+import { MediaFile } from "@/generated-api";
+import { BASE_URL } from '@/app/index';
+
+interface FileItem {
+  uri: string;
+  type: string;
+  name?: string;
+}
 
 interface FilePreviewProps {
-  file: { uri?: string, type?: string, media_url?: string, name?: string }[];
+  file: FileItem[] | MediaFile[];
+  editable?: boolean;
+  deleteMedia?: (index: number) => void;
 }
 
 
-const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
+const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMedia }) => {
   if (!file) return null;
 
   const [modalVisible, setModalVisible] = useState(false);
+
+  const deleteItem = (index: number) => {
+    deleteMedia?.(index);
+  };
    
   const remainingCount = file.length - 2;
 
-  const renderFileItem = ({ item }) => (
+  const renderFileItem = ({ item, index }) => (
     <View style={styles.previewContainer}>
+      {/* DELETE ICON */}
+      {editable && (
+        <Pressable style={styles.deleteWrapper} onPress={() => deleteItem(index)}>
+          <Text style={styles.deleteIcon}>✖</Text>
+        </Pressable>
+      )}
+
       {item.type.startsWith("image") ? (
-        <Image source={{ uri: item.uri || item.media_url }} style={styles.previewImage} />
+        <Image 
+        source={{ uri: item.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }} 
+        style={styles.previewImage} />
       ) : (
         <Video
-          source={{ uri: item.uri || item.media_url  }}
+          source={{ uri: item.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }}
           style={styles.previewVideo}
           useNativeControls
           resizeMode="contain"
@@ -45,12 +68,12 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
                 <View style={styles.previewContainer}>
                   {item?.type.startsWith("image") ? (
                     <Image
-                      source={{ uri: item.uri || item.media_url  }}
+                      source={{ uri: item?.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }}
                       style={[styles.previewImage, { opacity: 0.4 }]}
                     />
                   ) : (
                     <Video
-                      source={{ uri: item.uri || item.media_url  }}
+                      source={{ uri: item?.uri.startsWith('/api')? `${BASE_URL}${item.uri}` : item.uri  }}
                       style={[styles.previewVideo, { opacity: 0.4 }]}
                       resizeMode="cover"
                       muted
@@ -65,7 +88,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
           }
 
           // Normal first item
-          return renderFileItem({ item });
+          return renderFileItem({ item, index });
         }}
       />
 
@@ -78,7 +101,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file }) => {
             <FlatList
               data={file}
               keyExtractor={(_, index) => index.toString()}
-              renderItem={renderFileItem}
+              renderItem={({item, index}) => renderFileItem({item:item, index:index})}
               numColumns={2}
               contentContainerStyle={{ gap: 10 }}
             />

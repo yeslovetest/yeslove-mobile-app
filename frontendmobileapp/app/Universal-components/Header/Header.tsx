@@ -19,6 +19,7 @@ export interface Props {
 
 export default function Header(props: Props) {
   const userId = useAppSelector(state => state.user.id);
+  const isCurrentUserProfile = useAppSelector(state => state.profile.isCurrentUserProfile);
   const tabStack = useAppSelector(state => state.navigation.tabStack);
   const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
   const dispatch = useAppDispatch();
@@ -77,7 +78,7 @@ export default function Header(props: Props) {
         </View>
       )}
 
-      {!hasTabToGoBackTo && currentTab === TabType.PROFILE && (
+      {!hasTabToGoBackTo && isCurrentUserProfile && currentTab === TabType.PROFILE && (
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
@@ -107,8 +108,7 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          {/*bot icon that will later direct to the chatbot */}
-          <MaterialCommunityIcons name="robot-love" size={25} color="black" />
+          <View></View>
         </View>
       )}
 

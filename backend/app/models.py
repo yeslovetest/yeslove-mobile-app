@@ -124,12 +124,19 @@ class Post(db.Model):
     video_url = db.Column(db.String(500), nullable=True) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-
     status = db.Column(db.String(20), default="visible")  # visible, removed, flagged
-    
+    is_anonymous = db.Column(db.Boolean, default=False) # specify if Post is Anonymous
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "author": self.author.username if self.author else "Unknown",
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
 
 
 # -------------------------
@@ -226,15 +233,14 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-
     location = db.Column(db.String(100), nullable=False)
     event_time = db.Column(db.DateTime, nullable=False)
     image_url = db.Column(db.String(500), nullable=True)  # Event image
-
-    # relationships
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    creator = db.relationship('User', back_populates='created_events')
     address_id = db.Column(db.Integer, db.ForeignKey("address.id", ondelete='SET NULL'))  # nullable as could be online?
+    
+    # relationships
+    creator = db.relationship('User', back_populates='created_events')
     address = db.relationship('Address', back_populates='events')
 
     # Attendees many-many relationship
@@ -290,6 +296,15 @@ class BlogPost(db.Model):
     summary = db.Column(db.String(1000))
     # Relationships 
     author = db.relationship("User", backref="blogs")
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "author": self.author.username if self.author else "YesLove",
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+        }
     
 class DeviceToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -393,8 +408,19 @@ class Media(db.Model):
     is_public = db.Column(db.Boolean, default=True)
     s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
 
-    # relationship
-    post = db.relationship('Post', backref='media_files')   # creates one-to-many relationship with Post
+class PostMedia(db.Model):
+    __tablename__ = 'post_media'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete='CASCADE'), nullable=False)
+    media_id = db.Column(db.String(36), db.ForeignKey('media.id', ondelete='CASCADE'), nullable=False)
+    order_index = db.Column(db.Integer, default=0)  # For ordering media in posts
+    
+    # Relationships
+    post = db.relationship('Post', backref='post_media')
+    media = db.relationship('Media', backref='post_attachments')
+    
+    __table_args__ = (db.UniqueConstraint('post_id', 'media_id', name='unique_post_media'),)
 
 class BlogView(db.Model):
     __tablename__ = 'blog_view'

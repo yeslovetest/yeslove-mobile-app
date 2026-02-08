@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
         color: "#f5f5f5",
         fontSize: 17,
         fontFamily: "sans-serif",
+        marginVertical: 10,
     },
 
     timeSentMessage: {

@@ -3,21 +3,20 @@ import { View, Text, Image } from 'react-native';
 import styles from './ChatResponseStyles';
 import UserProfile from '../UserProfile/UserProfile';
 import MediaFilePreview from '../MediaPreview/mediaPreview';
+import { MediaFile } from '@/generated-api';
 
 interface Props {
   text: string;
   time: string;
-  media: { uri?: string, type?: string, media_url?: string, name?: string }[];
+  profilePic: string,
+  media: { uri?: string, type?: string, media_url?: string, name?: string }[] | MediaFile[];
 }
 
-const ChatResponse = ({ text, time, media }: Props) => {
-  /*const hhmm = time
-    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    .replace(/^0/, ''); */
+const ChatResponse = ({ text, time, profilePic, media }: Props) => {
 
   return (
     <View style={styles.chatResponseContainer}>
-      <UserProfile />
+      <UserProfile photo={profilePic} />
       <View style={{ flexShrink: 1 }}>
         <View style={styles.chatResponse}>
           <MediaFilePreview file={media}/>

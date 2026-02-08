@@ -1,5 +1,5 @@
-import { call, put, takeEvery } from "redux-saga/effects";
-import { fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
+import { call, put, take, takeEvery } from "redux-saga/effects";
+import { activateLoadingScreen, fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, setUserProfileState, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
   TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
   GetReactionsResponse, ReactToPostResponse,
@@ -32,9 +32,10 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost,
    setFollowing,
    fetchFollowedUsers,
-   SendFollowUser, retrieveOnePost, setDetailedPost, storeMediaFormData
+   SendFollowUser, retrieveOnePost, setDetailedPost, storeMediaFormData,
+   setPostReactionTab
  } from "../Home-store/feedSlice";
-import { changeTabAction, TabType } from "../Navigation/navigationSlice";
+import { changeTabAction, openTabOnTopAction, TabType } from "../Navigation/navigationSlice";
 import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList,
    sendChatbotMessage, setChatbotResponse
  } from "../Chat/chatSlice";
@@ -65,14 +66,18 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, loginResponse.refresh_token ?? "");
     const userQueryResponse: UserQueryResponse  = ((yield call(ProfileApiFactory().postGetUserKeycloakIdFlexible, {username: request.username})) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
     yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, userQueryResponse.keycloak_id ?? "");
+    yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, userQueryResponse.user_id ?? -1);
     yield put(setUserId(userQueryResponse.keycloak_id));
     yield put(setUserDBID(userQueryResponse.user_id || -1));
+    //console.log(userQueryResponse.user_id);
     yield put(setName(request.username));
     yield put(setPassword(request.password));
     yield put(setLoginStateAction(LoginState.LOGGED_IN));
+    yield put(activateLoadingScreen(false));
   }catch (error) {
     console.error('Login failed:', error);
     yield put(setErrorMessage('user does not exist'));
+    yield put(activateLoadingScreen(false));
   }
 }
 
@@ -85,6 +90,7 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshResponse.refresh_token ?? "");
       yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshResponse.refresh_token ?? "");
       yield put(setUserId(((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string | null));
+      yield put(setUserDBID(Number(TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage)));
       let userId: string = yield appSelect(state => state.user.id);
       const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
       yield put(setName(profile.username));
@@ -129,9 +135,11 @@ function* handleLogout(action: PayloadAction<string>) {
     yield put(setProfileVisibilitySettings([]));
     yield put(setChatMessages([]));
     yield put(setFriendList([]));
+    yield put(activateLoadingScreen(false));
 
   } catch (error) {
     console.error('Logout Failed!', error);
+    yield put(activateLoadingScreen(false));
   }
 }
 
@@ -182,6 +190,7 @@ function* handleGetOneBlogPost(action: PayloadAction<{blogId: number}>){
   try { 
     const blog = ((yield call(BlogApiFactory().getGetSingleBlog, action.payload.blogId))  as AxiosResponse<BlogPostModel>).data as BlogPostModel;  
     yield put(setOneBlogPost(blog));   
+    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_BLOG, data: blog}));
   } catch (error) { 
     console.error('failed to fetch blog post', error);
   } 
@@ -196,7 +205,7 @@ function* handleGetMessages(action: PayloadAction<string>){
   yield put(setChatMessages(messages.messages ?? []));
 }
 
-function* handlePostSendMessage(action: PayloadAction<{id: string, message: string, mediaID?: string | undefined}>) {
+function* handlePostSendMessage(action: PayloadAction<{id: string, message: string, mediaID?: string[] | undefined}>) {
   try{
     yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, 
       message: action.payload.message, media_id: action.payload.mediaID}); 
@@ -252,6 +261,7 @@ function* handleGetOneEvent(action: PayloadAction<{eventId: number}>){
   try { 
     const response = ((yield call(EventsApiFactory().getEventInfo, {event_ids: [action.payload.eventId], page: 1, per_page: 10}))  as AxiosResponse<EventInfoResponse>).data as EventInfoResponse;  
     yield put(setOneEvent(response.event_infos?.[0] ?? undefined));
+    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_EVENT, data: response.event_infos?.[0]}));
 
   } catch (error) { 
     console.error('failed to fetch Event', error);
@@ -313,15 +323,25 @@ function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, curr
  * Feed Api 
  * */
 function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | undefined, page: number | undefined}>){
-  const posts = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
+  const response = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
   console.log(action.payload.feedType)
-  console.log(posts)
-  yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload.feedType}));
+  console.log(response)
+  yield put(setFeedDataAction({post: response.posts ?? [], 
+    feedType: action.payload.feedType, pagination: response.pagination}));
 }
 
 function* handleGetOnePost(action: PayloadAction<{postID: number}>){
-  const post = ((yield call(FeedApiFactory().getGetPost, action.payload.postID)) as AxiosResponse<Post>).data as Post;
-  yield put(setDetailedPost(post));
+  try {
+    const post = ((yield call(FeedApiFactory().getGetPost, action.payload.postID)) as AxiosResponse<Post>).data as Post;
+    console.log(post)
+    yield put(setDetailedPost(post));
+    yield put(retrievePostReactions({postId: action.payload.postID}));
+    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: post}));
+  } 
+  catch (error) {
+    console.error('failed to get one single Post', error)
+  }
+  
 }
 
 function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
@@ -329,24 +349,31 @@ function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
     // ✅ Create API instance
     const api = FeedApiFactory();
 
-    // ✅ Extract content and image from FormData
+    // ✅ Extract post details and image from FormData
     const content = action.payload.requestForm.get("content") as string;
-    const media = action.payload.requestForm.get("media") as File | null;
+    const anonymous = action.payload.requestForm.get("anonymous") as boolean | null;
+    const media = action.payload.requestForm.get("media") as File | null; // not in use - form data only returns Content
 
     // ✅ Call API using its expected parameters
-    const response = yield call([api, api.postCreatePost], content, media ?? undefined);
+    const response = yield call([api, api.postCreatePost], content, anonymous ?? false, media ?? undefined);
 
     let mediaData: FormData = yield appSelect(state => state.feed.mediaData.mediaFormData);
     if (mediaData && mediaData.getAll("file").length === 1) {
       //mediaData.set("file", mediaData.getAll("file")[0]);
       mediaData.append("post_id", response.data?.post_id);
+      // ✅ Send multipart/form-data directly (no JSON serialization!)
       yield put(uploadMedia({requestBody: mediaData}));
+      // ⏳ Wait for single upload completion
+      yield take("uploadMediaSuccess");
     }  
     else if (mediaData && mediaData.getAll("file").length > 1) {
       mediaData.append("post_id", response.data?.post_id);
+      // ✅ Send multipart/form-data directly (no JSON serialization!)
       yield put(uploadBulkMedia({requestBody: mediaData}));
+      // ⏳ Wait for bulk upload completion
+      yield take("uploadBulkMediaSuccess");
     }
-    // ✅ Send multipart/form-data directly (no JSON serialization!)
+    
     yield put(updatePostsForFeedAction({feedType: 'all'}));
     yield put(updatePostsForFeedAction({feedType: 'friends'}));
   }
@@ -394,14 +421,6 @@ function* handleReactionToPost(action: PayloadAction<{postId: number, reactionTy
   
 }
 
-function* fetchUserProfileData(action: PayloadAction<{id: string}> ){
-  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
-  if(!info){
-    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
-    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
-  }
-
-}
 
 function* fetchPostReactions (action: PayloadAction<{postId: number}>){
   const comments = ((yield call(FeedApiFactory().getGetComments, action.payload.postId)) as AxiosResponse<GetCommentResponse>).data as GetCommentResponse;
@@ -418,26 +437,46 @@ function* handleGetUserMediaItems(action: PayloadAction<number>){
   yield put(setMediaItems(MediaItems.media ?? []));
 }  
 
-function* handleUploadMedia(action: PayloadAction<{requestBody: FormData}>){ 
+function* handleUploadMedia(action){ 
   try {
     const response = (yield call(MediaApiFactory().postUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{media_id: string}>;
     yield put(setUploadedMediaId([response.data.media_id]));
     yield put(storeMediaFormData({mediaFormData: null})); // Clear media form data (for creating Posts) after upload
+    yield put({ type: "uploadMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
+
+    // Resolve promise - required for posting message when it contains media
+    if (action.payload?.resolve) {
+      action.payload.resolve([response.data.media_id]);
+    }
   }
   catch (error) {
     console.error('failed to upload media', error);
+    yield put({ type: "uploadMediaFailure" });
+    if (action.payload?.reject) {
+      action.payload.reject(error);
+    }
   }
    
 } 
 
-function* handleUploadBulkMedia(action: PayloadAction<{requestBody: FormData}>){
+function* handleUploadBulkMedia(action){
   try {
     const response = (yield call(MediaApiFactory().postBulkUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{ids: string[]}>;
     yield put(setUploadedMediaId(response.data.ids));
     yield put(storeMediaFormData({mediaFormData: null}));
+    yield put({ type: "uploadBulkMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
+
+    // Resolve promise - required for posting message when it contains media
+     if (action.payload?.resolve) {
+      action.payload.resolve(response.data.ids);
+    }
   }
   catch (error) {
     console.error('failed to upload bulk media', error);
+    yield put({ type: "uploadBulkMediaFailure" });
+    if (action.payload?.reject) {
+      action.payload.reject(error);
+    }
   }
 }  
 
@@ -494,6 +533,16 @@ function* saveProfileInfoEffect(action: any) {
   ProfileApiFactory()
     .putUpdateProfile(info)
     .catch((reason) => console.log("Failed to update user profile: " + reason));
+}
+
+function* fetchUserProfileData(action: PayloadAction<{id: string, isCurrentUser: boolean}> ){
+  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
+  yield put(setUserProfileState(action.payload.isCurrentUser));
+  if(!info){
+    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
+    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
+  }
+
 }
 
 function* updateUserProfile(action: PayloadAction<{data: Partial<UserProfile>, 

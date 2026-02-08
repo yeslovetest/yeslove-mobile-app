@@ -12,8 +12,8 @@ const mediaSlice = createSlice({
         setMediaItems: (state, action: PayloadAction<MediaFile[]>) => {
             state.mediaList = action.payload; 
         },
-        uploadMedia: (state, action: PayloadAction<{requestBody: FormData}>) => {},
-        uploadBulkMedia: (state, action: PayloadAction<{requestBody: FormData}>) => {},
+        uploadMedia: (state, action: PayloadAction<{requestBody: FormData, resolve?, reject?}>) => {},
+        uploadBulkMedia: (state, action: PayloadAction<{requestBody: FormData, resolve?, reject?}>) => {},
         setUploadedMediaId: (state, action: PayloadAction<string[]>) => {
             state.uploadedMediaId = action.payload;
         },

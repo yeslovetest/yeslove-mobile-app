@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-
+from sqlalchemy import true
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
 
@@ -69,7 +69,7 @@ class Feed(Resource):
                 except Exception as e:
                     logger.warning(f"Neptune recommendations failed: {e}")
             
-            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
+            query = Post.query.filter(Post.is_anonymous != true(), Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
             
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
@@ -93,16 +93,21 @@ class Feed(Resource):
         feed_data = {
             "posts": [{
                 "id": post.id,
-                "author": post.author.username,
-                "author_id": post.author.keycloak_id,
-                "author_pic": post.author.profile_pic_url,
+                "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+                "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+                "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
                 "content": post.content,
-                "image": post.image_url,
-                "video_url": post.video_url,
+                "media": [{
+                    "id": pm.media_id,
+                    "url": f"/api/media/{pm.media_id}",
+                    "type": pm.media.content_type,
+                    "filename": pm.media.filename
+                } for pm in post.post_media],
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
-                "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type} for media in post.media_files if post.media_files],
+                "anonymous": post.is_anonymous,
+                "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
                 "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
@@ -137,11 +142,19 @@ class CreatePost(Resource):
         help='Content of the post'
     )
     post_parser.add_argument(
+        'anonymous',
+        type=bool,
+        required=False,
+        location='form',
+        help='if post is to be anonymous'
+    )
+    post_parser.add_argument(
         'media', 
         type=FileStorage,
         required=False,
         location='files',
-        help='Optional image or video file (jpg, png, gif, mp4, mov, avi)'
+        action='append',
+        help='Multiple media files (images/videos/audio)'
     )
 
     @require_auth()
@@ -164,10 +177,13 @@ class CreatePost(Resource):
 
         args = post_parser.parse_args()
         content = args.get("content", "")
-        file = args.get("media")
-        logger.info(f'file found: {file}')
+        files = args.get("media") or []
+        is_anonymous = args.get("anonymous", False)
+              
+        if not isinstance(files, list):
+            files = [files] if files else []
+        logger.info(f'files found: {len(files)}')
 
-       
         """Create a new post with automatic moderation."""
 
         if not content:
@@ -199,52 +215,37 @@ class CreatePost(Resource):
         status = moderation_result["status"]
         score = moderation_result["score"]
 
-        image_url = None
-        video_url = None  
-
-        # ✅ Handle file upload (S3 or local)
-        if file:
-            try:
-                # ✅ detect file type by mimetype or filename extension
-                filename = file.filename.lower()
-                is_video = filename.endswith((".mp4", ".mov", ".avi"))
-                is_image = filename.endswith((".jpg", ".jpeg", ".png", ".gif"))
-
-                if not (is_image or is_video):
-                    return {"message": "Unsupported file type. Upload image or video only."}, 400
-
-                if current_app.config.get("USE_S3_STORAGE", False):
-                    upload_result = MediaService.upload_file(
-                        file=file,
-                        user_id=user.id,
-                        folder="posts"
-                    )
-                    file_url = upload_result.get("s3_url")
-                else:
+        media_ids = []
+        
+        # ✅ Handle multiple file uploads
+        if files:
+            for file in files:
+                try:
                     result = MediaService.store_file(file=file, user_id=user.id)
-                    file_url = result.get("media_url")
+                    media_ids.append(result.get("media_id"))
+                    logger.info(f'Media file uploaded: {result.get("media_id")}')
+                except Exception as e:
+                    logger.error(f"Media upload failed for {file.filename}: {e}")
 
-                # ✅ Assign correct field
-                if is_video:
-                    video_url = file_url
-                    logger.info('video file uploaded')
-                else:
-                    image_url = file_url
-                    logger.info('image file uploaded')
-
-            except Exception as e:
-                logger.error(f"Media upload/store failed: {e}")
-
-        # ✅ Create post record 
-        # Create post with moderation status
+        # ✅ Create post record
         post = Post(
             content=content,
             user_id=user.id,
-            image_url=image_url,
-            video_url=video_url,  
+            is_anonymous = is_anonymous 
         )
         db.session.add(post)
+        db.session.flush()  # Get post.id
+        
+        # ✅ Link media to post
+        if media_ids:
+            from app.models import PostMedia
+            for media_id in media_ids:
+                post_media = PostMedia(post_id=post.id, media_id=media_id)
+                db.session.add(post_media)
+        
         db.session.commit()
+        
+        # Posts are not synced to chatbot - only blogs are synced
         
         message = {
             "visible": "Post created successfully.",
@@ -278,7 +279,7 @@ class CreatePost(Resource):
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
-        if follower_user_ids:
+        if follower_user_ids and not is_anonymous:   # don't send notification if post is anonymous
             try:
                 PushNotificationService.send_to_multiple_users(
                     user_ids=follower_user_ids,
@@ -294,13 +295,15 @@ class CreatePost(Resource):
             "message": message,
             "toxicity_score": score,
             "post_id": post.id,
-            "status": status
+            "status": status,
+            "media_count": len(media_ids)
         }, 201
 
 
 @api.route("/post/<int:post_id>")
 class GetPost(Resource):
     from .feed_models import Post
+    @require_auth()
     @api.response(code=200, description="Post details", model=Post)
     def get(self, post_id):
         """Fetch a single post by ID."""
@@ -311,15 +314,17 @@ class GetPost(Resource):
         user_reaction = Reaction.query.filter_by(post_id=post_id, user_id=user.id).first()
         return {
             "id": post.id,
-            "author": post.author.username,
-            "author_id": post.author.keycloak_id,
-            "author_pic": post.author.profile_pic_url,
+            "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+            "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+            "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
             "content": post.content,
             "image": post.image_url,
             "video_url": post.video_url,
             "timestamp": post.timestamp.isoformat(),
             "likes": len(post.likes),
             "comments": len(post.comments),
+            "anonymous": post.is_anonymous,
+            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
     
@@ -340,8 +345,8 @@ class GetReactions(Resource):
                 {
                     "id": reaction.id,
                     "type": reaction.reaction_type,
-                    "author": reaction.user.username,
-                    "picture": reaction.user.profile_pic_url,
+                    "author": reaction.user.username if not reaction.post.is_anonymous else 'Anonymous User',
+                    "picture": reaction.user.profile_pic_url if not reaction.post.is_anonymous else None,
                 }
                 for reaction in reactions
             ]
@@ -431,7 +436,7 @@ class LikePost(Resource):
         from app.models import Post
         from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
-        if post and post.user_id != user.id:
+        if post and post.user_id != user.id and not post.is_anonymous:
             NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Like",
@@ -502,7 +507,8 @@ class AddComment(Resource):
         from app.models import Post
         from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
-        if post and post.user_id != user.id:
+
+        if post and post.user_id != user.id and not post.is_anonymous:
             NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Comment",
@@ -525,12 +531,13 @@ class GetComments(Resource):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
+        
         return {
             "comments": [
                 {
                     "id": comment.id,
                     "content": comment.content,
-                    "author": comment.user.username,
+                    "author": comment.user.username if not comment.post.is_anonymous else 'Anonymous User',
                     "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
                 }
             for comment in comments]
@@ -692,7 +699,6 @@ class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest, GetFollowingResponse
     @require_auth()
     @api.doc(security='Bearer')
-    @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
     def get(self, keycloak_id):

@@ -13,9 +13,10 @@ const ProfileNavbar = () => {
   let activeTab = useAppSelector(state => state.profile.view.activeTab);
   let dispatch = useAppDispatch();
 
-  const userDBID = useAppSelector(
-    (state) => state.user.userDBID
-  );
+  // Keycloak ID
+  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);  //current user or other user
+  // database ID
+  const userDBID = useAppSelector((state) => state.profile.profiles[userId]?.user_id);
 
   useFocusEffect(
     React.useCallback(() => {
