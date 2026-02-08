@@ -11,8 +11,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { fetchUserDataAction } from '@/app/store/Profile-store/profileSlice';
 import React from 'react';
 
-const aboutItems = ["View", "Edit"]
-
 export default function ProfileRoot() {
 
   const dispatch = useAppDispatch()

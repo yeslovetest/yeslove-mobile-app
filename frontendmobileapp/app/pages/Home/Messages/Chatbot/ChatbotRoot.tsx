@@ -1,15 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Animated, View, Dimensions } from 'react-native';
-import ChatbotScrollView from './ChatbotScrollView';
-import TextInputContainer from './Chatbot-components/TextInputContainer';
+import { Animated, Dimensions } from 'react-native';
+import ChatbotScrollView from './Chatbot-components/ScrollView/ChatbotScrollView';
+import TextInputContainer from './Chatbot-components/Text-input/TextInputContainer';
 import styles from './SharedChatbotStyles';
 import Header from '@/app/Universal-components/Header/Header';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { sendChatbotMessage } from '@/app/store/Chat/chatSlice';
 
-const Chatbot = () => {
-
+const ChatbotRoot = () => {
   const dispatch = useAppDispatch();
+  
   const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string; createdAt?: Date }[]>([]);
   const [loading, setLoading] = useState(false);
   const screenHeight = Dimensions.get('window').height;
@@ -70,4 +70,4 @@ const Chatbot = () => {
   );
 };
 
-export default Chatbot;
+export default ChatbotRoot;

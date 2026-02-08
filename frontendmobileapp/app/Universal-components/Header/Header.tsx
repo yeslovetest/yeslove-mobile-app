@@ -9,7 +9,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { fetchFriendList } from '@/app/store/Chat/chatSlice';
-import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile';
+import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Header/ChatbotProfile';
 import theme from '@/assets/variables/Variables';
 
 export interface Props {

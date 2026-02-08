@@ -29,7 +29,7 @@ import ProfileInformation from "./pages/Profile/Profile-information/ProfileInfor
 import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
 import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
 import NotificationPreferences from "./pages/Profile/Settings/Preferences/Notifications";
-import Chatbot from "./pages/Home/Messages/Chatbot/Chatbot";
+import ChatbotRoot from "./pages/Home/Messages/Chatbot/ChatbotRoot";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -81,7 +81,7 @@ const App = () => {
               NOTIFICATIONS: <NotificationsRoot></NotificationsRoot>,
                  MESSAGES: <MessagesRoot></MessagesRoot>,
                     CONVERSATION: <Conversation></Conversation>,
-                       CHATBOT: <Chatbot></Chatbot>,
+                       CHATBOT: <ChatbotRoot></ChatbotRoot>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,

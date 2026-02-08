@@ -1,10 +1,10 @@
-import styles from '../SharedChatbotStyles';
+import styles from './GreetingStyles';
 import React from 'react';
 import { View } from 'react-native';
 
 
 
-const GreetingContainer = () => {
+const Greeting = () => {
 
   return (
        <View style={styles.greetingContainer}>
@@ -12,4 +12,4 @@ const GreetingContainer = () => {
   )
 }
 
-export default GreetingContainer
+export default Greeting

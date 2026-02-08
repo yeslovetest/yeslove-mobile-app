@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { View, Animated } from 'react-native';
-import styles from '../SharedChatbotStyles';
-import ChatbotProfile from './Chatbot-profile/ChatbotProfile';
+import styles from './LoadingAnimationStyles';
+import ChatbotProfile from '../Header/ChatbotProfile';
 
 export default function LoadingAnimation() {
     const dots = [useRef(new Animated.Value(0.8)).current,
