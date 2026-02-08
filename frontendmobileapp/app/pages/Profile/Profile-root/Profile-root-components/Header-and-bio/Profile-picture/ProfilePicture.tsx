@@ -5,7 +5,7 @@ import styles from './ProfilePictureStyles'
 import { useAppSelector } from '@/app/store/hooks'
 import * as ImagePicker from "expo-image-picker"
 import ChangeModal from '../Change-view-pfp/Change-view-modal/Change-modal/ChangeModal'
-import placeholder from "./Profile-Images/profile-image.jpg"
+import ChangeViewModal from '../Change-view-pfp/Change-view-modal/ChangeViewModal'
 
 const ProfilePicture = () => {
 const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
@@ -54,8 +54,8 @@ const uploadImage = async () => {
 )}
         </TouchableOpacity>
         
-                <ChangeModal onCameraPress={uploadImage} visible={changeModal}
-                    onClose={() => setChangeModal(false)}></ChangeModal>
+                <ChangeViewModal onCameraPress={uploadImage} visible={changeModal}
+                    onClose={() => setChangeModal(false)}></ChangeViewModal>
 
         </>
   )

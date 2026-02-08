@@ -64,10 +64,10 @@ const ChangeViewModal: React.FC<ChangeViewModalProps> = ({ visible, onClose }) =
                     >
                         <View style={styles.changeViewSubSection}>
                             <TouchableOpacity style={styles.changeViewButton} onPress={handleChangeProfile}>
-                                <Text style={styles.changeViewButtonText}>Change Profile Picture</Text>
+                                <Text style={styles.changeViewButtonText}>Change profile picture</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.changeViewButton} onPress={handleViewProfile}>
-                                <Text style={styles.changeViewButtonText}>View Profile Picture</Text>
+                                <Text style={styles.changeViewButtonText}>View profile Picture</Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>

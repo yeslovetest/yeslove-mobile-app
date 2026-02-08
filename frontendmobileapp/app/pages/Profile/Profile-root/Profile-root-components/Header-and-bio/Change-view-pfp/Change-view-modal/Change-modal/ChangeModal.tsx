@@ -3,13 +3,12 @@ import { Modal, TouchableOpacity, Animated, Text, View } from 'react-native';
 import styles from '../ChangeViewModalStyles';
 import * as ImagePicker from 'expo-image-picker';
 
-interface ChangeViewModalProps {
+interface ChangeModalProps {
     visible: boolean;
     onClose: () => void;
-    onCameraPress?: () => void; 
 }
 
-const ChangeModal: React.FC<ChangeViewModalProps> = ({ visible, onClose, onCameraPress }) => {
+const ChangeModal: React.FC<ChangeModalProps> = ({ visible, onClose }) => {
     const slideAnim = useRef(new Animated.Value(300)).current;
     const [isRendered, setIsRendered] = useState(visible);
 
@@ -31,6 +30,19 @@ const ChangeModal: React.FC<ChangeViewModalProps> = ({ visible, onClose, onCamer
             });
         }
     }, [visible]);
+
+    const openLibrary = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, 
+            allowsEditing: true, 
+            aspect: [4, 3],
+            quality: 1, 
+        });
+
+        if (!result.canceled) {
+            console.log(result.assets[0].uri); 
+        }
+    }
 
     const openCamera = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -66,10 +78,10 @@ const ChangeModal: React.FC<ChangeViewModalProps> = ({ visible, onClose, onCamer
                         ]}
                     >
                         <View style={styles.changeViewSubSection}>
-                            <TouchableOpacity style={styles.changeViewButton} onPress={onCameraPress}>
+                            <TouchableOpacity style={styles.changeViewButton} onPress={openLibrary}>
                                 <Text style={styles.changeViewButtonText}>Choose from library</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity  style={styles.changeViewButton} onPress={openCamera}>
+                            <TouchableOpacity style={styles.changeViewButton} onPress={openCamera}>
                                 <Text style={styles.changeViewButtonText}>Take picture</Text>
                             </TouchableOpacity>
                         </View>

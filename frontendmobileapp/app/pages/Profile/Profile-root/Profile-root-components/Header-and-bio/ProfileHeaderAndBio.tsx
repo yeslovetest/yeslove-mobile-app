@@ -30,7 +30,7 @@ const ProfileHeaderAndBio = () => {
       .then((response) => {
         dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
       });
-  }, [tabStack]));  
+  }, [tabStack]));  **/
 
   const uploadProfilePic = (text: string) => {
     const mediaData = new FormData(); // form data for profile pic upload
