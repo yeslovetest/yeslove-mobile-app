@@ -120,9 +120,10 @@ def create_app(config_class=DevelopmentConfig):
             dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
             dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
 
-    # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
+    # Fetch JWT public keys once at startup (optional for faster cold starts).
     with app.app_context():
-        get_keycloak_public_keys()
+        if os.getenv("PREFETCH_JWKS", "true").lower() == "true":
+            get_keycloak_public_keys()
 
     # --- Initialize Neptune client (optional) ---
     try:

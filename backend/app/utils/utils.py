@@ -1,151 +1,202 @@
 import json
 import os
-import logging
+git update-index --skip-worktree backend/.envfrom datetime import datetime, timezone
+from functools import wraps
 from urllib.request import urlopen
+
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from flask import request, jsonify
-from functools import wraps
-from app.logging_setup import setup_logger  # ✅ Import the logger
-from datetime import datetime
+from email_validator import EmailNotValidError, validate_email
+from flask import request
+
+from app.logging_setup import setup_logger
 
 logger = setup_logger()
-# -------------------------
-# 🔹 Keycloak Configuration
-# -------------------------
+
+
+def get_auth_provider() -> str:
+    """Return the JWT provider used by the API."""
+    return os.getenv("AUTH_PROVIDER", "keycloak").strip().lower()
+
+
 def get_keycloak_config():
-    """Retrieve Keycloak configuration dynamically."""
+    """
+    Return JWT verification config.
+
+    Keeps the historical function name for backward compatibility while
+    supporting both Keycloak and Supabase.
+    """
+    provider = get_auth_provider()
+
+    if provider == "supabase":
+        supabase_url = (os.getenv("SUPABASE_URL") or "").rstrip("/")
+        issuer_url = os.getenv("JWT_ISSUER_URL")
+        certs_url = os.getenv("JWT_JWKS_URL")
+
+        if not issuer_url and supabase_url:
+            issuer_url = f"{supabase_url}/auth/v1"
+
+        if not certs_url and supabase_url:
+            certs_url = f"{supabase_url}/auth/v1/.well-known/jwks.json"
+
+        return {
+            "provider": provider,
+            "issuer_url": issuer_url,
+            "certs_url": certs_url,
+        }
+
     server_url = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080").rstrip("/")
     realm_name = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
-
     return {
-    "server_url": server_url,
-    "realm_name": realm_name,
-    "issuer_url": f"{server_url}/realms/{realm_name}",
-    "certs_url": f"{server_url}/realms/{realm_name}/protocol/openid-connect/certs"
-}
+        "provider": provider,
+        "server_url": server_url,
+        "realm_name": realm_name,
+        "issuer_url": f"{server_url}/realms/{realm_name}",
+        "certs_url": f"{server_url}/realms/{realm_name}/protocol/openid-connect/certs",
+    }
 
 
-# -------------------------
-# 🔹 Fetch & Cache Keycloak Public Keys
-# -------------------------
-KEYCLOAK_PUBLIC_KEYS = None  # Cache for public keys
+# Cached JWKS payload and source URL.
+KEYCLOAK_PUBLIC_KEYS = None
+_JWKS_SOURCE_URL = None
+
 
 def get_keycloak_public_keys():
-    """Fetch and cache Keycloak public keys for JWT validation."""
-    global KEYCLOAK_PUBLIC_KEYS
+    """Fetch and cache JWKS used for JWT validation."""
+    global KEYCLOAK_PUBLIC_KEYS, _JWKS_SOURCE_URL
 
-    keycloak_config = get_keycloak_config()
-    certs_url = keycloak_config["certs_url"]
+    auth_config = get_keycloak_config()
+    certs_url = auth_config.get("certs_url")
+    provider = auth_config.get("provider", "keycloak")
 
-    logger.info(f"🔹 Fetching Keycloak public keys from: {certs_url}")  # ✅ Logging instead of print
+    if not certs_url:
+        logger.error("JWT cert URL is not configured for provider '%s'", provider)
+        return None
 
-    if not KEYCLOAK_PUBLIC_KEYS:
-        try:
-            response = urlopen(certs_url)
-            KEYCLOAK_PUBLIC_KEYS = json.loads(response.read())
-            logger.info("✅ Successfully fetched Keycloak public keys.")
-        except Exception as e:
-            logger.error(f"⚠️ Could not fetch Keycloak public keys. Error: {e}")
-            return None
+    if KEYCLOAK_PUBLIC_KEYS and _JWKS_SOURCE_URL == certs_url:
+        return KEYCLOAK_PUBLIC_KEYS
 
-    return KEYCLOAK_PUBLIC_KEYS
-
-
-# -------------------------
-# 🔹 JWT Token Verification
-# -------------------------
-def verify_jwt(token):
-    """Verify and decode a JWT token from Keycloak."""
     try:
-        public_keys = get_keycloak_public_keys()
-        if not public_keys:
-            logger.error("❌ Public keys not found.")
-            return None
-
-        keycloak_config = get_keycloak_config()
-        expected_issuer = keycloak_config["issuer_url"]
-
-        claims = jwt.decode(token, public_keys, claims_options={
-            "exp": {"essential": True},
-            "iss": {"essential": True}
-        })
-
-        # ✅ Token Expiration Check
-        exp_timestamp = claims.get("exp")
-        if exp_timestamp and datetime.utcfromtimestamp(exp_timestamp) < datetime.utcnow():
-            logger.warning("❌ Token has expired.")
-            return None
-
-        # ✅ Issuer Validation
-        if claims["iss"] != expected_issuer:
-            logger.warning(f"❌ Invalid issuer! Expected: {expected_issuer}, Found: {claims['iss']}")
-            return None
-
-        # ✅ Log Successful JWT Decoding
-        logger.info(f"✅ JWT decoded successfully for user {claims.get('preferred_username')}")
-        return claims  # Return decoded claims
-
-    except (JoseError, ValueError) as e:
-        logger.error(f"❌ JWT verification failed: {e}")
+        logger.info("Fetching JWKS from provider '%s': %s", provider, certs_url)
+        response = urlopen(certs_url, timeout=8)
+        KEYCLOAK_PUBLIC_KEYS = json.loads(response.read())
+        _JWKS_SOURCE_URL = certs_url
+        logger.info("JWT public keys loaded successfully")
+        return KEYCLOAK_PUBLIC_KEYS
+    except Exception as exc:
+        logger.error("Could not fetch JWT public keys: %s", exc)
         return None
 
 
-# -------------------------
-# 🔹 Flask Route Protection Decorator
-# -------------------------
+def verify_jwt(token):
+    """Verify and decode a JWT token from configured auth provider."""
+    try:
+        public_keys = get_keycloak_public_keys()
+        if not public_keys:
+            logger.error("JWT public keys not available")
+            return None
+
+        auth_config = get_keycloak_config()
+        expected_issuer = (auth_config.get("issuer_url") or "").rstrip("/")
+
+        claims = jwt.decode(
+            token,
+            public_keys,
+            claims_options={
+                "exp": {"essential": True},
+                "iss": {"essential": True},
+            },
+        )
+
+        exp_timestamp = claims.get("exp")
+        if exp_timestamp:
+            expires_at = datetime.fromtimestamp(int(exp_timestamp), tz=timezone.utc)
+            if expires_at <= datetime.now(timezone.utc):
+                logger.warning("JWT token has expired")
+                return None
+
+        actual_issuer = (claims.get("iss") or "").rstrip("/")
+        if expected_issuer and actual_issuer != expected_issuer:
+            logger.warning("Invalid token issuer. expected=%s actual=%s", expected_issuer, actual_issuer)
+            return None
+
+        logger.info("JWT decoded successfully")
+        return claims
+    except (JoseError, ValueError, TypeError) as exc:
+        logger.error("JWT verification failed: %s", exc)
+        return None
+
+
+def _extract_username(decoded_token):
+    """Extract a display username from common JWT claim layouts."""
+    preferred_username = decoded_token.get("preferred_username")
+    if preferred_username:
+        return preferred_username
+
+    user_metadata = decoded_token.get("user_metadata") or {}
+    if isinstance(user_metadata, dict):
+        username = user_metadata.get("username") or user_metadata.get("name")
+        if username:
+            return username
+
+    email = decoded_token.get("email")
+    if email and "@" in email:
+        return email.split("@", 1)[0]
+
+    return None
+
+
 def require_auth():
-    """Protect Flask routes by enforcing Keycloak JWT authentication."""
-    def decorator(f):
-        @wraps(f)
+    """Protect Flask routes by enforcing JWT authentication."""
+
+    def decorator(func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
-            auth_header = request.headers.get("Authorization", None)
+            auth_header = request.headers.get("Authorization")
             if not auth_header:
-                logger.warning("❌ Missing Authorization Header")
-                return ({"message": "❌ Missing Authorization Header"}), 401
+                logger.warning("Missing Authorization header")
+                return ({"message": "Missing Authorization header"}), 401
 
-            token = auth_header.split(" ")[1] if " " in auth_header else auth_header
+            parts = auth_header.split()
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1]
+            else:
+                token = auth_header.strip()
+
             decoded_token = verify_jwt(token)
-
             if not decoded_token:
-                logger.warning("❌ Invalid or expired token")
-                return ({"message": "❌ Invalid or expired token"}), 401
+                logger.warning("Invalid or expired token")
+                return ({"message": "Invalid or expired token"}), 401
 
-            # ✅ Ensure `sub` (Keycloak user ID) is available
             keycloak_id = decoded_token.get("sub")
             if not keycloak_id:
-                logger.error("❌ Invalid token: Missing 'sub' (Keycloak ID)")
-                return ({"message": "❌ Invalid token: Missing 'sub' (Keycloak ID)"}), 401
+                logger.error("Invalid token: missing 'sub' claim")
+                return ({"message": "Invalid token: missing 'sub' claim"}), 401
 
-            # ✅ Attach user details to request context
             request.user = {
+                "sub": keycloak_id,
                 "keycloak_id": keycloak_id,
                 "email": decoded_token.get("email"),
-                "username": decoded_token.get("preferred_username"),
-                "realm_access": decoded_token.get("realm_access", {})  # <-- Add this line
+                "username": _extract_username(decoded_token),
+                "realm_access": decoded_token.get("realm_access", {}),
+                "provider": get_auth_provider(),
             }
 
-            logger.info(f"🔹 User authenticated: {request.user['username']} ({request.user['keycloak_id']})")
-            return f(*args, **kwargs)
+            logger.info("User authenticated: %s", keycloak_id)
+            return func(*args, **kwargs)
 
         return wrapper
+
     return decorator
 
 
-# -------------------------
-# 🔹 File Upload Helper Functions
-# -------------------------
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
+
 
 def allowed_file(filename):
     """Check if a file has an allowed extension."""
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# -------------------------
-# 🔹 Email Format Validation
-# -------------------------
-
-from email_validator import validate_email, EmailNotValidError
 
 def is_valid_email(email: str) -> bool:
     try:
