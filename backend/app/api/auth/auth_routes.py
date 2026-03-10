@@ -12,6 +12,107 @@ logger = setup_logger()
 
 api = Namespace("auth", description="API Endpoints")
 
+
+@api.route("/sync_user")
+class SyncUser(Resource):
+    @require_auth()
+    @api.doc(security='Bearer')
+    def post(self):
+        """
+        Create or update the local user row from JWT claims.
+
+        Use this once after Supabase login so protected endpoints that rely on
+        local DB users can work without Keycloak signup/login.
+        """
+        from app.models import User, db
+
+        payload = request.get_json(silent=True) or {}
+        keycloak_id = request.user.get("keycloak_id")
+        email = request.user.get("email") or payload.get("email")
+        username = request.user.get("username") or payload.get("username")
+        requested_user_type = (payload.get("user_type") or "standard").lower().strip()
+        user_type = requested_user_type if requested_user_type in {"standard", "professional"} else "standard"
+
+        if not keycloak_id:
+            return {"message": "Missing token subject"}, 400
+
+        # Keep compatibility with schemas that require non-null email.
+        if not email:
+            email = f"{keycloak_id[:24]}@no-email.local"
+
+        if not username:
+            username = email.split("@", 1)[0]
+
+        safe_username = "".join(ch for ch in username if ch.isalnum() or ch in {"_", "."}).strip("._")
+        if not safe_username:
+            safe_username = "user"
+        safe_username = safe_username[:50]
+
+        # Existing user by provider subject.
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
+        if user:
+            changed = False
+            if not user.email and email:
+                user.email = email
+                changed = True
+            if not user.username and safe_username:
+                user.username = safe_username
+                changed = True
+            if user.user_type not in {"standard", "professional"}:
+                user.user_type = user_type
+                changed = True
+
+            if changed:
+                db.session.commit()
+
+            return {
+                "message": "User already synced",
+                "user_id": user.id,
+                "keycloak_id": user.keycloak_id,
+                "username": user.username,
+                "email": user.email,
+            }, 200
+
+        # If email already exists, bind the token subject to that user.
+        existing_by_email = User.query.filter_by(email=email).first()
+        if existing_by_email:
+            existing_by_email.keycloak_id = keycloak_id
+            if not existing_by_email.username:
+                existing_by_email.username = safe_username
+            db.session.commit()
+            return {
+                "message": "User synced from existing email",
+                "user_id": existing_by_email.id,
+                "keycloak_id": existing_by_email.keycloak_id,
+                "username": existing_by_email.username,
+                "email": existing_by_email.email,
+            }, 200
+
+        # Guarantee username uniqueness.
+        unique_username = safe_username
+        counter = 1
+        while User.query.filter_by(username=unique_username).first():
+            suffix = f"_{counter}"
+            unique_username = f"{safe_username[:50 - len(suffix)]}{suffix}"
+            counter += 1
+
+        new_user = User(
+            keycloak_id=keycloak_id,
+            username=unique_username,
+            email=email,
+            user_type=user_type,
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return {
+            "message": "User synced",
+            "user_id": new_user.id,
+            "keycloak_id": new_user.keycloak_id,
+            "username": new_user.username,
+            "email": new_user.email,
+        }, 201
+
 @api.route("/login")
 class Login(Resource):
     from .auth_models import LoginRequest, TokenResponse
