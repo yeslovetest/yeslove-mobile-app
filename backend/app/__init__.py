@@ -21,15 +21,22 @@ from app.api.events.events_routes import api as events_api
 from app.api.blog.blog_routes import api as blog_api
 # Device token API removed - handled by DeviceTokenService in auth routes
 from app.api.chatbot.chatbot_routes import api as chatbot_api
-from app.chatbot_package.chatbot import Chatbot
 from app.api.media.media_routes import api as media_api
 from app.api.notifications.notification_routes import api as notifications_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 
 
-# Load environment variables
-load_dotenv()
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+# Load local .env only for local/dev style runs.
+if not os.getenv("RAILWAY_ENVIRONMENT"):
+    load_dotenv()
 
 # 🔹 Initialize extensions
 db = SQLAlchemy()
@@ -127,10 +134,11 @@ def create_app(config_class=DevelopmentConfig):
 
     # --- Initialize Neptune client (optional) ---
     try:
+        enable_neptune = _env_flag("ENABLE_NEPTUNE", default=False)
         neptune_endpoint = app.config.get('NEPTUNE_ENDPOINT')
         neptune_port = app.config.get('NEPTUNE_PORT', 8182)
         
-        if neptune_endpoint:
+        if enable_neptune and neptune_endpoint:
             neptune_client = create_neptune_client(neptune_endpoint, neptune_port)
             if neptune_client:
                 setattr(app, 'neptune_client', neptune_client)
@@ -139,7 +147,7 @@ def create_app(config_class=DevelopmentConfig):
             else:
                 app.logger.warning('Failed to connect to Neptune')
         else:
-            app.logger.info('Neptune not configured, skipping graph database')
+            app.logger.info('Neptune disabled or not configured, skipping graph database')
     except Exception:
         app.logger.exception('Failed to initialize Neptune client')
 
@@ -152,7 +160,16 @@ def create_app(config_class=DevelopmentConfig):
             except Exception:
                 app.logger.exception('Error closing Neptune client')
 
-    setattr(app, 'chatbot', Chatbot()) #initializing the chatbot
+    # Embedded chatbot is optional. Keep disabled in lean API deployments.
+    if _env_flag("ENABLE_EMBEDDED_CHATBOT", default=False):
+        try:
+            from app.chatbot_package.chatbot import Chatbot
+            setattr(app, 'chatbot', Chatbot())
+            app.logger.info('Embedded chatbot initialized successfully')
+        except Exception:
+            app.logger.exception('Failed to initialize embedded chatbot')
+    else:
+        app.logger.info('Embedded chatbot disabled')
     
     # Initalises professional user admin panel
     from .admin import init_admin
