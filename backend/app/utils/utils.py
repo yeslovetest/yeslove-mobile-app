@@ -1,6 +1,6 @@
 import json
 import os
-git update-index --skip-worktree backend/.envfrom datetime import datetime, timezone
+from datetime import datetime, timezone
 from functools import wraps
 from urllib.request import urlopen
 
