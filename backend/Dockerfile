@@ -27,4 +27,4 @@ ENV FLASK_APP=application.py
 ENV PYTHONPATH=/app
 
 # Run application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "application:application"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers ${WEB_CONCURRENCY:-2} --timeout 120 application:application"]
