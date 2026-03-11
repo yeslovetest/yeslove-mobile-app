@@ -61,10 +61,18 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
 
   try{
     const loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<TokenResponse>).data as TokenResponse;
-    axios.defaults.headers.common['Authorization'] = loginResponse.access_token ?? "";
-    localStorage.setItem('authToken', loginResponse.access_token ?? ""); // Store access token for (chatbot microservice) API client interceptor
-    TOKEN_REFRESH_SERVICE.startRefreshingToken(loginResponse.refresh_token ?? "");
-    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, loginResponse.refresh_token ?? "");
+    const accessToken = loginResponse.access_token ?? "";
+    const refreshToken = loginResponse.refresh_token ?? "";
+
+    axios.defaults.headers.common['Authorization'] = accessToken ? `Bearer ${accessToken}` : "";
+    yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, accessToken);
+
+    if (refreshToken) {
+      TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshToken);
+    } else {
+      TOKEN_REFRESH_SERVICE.stopRefreshingToken();
+    }
+    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshToken);
 
     // Ensure local DB user exists for protected endpoints that depend on backend user rows.
     let userQueryResponse: UserQueryResponse | null = null;
@@ -108,11 +116,31 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
   if(refreshToken){
     try{
       const refreshResponse = ((yield call(AuthApiFactory().postRefreshToken, {refresh_token: refreshToken})) as AxiosResponse<TokenResponse>).data as TokenResponse;
-      axios.defaults.headers.common['Authorization'] = refreshResponse.access_token ?? "";
-      TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshResponse.refresh_token ?? "");
-      yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshResponse.refresh_token ?? "");
-      yield put(setUserId(((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string | null));
-      yield put(setUserDBID(Number(TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage)));
+      const refreshedAccessToken = refreshResponse.access_token ?? "";
+      const refreshedRefreshToken = refreshResponse.refresh_token ?? "";
+
+      axios.defaults.headers.common['Authorization'] = refreshedAccessToken ? `Bearer ${refreshedAccessToken}` : "";
+      yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, refreshedAccessToken);
+
+      if (refreshedRefreshToken) {
+        TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshedRefreshToken);
+      } else {
+        TOKEN_REFRESH_SERVICE.stopRefreshingToken();
+      }
+
+      yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshedRefreshToken);
+
+      const storedUserId = ((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string | null;
+      const storedUserDbId = ((yield call(TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage))) as string | null;
+
+      if (!storedUserId) {
+        yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+        return;
+      }
+
+      yield put(setUserId(storedUserId));
+      yield put(setUserDBID(storedUserDbId ? Number(storedUserDbId) : -1));
+
       let userId: string = yield appSelect(state => state.user.id);
       const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
       yield put(setName(profile.username));
@@ -143,12 +171,21 @@ function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
 
 function* handleLogout(action: PayloadAction<string>) {
   try {
-    yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
+    if (action.payload) {
+      yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
+    }
+  } catch (error) {
+    console.warn('Logout API call failed, continuing local logout cleanup', error);
+  }
 
+  try {
     // Stop the refresh token polling synchronously
     TOKEN_REFRESH_SERVICE.stopRefreshingToken();
     yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, '');
+    yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, '');
     yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, '');
+    yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, -1);
+    delete axios.defaults.headers.common['Authorization'];
     yield put(changeTabAction({ type: TabType.HOME }));
     yield put(setLoginStateAction(LoginState.LOGGED_OUT));
     yield put(setFeedDataAction({post: [], feedType: 'friends'}));
