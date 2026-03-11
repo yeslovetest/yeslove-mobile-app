@@ -15,8 +15,22 @@ logger = setup_logger()
 
 
 def get_auth_provider() -> str:
-    """Return the JWT provider used by the API."""
-    return os.getenv("AUTH_PROVIDER", "keycloak").strip().lower()
+    """Return the JWT provider used by the API.
+
+    If AUTH_PROVIDER is unset/auto, choose Supabase when configured and
+    otherwise fall back to Keycloak.
+    """
+    configured = (os.getenv("AUTH_PROVIDER") or "").strip().lower()
+    if configured in {"supabase", "keycloak"}:
+        return configured
+
+    if configured in {"", "auto"}:
+        if os.getenv("SUPABASE_URL"):
+            return "supabase"
+        return "keycloak"
+
+    logger.warning("Unknown AUTH_PROVIDER '%s'; defaulting to keycloak", configured)
+    return "keycloak"
 
 
 def get_keycloak_config():
@@ -146,6 +160,41 @@ def _extract_username(decoded_token):
     return None
 
 
+def _extract_roles(decoded_token):
+    """Extract role names from common JWT claim layouts."""
+    roles = []
+
+    realm_access = decoded_token.get("realm_access") or {}
+    if isinstance(realm_access, dict):
+        realm_roles = realm_access.get("roles") or []
+        if isinstance(realm_roles, list):
+            roles.extend([str(role) for role in realm_roles])
+
+    app_metadata = decoded_token.get("app_metadata") or {}
+    if isinstance(app_metadata, dict):
+        app_roles = app_metadata.get("roles")
+        if isinstance(app_roles, list):
+            roles.extend([str(role) for role in app_roles])
+        elif isinstance(app_roles, str):
+            roles.append(app_roles)
+
+    single_role = decoded_token.get("role")
+    if isinstance(single_role, str):
+        roles.append(single_role)
+
+    # Preserve order while removing duplicates.
+    deduped = []
+    seen = set()
+    for role in roles:
+        normalized = role.strip()
+        if not normalized or normalized in seen:
+            continue
+        deduped.append(normalized)
+        seen.add(normalized)
+
+    return deduped
+
+
 def require_auth():
     """Protect Flask routes by enforcing JWT authentication."""
 
@@ -173,14 +222,22 @@ def require_auth():
                 logger.error("Invalid token: missing 'sub' claim")
                 return ({"message": "Invalid token: missing 'sub' claim"}), 401
 
-            request.user = {
-                "sub": keycloak_id,
-                "keycloak_id": keycloak_id,
-                "email": decoded_token.get("email"),
-                "username": _extract_username(decoded_token),
-                "realm_access": decoded_token.get("realm_access", {}),
-                "provider": get_auth_provider(),
-            }
+            roles = _extract_roles(decoded_token)
+
+            setattr(
+                request,
+                "user",
+                {
+                    "sub": keycloak_id,
+                    "keycloak_id": keycloak_id,
+                    "email": decoded_token.get("email"),
+                    "username": _extract_username(decoded_token),
+                    "realm_access": {"roles": roles},
+                    "roles": roles,
+                    "provider": get_auth_provider(),
+                    "claims": decoded_token,
+                },
+            )
 
             logger.info("User authenticated: %s", keycloak_id)
             return func(*args, **kwargs)

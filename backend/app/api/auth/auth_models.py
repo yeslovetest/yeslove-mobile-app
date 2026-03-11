@@ -14,7 +14,7 @@ SignupRequest = api.model("SignupRequest", {
 
 
     "user_type"        : fields.String(
-        require=True,
+        required=True,
         description="Standard or Professional",
         enum=["Standard", "Professional"]
         ),
@@ -35,15 +35,15 @@ SignupResponse = api.model("SignupResponse", {
     "message": fields.String(description="Response message indicating success or failure of signup")})
 
 LoginRequest = api.model("LoginRequest", {
-        "username": fields.String(required=True, description="User's Keycloak username"),
-        "password": fields.String(required=True, description="User's Keycloak password"),
+    "username": fields.String(required=True, description="User login identifier (username or email)"),
+    "password": fields.String(required=True, description="User password"),
         "device_token": fields.String(required=False, description="Device token for push notifications"),
         "platform": fields.String(required=False, description="Device platform (ios/android)"),
         "device_id": fields.String(required=False, description="Unique device identifier"),
     })
 
 TokenResponse = api.model("TokenResponse", {
-        "access_token": fields.String(description="JWT access token"),
+    "access_token": fields.String(description="JWT access token"),
         "expires_in": fields.Integer(description="Access token expiration time in seconds"),
         "refresh_expires_in": fields.Integer(description="Refresh token expiration time in seconds"),
         "refresh_token": fields.String(description="JWT refresh token"),
@@ -51,10 +51,13 @@ TokenResponse = api.model("TokenResponse", {
         "not-before-policy": fields.Integer(description="Time before which the token is not valid"),
         "session_state": fields.String(description="Session identifier"),
         "scope": fields.String(description="Scopes associated with the token"),
+    "provider": fields.String(description="Auth provider that issued the token"),
+    "keycloak_id": fields.String(description="Provider subject id used by backend"),
+    "user_id": fields.Integer(description="Local backend user id"),
     })
 
 LogoutRequest = api.model("LogoutRequest", {
-    "refresh_token" : fields.String(require=True, description="Users refresh token")
+    "refresh_token" : fields.String(required=False, description="User refresh token")
 })
 
 RefreshTokenRequest = api.model("RefreshTokenRequest", {
@@ -63,7 +66,10 @@ RefreshTokenRequest = api.model("RefreshTokenRequest", {
 
 SetUserTypeRequest = api.model("SetUserTypeRequest", {
         "user_type": fields.String(required=True, description="Choose 'professional' or 'standard'"),
-        "license": fields.String(description="License number (for professional users only)"),
+    "license": fields.String(description="License number (for professional users only)"),
+    "license_number": fields.String(description="License number (for professional users only)"),
+    "license_body": fields.String(description="License body (HCPC, BACP, UKCP)", enum=["HCPC", "BACP", "UKCP"]),
+    "consent_license_data": fields.Boolean(description="Consent to use and display license data"),
         "specialization": fields.String(description="Specialization field (for professional users only)")
     })
 

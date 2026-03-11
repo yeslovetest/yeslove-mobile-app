@@ -35,6 +35,17 @@ class Config:
     RABBITMQ_USER = os.environ.get('RABBITMQ_USER', 'user')
     RABBITMQ_PASS = os.environ.get('RABBITMQ_PASS', 'pass')
 
+    # Auth provider selection
+    AUTH_PROVIDER = os.environ.get('AUTH_PROVIDER', 'auto')
+
+    # Supabase auth settings
+    SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
+    SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
+
+    # Frontend redirect target for reset-password flows
+    FRONTEND_URI = os.environ.get('FRONTEND_URI', '')
+
 class DevelopmentConfig(Config):
     """Development Configuration"""
     DEBUG = True
@@ -96,6 +107,7 @@ class ProductionConfig(Config):
     KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET")
+    KEYCLOAK_ADMIN_USER = os.getenv('KEYCLOAK_ADMIN_USER')
     KEYCLOAK_ADMIN_PASS = os.getenv('KEYCLOAK_ADMIN_PASS')
     
     # AWS Secrets Manager integration (for future production use)
