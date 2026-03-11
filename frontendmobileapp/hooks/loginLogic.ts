@@ -5,7 +5,8 @@ import axios from 'axios';
 import theme from '@/assets/variables/Variables';
 import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice';
 
-axios.defaults.baseURL = "http://localhost:5000";
+const envBaseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || '').trim();
+axios.defaults.baseURL = (envBaseUrl || 'http://localhost:5000').replace(/\/+$/, '');
 
 export const useLogin = () => {
   const dispatch = useAppDispatch();

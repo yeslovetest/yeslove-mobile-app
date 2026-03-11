@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "gen-api": "openapi-generator-cli generate -i  ./swagger.json -g typescript-axios -o ./generated-api"
+    "gen-api": "openapi-generator-cli generate -i ./swagger.json -g typescript-axios -o ./generated-api && node ./scripts/patch-generated-api-base-path.cjs"
   },
   "jest": {
     "preset": "jest-expo"
