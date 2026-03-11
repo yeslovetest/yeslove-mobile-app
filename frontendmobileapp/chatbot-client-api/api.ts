@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const chatbotBaseUrl = (process.env.EXPO_PUBLIC_CHATBOT_BASE_URL || '').trim();
 const apiBaseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || '').trim();
@@ -12,8 +13,20 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 // Add authorization interceptor
-apiClient.interceptors.request.use((config) => {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null;
+apiClient.interceptors.request.use(async (config) => {
+    let token: string | null = null;
+    try {
+        if (typeof localStorage !== 'undefined') {
+            token = localStorage.getItem('authToken');
+        }
+    } catch {
+        // Ignore localStorage errors in native contexts.
+    }
+
+    if (!token) {
+        token = await AsyncStorage.getItem('authToken');
+    }
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
