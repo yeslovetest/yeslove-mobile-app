@@ -65,7 +65,28 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     localStorage.setItem('authToken', loginResponse.access_token ?? ""); // Store access token for (chatbot microservice) API client interceptor
     TOKEN_REFRESH_SERVICE.startRefreshingToken(loginResponse.refresh_token ?? "");
     yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, loginResponse.refresh_token ?? "");
-    const userQueryResponse: UserQueryResponse  = ((yield call(ProfileApiFactory().postGetUserKeycloakIdFlexible, {username: request.username})) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+
+    // Ensure local DB user exists for protected endpoints that depend on backend user rows.
+    let userQueryResponse: UserQueryResponse | null = null;
+    try {
+      const syncResponse = ((yield call(axios.post, '/api/auth/sync_user', {
+        username: request.username,
+      })) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+
+      if (syncResponse?.keycloak_id) {
+        userQueryResponse = syncResponse;
+      }
+    } catch (syncError) {
+      console.warn('sync_user failed, falling back to profile lookup', syncError);
+    }
+
+    if (!userQueryResponse || !userQueryResponse.keycloak_id) {
+      userQueryResponse = ((yield call(
+        ProfileApiFactory().postGetUserKeycloakIdFlexible,
+        { username: request.username }
+      )) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+    }
+
     yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, userQueryResponse.keycloak_id ?? "");
     yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, userQueryResponse.user_id ?? -1);
     yield put(setUserId(userQueryResponse.keycloak_id));
