@@ -4,8 +4,9 @@ import { logInAction, setLoginStateAction, LoginState, setErrorMessage } from '.
 import axios from 'axios';
 import theme from '@/assets/variables/Variables';
 import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice';
+import { BASE_URL } from '@/constants/api';
 
-axios.defaults.baseURL = "http://localhost:5001";
+axios.defaults.baseURL = BASE_URL;
 
 export const useLogin = () => {
   const dispatch = useAppDispatch();

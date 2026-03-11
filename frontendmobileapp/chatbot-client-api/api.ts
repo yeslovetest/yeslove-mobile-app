@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const BASE_URL = 'http://127.0.0.1:8000';
+const chatbotBaseUrl = (process.env.EXPO_PUBLIC_CHATBOT_BASE_URL || '').trim();
+const apiBaseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || '').trim();
+const BASE_URL = (chatbotBaseUrl || apiBaseUrl || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 
 const apiClient: AxiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -11,7 +13,7 @@ const apiClient: AxiosInstance = axios.create({
 
 // Add authorization interceptor
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('authToken') : null;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
