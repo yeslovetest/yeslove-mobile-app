@@ -13,8 +13,12 @@ const SignupPageNo = 1;
 const authSlice = createSlice({
     name: "auth",
     initialState: { loginState: LoginState.LOADING, SignupPageNo: 1, 
-        signupEmail: '', signupPassword: '', signupConfirmPassword: '', 
-        signupResponse: "",  errorMessage: '', message: ''}, //defines initial state
+        signupEmail: '', signupConfirmEmail: '', signupPassword: '', signupConfirmPassword: '', 
+        signupResponse: "",  errorMessage: '', message: '',
+        // Keep the latest signup request payload for one-tap retry on error screens.
+        lastSignupPayload: null as SignupRequest | null,
+        // Prevent duplicate signup calls while a request is in-flight.
+        isSignupSubmitting: false}, //defines initial state
     reducers: {
         setLoginStateAction: (state, action: PayloadAction<LoginState>) => {
             state.loginState = action.payload; 
@@ -28,11 +32,20 @@ const authSlice = createSlice({
             state.SignupPageNo = action.payload - 1;
         },
         signupAction: (state, action: PayloadAction<SignupRequest>) => {},
+        setSignupSubmitting: (state, action: PayloadAction<boolean>) => {
+            state.isSignupSubmitting = action.payload;
+        },
+        setLastSignupPayload: (state, action: PayloadAction<SignupRequest | null>) => {
+            state.lastSignupPayload = action.payload;
+        },
         setSignupMessage: (state, action: PayloadAction<string>) => {
             state.signupResponse = action.payload;
         },
         setSignupEmail: (state, action: PayloadAction<string>) => {
             state.signupEmail = action.payload;
+        },
+        setSignupConfirmEmail: (state, action: PayloadAction<string>) => {
+            state.signupConfirmEmail = action.payload;
         },
         setSignupPassword: (state, action: PayloadAction<string>) => {
             state.signupPassword = action.payload;
@@ -53,6 +66,7 @@ const authSlice = createSlice({
 })
 
 export const { setLoginStateAction, logInAction, attemptRefreshFromLocalStorageAction, increasePageNo, decreasePageNo, signupAction, setSignupMessage,
-     setSignupEmail, setSignupPassword, setSignupConfirmPassword, 
-     setErrorMessage, setUserPassword, setMessage, setDeleteConfirmation, logoutAction} = authSlice.actions; 
+    setSignupEmail, setSignupConfirmEmail, setSignupPassword, setSignupConfirmPassword, 
+    setErrorMessage, setUserPassword, setMessage, setDeleteConfirmation, logoutAction,
+    setLastSignupPayload, setSignupSubmitting} = authSlice.actions; 
 export default authSlice.reducer;

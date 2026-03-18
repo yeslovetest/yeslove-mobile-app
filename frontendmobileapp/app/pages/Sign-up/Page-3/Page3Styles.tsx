@@ -56,6 +56,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  disabledButton: {
+    opacity: 0.65,
+  },
+
+  retryIndicatorRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  retryIndicatorText: {
+    color: theme.colors.primaryBlue,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
   backButton: {
     backgroundColor: theme.colors.mainBkgColor,
   },
