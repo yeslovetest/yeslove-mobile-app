@@ -498,7 +498,12 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
 
     email = _resolve_supabase_login_email(payload.get("email") or identifier)
     if not email:
-        return {"message": "For Supabase login, provide an email or an existing username."}, 400
+        return {
+            "message": (
+                "For first Supabase login, use your email and password. "
+                "Username login works after local profile sync."
+            )
+        }, 400
 
     try:
         response = requests.post(
@@ -533,6 +538,23 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
         )
     except ValueError as exc:
         return {"message": str(exc)}, 409
+    except Exception:
+        logger.exception("Local user sync failed during Supabase login")
+        # Do not fail authentication when provider token exchange succeeded.
+        return {
+            "access_token": raw_token.get("access_token"),
+            "token_type": raw_token.get("token_type", "bearer"),
+            "expires_in": raw_token.get("expires_in"),
+            "refresh_expires_in": raw_token.get("expires_in"),
+            "refresh_token": raw_token.get("refresh_token"),
+            "session_state": ((raw_token.get("user") or {}).get("id") if isinstance(raw_token.get("user"), dict) else None),
+            "scope": ((raw_token.get("user") or {}).get("role") if isinstance(raw_token.get("user"), dict) else "authenticated"),
+            "provider": "supabase",
+            "keycloak_id": claims.get("sub"),
+            "user_id": None,
+            "pending_local_sync": True,
+            "message": "Authenticated. Local profile sync is pending and will be retried.",
+        }, 200
 
     _register_device_token(user.id, payload)
 
@@ -873,11 +895,11 @@ class Login(Resource):
     def post(self):
         """Exchange credentials for access and refresh tokens."""
         payload = request.get_json(silent=True) or {}
-        username = (payload.get("username") or "").strip()
+        username = (payload.get("username") or payload.get("email") or "").strip()
         password = payload.get("password")
 
         if not username or not password:
-            return {"message": "Username and password are required"}, 400
+            return {"message": "Login identifier and password are required"}, 400
 
         if _provider() == "supabase":
             return _login_with_supabase(payload, username, password)

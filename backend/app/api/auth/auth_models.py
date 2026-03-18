@@ -43,6 +43,7 @@ SignupResponse = api.model("SignupResponse", {
 
 LoginRequest = api.model("LoginRequest", {
     "username": fields.String(required=True, description="User login identifier (username or email)"),
+    "email": fields.String(required=False, description="Optional email alias for Supabase login"),
     "password": fields.String(required=True, description="User password"),
         "device_token": fields.String(required=False, description="Device token for push notifications"),
         "platform": fields.String(required=False, description="Device platform (ios/android)"),
