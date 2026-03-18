@@ -126,27 +126,56 @@ const getSignupFriendlyMessage = (status?: number, apiMessage?: string): string 
  * Auth Api 
  * */
 function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
-  let request = action.payload;
+  const request = action.payload;
 
-  try{
-    type LoginResponseWithIdentity = TokenResponse & {
-      keycloak_id?: string;
-      user_id?: number;
-    };
+  type LoginResponseWithIdentity = TokenResponse & {
+    keycloak_id?: string;
+    user_id?: number;
+  };
 
-    const loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<LoginResponseWithIdentity>).data as LoginResponseWithIdentity;
-    const accessToken = loginResponse.access_token ?? "";
-    const refreshToken = loginResponse.refresh_token ?? "";
+  let loginResponse: LoginResponseWithIdentity;
 
+  try {
+    loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<LoginResponseWithIdentity>).data as LoginResponseWithIdentity;
+  } catch (error) {
+    console.error('Login failed:', error);
+
+    const status = getHttpStatus(error);
+    const apiMessage = getApiMessage(error);
+    let friendlyMessage = apiMessage;
+
+    if (!friendlyMessage) {
+      // Map technical auth failures to user-facing messages.
+      if (status === 400 || status === 401) {
+        friendlyMessage = 'Incorrect login details. Please check and try again.';
+      } else if (status === 429) {
+        friendlyMessage = 'Too many attempts. Please wait a moment and try again.';
+      } else {
+        friendlyMessage = 'Unable to sign in right now. Please try again.';
+      }
+    }
+
+    yield put(setErrorMessage(friendlyMessage));
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+    yield put(activateLoadingScreen(false));
+    return;
+  }
+  console.log('Login successful:', loginResponse);
+  const accessToken = loginResponse.access_token ?? "";
+  const refreshToken = loginResponse.refresh_token ?? "";
+
+  // A successful login response should always route the user to home.
+  // Any post-login sync/storage failures are treated as best-effort warnings.
+  try {
     axios.defaults.headers.common['Authorization'] = accessToken ? `Bearer ${accessToken}` : "";
-    yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, accessToken);
+    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveAccessToken], accessToken);
 
     if (refreshToken) {
       TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshToken);
     } else {
       TOKEN_REFRESH_SERVICE.stopRefreshingToken();
     }
-    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshToken);
+    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage], refreshToken);
 
     // Never fail a successful auth response because local sync/lookup is delayed.
     let resolvedKeycloakId = loginResponse.keycloak_id ?? "";
@@ -192,43 +221,24 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
       console.warn('login succeeded but keycloak_id is unavailable; continuing to logged-in state');
     }
 
-    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, resolvedKeycloakId);
-    yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, resolvedUserDbId);
+    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage], resolvedKeycloakId);
+    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage], resolvedUserDbId);
     yield put(setUserId(resolvedKeycloakId));
     yield put(setUserDBID(resolvedUserDbId));
-    //console.log(userQueryResponse.user_id);
     yield put(setName(request.username));
     yield put(setPassword(request.password));
-    yield put(setErrorMessage(''));
-    yield put(setLoginStateAction(LoginState.LOGGED_IN));
-    yield put(activateLoadingScreen(false));
-  }catch (error) {
-    console.error('Login failed:', error);
-
-    const status = getHttpStatus(error);
-    const apiMessage = getApiMessage(error);
-    let friendlyMessage = apiMessage;
-
-    if (!friendlyMessage) {
-      // Map technical auth failures to user-facing messages.
-      if (status === 400 || status === 401) {
-        friendlyMessage = 'Incorrect login details. Please check and try again.';
-      } else if (status === 429) {
-        friendlyMessage = 'Too many attempts. Please wait a moment and try again.';
-      } else {
-        friendlyMessage = 'Unable to sign in right now. Please try again.';
-      }
-    }
-
-    yield put(setErrorMessage(friendlyMessage));
-    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
-    yield put(activateLoadingScreen(false));
+  } catch (postLoginError) {
+    console.warn('post-login setup failed; continuing to logged-in state', postLoginError);
   }
+
+  yield put(setErrorMessage(''));
+  yield put(setLoginStateAction(LoginState.LOGGED_IN));
+  yield put(activateLoadingScreen(false));
 }
 
 function* refreshFromLocalStorage(action: PayloadAction<void>){
   try {
-    const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string | null;
+    const refreshToken = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage]))) as string | null;
     const normalizedRefreshToken = (refreshToken || "").trim();
 
     if(!normalizedRefreshToken) {
@@ -265,7 +275,7 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       }
 
       axios.defaults.headers.common['Authorization'] = refreshedAccessToken ? `Bearer ${refreshedAccessToken}` : "";
-      yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, refreshedAccessToken);
+      yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveAccessToken], refreshedAccessToken);
 
       if (refreshedRefreshToken) {
         TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshedRefreshToken);
@@ -273,10 +283,10 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
         TOKEN_REFRESH_SERVICE.stopRefreshingToken();
       }
 
-      yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshedRefreshToken);
+      yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage], refreshedRefreshToken);
 
-      const storedUserId = ((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string | null;
-      const storedUserDbId = ((yield call(TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage))) as string | null;
+      const storedUserId = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage]))) as string | null;
+      const storedUserDbId = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage]))) as string | null;
 
       if (!storedUserId) {
         yield put(setLoginStateAction(LoginState.LOGGED_OUT));
@@ -416,7 +426,7 @@ function* handlePasswordChange(action: PayloadAction<ChangePasswordRequest>) {
 }
 
 function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
-  const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string;
+  const refreshToken = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage]))) as string;
   try{
     yield call(AuthApiFactory().deleteDeleteAccount, action.payload);
     yield put(logoutAction(refreshToken || ''));
@@ -653,7 +663,7 @@ function* postNewComment(action: PayloadAction<{postId: number, content: string}
 }
 
 function* handleGetFollowing(action: PayloadAction<void>){
-  let userId = (((yield call(TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage))) as string);
+  let userId = (((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage]))) as string);
   const users = ((yield call(FeedApiFactory().getGetFollowing, userId, {})) as AxiosResponse<GetFollowingResponse>).data as GetFollowingResponse;
   yield put(setFollowing(users.following ?? []));
 }
