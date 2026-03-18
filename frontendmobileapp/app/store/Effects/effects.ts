@@ -129,7 +129,12 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   let request = action.payload;
 
   try{
-    const loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<TokenResponse>).data as TokenResponse;
+    type LoginResponseWithIdentity = TokenResponse & {
+      keycloak_id?: string;
+      user_id?: number;
+    };
+
+    const loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<LoginResponseWithIdentity>).data as LoginResponseWithIdentity;
     const accessToken = loginResponse.access_token ?? "";
     const refreshToken = loginResponse.refresh_token ?? "";
 
@@ -143,34 +148,58 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     }
     yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, refreshToken);
 
+    // Never fail a successful auth response because local sync/lookup is delayed.
+    let resolvedKeycloakId = loginResponse.keycloak_id ?? "";
+    let resolvedUserDbId = typeof loginResponse.user_id === 'number' ? loginResponse.user_id : -1;
+
     // Ensure local DB user exists for protected endpoints that depend on backend user rows.
-    let userQueryResponse: UserQueryResponse | null = null;
     try {
       const syncResponse = ((yield call(axios.post, '/api/auth/sync_user', {
         username: request.username,
       })) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
 
       if (syncResponse?.keycloak_id) {
-        userQueryResponse = syncResponse;
+        resolvedKeycloakId = syncResponse.keycloak_id;
+      }
+
+      if (typeof syncResponse?.user_id === 'number') {
+        resolvedUserDbId = syncResponse.user_id;
       }
     } catch (syncError) {
       console.warn('sync_user failed, falling back to profile lookup', syncError);
     }
 
-    if (!userQueryResponse || !userQueryResponse.keycloak_id) {
-      userQueryResponse = ((yield call(
-        ProfileApiFactory().postGetUserKeycloakIdFlexible,
-        { username: request.username }
-      )) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+    if (!resolvedKeycloakId) {
+      try {
+        const identityResponse = ((yield call(
+          ProfileApiFactory().postGetUserKeycloakIdFlexible,
+          { username: request.username }
+        )) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+
+        if (identityResponse?.keycloak_id) {
+          resolvedKeycloakId = identityResponse.keycloak_id;
+        }
+
+        if (typeof identityResponse?.user_id === 'number') {
+          resolvedUserDbId = identityResponse.user_id;
+        }
+      } catch (identityError) {
+        console.warn('profile identity lookup failed after login', identityError);
+      }
     }
 
-    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, userQueryResponse.keycloak_id ?? "");
-    yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, userQueryResponse.user_id ?? -1);
-    yield put(setUserId(userQueryResponse.keycloak_id));
-    yield put(setUserDBID(userQueryResponse.user_id || -1));
+    if (!resolvedKeycloakId) {
+      console.warn('login succeeded but keycloak_id is unavailable; continuing to logged-in state');
+    }
+
+    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, resolvedKeycloakId);
+    yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, resolvedUserDbId);
+    yield put(setUserId(resolvedKeycloakId));
+    yield put(setUserDBID(resolvedUserDbId));
     //console.log(userQueryResponse.user_id);
     yield put(setName(request.username));
     yield put(setPassword(request.password));
+    yield put(setErrorMessage(''));
     yield put(setLoginStateAction(LoginState.LOGGED_IN));
     yield put(activateLoadingScreen(false));
   }catch (error) {
