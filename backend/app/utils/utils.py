@@ -25,8 +25,30 @@ def get_auth_provider() -> str:
         return configured
 
     if configured in {"", "auto"}:
-        if os.getenv("SUPABASE_URL"):
+        supabase_url_set = bool((os.getenv("SUPABASE_URL") or "").strip())
+        supabase_key_set = any(
+            (os.getenv(name) or "").strip()
+            for name in (
+                "SUPABASE_ANON_KEY",
+                "SUPABASE_PUBLIC_API_KEY",
+                "SUPABASE_PUBLIC_KEY",
+                "SUPABASE_ANON",
+                "SUPABASE_KEY",
+                "SUPABASE_SERVICE_ROLE_KEY",
+                "SUPABASE_SERVICE_KEY",
+                "SUPABASE_SERVICE_ROLE",
+                "SUPABASE_SECRET_KEY",
+            )
+        )
+
+        if supabase_url_set and supabase_key_set:
             return "supabase"
+
+        if supabase_url_set and not supabase_key_set:
+            logger.warning(
+                "AUTH_PROVIDER=auto detected SUPABASE_URL but no Supabase API key; falling back to keycloak"
+            )
+
         return "keycloak"
 
     logger.warning("Unknown AUTH_PROVIDER '%s'; defaulting to keycloak", configured)

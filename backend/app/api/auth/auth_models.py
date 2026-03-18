@@ -5,8 +5,8 @@ from flask_restx import fields
 SignupRequest = api.model("SignupRequest", {
     "email"            : fields.String(required=True, description="User email"),
     "confirm_email"    : fields.String(required=True, description="User email confirmation"),
-    "password"         : fields.String(required=True, description="User password"),
-    "confirm_password" : fields.String(required=True, description="Confirm your password"),
+    "password"         : fields.String(required=True, description="User password (minimum 6 characters)"),
+    "confirm_password" : fields.String(required=True, description="Confirm your password (minimum 6 characters)"),
     "first_name"       : fields.String(required=True, description="Users first name"),
     "last_name"        : fields.String(required=True, description="Users last name"),
     "phone_number"     : fields.String(required=True, description="Users phone number"),
@@ -32,7 +32,14 @@ SignupRequest = api.model("SignupRequest", {
 })
 
 SignupResponse = api.model("SignupResponse", {
-    "message": fields.String(description="Response message indicating success or failure of signup")})
+    "message": fields.String(description="Response message indicating success or failure of signup"),
+    "provider": fields.String(description="Auth provider handling signup (supabase/keycloak)"),
+    "keycloak_id": fields.String(description="Provider subject id when available"),
+    "user_id": fields.Integer(description="Local backend user id when available"),
+    "pending_local_sync": fields.Boolean(
+        description="True when provider accepted signup but local user will be created on first authenticated sync"
+    ),
+})
 
 LoginRequest = api.model("LoginRequest", {
     "username": fields.String(required=True, description="User login identifier (username or email)"),

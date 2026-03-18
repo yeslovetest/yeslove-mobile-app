@@ -14,6 +14,7 @@ logger = setup_logger()
 api = Namespace("auth", description="API Endpoints")
 
 REQUEST_TIMEOUT_SECONDS = 12
+MIN_PASSWORD_LENGTH = 6
 
 
 def _provider() -> str:
@@ -35,20 +36,67 @@ def _extract_token_from_header(header_value: str) -> str:
     return (header_value or "").strip()
 
 
+def _read_runtime_value(*keys: str) -> Optional[str]:
+    """Read first non-empty value from env, then Flask config."""
+    for key in keys:
+        env_value = os.getenv(key)
+        if isinstance(env_value, str):
+            normalized = env_value.strip()
+            if normalized:
+                return normalized
+
+        try:
+            config_value = current_app.config.get(key)
+        except RuntimeError:
+            config_value = None
+
+        if isinstance(config_value, str):
+            normalized = config_value.strip()
+            if normalized:
+                return normalized
+
+    return None
+
+
 def _supabase_url() -> str:
-    return (os.getenv("SUPABASE_URL") or "").rstrip("/")
+    return (_read_runtime_value("SUPABASE_URL") or "").rstrip("/")
 
 
 def _supabase_anon_key() -> Optional[str]:
-    return (
-        os.getenv("SUPABASE_ANON_KEY")
-        or os.getenv("SUPABASE_PUBLIC_API_KEY")
-        or os.getenv("SUPABASE_KEY")
+    return _read_runtime_value(
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_PUBLIC_API_KEY",
+        "SUPABASE_PUBLIC_KEY",
+        "SUPABASE_ANON",
+        "SUPABASE_KEY",
     )
 
 
 def _supabase_service_key() -> Optional[str]:
-    return os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+    return _read_runtime_value(
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_SERVICE_KEY",
+        "SUPABASE_SERVICE_ROLE",
+        "SUPABASE_SECRET_KEY",
+    )
+
+
+def _require_supabase_api_key() -> Optional[Tuple[Dict[str, str], int]]:
+    """Ensure at least one Supabase API key is configured for auth endpoints."""
+    if _supabase_anon_key() or _supabase_service_key():
+        return None
+
+    logger.error(
+        "Supabase API key missing. Expected one of: SUPABASE_ANON_KEY, "
+        "SUPABASE_PUBLIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_SERVICE_KEY"
+    )
+    return (
+        {
+            "message": "Supabase API key is not configured",
+            "details": "Set SUPABASE_ANON_KEY (recommended) or SUPABASE_SERVICE_ROLE_KEY in backend env.",
+        },
+        500,
+    )
 
 
 def _supabase_headers(use_service: bool = False, access_token: Optional[str] = None) -> Dict[str, str]:
@@ -60,7 +108,7 @@ def _supabase_headers(use_service: bool = False, access_token: Optional[str] = N
 
     if access_token:
         headers["Authorization"] = f"Bearer {access_token}"
-    elif use_service and selected_key:
+    elif selected_key:
         headers["Authorization"] = f"Bearer {selected_key}"
 
     return headers
@@ -444,6 +492,10 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
     if not supabase_url:
         return {"message": "SUPABASE_URL is not configured"}, 500
 
+    missing_supabase_key_error = _require_supabase_api_key()
+    if missing_supabase_key_error:
+        return missing_supabase_key_error
+
     email = _resolve_supabase_login_email(payload.get("email") or identifier)
     if not email:
         return {"message": "For Supabase login, provide an email or an existing username."}, 400
@@ -495,8 +547,8 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
 def _validated_signup_payload(payload: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Tuple[Dict[str, str], int]]]:
     email = (payload.get("email") or "").strip().lower()
     confirm_email = (payload.get("confirm_email") or "").strip().lower()
-    password = payload.get("password")
-    confirm_password = payload.get("confirm_password")
+    password = payload.get("password") if isinstance(payload.get("password"), str) else ""
+    confirm_password = payload.get("confirm_password") if isinstance(payload.get("confirm_password"), str) else ""
     first_name = (payload.get("first_name") or "").strip()
     last_name = (payload.get("last_name") or "").strip()
     phone_number = (payload.get("phone_number") or "").strip()
@@ -512,6 +564,9 @@ def _validated_signup_payload(payload: Dict[str, Any]) -> Tuple[Optional[Dict[st
 
     if not password or password != confirm_password:
         return None, ({"message": "Passwords do not match"}, 400)
+
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return None, ({"message": f"Password must be at least {MIN_PASSWORD_LENGTH} characters"}, 400)
 
     required_fields = {
         "email": email,
@@ -572,6 +627,10 @@ def _signup_with_supabase(payload: Dict[str, Any]):
     if not supabase_url:
         return {"message": "SUPABASE_URL is not configured"}, 500
 
+    missing_supabase_key_error = _require_supabase_api_key()
+    if missing_supabase_key_error:
+        return missing_supabase_key_error
+
     signup_payload = {
         "email": payload["email"],
         "password": payload["password"],
@@ -584,13 +643,18 @@ def _signup_with_supabase(payload: Dict[str, Any]):
         },
     }
 
+    redirect_to = _read_runtime_value("FRONTEND_URI")
+    request_kwargs: Dict[str, Any] = {
+        "json": signup_payload,
+        "headers": _supabase_headers(),
+        "timeout": REQUEST_TIMEOUT_SECONDS,
+    }
+    if redirect_to:
+        # Override Supabase default Site URL redirect when frontend URL is configured.
+        request_kwargs["params"] = {"redirect_to": redirect_to}
+
     try:
-        response = requests.post(
-            f"{supabase_url}/auth/v1/signup",
-            json=signup_payload,
-            headers=_supabase_headers(),
-            timeout=REQUEST_TIMEOUT_SECONDS,
-        )
+        response = requests.post(f"{supabase_url}/auth/v1/signup", **request_kwargs)
     except requests.RequestException:
         logger.exception("Supabase signup request failed")
         return {"message": "Authentication provider unavailable"}, 503
@@ -604,8 +668,16 @@ def _signup_with_supabase(payload: Dict[str, Any]):
     subject_id = supabase_user.get("id") if isinstance(supabase_user, dict) else None
 
     if not subject_id:
-        logger.error("Supabase signup response did not include a user id")
-        return {"message": "Signup succeeded but user id was not returned by provider"}, 502
+        # Supabase can accept signup but omit user/session fields in some verification/privacy flows.
+        logger.warning("Supabase signup succeeded without provider user id; deferring local user sync")
+        return {
+            "message": (
+                "User created. Check your email to verify your account if verification is enabled. "
+                "Local profile will be synced after your first successful login."
+            ),
+            "provider": "supabase",
+            "pending_local_sync": True,
+        }, 201
 
     try:
         user, _ = _upsert_local_user(
@@ -852,6 +924,10 @@ class Logout(Resource):
             if not supabase_url:
                 return {"message": "SUPABASE_URL is not configured"}, 500
 
+            missing_supabase_key_error = _require_supabase_api_key()
+            if missing_supabase_key_error:
+                return missing_supabase_key_error
+
             access_token = _extract_token_from_header(request.headers.get("Authorization", ""))
             if not access_token:
                 return {"message": "Missing Authorization token"}, 401
@@ -922,6 +998,10 @@ class RefreshToken(Resource):
             supabase_url = _supabase_url()
             if not supabase_url:
                 return {"message": "SUPABASE_URL is not configured"}, 500
+
+            missing_supabase_key_error = _require_supabase_api_key()
+            if missing_supabase_key_error:
+                return missing_supabase_key_error
 
             try:
                 response = requests.post(
@@ -1046,6 +1126,10 @@ class ChangePassword(Resource):
             if not supabase_url:
                 return {"message": "SUPABASE_URL is not configured"}, 500
 
+            missing_supabase_key_error = _require_supabase_api_key()
+            if missing_supabase_key_error:
+                return missing_supabase_key_error
+
             access_token = _extract_token_from_header(request.headers.get("Authorization", ""))
             if not access_token:
                 return {"message": "Missing Authorization token"}, 401
@@ -1119,6 +1203,10 @@ class ResetPassword(Resource):
             supabase_url = _supabase_url()
             if not supabase_url:
                 return {"message": "SUPABASE_URL is not configured"}, 500
+
+            missing_supabase_key_error = _require_supabase_api_key()
+            if missing_supabase_key_error:
+                return missing_supabase_key_error
 
             recover_payload = {"email": email}
             redirect_to = current_app.config.get("FRONTEND_URI") or os.getenv("FRONTEND_URI")

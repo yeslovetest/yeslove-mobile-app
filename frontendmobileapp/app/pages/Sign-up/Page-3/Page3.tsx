@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ImageBackground, } from 'react-native';
-import { useAppSelector } from '../../../store/hooks';
+import { ActivityIndicator, View, Text, TouchableOpacity, ImageBackground, } from 'react-native';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { useSignup } from '@/hooks/signUpLogic';
 import LoginLoadingScreen from "../../Login/Login-root/LoginRoot";
+import { signupAction } from '../../../store/Auth-store/authSlice';
 import styles from "./Page3Styles"
 
 
@@ -11,24 +12,60 @@ const image = {
 };
 
 const Page3 = () => {
+    const dispatch = useAppDispatch();
   const signupEmail = useAppSelector((state) => state.auth.signupEmail);
   const signupResponse= useAppSelector((state) => state.auth.signupResponse);
+    const lastSignupPayload = useAppSelector((state) => state.auth.lastSignupPayload);
+        const isSignupSubmitting = useAppSelector((state) => state.auth.isSignupSubmitting);
   const signupActions = useSignup();
+
+    const normalizedResponse = (signupResponse || "").trim();
+    const normalizedLower = normalizedResponse.toLowerCase();
+
+    // Keep result-state checks resilient across provider message wording changes.
+    const isLoading = normalizedResponse === "";
+    const isSuccess =
+        normalizedLower.includes("user created") ||
+        normalizedLower.includes("verification") ||
+        normalizedLower.includes("check your email");
+    const isAccountExists =
+        normalizedLower.includes("already exists") ||
+        normalizedLower.includes("already registered");
+    const isFailure = !isLoading && !isSuccess && !isAccountExists;
+
+    /**
+     * Retry signup in-place using the last valid payload captured on Page 2.
+     * If payload is unavailable, return user to previous step to review details.
+     */
+    const retrySignupNow = React.useCallback(() => {
+        if (isSignupSubmitting) {
+            return;
+        }
+
+        if (!lastSignupPayload) {
+            signupActions.moveToPrevious();
+            return;
+        }
+
+        dispatch(signupAction(lastSignupPayload));
+    }, [dispatch, isSignupSubmitting, lastSignupPayload, signupActions]);
  
 
   return (
-    <>  {signupResponse == "" && (
+        <>  {isLoading && (
             <View  style={styles.container} >
                 <LoginLoadingScreen></LoginLoadingScreen>
             </View>
         )}
 
-        {signupResponse == "User created in Keycloak and email verification sent" && (
+                {isSuccess && (
             <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
                 <View style={styles.innerContainer}>
                     <Text style={styles.title}>Thank you for signing up!</Text>
 
-                    <Text style={styles.label}>We have sent a verification link to you email address: {signupEmail}</Text>
+                                        <Text style={styles.label}>
+                                            {normalizedResponse || `We have sent a verification link to your email address: ${signupEmail}`}
+                                        </Text>
 
                     <TouchableOpacity style={styles.baseButton} onPress={() => signupActions.handleLoginStateChange('refresh-login')}>
                     <Text style={styles.baseButtonText}>Login after Verification</Text>
@@ -42,10 +79,12 @@ const Page3 = () => {
             </ImageBackground>
         )}
        
-        {signupResponse.includes('409') && (
+        {isAccountExists && (
             <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
                 <View style={styles.innerContainer}>
                     <Text style={styles.title}>User already exists</Text>
+
+                    <Text style={styles.label}>{normalizedResponse}</Text>
 
 
                     <TouchableOpacity style={styles.baseButton} onPress={() => signupActions.handleLoginStateChange('refresh-login')}>
@@ -60,20 +99,40 @@ const Page3 = () => {
             </ImageBackground>
         )} 
 
-        {(signupResponse.includes('500') || signupResponse.includes('400')) || (signupResponse.includes('Error')) &&
-            (
+        {isFailure && (
             <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
                 <View style={styles.innerContainer}>
                     <Text style={styles.title}>Sign up failed</Text>
 
-                    <TouchableOpacity style={[styles.baseButton, styles.backButton]} onPress={signupActions.moveToPrevious}>
+                    <Text style={styles.label}>{normalizedResponse}</Text>
+
+                                        <TouchableOpacity
+                                            style={[styles.baseButton, isSignupSubmitting ? styles.disabledButton : null]}
+                                            onPress={retrySignupNow}
+                                            disabled={isSignupSubmitting}
+                                        >
+                                        <Text style={styles.baseButtonText}>{isSignupSubmitting ? 'Trying Again...' : 'Try Again'}</Text>
+                    </TouchableOpacity>
+
+                                        {isSignupSubmitting && (
+                                            <View style={styles.retryIndicatorRow}>
+                                                <ActivityIndicator size="small" color="#1976d2" />
+                                                <Text style={styles.retryIndicatorText}>Submitting your details...</Text>
+                                            </View>
+                                        )}
+
+                                        {/* Keep users on this screen while retry is processing to avoid flow interruption. */}
+                                        <TouchableOpacity
+                                            style={[styles.baseButton, styles.backButton, isSignupSubmitting ? styles.disabledButton : null]}
+                                            onPress={signupActions.moveToPrevious}
+                                            disabled={isSignupSubmitting}
+                                        >
                     <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
                     </TouchableOpacity>
 
                 </View>
             </ImageBackground>
-            )
-        }
+        )}
     </>    
   );
 };
