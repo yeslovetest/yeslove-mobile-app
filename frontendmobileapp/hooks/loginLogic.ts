@@ -8,46 +8,92 @@ import { BASE_URL } from '@/constants/api';
 
 axios.defaults.baseURL = BASE_URL;
 
+type LoginIdentifierMode = 'username' | 'email';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const useLogin = () => {
   const dispatch = useAppDispatch();
   
-  const [username, setUsername] = useState('');
+  const [identifierMode, setIdentifierMode] = useState<LoginIdentifierMode>('username');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-
-  const handleUsernameChange = (input: string) => setUsername(input);
-  const handlePasswordChange = (input: string) => setPassword(input);
 
   const initialBdColor = ['#ccc', theme.colors.primaryBlue];
   const [passwordBdColor, setPasswordBdColor] = useState(initialBdColor);
-  const [usernameBdColor, setUsernameBdColor] = useState(initialBdColor);
+  const [identifierBdColor, setIdentifierBdColor] = useState(initialBdColor);
 
-  const validateInputs = () => {
-  
-    if (!username){
-      return [false, 'username'];
+  const handleIdentifierModeChange = (mode: LoginIdentifierMode) => {
+    setIdentifierMode(mode);
+    setIdentifier('');
+    setIdentifierBdColor(initialBdColor);
+    setPasswordBdColor(initialBdColor);
+    dispatch(setErrorMessage(''));
+  };
+
+  const handleIdentifierChange = (input: string) => {
+    setIdentifier(input);
+    setIdentifierBdColor(initialBdColor);
+  };
+
+  const handlePasswordChange = (input: string) => {
+    setPassword(input);
+    setPasswordBdColor(initialBdColor);
+  };
+
+  const validateInputs = (): [boolean, string] => {
+    const normalizedIdentifier = identifier.trim();
+
+    if (!normalizedIdentifier){
+      return [false, 'identifierRequired'];
     }
-    else if (!password) {
+
+    if (identifierMode === 'email' && !EMAIL_REGEX.test(normalizedIdentifier)) {
+      return [false, 'emailFormat'];
+    }
+
+    if (identifierMode === 'username' && normalizedIdentifier.includes('@')) {
+      return [false, 'usernameFormat'];
+    }
+
+    if (!password) {
       return [false, 'password'];
     }
-    else {
-      return [true, ''];
-    }
-  }
+
+    return [true, ''];
+  };
 
   const handleLogin = () => {
     const [result, field] = validateInputs();
     if (result){
-      dispatch(logInAction({ username, password }));
+      const normalizedIdentifier = identifier.trim();
+      dispatch(logInAction({ username: normalizedIdentifier, password }));
       dispatch(activateLoadingScreen(true));
     }
-    else if (field == 'username') {
-      setUsernameBdColor(['red', 'red']);
+    else if (field == 'identifierRequired') {
+      setIdentifierBdColor(['red', 'red']);
       setPasswordBdColor(['#ccc', theme.colors.primaryBlue]);
-      dispatch(setErrorMessage('Empty Field: Please type in username.'));
+      dispatch(
+        setErrorMessage(
+          identifierMode === 'email'
+            ? 'Empty Field: Please type in email.'
+            : 'Empty Field: Please type in username.'
+        )
+      );
+    }
+    else if (field == 'emailFormat') {
+      setIdentifierBdColor(['red', 'red']);
+      setPasswordBdColor(['#ccc', theme.colors.primaryBlue]);
+      dispatch(setErrorMessage('Invalid email format. Please enter a valid email address.'));
+    }
+    else if (field == 'usernameFormat') {
+      setIdentifierBdColor(['red', 'red']);
+      setPasswordBdColor(['#ccc', theme.colors.primaryBlue]);
+      dispatch(setErrorMessage('Username cannot contain @. Switch to Email to sign in with email.'));
     }
     else if (field == 'password') {
       setPasswordBdColor(['red', 'red']);
-      setUsernameBdColor(['#ccc', theme.colors.primaryBlue]);
+      setIdentifierBdColor(['#ccc', theme.colors.primaryBlue]);
       dispatch(setErrorMessage('Empty Field: Please type in password.'));
     }  
   };
@@ -63,11 +109,13 @@ export const useLogin = () => {
 
 
   return {
-    username,
+    identifier,
+    identifierMode,
     password,
     passwordBdColor,
-    usernameBdColor,
-    handleUsernameChange,
+    identifierBdColor,
+    handleIdentifierModeChange,
+    handleIdentifierChange,
     handlePasswordChange,
     handleLogin,
     handleLoginStateChange,

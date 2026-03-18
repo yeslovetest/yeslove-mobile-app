@@ -13,11 +13,13 @@ const image = {
 const LoginPage = () => {
   const dispatch = useAppDispatch();
   const {
-    username,
+    identifier,
+    identifierMode,
     password,
     passwordBdColor,
-    usernameBdColor,
-    handleUsernameChange,
+    identifierBdColor,
+    handleIdentifierModeChange,
+    handleIdentifierChange,
     handlePasswordChange,
     handleLogin,
     handleLoginStateChange,
@@ -41,7 +43,7 @@ const LoginPage = () => {
       hideError(); 
     }, 5000);
     return () => clearTimeout(timer);
-  }, [usernameBdColor, passwordBdColor, errorMessage]);
+  }, [identifierBdColor, passwordBdColor, errorMessage]);
 
 
 
@@ -52,13 +54,57 @@ const LoginPage = () => {
 
         <Text style={{...styles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
 
-        <Text style={styles.label}>Username</Text>
+        <View style={styles.modeToggleContainer}>
+          <TouchableOpacity
+            style={[
+              styles.modeToggleButton,
+              identifierMode === 'username' ? styles.modeToggleButtonActive : undefined,
+            ]}
+            onPress={() => handleIdentifierModeChange('username')}
+          >
+            <Text
+              style={[
+                styles.modeToggleText,
+                identifierMode === 'username' ? styles.modeToggleTextActive : undefined,
+              ]}
+            >
+              Username
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.modeToggleButton,
+              identifierMode === 'email' ? styles.modeToggleButtonActive : undefined,
+            ]}
+            onPress={() => handleIdentifierModeChange('email')}
+          >
+            <Text
+              style={[
+                styles.modeToggleText,
+                identifierMode === 'email' ? styles.modeToggleTextActive : undefined,
+              ]}
+            >
+              Email
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.label}>{identifierMode === 'email' ? 'Email' : 'Username'}</Text>
         <TextInput
-          onChangeText={handleUsernameChange}
-          value={username}
-          style={{...styles.input, borderColor: usernameBdColor[0], borderBottomColor: usernameBdColor[1]}}
-          placeholder="Enter username"
+          onChangeText={handleIdentifierChange}
+          value={identifier}
+          style={{...styles.input, borderColor: identifierBdColor[0], borderBottomColor: identifierBdColor[1]}}
+          placeholder={identifierMode === 'email' ? 'Enter email' : 'Enter username'}
+          keyboardType={identifierMode === 'email' ? 'email-address' : 'default'}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
+        <Text style={styles.helperText}>
+          {identifierMode === 'email'
+            ? ''
+            : 'Are you logging in for the first time? use your email instead of username.'}
+        </Text>
 
         <Text style={styles.label}>Password</Text>
         <TextInput
