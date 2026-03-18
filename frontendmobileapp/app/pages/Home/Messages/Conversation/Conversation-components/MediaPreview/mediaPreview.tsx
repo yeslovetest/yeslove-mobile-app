@@ -19,9 +19,9 @@ interface FilePreviewProps {
 
 
 const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMedia }) => {
-  if (!file) return null;
-
   const [modalVisible, setModalVisible] = useState(false);
+
+  if (!file) return null;
 
   const deleteItem = (index: number) => {
     deleteMedia?.(index);
