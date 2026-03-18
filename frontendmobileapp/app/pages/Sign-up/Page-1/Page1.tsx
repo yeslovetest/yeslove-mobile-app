@@ -84,7 +84,7 @@ const Page1 = () => {
             />
 
             <TouchableOpacity style={sharedStyles.buttonNext} onPress={signupAction.moveToNext}>
-              <Text style={sharedStyles.buttonText}><Text style={sharedStyles.greyText}>Let's get to know you more!.</Text> Next</Text>
+              <Text style={sharedStyles.buttonText}><Text style={sharedStyles.greyText}>Let us get to know you more!.</Text> Next</Text>
             </TouchableOpacity> 
 
     
