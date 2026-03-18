@@ -206,6 +206,40 @@ def _build_safe_username(username: Optional[str], email: str, subject: str) -> s
     return safe[:50]
 
 
+def _normalize_subject_id(subject_id: Any) -> str:
+    if subject_id is None:
+        return ""
+    return str(subject_id).strip()
+
+
+def _extract_subject_id(claims: Optional[Dict[str, Any]] = None, payload: Optional[Dict[str, Any]] = None) -> str:
+    claims = claims or {}
+    payload = payload or {}
+
+    raw_user_metadata = claims.get("user_metadata")
+    user_metadata: Dict[str, Any] = raw_user_metadata if isinstance(raw_user_metadata, dict) else {}
+
+    candidates = [
+        claims.get("sub"),
+        claims.get("keycloak_id"),
+        claims.get("user_id"),
+        claims.get("id"),
+        user_metadata.get("sub"),
+        user_metadata.get("id"),
+        payload.get("subject_id"),
+        payload.get("keycloak_id"),
+        payload.get("supabase_user_id"),
+        payload.get("provider_user_id"),
+    ]
+
+    for candidate in candidates:
+        normalized = _normalize_subject_id(candidate)
+        if normalized:
+            return normalized
+
+    return ""
+
+
 def _resolve_supabase_login_email(identifier: str) -> Optional[str]:
     candidate = (identifier or "").strip().lower()
     if candidate and is_valid_email(candidate):
@@ -229,17 +263,18 @@ def _upsert_local_user(
 ) -> Tuple[Any, bool]:
     from app.models import User, db
 
-    if not subject_id:
+    normalized_subject_id = _normalize_subject_id(subject_id)
+    if not normalized_subject_id:
         raise ValueError("Missing token subject")
 
     normalized_email = (email or "").strip().lower()
     if not normalized_email:
-        normalized_email = f"{subject_id[:24]}@no-email.local"
+        normalized_email = f"{normalized_subject_id[:24]}@no-email.local"
 
-    safe_username = _build_safe_username(username, normalized_email, subject_id)
+    safe_username = _build_safe_username(username, normalized_email, normalized_subject_id)
     normalized_user_type = _normalize_user_type(user_type)
 
-    user = User.query.filter_by(keycloak_id=subject_id).first()
+    user = User.query.filter_by(keycloak_id=normalized_subject_id).first()
     if user:
         changed = False
         if normalized_email and user.email != normalized_email:
@@ -270,10 +305,10 @@ def _upsert_local_user(
 
     existing_by_email = User.query.filter_by(email=normalized_email).first()
     if existing_by_email:
-        if existing_by_email.keycloak_id and existing_by_email.keycloak_id != subject_id:
+        if existing_by_email.keycloak_id and existing_by_email.keycloak_id != normalized_subject_id:
             raise ValueError("Email is already associated with another account")
 
-        existing_by_email.keycloak_id = subject_id
+        existing_by_email.keycloak_id = normalized_subject_id
         existing_by_email.user_type = normalized_user_type
         if not existing_by_email.username:
             existing_by_email.username = safe_username
@@ -290,7 +325,7 @@ def _upsert_local_user(
         suffix_counter += 1
 
     new_user = User()
-    new_user.keycloak_id = subject_id
+    new_user.keycloak_id = normalized_subject_id
     new_user.username = unique_username
     new_user.email = normalized_email
     new_user.phone_number = phone_number
@@ -369,7 +404,7 @@ def _claims_from_request() -> Dict[str, Any]:
 
 
 def _sync_local_user_from_claims(claims: Dict[str, Any], payload: Dict[str, Any]) -> Tuple[Any, bool]:
-    subject_id = claims.get("sub") or claims.get("keycloak_id")
+    subject_id = _extract_subject_id(claims, payload)
     if not subject_id:
         raise ValueError("Missing token subject")
 
@@ -522,6 +557,9 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
         return {"message": "Invalid login credentials", "details": details}, response.status_code
 
     raw_token = response.json()
+    raw_token_user = raw_token.get("user") if isinstance(raw_token.get("user"), dict) else {}
+    provider_subject_id = _extract_subject_id(payload={"supabase_user_id": raw_token_user.get("id")})
+
     access_token = raw_token.get("access_token")
     claims = verify_jwt(access_token) if access_token else None
     if not claims:
@@ -534,6 +572,7 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
                 "username": identifier,
                 "email": email,
                 "user_type": payload.get("user_type"),
+                "subject_id": provider_subject_id,
             },
         )
     except ValueError as exc:
@@ -550,7 +589,7 @@ def _login_with_supabase(payload: Dict[str, Any], identifier: str, password: str
             "session_state": ((raw_token.get("user") or {}).get("id") if isinstance(raw_token.get("user"), dict) else None),
             "scope": ((raw_token.get("user") or {}).get("role") if isinstance(raw_token.get("user"), dict) else "authenticated"),
             "provider": "supabase",
-            "keycloak_id": claims.get("sub"),
+            "keycloak_id": _extract_subject_id(claims, {"subject_id": provider_subject_id}),
             "user_id": None,
             "pending_local_sync": True,
             "message": "Authenticated. Local profile sync is pending and will be retried.",
@@ -687,7 +726,10 @@ def _signup_with_supabase(payload: Dict[str, Any]):
 
     response_json = response.json()
     supabase_user = response_json.get("user") or (response_json.get("session") or {}).get("user")
-    subject_id = supabase_user.get("id") if isinstance(supabase_user, dict) else None
+    subject_id = _extract_subject_id(payload={
+        "supabase_user_id": supabase_user.get("id") if isinstance(supabase_user, dict) else None,
+        "provider_user_id": response_json.get("id"),
+    })
 
     if not subject_id:
         # Supabase can accept signup but omit user/session fields in some verification/privacy flows.
