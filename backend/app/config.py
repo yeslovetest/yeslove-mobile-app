@@ -5,6 +5,23 @@ except ImportError:
     get_config_value = lambda key, default=None: os.getenv(key, default)
 
 
+def _normalize_database_uri(uri: str) -> str:
+    """Normalize provider-specific DB URI formats for SQLAlchemy."""
+    if uri.startswith("postgres://"):
+        return "postgresql://" + uri[len("postgres://"):]
+    return uri
+
+
+def _read_database_uri(default: str) -> str:
+    uri = (
+        os.getenv("DATABASE_URL")
+        or os.getenv("DATABASE_URI")
+        or os.getenv("SQLALCHEMY_DATABASE_URI")
+        or default
+    )
+    return _normalize_database_uri(uri)
+
+
 class Config:
     """Base Configuration"""
     SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
@@ -49,7 +66,7 @@ class Config:
 class DevelopmentConfig(Config):
     """Development Configuration"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI", "sqlite:///dev.db")
+    SQLALCHEMY_DATABASE_URI = _read_database_uri("sqlite:///dev.db")
     
     # Media Service Configuration
     USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "false"
@@ -94,7 +111,7 @@ class ProductionConfig(Config):
     """Production environment configuration."""
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://admin:password@localhost/yeslove'
+    SQLALCHEMY_DATABASE_URI = _read_database_uri('postgresql://admin:password@localhost/yeslove')
     
     # AWS Services
     USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "true"

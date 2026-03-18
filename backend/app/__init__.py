@@ -34,6 +34,34 @@ def _env_flag(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _should_auto_init_db() -> bool:
+    # Explicit override always wins.
+    if os.getenv("AUTO_INIT_DB") is not None:
+        return _env_flag("AUTO_INIT_DB", default=False)
+
+    # Default to enabled on Railway deployments.
+    return bool(os.getenv("RAILWAY_ENVIRONMENT"))
+
+
+def _initialize_database_schema(app: Flask) -> None:
+    if not _should_auto_init_db():
+        return
+
+    with app.app_context():
+        try:
+            from flask_migrate import upgrade
+
+            upgrade()
+            app.logger.info("Database migrations applied successfully")
+        except Exception:
+            app.logger.exception("Migration upgrade failed; attempting db.create_all fallback")
+            try:
+                db.create_all()
+                app.logger.info("Database tables ensured with db.create_all")
+            except Exception:
+                app.logger.exception("Database initialization failed")
+
+
 # Load local .env only for local/dev style runs.
 if not os.getenv("RAILWAY_ENVIRONMENT"):
     load_dotenv()
@@ -174,5 +202,8 @@ def create_app(config_class=DevelopmentConfig):
     # Initalises professional user admin panel
     from .admin import init_admin
     init_admin(app)
+
+    # Ensure schema exists for managed platforms like Railway.
+    _initialize_database_schema(app)
 
     return app
