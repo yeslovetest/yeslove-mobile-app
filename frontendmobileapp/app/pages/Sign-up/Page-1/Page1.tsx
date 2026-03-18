@@ -15,10 +15,12 @@ const Page1 = () => {
   const dispatch = useAppDispatch();
   const {
     email,
+    confirmEmail,
     password,
     confirmPassword,
     pageNumber,
     emailBdColor,
+    confirmEmailBdColor,
     passwordBdColor,
     ...signupAction
   } = useSignup();
@@ -37,7 +39,7 @@ const Page1 = () => {
       hideError(); 
     }, 5000);
     return () => clearTimeout(timer);
-  }, [emailBdColor, passwordBdColor, errorMessage]);
+  }, [emailBdColor, confirmEmailBdColor, passwordBdColor, errorMessage]);
 
   return (
     <ImageBackground source={image} style={sharedStyles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
@@ -53,6 +55,15 @@ const Page1 = () => {
             borderBottomColor={emailBdColor[1]}
             onChangeText={signupAction.handleEmailChange}
             /> 
+
+            <Text style={sharedStyles.label}>Confirm Email</Text>
+            <Input
+            placeholder="Re-enter email"
+            keyboardType='email-address'
+            borderColor={confirmEmailBdColor[0]}
+            borderBottomColor={confirmEmailBdColor[1]}
+            onChangeText={signupAction.handleConfirmEmailChange}
+            />
 
             <Text style={sharedStyles.label}>Password</Text>
             <Input

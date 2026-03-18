@@ -1,4 +1,4 @@
-import { call, put, take, takeEvery } from "redux-saga/effects";
+import { call, put, take, takeEvery, takeLatest, race, delay } from "redux-saga/effects";
 import { activateLoadingScreen, fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, setUserProfileState, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
   TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
@@ -22,6 +22,7 @@ import { attemptRefreshFromLocalStorageAction, logInAction,
   LoginState, setLoginStateAction, signupAction, 
   setSignupMessage, setErrorMessage, setUserPassword, 
   setMessage,
+  setSignupSubmitting,
   setDeleteConfirmation,
   logoutAction} from "../Auth-store/authSlice";
 import axios, { AxiosResponse } from "axios";
@@ -51,6 +52,74 @@ import { fetchUserNotifications, markNotificationRead, setUserNotification,
    updateNotificationPreferences
  } from "../Notification-store/notificationSlice";
 import { ChatRequest, ChatResponse as ChatbotApiResponse, apiFactory as chatbotApiFactory } from "@/chatbot-client-api/api";
+
+
+/**
+ * Extract HTTP status from an unknown error value.
+ * Returns undefined when the error is not an Axios error.
+ */
+const getHttpStatus = (error: unknown): number | undefined => {
+  if (axios.isAxiosError(error)) {
+    return error.response?.status;
+  }
+  return undefined;
+};
+
+/**
+ * Extract API message from common backend payload shapes.
+ * Supports both { message } and { error } response formats.
+ */
+const getApiMessage = (error: unknown): string | undefined => {
+  if (!axios.isAxiosError(error)) {
+    return undefined;
+  }
+
+  const responseData = error.response?.data as { message?: string; error?: string } | undefined;
+  return responseData?.message || responseData?.error;
+};
+
+/**
+ * Clear persisted auth state so the app can safely return to sign-in.
+ */
+const clearPersistedAuthState = async (): Promise<void> => {
+  TOKEN_REFRESH_SERVICE.stopRefreshingToken();
+  await TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage('');
+  await TOKEN_REFRESH_SERVICE.saveAccessToken('');
+  await TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage('');
+  await TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage(-1);
+  delete axios.defaults.headers.common['Authorization'];
+};
+
+/**
+ * Translate signup HTTP failures into user-friendly guidance.
+ */
+const getSignupFriendlyMessage = (status?: number, apiMessage?: string): string => {
+  if (apiMessage) {
+    return apiMessage;
+  }
+
+  if (status === 400) {
+    return 'Please check your details and try again.';
+  }
+
+  if (status === 401 || status === 403) {
+    return 'You are not allowed to complete signup right now. Please try again later.';
+  }
+
+  if (status === 409) {
+    return 'An account with these details already exists.';
+  }
+
+  if (status === 429) {
+    return 'Too many signup attempts. Please wait a moment and try again.';
+  }
+
+  if (status && status >= 500) {
+    return 'Server is busy right now. Please try again shortly.';
+  }
+
+  return 'We could not complete signup right now. Please try again.';
+};
 
 
 /** 
@@ -106,18 +175,65 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     yield put(activateLoadingScreen(false));
   }catch (error) {
     console.error('Login failed:', error);
-    yield put(setErrorMessage('user does not exist'));
+
+    const status = getHttpStatus(error);
+    const apiMessage = getApiMessage(error);
+    let friendlyMessage = apiMessage;
+
+    if (!friendlyMessage) {
+      // Map technical auth failures to user-facing messages.
+      if (status === 400 || status === 401) {
+        friendlyMessage = 'Incorrect login details. Please check and try again.';
+      } else if (status === 429) {
+        friendlyMessage = 'Too many attempts. Please wait a moment and try again.';
+      } else {
+        friendlyMessage = 'Unable to sign in right now. Please try again.';
+      }
+    }
+
+    yield put(setErrorMessage(friendlyMessage));
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
     yield put(activateLoadingScreen(false));
   }
 }
 
 function* refreshFromLocalStorage(action: PayloadAction<void>){
-  const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string | null;
-  if(refreshToken){
+  try {
+    const refreshToken = ((yield call(TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage))) as string | null;
+    const normalizedRefreshToken = (refreshToken || "").trim();
+
+    if(!normalizedRefreshToken) {
+      yield put(setErrorMessage(''));
+      yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+      return;
+    }
+
     try{
-      const refreshResponse = ((yield call(AuthApiFactory().postRefreshToken, {refresh_token: refreshToken})) as AxiosResponse<TokenResponse>).data as TokenResponse;
+      // Enforce a hard timeout so bootstrap can never keep the app in LOADING forever.
+      const refreshResult: {
+        refreshedResponse?: AxiosResponse<TokenResponse>;
+        timedOut?: true;
+      } = yield race({
+        refreshedResponse: call(
+          AuthApiFactory().postRefreshToken,
+          {refresh_token: normalizedRefreshToken},
+          { timeout: 10000 }
+        ),
+        timedOut: delay(12000),
+      });
+
+      if (refreshResult.timedOut || !refreshResult.refreshedResponse) {
+        throw new Error("AUTH_BOOTSTRAP_TIMEOUT");
+      }
+
+      const refreshResponse = (refreshResult.refreshedResponse.data as TokenResponse);
       const refreshedAccessToken = refreshResponse.access_token ?? "";
       const refreshedRefreshToken = refreshResponse.refresh_token ?? "";
+
+      // Never keep the user in a partial session when provider does not return both tokens.
+      if (!refreshedAccessToken || !refreshedRefreshToken) {
+        throw new Error("AUTH_TOKENS_MISSING");
+      }
 
       axios.defaults.headers.common['Authorization'] = refreshedAccessToken ? `Bearer ${refreshedAccessToken}` : "";
       yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, refreshedAccessToken);
@@ -135,6 +251,11 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
 
       if (!storedUserId) {
         yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+        try {
+          yield call(clearPersistedAuthState);
+        } catch (cleanupError) {
+          console.warn('auth cleanup failed after missing stored user id', cleanupError);
+        }
         return;
       }
 
@@ -142,15 +263,57 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       yield put(setUserDBID(storedUserDbId ? Number(storedUserDbId) : -1));
 
       let userId: string = yield appSelect(state => state.user.id);
-      const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
-      yield put(setName(profile.username));
-      yield put(storeUserDataAction({id: userId, profile: profile}))
+
+      // Profile fetch is best-effort during bootstrap; do not block login routing if slow.
+      const profileResult: {
+        profileResponse?: AxiosResponse<UserProfile>;
+        timedOut?: true;
+      } = yield race({
+        profileResponse: call(ProfileApiFactory().getUserProfile, userId, { timeout: 8000 }),
+        timedOut: delay(9000),
+      });
+
+      if (profileResult.profileResponse?.data) {
+        const profile = profileResult.profileResponse.data as UserProfile;
+        yield put(setName(profile.username));
+        yield put(storeUserDataAction({id: userId, profile: profile}));
+      }
+
+      yield put(setErrorMessage(''));
       yield put(setLoginStateAction(LoginState.LOGGED_IN));
     }catch (error){
       console.log(error)
+
+      const status = getHttpStatus(error);
+      const apiMessage = getApiMessage(error);
+      const isTimeoutError = error instanceof Error && error.message === "AUTH_BOOTSTRAP_TIMEOUT";
+      const isMissingTokensError = error instanceof Error && error.message === "AUTH_TOKENS_MISSING";
+
+      if (isTimeoutError) {
+        yield put(setErrorMessage('Connection took too long. Please sign in again.'));
+      } else if (isMissingTokensError) {
+        yield put(setErrorMessage('Session refresh failed. Please sign in again.'));
+      } else if (status === 400 || status === 401) {
+        yield put(setErrorMessage(apiMessage || 'Your session expired. Please sign in again.'));
+      } else if (status && status >= 500) {
+        yield put(setErrorMessage('Server is busy right now. Please try again shortly.'));
+      } else if (apiMessage) {
+        yield put(setErrorMessage(apiMessage));
+      } else {
+        yield put(setErrorMessage('We could not reconnect automatically. Please sign in to continue.'));
+      }
+
+      // Route first, then cleanup as best-effort so UI cannot get stuck in LOADING.
       yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+      try {
+        yield call(clearPersistedAuthState);
+      } catch (cleanupError) {
+        console.warn('auth cleanup failed after refresh error', cleanupError);
+      }
     }
-  }else {
+  } catch (storageError) {
+    console.warn('failed to load stored auth tokens', storageError);
+    yield put(setErrorMessage('We could not read your session. Please sign in again.'));
     yield put(setLoginStateAction(LoginState.LOGGED_OUT));
   }
 }
@@ -158,14 +321,26 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
 function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
   let request = action.payload;
 
+  // Keep UI actions disabled while signup request is in progress.
+  yield put(setSignupSubmitting(true));
+
   try{
     const signupResponse = ((yield call(AuthApiFactory().postSignup, request)) as AxiosResponse<SignupResponse>).data as SignupResponse;
 
+    // Keep provider response message so success screen can show meaningful text.
     yield put(setSignupMessage(signupResponse.message ?? ""));
   }catch (error) {
     console.error('Sign up failed', error);
-    
-    yield put(setSignupMessage(String(error)));
+
+    const status = getHttpStatus(error);
+    const apiMessage = getApiMessage(error);
+    const friendlyMessage = getSignupFriendlyMessage(status, apiMessage);
+
+    // Render a user-safe error on the signup result screen.
+    yield put(setSignupMessage(friendlyMessage));
+  } finally {
+    // Always re-enable signup actions after completion.
+    yield put(setSignupSubmitting(false));
   }
 }
 
@@ -179,13 +354,8 @@ function* handleLogout(action: PayloadAction<string>) {
   }
 
   try {
-    // Stop the refresh token polling synchronously
-    TOKEN_REFRESH_SERVICE.stopRefreshingToken();
-    yield call(TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage, '');
-    yield call(TOKEN_REFRESH_SERVICE.saveAccessToken, '');
-    yield call(TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage, '');
-    yield call(TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage, -1);
-    delete axios.defaults.headers.common['Authorization'];
+    // Always clear local auth/session state, even if provider logout fails.
+    yield call(clearPersistedAuthState);
     yield put(changeTabAction({ type: TabType.HOME }));
     yield put(setLoginStateAction(LoginState.LOGGED_OUT));
     yield put(setFeedDataAction({post: [], feedType: 'friends'}));
@@ -659,7 +829,8 @@ function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>
 function* appSaga() {
 /**Auth Api saga */
   yield takeEvery(logInAction.type, handleLoginRequest);
-  yield takeEvery(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
+  // Keep only one bootstrap refresh in-flight to avoid overlapping loading states.
+  yield takeLatest(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
   yield takeEvery(signupAction.type, handleSignupRequest);
   yield takeEvery(setUserPassword.type, handlePasswordChange);
   yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
