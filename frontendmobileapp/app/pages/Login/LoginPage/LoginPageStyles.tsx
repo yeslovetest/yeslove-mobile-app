@@ -42,6 +42,34 @@ const styles = StyleSheet.create({
     color: 'red',
     fontWeight: '600',
   },
+  modeToggleContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  modeToggleButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#cfd8dc',
+    borderRadius: 8,
+    backgroundColor: '#f7f9fc',
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  modeToggleButtonActive: {
+    borderColor: theme.colors.primaryBlue,
+    backgroundColor: '#e8f1ff',
+  },
+  modeToggleText: {
+    color: '#607d8b',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modeToggleTextActive: {
+    color: theme.colors.primaryBlue,
+  },
   input: {
     width: '100%',
     height: 50,
@@ -53,6 +81,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: theme.colors.mainBkgColor,
     marginBottom: 15,
+  },
+  helperText: {
+    alignSelf: 'flex-start',
+    color: theme.colors.footerFontColor,
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 12,
   },
   button: {
     backgroundColor: theme.colors.mainBkgColor,
