@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/store/hooks';
 import { setLoginStateAction, LoginState, increasePageNo, decreasePageNo, signupAction,
-   setSignupEmail, setSignupPassword, setSignupConfirmPassword, setSignupMessage, setErrorMessage } from '../app/store/Auth-store/authSlice';
+  setSignupEmail, setSignupConfirmEmail, setSignupPassword, setSignupConfirmPassword, setSignupMessage, setErrorMessage,
+  setLastSignupPayload } from '../app/store/Auth-store/authSlice';
 import theme from '@/assets/variables/Variables';
 
 export const useSignup = () => {
@@ -10,6 +11,7 @@ export const useSignup = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -17,6 +19,7 @@ export const useSignup = () => {
   const initialBdColor = ['#ccc', theme.colors.primaryBlue];
   const [passwordBdColor, setPasswordBdColor] = useState(initialBdColor);
   const [emailBdColor, setEmailBdColor] = useState(initialBdColor);
+  const [confirmEmailBdColor, setConfirmEmailBdColor] = useState(initialBdColor);
   const [usernameBdColor, setUsernameBdColor] = useState(initialBdColor);
   const [firstNameBdColor, setFirstNameBdColor] = useState(initialBdColor);
   const [lastNameBdColor, setLastNameBdColor] = useState(initialBdColor);
@@ -26,11 +29,13 @@ export const useSignup = () => {
   const handlePasswordChange = (input: string) => setPassword(input);
   const handleConfirmPassword = (input: string) => setConfirmPassword(input);
   const handleEmailChange = (input: string) => setEmail(input);
+  const handleConfirmEmailChange = (input: string) => setConfirmEmail(input);
   const handlePhoneNumberChange = (input: string) => setPhoneNumber(input);
   const handleFirstNameChange = (input: string) => setFirstName(input);
   const handleLastNameChange = (input: string) => setLastName(input);
 
   const pageNumber = useAppSelector((state) => state.auth.SignupPageNo );
+  const signupConfirmEmail = useAppSelector((state) => state.auth.signupConfirmEmail);
  
   const handleLoginStateChange = (action: string) => {
     if (action=='sign-up') {
@@ -47,13 +52,25 @@ export const useSignup = () => {
 
   const validateInputs = (page: number) => {
     if (page == 1) {
-      if (password && password === confirmPassword) {
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return [emailPattern.test(email), 'email'];
+      // Validate password pair before validating email fields.
+      if (!password || password.length < 6) {
+        return [false, 'passwordLength'];
       }
-      else {
+
+      if (password !== confirmPassword) {
         return [false, 'password'];
       }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email) || !emailPattern.test(confirmEmail)) {
+        return [false, 'email'];
+      }
+
+      if (email.trim().toLowerCase() !== confirmEmail.trim().toLowerCase()) {
+        return [false, 'confirmEmail'];
+      }
+
+      return [true, 'email'];
     }
     else {
       if (!username){
@@ -77,18 +94,33 @@ export const useSignup = () => {
     if (result){
         dispatch(increasePageNo(pageNumber))
         dispatch(setSignupEmail(email));
+        dispatch(setSignupConfirmEmail(confirmEmail));
         dispatch(setSignupPassword(password));
         dispatch(setSignupConfirmPassword(confirmPassword));
     }
+    else if (field == 'passwordLength') {
+      setPasswordBdColor(['red', 'red']);
+      setEmailBdColor(initialBdColor)
+      setConfirmEmailBdColor(initialBdColor)
+      dispatch(setErrorMessage('Password must be at least 6 characters.'));
+    }
     else if (field == 'password') {
         setPasswordBdColor(['red', 'red']);
-        setEmailBdColor(['#ccc', theme.colors.primaryBlue])
-        dispatch(setErrorMessage('Password does not match or is empty'));
+        setEmailBdColor(initialBdColor)
+        setConfirmEmailBdColor(initialBdColor)
+      dispatch(setErrorMessage('Password confirmation does not match.'));
     }
     else if (field == 'email') {
       setEmailBdColor(['red', 'red']);
+      setConfirmEmailBdColor(['red', 'red']);
       setPasswordBdColor(['#ccc', theme.colors.primaryBlue]);
-      dispatch(setErrorMessage('Invalid Field: Email.'));
+      dispatch(setErrorMessage('Invalid Field: Email or Confirm Email.'));
+    }
+    else if (field == 'confirmEmail') {
+      setConfirmEmailBdColor(['red', 'red']);
+      setEmailBdColor(initialBdColor);
+      setPasswordBdColor(initialBdColor);
+      dispatch(setErrorMessage('Email and confirm email do not match.'));
     }
     
   };
@@ -105,9 +137,22 @@ export const useSignup = () => {
         let first_name = firstName;
         let last_name = lastName;
         let phone_number = phoneNumber;
+        // Persist exact request body so the failure screen can retry immediately.
+        const signupPayload = {
+          email,
+          // Use the value user confirmed on Page 1; fallback keeps old state compatible.
+          confirm_email: signupConfirmEmail || email,
+          password,
+          confirm_password,
+          first_name,
+          last_name,
+          phone_number,
+          username,
+        };
         
         dispatch(setSignupMessage(''));
-        dispatch(signupAction({email, password, confirm_password, first_name, last_name, phone_number, username}));
+        dispatch(setLastSignupPayload(signupPayload));
+        dispatch(signupAction(signupPayload));
         dispatch(increasePageNo(pageNumber));
     }
     else if (field == 'username') {
@@ -146,10 +191,12 @@ export const useSignup = () => {
 
   return {
     email,
+    confirmEmail,
     password,
     confirmPassword,
     pageNumber,
     emailBdColor,
+    confirmEmailBdColor,
     passwordBdColor,
     usernameBdColor,
     firstNameBdColor,
@@ -159,6 +206,7 @@ export const useSignup = () => {
     handlePasswordChange,
     handleConfirmPassword,
     handleEmailChange,
+    handleConfirmEmailChange,
     handlePhoneNumberChange,
     handleFirstNameChange,
     handleLastNameChange,
