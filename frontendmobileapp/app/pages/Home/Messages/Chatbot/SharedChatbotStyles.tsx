@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     headerProfile: {
         width: 38,
         height: 38,
-        borderRadius: "50%",
+        borderRadius: 19,
         marginRight: 10,
         backgroundColor: "#fbfbfb",
         borderColor: "#cbcbcb",
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
         width: 7,
         height: 7,
         backgroundColor: "#3fe86c",
-        borderRadius: "50%",
+        borderRadius: 4,
         marginRight: 3
     },
 
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
         padding: 6,
         color: "#fbfbfb",
         backgroundColor: theme.colors.primaryBlue,
-        borderRadius: "50%"
+        borderRadius: 20
     },
 
     /*chat prompt */
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
         height: 40,
         marginLeft: 5,
         marginTop: 5,
-        borderRadius: "50%"
+        borderRadius: 20
     },
 
 
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
         marginLeft: -10,
         width: 45,
         height: 45,
-        borderRadius: "50%",
+        borderRadius: 25,
         marginRight: 9,
         backgroundColor: "#fefefe",
         borderColor: "#cbcbcb",
