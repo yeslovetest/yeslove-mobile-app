@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfileRoot from "./pages/Profile/Profile-root/ProfileRoot";
@@ -79,7 +80,8 @@ const App = () => {
   }, [dispatch, loginState]);
 
   return (
-    <>
+    // Apply safe-area insets globally so screens do not overlap status/navigation UI.
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       {loginState == LoginState.LOADING && (
         <View style={styles.container}>
           <LoginRoot
@@ -128,11 +130,15 @@ const App = () => {
           <Footer></Footer>
         </View>
       )}
-    </>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fafafa",
+  },
   container: {
     flex: 1,
     justifyContent: "space-between",
