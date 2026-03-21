@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     activeIndicator: {
         width: 10,
         height: 10,
-        borderRadius: "50%",
+        borderRadius: 5,
         backgroundColor: theme.colors.primaryBlue,
         position: "absolute",
         left: 10,

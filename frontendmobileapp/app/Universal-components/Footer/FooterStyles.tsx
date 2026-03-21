@@ -4,18 +4,21 @@ import theme from "../../../assets/variables/Variables"
 const styles = StyleSheet.create({
   footer: {
     width: '100%',
-    height: 65,
+    minHeight: 64,
     backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 0,
     justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderTopColor: '#e8e8e8',
+    borderTopWidth: 1,
   },
   iconContainer: {
    width: "20%",
-   height: "100%",
-   justifyContent: "flex-end",
-   paddingBottom: 5,
+    minHeight: 48,
+    justifyContent: "center",
+    paddingBottom: 2,
    alignItems: "center"
   },
   activeIcon: {
@@ -24,17 +27,18 @@ const styles = StyleSheet.create({
   },
   icon: {
     color: theme.colors.blackText,
-    fontSize: 23,
+    fontSize: 22,
     display: "flex",
     paddingBottom: 3,
   },
   footerText: {
-    fontSize: 12,
-    marginTop: 3
+    fontSize: 11,
+    marginTop: 2,
+    color: theme.colors.iconNotActive,
   },
     activeText: {
     color: theme.colors.primaryBlue,
-    fontWeight: 600,
+    fontWeight: '600',
   },
   newNotification: {
     position: "absolute",
@@ -42,7 +46,7 @@ const styles = StyleSheet.create({
     left: 12, 
     width: 12,
     height: 12, 
-    borderRadius: "50%",
+    borderRadius: 6,
     backgroundColor: theme.colors.primaryBlue
   }
 })

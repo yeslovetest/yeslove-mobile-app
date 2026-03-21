@@ -4,7 +4,7 @@ import styles from './CommentsAndReactionsStyles';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
-import { Video } from 'expo-av';
+import { Video } from '@/app/Universal-components/Video/Video';
 import { setPostReactionTab, postReactionToPost } from '@/app/store/Home-store/feedSlice';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
@@ -13,10 +13,10 @@ import PostCommentField from './Comments-and-reactions-components/Post-comment-f
 import PostReaction from '../Home-root/Home-root-components/Post/One-post/PostedReaction';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import Header from '@/app/Universal-components/Header/Header';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '../Post-modal/Post-modal-components/File-preview/PostFilePreview';
+import type { ViewStyle } from 'react-native';
 
 export interface Post {
     id: number;
@@ -45,7 +45,7 @@ const IndividualPost = () => {
 
     const [contentDisplay, setContentDisplay] = useState("hide");
     const [reactionType, setReactionType] = useState(individualPost.current_user_reaction ?? 'default');
-    const [popUpState, setPopUpState] = useState('hidden');
+    const [popUpState, setPopUpState] = useState<ViewStyle['visibility']>('hidden');
 
     const showComment = () => {
         setContentDisplay('show');
@@ -98,7 +98,12 @@ const IndividualPost = () => {
         <>
             <Header></Header>
             <View style={sharedStyles.container}>
-                <ScrollView contentContainerStyle={styles.contentContainer}>
+                <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    contentInsetAdjustmentBehavior="automatic"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.contentContainer}
+                >
                     <View style={[styles.postContainer, styles.indPostContainer]}>
                         <View style={styles.profileImageContainer}>
                             <Image style={styles.profileImage} source={{ uri: individualPost.author_pic }} />
@@ -139,7 +144,7 @@ const IndividualPost = () => {
                                         <Ionicons name="thumbs-up-sharp" size={24} color='blue' />
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('love')} >
-                                        <AntDesign name="heart" size={24} color="red" />
+                                        <Ionicons name="heart" size={24} color="red" />
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('laugh')} >
                                         <FontAwesome6 name="laugh" size={24} color="black" />
@@ -155,7 +160,7 @@ const IndividualPost = () => {
                                         (<Ionicons name="thumbs-up-sharp" size={24} color='blue' />)
                                     }
                                     {reactionType === 'love' &&
-                                        (<AntDesign name="heart" size={24} color="red" />)
+                                        (<Ionicons name="heart" size={24} color="red" />)
                                     }
                                     {reactionType === 'laugh' &&
                                         (<FontAwesome6 name="laugh" size={24} color="black" />)

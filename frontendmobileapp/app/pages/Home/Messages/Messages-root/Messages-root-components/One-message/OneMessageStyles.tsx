@@ -6,9 +6,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        width: "80%",
-        paddingHorizontal: 10,
-        height: 90,
+        width: "100%",
+        paddingHorizontal: 8,
+        minHeight: 84,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
        
@@ -25,44 +25,43 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff"
     },
     profilePicture: {
-        width: 40,
-        height: 40,
-        borderRadius: "50%",
-        marginRight: 4,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        marginRight: 8,
         borderWidth: 1,
     },
     messageContainer: {
-        width: "70%",
-        height: "80%",
+        flex: 1,
+        paddingRight: 8,
         justifyContent: "center",
-       
-
     },
     userUnopened: {
-        fontSize: 16,
-        fontWeight: 600,
+        fontSize: 15,
+        fontWeight: '700',
         color: theme.colors.primaryBlue
     },
     userOpened: {
-        fontSize: 16,
-        fontWeight: 400,
+        fontSize: 15,
+        fontWeight: '500',
         color: theme.colors.blackText,
-        marginBottom: 3
+        marginBottom: 2,
     },
 
     messageUnopened: {
-        fontWeight: 600,
-        height: "50%",
-        marginBottom: 3
+        fontWeight: '600',
+        marginBottom: 2,
+        color: '#1f1f1f',
     },
 
     messageOpened: {
-        fontWeight: 400,
-        color: "#333"
+        fontWeight: '400',
+        color: "#4e4e4e"
     },
 
     timeContainer: {
-        width: "35%",
+        width: 78,
+        alignItems: 'flex-end',
     },
 
     time: {

@@ -6,15 +6,15 @@ navBarContainer: {
   flex: 1,
   justifyContent: "flex-start",
   alignItems: "center",
-  marginTop: 20,
+  marginTop: 12,
 },
 navBar: {
   flexDirection: "row",
   flexWrap: "wrap", 
-  width: theme.spacing.postWidth, 
+  width: "100%", 
   justifyContent: "center",
   backgroundColor: "#fff",
-  paddingVertical: 10,
+  paddingVertical: 8,
   borderRadius: 10, 
   elevation: 3, 
   shadowColor: "#000",
@@ -24,11 +24,11 @@ navBar: {
 },
 navItem: {
   width: "50%",
-  paddingVertical: 15,
+  paddingVertical: 12,
   alignItems: "center",
 },
 navText: {
-  fontSize: 16,
+  fontSize: 15,
   color: theme.colors.iconNotActive,
   fontWeight: "500",
 },
@@ -36,7 +36,7 @@ activeNavItem: {
   position: "relative",
 },
 activeNavText: {
-  fontWeight: "bold",
+  fontWeight: "700",
   color: "#000",
 },
 activeIndicator: {

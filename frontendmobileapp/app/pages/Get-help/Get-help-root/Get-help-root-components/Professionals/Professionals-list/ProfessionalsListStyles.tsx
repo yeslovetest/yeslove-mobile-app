@@ -4,12 +4,14 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
     professionalProfileContainer: {
       marginTop: vw(5),
-      width: 380,
+      width: '100%',
+      maxWidth: 460,
       backgroundColor: "#fff",
       justifyContent: "center",
       alignItems: "center",
-      padding: 20,
-      borderRadius: 15,
+      paddingVertical: 18,
+      paddingHorizontal: 16,
+      borderRadius: 14,
     },
   
     professionalProfileName: {
@@ -21,6 +23,8 @@ const styles = StyleSheet.create({
     professionalDescription: {
       color: "#555",
       fontSize: 15,
+      textAlign: 'center',
+      lineHeight: 22,
     },
   
     profileImage: {
@@ -33,7 +37,7 @@ const styles = StyleSheet.create({
     },
     viewProfile: {
     backgroundColor: "#7296ED",
-    width: 100,
+      minWidth: 120,
     marginTop: 20,
     alignItems: "center",
     justifyContent: "center",

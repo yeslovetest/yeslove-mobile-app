@@ -162,7 +162,7 @@ const Conversation = () => {
           ref={flatListRef}
           data={messages}
           keyExtractor={(_, idx) => idx.toString()}
-          contentContainerStyle={{padding: 20}}
+          contentContainerStyle={styles.contentContainer}
           renderItem={({ item }) =>
             item?.sender !== userName ? (
               <ChatResponse text={item?.content ?? ''} 
@@ -183,8 +183,8 @@ const Conversation = () => {
           }}
         />
        
-        <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
-          {selectedFiles && (
+        <View style={styles.inputDock}>
+          {selectedFiles && selectedFiles.length > 0 && (
             <View style={styles.mediaPreviewContainer}>
               <MediaFilePreview file={selectedFiles} editable={true} deleteMedia={deleteSelectedFile}/>
             </View>

@@ -1,5 +1,5 @@
 import { call, put, take, takeEvery, takeLatest, race, delay } from "redux-saga/effects";
-import { activateLoadingScreen, fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileVisibilitySettings, setUserProfileState, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
+import { activateLoadingScreen, fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileImageUploading, setProfileVisibilitySettings, setUserProfileState, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
   TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
   GetReactionsResponse, ReactToPostResponse,
@@ -582,8 +582,18 @@ function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, curr
   try {
     const response = ((yield call(EventsApiFactory().getGetProfessionals, action.payload.perPage ?? undefined, 
     action.payload.currentPage ?? undefined ))  as AxiosResponse<ProfessionalsListResponse>).data as ProfessionalsListResponse;
-       yield put(setProfessionals({items: response.professionals ?? [], total: response.pagination?.total_professionals ?? 0, 
-        page: response.pagination?.page ?? 1, per_page: response.pagination?.per_page ?? 20}));
+    const pagination = (response.pagination ?? {}) as {
+      total_professionals?: number;
+      page?: number;
+      per_page?: number;
+    };
+
+    yield put(setProfessionals({
+      items: response.professionals ?? [],
+      total: pagination.total_professionals ?? 0,
+      page: pagination.page ?? 1,
+      per_page: pagination.per_page ?? 20,
+    }));
   } 
   catch (error) {
        console.error('failed to fetch professionals', error);  
@@ -625,21 +635,32 @@ function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
     const content = action.payload.requestForm.get("content") as string;
     const anonymous = action.payload.requestForm.get("anonymous") as string | null;
     const media = action.payload.requestForm.get("media") as File | null; // not in use - form data only returns Content
+    const isAnonymous = anonymous === "true";
 
     // ✅ Call API using its expected parameters
-    const response = yield call([api, api.postCreatePost], content, anonymous ?? "false", media ?? undefined);
+    const response = (yield call(
+      { context: api, fn: api.postCreatePost },
+      content,
+      isAnonymous,
+      media ?? undefined
+    )) as AxiosResponse<{ post_id?: string }>;
 
+    const postId = response.data?.post_id;
     let mediaData: FormData = yield appSelect(state => state.feed.mediaData.mediaFormData);
     if (mediaData && mediaData.getAll("file").length === 1) {
       //mediaData.set("file", mediaData.getAll("file")[0]);
-      mediaData.append("post_id", response.data?.post_id);
+      if (postId) {
+        mediaData.append("post_id", String(postId));
+      }
       // ✅ Send multipart/form-data directly (no JSON serialization!)
       yield put(uploadMedia({requestBody: mediaData}));
       // ⏳ Wait for single upload completion
       yield take("uploadMediaSuccess");
     }  
     else if (mediaData && mediaData.getAll("file").length > 1) {
-      mediaData.append("post_id", response.data?.post_id);
+      if (postId) {
+        mediaData.append("post_id", String(postId));
+      }
       // ✅ Send multipart/form-data directly (no JSON serialization!)
       yield put(uploadBulkMedia({requestBody: mediaData}));
       // ⏳ Wait for bulk upload completion
@@ -709,7 +730,7 @@ function* handleGetUserMediaItems(action: PayloadAction<number>){
   yield put(setMediaItems(MediaItems.media ?? []));
 }  
 
-function* handleUploadMedia(action){ 
+function* handleUploadMedia(action: PayloadAction<{requestBody: FormData, resolve?: (ids: string[]) => void, reject?: (error: unknown) => void}>){ 
   try {
     const response = (yield call(MediaApiFactory().postUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{media_id: string}>;
     yield put(setUploadedMediaId([response.data.media_id]));
@@ -731,7 +752,7 @@ function* handleUploadMedia(action){
    
 } 
 
-function* handleUploadBulkMedia(action){
+function* handleUploadBulkMedia(action: PayloadAction<{requestBody: FormData, resolve?: (ids: string[]) => void, reject?: (error: unknown) => void}>){
   try {
     const response = (yield call(MediaApiFactory().postBulkUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{ids: string[]}>;
     yield put(setUploadedMediaId(response.data.ids));
@@ -779,7 +800,13 @@ function* updateNotificationOpened(action: PayloadAction<number>){
 function* handleGetNotificationPreferences(action: PayloadAction<void>){
   try { 
     const response = ((yield call(NotificationsApiFactory().getNotificationPreferencesResource)) as AxiosResponse<NotificationPreferences>);
-    yield put(setNotificationPreferences(response.data));
+    yield put(setNotificationPreferences({
+      posts: !!response.data.posts,
+      likes: !!response.data.likes,
+      comments: !!response.data.comments,
+      events: !!response.data.events,
+      blogs: !!response.data.blogs,
+    }));
   }
   catch (error) {
     console.error('failed to fetch notification preferences', error);  
@@ -817,18 +844,42 @@ function* fetchUserProfileData(action: PayloadAction<{id: string, isCurrentUser:
 
 }
 
-function* updateUserProfile(action: PayloadAction<{data: Partial<UserProfile>, 
-  file?: FormData}>){
+function* updateUserProfile(action: PayloadAction<{data?: Partial<UserProfile>, 
+  file?: FormData, resolve?: () => void, reject?: (error: unknown) => void}>){
   try {
-    const response = (yield call(ProfileApiFactory().putUpdateProfile, action.payload.data || undefined, {data: action.payload.file || undefined} )) as AxiosResponse<{message: string}>;
+    const profileApi = ProfileApiFactory();
+    const profilePayload = (action.payload.data ?? {}) as UserProfile;
+
+    if (action.payload.file) {
+      yield put(setProfileImageUploading(true));
+    }
+
+    const response = (yield call(
+      { context: profileApi, fn: profileApi.putUpdateProfile },
+      profilePayload,
+      { data: action.payload.file || undefined }
+    )) as AxiosResponse<{message: string}>;
     console.log(response?.data.message)
     let userId: string = yield appSelect(state => state.user.id);
     const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
     yield put(setName(profile.username));
-    yield put(storeUserDataAction({id: userId, profile: profile}))
+    yield put(storeUserDataAction({id: userId, profile: profile}));
+
+    if (action.payload.resolve) {
+      action.payload.resolve();
+    }
   }
   catch (error) {
     console.error('failed to upload media', error);
+
+    if (action.payload.reject) {
+      action.payload.reject(error);
+    }
+  }
+  finally {
+    if (action.payload.file) {
+      yield put(setProfileImageUploading(false));
+    }
   }
 }
 

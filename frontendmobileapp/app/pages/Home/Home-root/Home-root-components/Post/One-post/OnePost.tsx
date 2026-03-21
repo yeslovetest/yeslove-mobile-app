@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
-import { Video } from 'expo-av';
+import { Video } from '@/app/Universal-components/Video/Video';
 import styles from './OnePostStyles';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Post as PostData } from '@/generated-api'; //This is suuuuper bad practice but the component has the same name 
@@ -10,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
 import { retrievePostReactions, postReactionToPost, setPostReactionTab, SendFollowUser } from '@/app/store/Home-store/feedSlice';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview';
 
 export interface Props {
@@ -122,8 +121,8 @@ const OnePost = (props: Props) => {
                             {props?.follow ? (
                                 <View style={styles.viewProfile}>
                                     <Text style={styles.buttonText}>Following</Text>
-                                    <AntDesign
-                                        name="check"
+                                    <Ionicons
+                                        name="checkmark"
                                         size={16}
                                         color="white"
                                         style={{ marginLeft: 5 }}
@@ -192,7 +191,7 @@ const OnePost = (props: Props) => {
                             <Ionicons name="thumbs-up-sharp" size={24} color='blue' />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('love')} >
-                            <AntDesign name="heart" size={24} color="red" />
+                            <Ionicons name="heart" size={24} color="red" />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('laugh')} >
                             <FontAwesome6 name="laugh" size={24} color="black" />
@@ -208,7 +207,7 @@ const OnePost = (props: Props) => {
                             (<Ionicons name="thumbs-up-sharp" size={24} color='blue' />)
                         }
                         {reactionType === 'love' &&
-                            (<AntDesign name="heart" size={24} color="red" />)
+                            (<Ionicons name="heart" size={24} color="red" />)
                         }
                         {reactionType === 'laugh' &&
                             (<FontAwesome6 name="laugh" size={24} color="black" />)

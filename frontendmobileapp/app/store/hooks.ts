@@ -14,5 +14,10 @@ export const appSelect: <Fn extends (state: State, ...args: any[]) => any>(
     ...args: Tail<Parameters<Fn>>
   ) => SelectEffect = select;
 
+// This placeholder component keeps router warnings away while hooks remain the primary exports.
+export default function HooksRoutePlaceholder() {
+  return null;
+}
+
 
 

@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     marginRight: 5,
-    borderRadius: "50%"
+    borderRadius: 20,
   }
 })
 
