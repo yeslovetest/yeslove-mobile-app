@@ -91,17 +91,40 @@ const styles = StyleSheet.create({
   arrowWrapper: {
     position: 'absolute',
     top: '45%',
-    width: SCREEN_WIDTH,
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
   },
-  arrowText: {
-    fontSize: 40,
+  navButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  navButtonText: {
+    fontSize: 18,
     color: '#fff',
-    textShadowColor: 'rgba(0,0,0,0.6)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
+    fontWeight: '700',
+  },
+  pageIndicator: {
+    position: 'absolute',
+    bottom: 8,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  pageIndicatorText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

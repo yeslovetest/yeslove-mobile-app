@@ -2,13 +2,22 @@ import theme from "@/assets/variables/Variables";
 import { vw } from "@/ts/viewport-units";
 import { StyleSheet, Dimensions } from "react-native";
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+
 const styles = StyleSheet.create({
+    contentContainer: {
+      width: "100%",
+      alignItems: "center",
+      paddingBottom: 88,
+    },
         indPostContainer: {
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
   },
         timePosted: {
-    color: "#888"
+      color: "#6f6f6f",
+      fontSize: 12,
   },
 
     seeLessAndLikeContainer: {
@@ -29,39 +38,42 @@ const styles = StyleSheet.create({
     flexDirection: "row"
   },
     profileImage: {
-    width: 55,
-    height: 55,
+      width: 50,
+      height: 50,
     borderRadius: 60, 
     borderWidth: 1,
     borderColor: "#ccc",
     marginBottom: 10,
   },
   postImage: { 
-    width: Dimensions.get('window').width * 0.3, 
+    width: '100%',
+    maxWidth: SCREEN_WIDTH - 60,
     borderRadius: 10, 
     marginTop: 10,
     resizeMode: 'contain',
-    aspectRatio: 1.5,
+    aspectRatio: 1.3,
   },
   postVideo: { 
     width: '100%', 
-    height: Dimensions.get('window').height ,
+    minHeight: 220,
+    maxHeight: Math.min(SCREEN_HEIGHT * 0.5, 340),
     borderRadius: 10, 
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 14,
     resizeMode: 'cover' 
   },
     profileName: {
-    marginBottom: 7,
+    marginBottom: 4,
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 15,
   },
     postContent: {
-    color: "#555",
+    color: "#3f3f3f",
     paddingHorizontal: 3,
     paddingBottom: 10,
     width: "100%",
     fontSize: 15,
+    lineHeight: 22,
   },
     profileInfoContainer: {
     display: "flex",
@@ -73,12 +85,19 @@ const styles = StyleSheet.create({
   },
       postContainer: {
     marginBottom: vw(5),
-    width: theme.spacing.postWidth,
+    width: '100%',
+    maxWidth: 760,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "flex-start",
-    padding: 20,
-    borderRadius: 15,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
        reactionPopUp :{
     visibility: 'hidden', 
@@ -104,20 +123,22 @@ const styles = StyleSheet.create({
       alignItems: "center",
       justifyContent: "space-between",
       flex: 1, 
-      marginTop: 15
+      marginTop: 8
     },
         homeNavBarContainer: {
-      flex: 1,
+      flex: 0,
       justifyContent: "flex-start",
       alignItems: "center",
-      marginTop: vw(5),
-          marginBottom: vw(5),
+      width: "100%",
+      marginTop: 2,
+      marginBottom: 10,
     },
 
         homeNavBar: {
       flexDirection: "row",
       flexWrap: "wrap", 
-      width: theme.spacing.postWidth, 
+      width: '100%',
+      maxWidth: SCREEN_WIDTH - 20,
       justifyContent: "center",
       backgroundColor: "#fff",
       paddingVertical: 3,
@@ -141,7 +162,7 @@ const styles = StyleSheet.create({
 
     homeItem: {
       width: "50%",
-      paddingVertical: 15,
+      paddingVertical: 12,
       alignItems: "center",
     },
     activeHomeItem: {
@@ -149,11 +170,11 @@ const styles = StyleSheet.create({
     },
     activeHomeNavText: {
       fontWeight: "bold",
-      color: "#000",
-      fontSize: 16,
+      color: "#111",
+      fontSize: 15,
     },
     navText: {
-        fontSize: 16,
+        fontSize: 15,
         color: theme.colors.iconNotActive,
         fontWeight: "500",
       },

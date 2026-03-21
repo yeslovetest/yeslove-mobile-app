@@ -3,8 +3,12 @@ import {
   Modal,
   Animated,
   View,
-  Dimensions, Text,
+  Text,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./PostModalStyles";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -22,7 +26,7 @@ interface PostModalProps {
 
 const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const dispatch = useAppDispatch()
-  const screenHeight = Dimensions.get("window").height;
+  const { height: screenHeight } = useWindowDimensions();
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const [isRendered, setIsRendered] = useState(visible);
   const [userPost, setUserPost] = useState("");
@@ -36,6 +40,9 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
 
 
   useEffect(() => {
+    // Recompute hidden offset on rotation so slide animation stays fully off-screen.
+    const hiddenOffset = screenHeight;
+
     if (visible) {
       setIsRendered(true);
       Animated.timing(slideAnim, {
@@ -45,14 +52,14 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
       }).start();
     } else {
       Animated.timing(slideAnim, {
-        toValue: screenHeight,
+        toValue: hiddenOffset,
         duration: 300,
         useNativeDriver: true,
       }).start(() => {
         setIsRendered(false);
       });
     }
-  }, [visible]);
+  }, [visible, screenHeight, slideAnim]);
 
   if (!isRendered) return null;
 
@@ -117,34 +124,43 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
             { transform: [{ translateY: slideAnim }] },
           ]}
         >
-          <View style={styles.exitHeader}>
-            <Ionicons style={styles.closeIcon}
-              onPress={handleClose}
-              name="close"
-              size={32}
-              color="black"
-            />
-            <Text style={styles.createPost}>Create post</Text>
-            <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity style={styles.actionButtons} onPress={() => handlePost(false)}>
-                <Text style={styles.actionButtonsText}>Share
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
-                <Text style={styles.actionButtonsText}>Post Anonymous
-                </Text>
-              </TouchableOpacity>
+          <KeyboardAvoidingView
+            style={styles.modalBody}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <View style={styles.exitHeader}>
+              <Ionicons style={styles.closeIcon}
+                onPress={handleClose}
+                name="close"
+                size={30}
+                color="black"
+              />
+              <Text style={styles.createPost}>Create post</Text>
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity style={styles.actionButtons} onPress={() => handlePost(false)}>
+                  <Text style={styles.actionButtonsText}>Share
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
+                  <Text style={styles.actionButtonsText}>Post Anonymous
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            
-          </View>
-          <View style={{ flex: 1 }}>
-            <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
-            <PostInput 
-              userPost={userPost} 
-              setUserPost={setUserPost} 
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}/>
-          </View>
+
+            <ScrollView
+              contentContainerStyle={styles.scrollContainer}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <PostingUserProfile username={userName} profilePic="https://i.pinimg.com/736x/f3/85/d7/f385d78eba93e8b768bcc04bf96fe5a5.jpg" />
+              <PostInput 
+                userPost={userPost} 
+                setUserPost={setUserPost} 
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}/>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </Animated.View>
       </View>
     </Modal>

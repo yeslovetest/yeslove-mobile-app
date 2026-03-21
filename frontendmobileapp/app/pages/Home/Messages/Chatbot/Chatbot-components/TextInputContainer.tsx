@@ -1,5 +1,5 @@
 import styles from '../SharedChatbotStyles';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useState } from 'react';
 import { TextInput, View } from 'react-native';
 
@@ -36,7 +36,7 @@ const send = (msg: string) => {
         }}
       multiline>
       </TextInput>
-        <AntDesign onPress={() => send(text)} style={styles.sendIcon} name="arrowup" size={18} />
+        <Ionicons onPress={() => send(text)} style={styles.sendIcon} name="send" size={18} />
     </View>
   )
 }

@@ -15,9 +15,18 @@ const styles = StyleSheet.create({
   },
   postIcons: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     paddingHorizontal: 4,
     paddingVertical: 8,
+    gap: 14,
+  },
+  mediaActionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5f7fb",
   },
 })
 

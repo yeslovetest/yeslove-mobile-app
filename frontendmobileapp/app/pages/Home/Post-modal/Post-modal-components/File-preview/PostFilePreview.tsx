@@ -19,7 +19,7 @@ interface Props {
 }
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
-const MAX_MEDIA_HEIGHT = SCREEN_HEIGHT * 0.7
+const MAX_MEDIA_HEIGHT = SCREEN_HEIGHT * 0.55
 
 const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,6 +28,22 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
   
   const sliderRef = useRef<FlatList<FileItem>>(null);
 
+  useEffect(() => {
+    if (!file.length) {
+      setCurrentIndex(0);
+      return;
+    }
+
+    const lastIndex = file.length - 1;
+    setCurrentIndex(lastIndex);
+
+    if (containerWidth > 0) {
+      setTimeout(() => {
+        sliderRef.current?.scrollToIndex({ index: lastIndex, animated: true });
+      }, 0);
+    }
+  }, [file.length, containerWidth]);
+
   // Compute dynamic aspect ratio 
   const getMediaStyle = (item: FileItem) => {
     if (!containerWidth) return {};
@@ -35,7 +51,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
     if (!item.width || !item.height) {
       return {
         width: containerWidth,
-        height: containerWidth * 0.75,
+        height: Math.min(containerWidth * 0.75, MAX_MEDIA_HEIGHT),
       };
     }
 
@@ -80,12 +96,12 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
         keyExtractor={(_,index) => index.toString()}
         horizontal
         pagingEnabled
-        getItemLayout={(_, index) => ({
-            length: containerWidth,
-            offset: containerWidth * index,
-            index,
-          })}
-      
+        onScrollToIndexFailed={(info) => {
+          sliderRef.current?.scrollToOffset({
+            offset: info.index * containerWidth,
+            animated: true,
+          });
+        }}
         contentContainerStyle={{alignItems: 'center', justifyContent: 'center'}}  
         onMomentumScrollEnd={(e) => {
           const index = Math.round(e.nativeEvent.contentOffset.x / containerWidth);
@@ -96,7 +112,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
           const uri = item.uri.startsWith("/api") ? `${BASE_URL}${item.uri}` : item.uri;
 
           return (
-            <View style={{ width: '100%', marginRight: 5}}>
+            <View style={{ width: containerWidth || '100%' }}>
               {editable && (
                 <Pressable
                   style={styles.deleteWrapper}
@@ -110,7 +126,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                 <Image
                   source={{ uri }}
                   style={{ ...getMediaStyle(item), borderRadius: 10}}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
               ) : (
                 <Video
@@ -121,14 +137,17 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                 />
               )}
 
-              {/* Editable mode navigation arrows */}
-              {editable && file.length > 1 && (
+              {file.length > 1 && (
                 <View style={styles.arrowWrapper}>
-                  <Pressable onPress={goPrev} disabled={currentIndex === 0}>
+                  <Pressable
+                    style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
+                    onPress={goPrev}
+                    disabled={currentIndex === 0}
+                  >
                     <Text
                       style={[
-                        styles.arrowText,
-                        { opacity: currentIndex === 0 ? 0.2 : 1 },
+                        styles.navButtonText,
+                        { opacity: currentIndex === 0 ? 0.4 : 1 },
                       ]}
                     >
                       ◀
@@ -136,18 +155,25 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                   </Pressable>
 
                   <Pressable
+                    style={[styles.navButton, currentIndex === file.length - 1 && styles.navButtonDisabled]}
                     onPress={goNext}
                     disabled={currentIndex === file.length - 1}
                   >
                     <Text
                       style={[
-                        styles.arrowText,
-                        { opacity: currentIndex === file.length - 1 ? 0.2 : 1 },
+                        styles.navButtonText,
+                        { opacity: currentIndex === file.length - 1 ? 0.4 : 1 },
                       ]}
                     >
                       ▶
                     </Text>
                   </Pressable>
+                </View>
+              )}
+
+              {file.length > 1 && (
+                <View style={styles.pageIndicator}>
+                  <Text style={styles.pageIndicatorText}>{currentIndex + 1}/{file.length}</Text>
                 </View>
               )}
             </View>

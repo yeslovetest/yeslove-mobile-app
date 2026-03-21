@@ -2,14 +2,17 @@ import { StyleSheet } from "react-native";
 import theme from "../../../assets/variables/Variables";
 
 const sharedStyles = StyleSheet.create({
-     container: {
+    container: {
         flex: 1,
-        marginTop: 10,
-        width:"100%",
+        width: "100%",
+        paddingTop: 8,
+        paddingHorizontal: 10,
     },
-        contentContainer: {
+    contentContainer: {
         justifyContent: "flex-start",
         alignItems: "center",
+        width: "100%",
+        paddingBottom: 24,
     },
 
 })

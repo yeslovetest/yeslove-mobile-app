@@ -142,8 +142,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "stretch",
     backgroundColor: "#fafafa",
+    width: "100%",
   },
   title: {
     fontSize: 24,

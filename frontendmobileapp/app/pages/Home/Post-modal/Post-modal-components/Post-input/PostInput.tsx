@@ -1,7 +1,6 @@
-import { FontAwesome, Entypo, AntDesign, Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, Platform, ScrollView } from "react-native";
-import * as DocumentPicker from "expo-document-picker";
+import { FontAwesome, Entypo, Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { View, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import styles from "./PostInputStyles";
 import PostFilePreview from "../File-preview/PostFilePreview";
@@ -10,12 +9,14 @@ interface FileItem {
   uri: string;
   type: string;
   name?: string;
+  width?: number;
+  height?: number;
 }
 
 interface PostInputProps {
   userPost: string;
   selectedFile: FileItem[] | null;
-  setSelectedFile: (files: FileItem[] | null) => void;
+  setSelectedFile: React.Dispatch<React.SetStateAction<FileItem[] | null>>;
   setUserPost: (text: string) => void;
 }
 
@@ -30,39 +31,55 @@ const PostInput: React.FC<PostInputProps> = ({
     setSelectedFile((prev) => [...(prev || []), file]);
   };
 
-  const pickFile = async (type: "image" | "video" | "audio" | "pdf") => {
+  const pickFile = async (type: "image" | "video") => {
     try {
-      if (type === "image" || type === "video") {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes:
-            type === "image"
-              ? ImagePicker.MediaTypeOptions.Images
-              : ImagePicker.MediaTypeOptions.Videos,
-          quality: 1,
-        });
-
-        if (!result.canceled) {
-          const asset = result.assets[0];
-          appendFile({
-            uri: asset.uri,
-            type: asset.type ?? (type === "image" ? "image/jpeg" : "video/mp4"),
-            name: asset.fileName ?? `${type}.${type === "image" ? "jpg" : "mp4"}`
-          });
-        }
-        return;
-      }
-
-      // AUDIO OR PDF
-      const result = await DocumentPicker.getDocumentAsync({
-        type: type === "audio" ? "audio/*" : "application/pdf",
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes:
+          type === "image"
+            ? ImagePicker.MediaTypeOptions.Images
+            : ImagePicker.MediaTypeOptions.Videos,
+        allowsMultipleSelection: true,
+        quality: 1,
       });
 
-      if (result.assets && result.assets[0]) {
-        const asset = result.assets[0];
+      if (!result.canceled && result.assets?.length) {
+        result.assets.forEach((asset) => {
+          appendFile({
+            uri: asset.uri,
+            type: asset.type === "video" ? "video/mp4" : "image/jpeg",
+            name: asset.fileName ?? `${type}.${type === "image" ? "jpg" : "mp4"}`,
+            width: asset.width,
+            height: asset.height,
+          });
+        });
+      }
+    } catch (err) {
+      console.error("File picking error:", err);
+    }
+  };
+
+  const pickMedia = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsMultipleSelection: true,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets?.length) {
+        result.assets.forEach((asset) => {
+          // Keep feature scope limited to image and video for now.
+          if (asset.type !== "image" && asset.type !== "video") return;
+
         appendFile({
           uri: asset.uri,
-          type: asset.mimeType ?? "file",
-          name: asset.name,
+            type: asset.type === "video" ? "video/mp4" : "image/jpeg",
+            name:
+              asset.fileName ??
+              (asset.type === "video" ? "video.mp4" : "photo.jpg"),
+            width: asset.width,
+            height: asset.height,
+        });
         });
       }
     } catch (err) {
@@ -102,20 +119,16 @@ const PostInput: React.FC<PostInputProps> = ({
 
       {/* ACTION BUTTONS */}
       <View style={styles.postIcons}>
-        <TouchableOpacity onPress={() => pickFile("image")}>
+        <TouchableOpacity style={styles.mediaActionButton} onPress={pickMedia}>
           <FontAwesome name="picture-o" size={24} color="black" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => pickFile("video")}>
+        <TouchableOpacity style={styles.mediaActionButton} onPress={() => pickFile("video")}>
           <Entypo name="video-camera" size={24} color="black" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => pickFile("audio")}>
-          <AntDesign name="sound" size={24} color="black" />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => pickFile("pdf")}>
-          <Ionicons name="newspaper" size={24} color="black" />
+        <TouchableOpacity style={styles.mediaActionButton} onPress={() => pickFile("image")}>
+          <Ionicons name="images-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
     </View>

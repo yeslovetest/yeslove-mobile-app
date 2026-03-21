@@ -4,29 +4,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
-   
-    
+    backgroundColor: '#fafafa',
   },
   chatContainer: {
     flex: 1,
     width: '100%',
-   
+    paddingHorizontal: 10,
+    paddingBottom: 8,
   },
   contentContainer: {
-    flexGrow: 10,
-    
+    flexGrow: 1,
     paddingVertical: 10,
   },
   mediaPreviewContainer: {
-    display: 'flex', 
-    position: 'absolute', 
-    bottom: 50, 
-    justifyContent: 'flex-end', 
-    alignSelf: 'flex-end', 
-    zIndex: 1000,
-    paddingRight: 50, 
-    marginTop: 20
-  }
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  inputDock: {
+    justifyContent: "center",
+    width: "100%",
+    alignItems: "center",
+  },
 });
 
 export default styles;

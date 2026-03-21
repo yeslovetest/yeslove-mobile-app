@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View, Text } from 'react-native';
 import Header from '../../../Universal-components/Header/Header';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import sharedStyles from '@/app/pages/Notifications/NotificationsSharedStyles';
@@ -33,15 +33,16 @@ const NotificationsRoot = () => {
     }, [])
   );
 
-  const THRESHOLD = 400; // how close to the bottom of the page before fetching more Notifications
+  // Keep prefetch distance generous to avoid visible loading gaps while users scroll fast.
+  const THRESHOLD = 400;
   
-  const handleScroll = (event) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
 
     const isCloseToBottom =
       layoutMeasurement.height + contentOffset.y >= contentSize.height - THRESHOLD;
 
-    // save scroll position
+    // Persist scroll position so users can continue where they left off.
     dispatch(setScrollViewPosition(contentOffset.y));
 
     if (isCloseToBottom && notificationList.length < totalNotifications) {
@@ -59,6 +60,9 @@ const NotificationsRoot = () => {
         style={sharedStyles.container}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerRow}>
           <Text style={styles.title}>Notifications</Text>

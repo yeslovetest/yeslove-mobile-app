@@ -4,27 +4,30 @@ import { StyleSheet } from "react-native";
 const messagesSharedStyles = StyleSheet.create({
     container: {
         flex: 1,
-        width: "95%",
+        width: "100%",
+        paddingHorizontal: 10,
     },
     contentContainer: {
-        justifyContent: "center",
+        justifyContent: "flex-start",
         alignItems: "center",
+        width: "100%",
+        paddingBottom: 24,
     },
     messagesText: {
-        width: "95%",
+        width: "100%",
         textAlign: "left",
-        fontSize: 25,
+        fontSize: 24,
         fontWeight: '700',
-        paddingVertical: 12,
+        paddingVertical: 10,
         color: theme.colors.blackText,
     },
     filterBar: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        marginLeft: 15,
-        width: "95%",
-        paddingVertical: 15,
+        width: "100%",
+        paddingVertical: 12,
+        paddingHorizontal: 4,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
         
