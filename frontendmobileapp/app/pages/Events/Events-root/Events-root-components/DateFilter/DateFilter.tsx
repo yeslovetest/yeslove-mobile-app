@@ -32,7 +32,7 @@ const DateFilterDropdown = ({ onSearch }) => {
   };
 
   return (
-    <View>
+    <View style={Styles.filterRow}>
       {/* Dropdown toggle */}
       <TouchableOpacity
         onPress={() => setVisible(!visible)}

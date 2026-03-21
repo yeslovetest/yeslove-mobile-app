@@ -4,33 +4,56 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: 15
+        width: '100%',
+    },
+    contentContainer: {
+        width: '100%',
+        paddingTop: 8,
+        paddingBottom: 24,
+    },
+    headerRow: {
+        width: '100%',
+        marginBottom: 8,
+        paddingHorizontal: 2,
+    },
+    pageTitle: {
+        color: theme.colors.blackText,
+        fontSize: 24,
+        fontWeight: '700',
+    },
+    pageSubtitle: {
+        marginTop: 4,
+        color: theme.colors.iconNotActive,
+        fontSize: 14,
+        lineHeight: 20,
     },
     viewItemContainer: {
         backgroundColor: "#fff",
         justifyContent: "flex-start",
         alignItems: "flex-start",
-        paddingHorizontal: 30,
-        paddingVertical: 15,
-        marginBottom: 20,
-        width: theme.spacing.postWidth,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        marginBottom: 10,
+        width: '100%',
+        borderRadius: 12,
     },
 
     viewItemText: {
-        fontSize: 20,
-        fontWeight: 600,
-        marginBottom: 10,
+        fontSize: 15,
+        fontWeight: '700',
+        marginBottom: 6,
         color: "#000",
     },
 
     viewItemInfo: {
-        borderWidth: 2,
-        borderStyle: "solid",
+        borderWidth: 1,
         borderColor: theme.colors.viewEditBorderColor,
-        width: "90%",
-        paddingVertical: 5,
-        paddingLeft: 10,
-        height: 32
+        width: "100%",
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+        minHeight: 42,
+        borderRadius: 8,
+        color: '#2b2b2b',
     },
 
     /* Friends list*/
@@ -58,7 +81,7 @@ const styles = StyleSheet.create({
     },
 
     friendName: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: "500",
         color: "#000",
     },
@@ -66,13 +89,13 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "flex-start",
         alignItems: "center",
-        marginTop: 10,
-        marginBottom: 10
+        marginTop: 8,
+        marginBottom: 8
     },
     friends: {
         flexDirection: "column",
         flexWrap: "wrap",
-        width: theme.spacing.postWidth - 50,
+        width: '100%',
         justifyContent: "flex-start",
         backgroundColor: "#fff",
         paddingVertical: 6,
@@ -85,16 +108,16 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
     },
     friendsItem: {
-        width: "50%",
-        paddingHorizontal: 5,
-        paddingVertical: 15,
+        width: "100%",
+        paddingHorizontal: 4,
+        paddingVertical: 10,
         alignItems: "flex-start",
-        marginBottom: 15,
+        marginBottom: 8,
     },
     activeFriendsText: {
-        fontWeight: "bold",
+        fontWeight: "700",
         color: "#000",
-        fontSize: 19
+        fontSize: 17,
     },
 
     friendsText: {

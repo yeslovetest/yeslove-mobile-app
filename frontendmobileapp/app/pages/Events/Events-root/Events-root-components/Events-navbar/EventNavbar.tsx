@@ -9,16 +9,14 @@ const EventNavbar = () => {
   let dispatch = useAppDispatch();
 
   return (
-    <View>
-      <View style={styles.navBarContainer}>
-        <View style={styles.navBar}>
-          {navBarItems.map((tab) => (
-            <TouchableOpacity key={tab} style={[styles.navItem, activeTab === tab && styles.activeNavItem]} onPress={() => dispatch(setActiveEventsTabAction(tab))}>
-              <Text style={[styles.navText, activeTab === tab && styles.activeNavText]}>{tab}</Text>
-              {activeTab === tab && <View style={styles.activeIndicator} />}
-            </TouchableOpacity>
-          ))}
-        </View>
+    <View style={styles.navBarContainer}>
+      <View style={styles.navBar}>
+        {navBarItems.map((tab) => (
+          <TouchableOpacity key={tab} style={[styles.navItem, activeTab === tab && styles.activeNavItem]} onPress={() => dispatch(setActiveEventsTabAction(tab))}>
+            <Text style={[styles.navText, activeTab === tab && styles.activeNavText]}>{tab}</Text>
+            {activeTab === tab && <View style={styles.activeIndicator} />}
+          </TouchableOpacity>
+        ))}
       </View>
     </View>
   )

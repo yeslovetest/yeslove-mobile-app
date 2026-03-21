@@ -90,7 +90,17 @@ const EditProfileInformation = () => {
     <>
       <Header></Header>
       <View style={styles.container}>
-        <ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.headerRow}>
+            <Text style={styles.pageTitle}>Edit Profile</Text>
+            <Text style={styles.pageSubtitle}>Update your contact details and bio information.</Text>
+          </View>
+
           <TextInputField label="Name" value={editedName} onChange={(value: string) => handleFieldChange("Name", value)} />
           <TextInputField label="Bio" value={editedBio} onChange={(value: string) => handleFieldChange("Bio", value)} />
           <TextInputField label="Email" value={editedEmail} onChange={(value: string) => handleFieldChange("Email", value)} />

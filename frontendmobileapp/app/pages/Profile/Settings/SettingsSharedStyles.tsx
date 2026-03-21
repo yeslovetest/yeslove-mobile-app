@@ -2,12 +2,28 @@ import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
 const settingsSharedStyles = StyleSheet.create({
+    pageHeaderRow: {
+        width: '100%',
+        marginBottom: 10,
+        paddingHorizontal: 2,
+    },
+    pageTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: theme.colors.blackText,
+    },
+    pageSubtitle: {
+        marginTop: 4,
+        fontSize: 14,
+        lineHeight: 20,
+        color: theme.colors.iconNotActive,
+    },
     settingsOptionContainer: {
         width: "100%",
-        paddingHorizontal: 10,
-        borderRadius: 15,
-        height: 60,
-        marginBottom: 11,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        minHeight: 58,
+        marginBottom: 10,
         backgroundColor: "white",
         flexDirection: "row",
         elevation: 3,
@@ -24,10 +40,16 @@ const settingsSharedStyles = StyleSheet.create({
         alignItems: "center",
         flexDirection: "row"
     },
+    settingsOptionLeftRow: {
+        flexDirection: 'row',
+        height: '100%',
+        alignItems: 'center',
+    },
     settingsOptionText: {
         color: theme.colors.blackText,
         marginLeft: 8,
-        fontSize: 16
+        fontSize: 15,
+        fontWeight: '500',
     },
 })
 

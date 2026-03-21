@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
     },
     eventAddress: {
         fontSize: 15,
-        fontWeight: 200,
+        fontWeight: '400',
+        lineHeight: 22,
     },
     dateAndTimeContainer: {
         width: theme.spacing.postWidth,
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
 
     eventDate: {
         fontSize: 15,
-        fontWeight: 200,
+        fontWeight: '400',
     },
 
     timeContainer: {
@@ -64,12 +65,12 @@ const styles = StyleSheet.create({
     },
     eventTime: {
         fontSize: 15,
-        fontWeight: 200,
+        fontWeight: '400',
     },
     extraInfoContainer: {
         width: theme.spacing.postWidth,
         backgroundColor: theme.colors.eventTextBackground,
-        height: 300,
+        minHeight: 180,
         borderRadius: 10,
         padding: theme.spacing.eventTextBoxPadding,
         marginBottom: 30
@@ -81,7 +82,8 @@ const styles = StyleSheet.create({
     },
     eventExtraInfo: {
         fontSize: 15,
-        fontWeight: 200,
+        fontWeight: '400',
+        lineHeight: 22,
     }
 })
 

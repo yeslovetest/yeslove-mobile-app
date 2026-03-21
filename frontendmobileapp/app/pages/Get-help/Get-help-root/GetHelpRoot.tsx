@@ -12,7 +12,13 @@ export default function GetHelpRoot() {
   return (
     <>
       <Header mainTitle="Yeslove!"></Header>
-      <ScrollView contentContainerStyle={sharedStyles.contentContainer} style={sharedStyles.container}>
+      <ScrollView
+        contentContainerStyle={sharedStyles.contentContainer}
+        style={sharedStyles.container}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
         {activeTab === "Professionals" && (
           <OrangeBanner icon="users" mainTitle="Our Professionals" description="Browse the list of professionals" />
         )}

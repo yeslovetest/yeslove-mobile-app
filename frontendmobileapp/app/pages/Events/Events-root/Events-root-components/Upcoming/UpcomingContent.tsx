@@ -30,7 +30,7 @@ const UpcomingContent = () => {
     }   
 
     return (
-        <View>
+        <View style={{ width: '100%' }}>
             <DateFilterDropdown onSearch={handleSearch} />
             <EventsList eventType='upcoming'/>
             {totalPages > 0 && (

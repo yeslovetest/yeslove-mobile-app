@@ -5,7 +5,6 @@ import settingsSharedStyles from '../SettingsSharedStyles'
 import Header from '@/app/Universal-components/Header/Header'
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import DeleteAccountModal from './Delete-account/DeleteAccountModal'
 import ChangePasswordModal from './Change-password/ChangePasswordModal'
 import LogoutModal from './Logout/LogoutModal'
@@ -52,7 +51,7 @@ const General = () => {
                         style={settingsSharedStyles.settingsOptionButton}
                     >
                         <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <AntDesign name="deleteuser" size={24} color="black" />
+                            <MaterialIcons name="delete-outline" size={24} color="black" />
                             <Text style={settingsSharedStyles.settingsOptionText}>Delete account</Text>
                         </View>
                     </TouchableOpacity>

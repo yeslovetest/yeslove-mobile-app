@@ -1,11 +1,9 @@
 import { View, ImageBackground, Pressable, Text } from "react-native";
 import React, { useState } from 'react'
-import { Event } from '../../../Events-root/Events-root-components/Events-list/placeholderEvents';
 import styles from "./EventsInfoHeaderStyles";
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { addAttendeeToEvent, removeAttendeeFromEvent } from "@/app/store/Events-store/eventsSlice";
-import { EventsModelResponse, EventListResponse } from "@/generated-api";
+import { EventsModelResponse } from "@/generated-api";
 import dayjs from 'dayjs';
 
 const EventsInfoHeader = () => {

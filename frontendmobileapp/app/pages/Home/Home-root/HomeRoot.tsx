@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, ScrollView } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import sharedStyles from '../HomeSharedStyles';
 import HomeNavbar from './Home-root-components/Home-navbar/HomeNavbar';
@@ -36,15 +36,16 @@ export default function HomeRoot() {
     dispatch(setScrollViewPosition(0));
   }, [scrollToTopAction]);
 
-  const THRESHOLD = 400; // how close to bottom before fetching more Posts
+  // Keep prefetch distance generous to avoid loading gaps on slower mobile networks.
+  const THRESHOLD = 400;
 
-  const handleScroll = (event) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
 
     const isCloseToBottom =
       layoutMeasurement.height + contentOffset.y >= contentSize.height - THRESHOLD;
 
-    // save scroll position
+    // Persist scroll position so returning users land where they left off.
     dispatch(setScrollViewPosition(contentOffset.y));
 
     if (isCloseToBottom) {
@@ -70,6 +71,9 @@ export default function HomeRoot() {
         style={sharedStyles.container}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
       >
         <OrangeBanner icon="newspaper" mainTitle="Newsfeed" description="Share and hear stories" />
         <HomeNavbar />

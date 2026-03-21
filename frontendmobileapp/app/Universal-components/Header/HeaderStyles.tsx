@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   headerDistribution: {
     flexDirection: "row",
     width: "100%",
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
     justifyContent: "space-between",
     alignItems: "center"
   },
@@ -15,7 +15,8 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: 60,
+    minHeight: 58,
+    paddingVertical: 10,
     backgroundColor: '#fff',
     justifyContent: "center",
     alignItems: 'center',
@@ -23,9 +24,12 @@ const styles = StyleSheet.create({
   },
   title: {
     color: theme.colors.blackText,
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     alignSelf: "center",
+    maxWidth: '72%',
+    textAlign: 'center',
+    flexShrink: 1,
   },
   chatbotHeader: {
     flexDirection: "row",

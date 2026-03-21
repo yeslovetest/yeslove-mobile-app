@@ -58,6 +58,11 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: "#fbfbfb"
     },
+    onlineNowRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 2,
+    },
 
     onlineSymbol: {
         width: 7,
@@ -80,7 +85,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         width: "100%",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "flex-start",
         position: "relative"
     },
 
@@ -88,23 +93,28 @@ const styles = StyleSheet.create({
     contentContainer: {
         flexGrow: 1,
         backgroundColor: theme.colors.mainBkgColor,
-        paddingBottom: "8%"
+        paddingHorizontal: 10,
+        paddingTop: 10,
+        paddingBottom: 12,
     },
     backgroundContainer: {
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "flex-start",
         width: "100%",
         height: "100%",
     },
     background: {
-        height: "100%",
+        minHeight: "100%",
         width: "100%",
         backgroundColor: "#fbfbfb",
-        display: "flex",
         justifyContent: "flex-start",
         alignItems: "center",
     },
     container: {
+        flex: 1,
+        width: "100%",
+    },
+    chatBody: {
         flex: 1,
         width: "100%",
     },
@@ -131,38 +141,49 @@ const styles = StyleSheet.create({
 
     /*text input */
     textInputContainer: {
-        display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        width: "97%",
-        height: 50,
-        paddingHorizontal: 5,
-        paddingVertical: 10,
-        borderRadius: 20,
+        width: "100%",
+        maxWidth: 620,
+        minHeight: 50,
+        paddingHorizontal: 8,
+        paddingVertical: 7,
+        borderRadius: 18,
         backgroundColor: "#fff",
-        position: "absolute",
-        bottom: 10,
-        borderColor: "#e1e1e1",
+        borderColor: "#d5d9de",
         borderWidth: 1,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3.84,
-        elevation: 5
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 2,
     },
     textInput: {
-        width: "90%",
-        height: "100%",
-        fontSize: 17,
-        paddingHorizontal: 10
+        flex: 1,
+        minHeight: 34,
+        maxHeight: 96,
+        fontSize: 15,
+        lineHeight: 20,
+        color: "#1b2430",
+        paddingHorizontal: 10,
+        paddingTop: 6,
+        paddingBottom: 6,
+        textAlignVertical: "center",
+        includeFontPadding: false,
     },
 
     sendIcon: {
-        marginLeft: "auto",
-        padding: 6,
+        padding: 8,
         color: "#fbfbfb",
         backgroundColor: theme.colors.primaryBlue,
-        borderRadius: 20
+        borderRadius: 20,
+    },
+    chatInputDock: {
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 10,
+        paddingBottom: 10,
     },
 
     /*chat prompt */

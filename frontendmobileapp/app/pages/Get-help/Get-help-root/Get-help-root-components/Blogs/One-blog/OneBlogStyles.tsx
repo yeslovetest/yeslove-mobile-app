@@ -8,27 +8,29 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         justifyContent: "flex-start",
         alignItems: "flex-start",
-        borderRadius: 15,
-        marginBottom: 40,
+        borderRadius: 12,
+        marginBottom: 16,
     },
     blogImage: {
         width: "100%",
-        height: 250,
+        minHeight: 170,
+        maxHeight: 240,
     },
     blogTitle: {
         textAlign: "left",
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        marginTop: 15,
-        fontSize: 23,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginTop: 10,
+        fontSize: 20,
+        lineHeight: 28,
         fontWeight: "600"
     },
     authorAndDateContainer: {
         display: "flex",
         width: "100%",
         justifyContent: "flex-start",
-        paddingHorizontal: 30,
-        paddingVertical: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
         alignItems: "center",
         flexDirection: "row"
     },
@@ -48,11 +50,12 @@ const styles = StyleSheet.create({
         fontSize: 14
     },
     blogSummary: {
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        marginBottom: 20,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginBottom: 14,
         color: "#444",
-        fontSize: 16
+        fontSize: 15,
+        lineHeight: 22,
     },
 })
 

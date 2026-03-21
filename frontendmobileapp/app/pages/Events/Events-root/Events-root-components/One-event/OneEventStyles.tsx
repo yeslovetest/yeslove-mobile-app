@@ -10,29 +10,29 @@ const styles = StyleSheet.create({
     },
 eventContainer: {
         width: "90%",
-        height: 150,
+    minHeight: 150,
         position: "relative",
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "flex-end",
         backgroundColor: theme.colors.eventTextBackground,
-        marginBottom: 30,
+        marginBottom: 18,
         borderRadius: 15,
 
     },
 
     eventName: {
         paddingHorizontal: 10,
-        fontSize: 20,
+        fontSize: 18,
         color: theme.colors.bannerTextColor,
-        fontWeight: 400
+        fontWeight: '600'
     },
     eventLocation: {
         paddingHorizontal: 10,
         fontSize: 16,
         color: theme.colors.bannerTextColor,
         marginBottom: 10,
-        fontWeight: 200
+        fontWeight: '400'
     },
 
     dateContainer: {
@@ -51,14 +51,14 @@ eventContainer: {
     dateText: {
         color: theme.colors.bannerTextColor,
         fontSize: 14,
-        fontWeight: 400,
+        fontWeight: '600',
         textAlign: "center"
     },
     yearText: {
         color: theme.colors.bannerTextColor,
         fontSize: 11,
         textAlign: "center",
-        fontWeight: 200
+        fontWeight: '400'
     },
     eventImg: {
         width: "100%",

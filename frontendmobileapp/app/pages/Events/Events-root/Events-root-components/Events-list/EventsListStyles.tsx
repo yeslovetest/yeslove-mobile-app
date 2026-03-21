@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
     eventsContainer: {
-        width: theme.spacing.postWidth,
+        width: "100%",
         display: "flex",
         justifyContent: "flex-start",
         alignItems: "center",
