@@ -4,7 +4,7 @@ import styles from './CommentsAndReactionsStyles';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
-import { Video } from 'expo-av';
+import { Video } from '@/app/Universal-components/Video/Video';
 import { setPostReactionTab, postReactionToPost } from '@/app/store/Home-store/feedSlice';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
@@ -15,7 +15,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Header from '@/app/Universal-components/Header/Header';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '../Post-modal/Post-modal-components/File-preview/PostFilePreview';
 
 export interface Post {

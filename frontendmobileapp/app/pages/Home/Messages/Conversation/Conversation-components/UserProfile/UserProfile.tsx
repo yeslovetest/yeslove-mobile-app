@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Image } from 'react-native'
 import styles from './UserProfileStyles'
-import { BASE_URL } from '@/app/index'
+import { BASE_URL } from '@/app/config/baseUrl'
 
 interface Props {
   photo: string;

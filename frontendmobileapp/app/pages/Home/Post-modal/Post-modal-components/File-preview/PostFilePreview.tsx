@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, Text, FlatList, Image, Pressable, Dimensions } from "react-native";
-import { Video } from "expo-av";
+import { Video } from '@/app/Universal-components/Video/Video';
 import styles from "./PostFilePreviewStyles";
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 
 interface FileItem {
   uri: string;
