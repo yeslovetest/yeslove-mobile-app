@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     left: 12, 
     width: 12,
     height: 12, 
-    borderRadius: "50%",
+    borderRadius: 6,
     backgroundColor: theme.colors.primaryBlue
   }
 })

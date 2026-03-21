@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     profilePicture: {
         width: 40,
         height: 40,
-        borderRadius: "50%",
+        borderRadius: 20,
         marginRight: 4,
         borderWidth: 1,
     },
