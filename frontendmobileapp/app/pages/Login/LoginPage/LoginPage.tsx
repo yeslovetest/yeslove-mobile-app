@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useLogin } from "../../../../hooks/loginLogic"
 import styles from './LoginPageStyles';
@@ -11,6 +11,9 @@ const image = {
 };
 
 const LoginPage = () => {
+  const { height } = useWindowDimensions();
+  const isCompactScreen = height < 700;
+
   const dispatch = useAppDispatch();
   const {
     identifier,
@@ -29,7 +32,7 @@ const LoginPage = () => {
   const errorMessage = useAppSelector((state) => state.auth.errorMessage);
   const isLoadingScreen = useAppSelector(state => state.profile.loadingScreenActive);
 
-  const [errorDisplay, setErrorDisplay ] = useState("none");
+  const [errorDisplay, setErrorDisplay ] = useState<'none' | 'flex'>('none');
 
   const hideError = () => {
     setErrorDisplay('none');
@@ -48,13 +51,22 @@ const LoginPage = () => {
 
 
   return (
-    <ImageBackground source={image} style={styles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
-      <View style={styles.innerContainer}>
-        <Text style={styles.title}>LOGIN</Text>
+    <ImageBackground source={image} style={[styles.container, isCompactScreen ? styles.compactContainer : undefined]} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.innerContainer, isCompactScreen ? styles.compactInnerContainer : undefined]}>
+        <Text style={[styles.title, isCompactScreen ? styles.compactTitle : undefined]}>LOGIN</Text>
 
-        <Text style={{...styles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
+        <Text style={{...styles.errorMessage, ...(isCompactScreen ? styles.compactErrorMessage : undefined), display: errorDisplay }}>{errorMessage}</Text>
 
-        <View style={styles.modeToggleContainer}>
+        <View style={[styles.modeToggleContainer, isCompactScreen ? styles.compactModeToggleContainer : undefined]}>
           <TouchableOpacity
             style={[
               styles.modeToggleButton,
@@ -90,40 +102,42 @@ const LoginPage = () => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>{identifierMode === 'email' ? 'Email' : 'Username'}</Text>
+        <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>{identifierMode === 'email' ? 'Email' : 'Username'}</Text>
         <TextInput
           onChangeText={handleIdentifierChange}
           value={identifier}
-          style={{...styles.input, borderColor: identifierBdColor[0], borderBottomColor: identifierBdColor[1]}}
+          style={{...styles.input, ...(isCompactScreen ? styles.compactInput : undefined), borderColor: identifierBdColor[0], borderBottomColor: identifierBdColor[1]}}
           placeholder={identifierMode === 'email' ? 'Enter email' : 'Enter username'}
           keyboardType={identifierMode === 'email' ? 'email-address' : 'default'}
           autoCapitalize="none"
           autoCorrect={false}
         />
-        <Text style={styles.helperText}>
+        <Text style={[styles.helperText, isCompactScreen ? styles.compactHelperText : undefined]}>
           {identifierMode === 'email'
             ? ''
             : 'Are you logging in for the first time? use your email instead of username.'}
         </Text>
 
-        <Text style={styles.label}>Password</Text>
+        <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>Password</Text>
         <TextInput
           onChangeText={handlePasswordChange}
           value={password}
-          style={{...styles.input, borderColor: passwordBdColor[0], borderBottomColor: passwordBdColor[1]}}
+          style={{...styles.input, ...(isCompactScreen ? styles.compactInput : undefined), borderColor: passwordBdColor[0], borderBottomColor: passwordBdColor[1]}}
           placeholder="Enter password"
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>LOGIN</Text>
+        <TouchableOpacity style={[styles.button, isCompactScreen ? styles.compactButton : undefined]} onPress={handleLogin}>
+          <Text style={[styles.buttonText, isCompactScreen ? styles.compactButtonText : undefined]}>LOGIN</Text>
         </TouchableOpacity>
 
-        <Text style={styles.containerFooter}>
+        <Text style={[styles.containerFooter, isCompactScreen ? styles.compactContainerFooter : undefined]}>
           Not Registered?
           <Text style={styles.footerLink} onPress={() => handleLoginStateChange('sign-up')}> Sign up!</Text>
         </Text> 
-      </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <LoadingOverlay visible={isLoadingScreen}/>
     </ImageBackground>
   );

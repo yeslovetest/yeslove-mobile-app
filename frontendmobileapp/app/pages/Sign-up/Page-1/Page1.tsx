@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions } from 'react-native';
 import Input from '../Sign-up-root/Sign-up-components/Input/Input';
 import { useSignup } from '@/hooks/signUpLogic';
 import sharedStyles from '../SignUpSharedStyles';
@@ -12,6 +12,9 @@ const image = {
 };
 
 const Page1 = () => {
+  const { height } = useWindowDimensions();
+  const isCompactScreen = height < 700;
+
   const dispatch = useAppDispatch();
   const {
     email,
@@ -27,7 +30,7 @@ const Page1 = () => {
 
   const errorMessage = useAppSelector((state) => state.auth.errorMessage);
 
-  const [errorDisplay, setErrorDisplay ] = useState("none");
+  const [errorDisplay, setErrorDisplay ] = useState<'none' | 'flex'>('none');
   const hideError = () => {
     dispatch(setErrorMessage(''));
     setErrorDisplay('none');
@@ -42,12 +45,21 @@ const Page1 = () => {
   }, [emailBdColor, confirmEmailBdColor, passwordBdColor, errorMessage]);
 
   return (
-    <ImageBackground source={image} style={sharedStyles.container} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
-        <View style={sharedStyles.innerContainer}>
-        <Text style={sharedStyles.title}>SIGN UP</Text>
+    <ImageBackground source={image} style={[sharedStyles.container, isCompactScreen ? sharedStyles.compactContainer : undefined]} resizeMode="cover" imageStyle={{ opacity: 1, height: "110%" }}>
+      <KeyboardAvoidingView
+        style={sharedStyles.keyboardAvoidingContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={sharedStyles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[sharedStyles.innerContainer, isCompactScreen ? sharedStyles.compactInnerContainer : undefined]}>
+        <Text style={[sharedStyles.title, isCompactScreen ? sharedStyles.compactTitle : undefined]}>SIGN UP</Text>
 
-            <Text style={{...sharedStyles.errorMessage, display: String(errorDisplay) }}>{errorMessage}</Text>
-            <Text style={sharedStyles.label}>Email</Text>
+            <Text style={{...sharedStyles.errorMessage, ...(isCompactScreen ? sharedStyles.compactErrorMessage : undefined), display: errorDisplay }}>{errorMessage}</Text>
+            <Text style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}>Email</Text>
             <Input
             placeholder="Enter email"
             keyboardType='email-address'
@@ -56,7 +68,7 @@ const Page1 = () => {
             onChangeText={signupAction.handleEmailChange}
             /> 
 
-            <Text style={sharedStyles.label}>Confirm Email</Text>
+            <Text style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}>Confirm Email</Text>
             <Input
             placeholder="Re-enter email"
             keyboardType='email-address'
@@ -65,7 +77,7 @@ const Page1 = () => {
             onChangeText={signupAction.handleConfirmEmailChange}
             />
 
-            <Text style={sharedStyles.label}>Password</Text>
+            <Text style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}>Password</Text>
             <Input
             placeholder="Enter password"
             borderColor={passwordBdColor[0]}
@@ -74,7 +86,7 @@ const Page1 = () => {
             secureTextEntry = {true}
             />
 
-            <Text style={sharedStyles.label}>Confirm Password</Text>
+            <Text style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}>Confirm Password</Text>
             <Input
             placeholder="Confirm password"
             borderColor={passwordBdColor[0]}
@@ -83,16 +95,18 @@ const Page1 = () => {
             secureTextEntry = {true}
             />
 
-            <TouchableOpacity style={sharedStyles.buttonNext} onPress={signupAction.moveToNext}>
-              <Text style={sharedStyles.buttonText}><Text style={sharedStyles.greyText}>Let us get to know you more!.</Text> Next</Text>
+            <TouchableOpacity style={[sharedStyles.buttonNext, isCompactScreen ? sharedStyles.compactButtonNext : undefined]} onPress={signupAction.moveToNext}>
+              <Text style={[sharedStyles.buttonText, isCompactScreen ? sharedStyles.compactButtonText : undefined]}><Text style={[sharedStyles.greyText, isCompactScreen ? sharedStyles.compactGreyText : undefined]}>Let us get to know you more!.</Text> Next</Text>
             </TouchableOpacity> 
 
     
-        <Text style={sharedStyles.containerFooter}>
+        <Text style={[sharedStyles.containerFooter, isCompactScreen ? sharedStyles.compactContainerFooter : undefined]}>
         Already have an account?
             <Text style={sharedStyles.footerLink} onPress={() => signupAction.handleLoginStateChange('login')}> Login</Text>
         </Text>
-        </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
       
   );
