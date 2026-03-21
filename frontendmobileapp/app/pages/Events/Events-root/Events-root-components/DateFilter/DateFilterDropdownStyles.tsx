@@ -3,11 +3,16 @@ import { StyleSheet } from "react-native";
 
 
 const Styles = StyleSheet.create({
+  filterRow: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
   dropdownToggle: {
     backgroundColor: '#f5f5f5',
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 8,
-    marginBottom: 10,
     alignSelf: 'flex-end',
   },
   dropdownToggleText: {

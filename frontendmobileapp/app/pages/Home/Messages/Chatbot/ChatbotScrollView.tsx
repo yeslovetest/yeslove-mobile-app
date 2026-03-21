@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react'
-import { View, Text, ScrollView } from 'react-native'
+import { View, ScrollView } from 'react-native'
 import styles from './SharedChatbotStyles'
 import ChatResponse from './Chatbot-components/ChatResponse'
-import { LinearGradient } from 'expo-linear-gradient'
 import ChatPrompt from './Chatbot-components/ChatPrompt'
 import GreetingContainer from './Chatbot-components/GreetingContainer'
 import LoadingAnimation from './Chatbot-components/LoadingAnimation'
@@ -25,7 +24,14 @@ useEffect(() => {
   
   return (
 
-          <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contentContainer} style={styles.container}>
+          <ScrollView
+            ref={scrollRef}
+            keyboardShouldPersistTaps="handled"
+            contentInsetAdjustmentBehavior="automatic"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.contentContainer}
+            style={styles.container}
+          >
             <View style={styles.backgroundContainer}>
               <View style={styles.background}>
                 {messages.length === 0 ? (

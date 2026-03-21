@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import styles from '../EventsSharedStyles';
 import EventNavbar from './Events-root-components/Events-navbar/EventNavbar';
 import Header from '../../../Universal-components/Header/Header';
@@ -15,7 +15,13 @@ export default function EventsPage() {
   return (
     <>
       <Header mainTitle='Yeslove!'></Header>
-      <ScrollView contentContainerStyle={styles.contentContainer} style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        style={styles.container}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
         <OrangeBanner icon="icons" description="Browse our past and future events" mainTitle="Our Events" />
         <EventNavbar />
               {activeTab === "Upcoming" && (

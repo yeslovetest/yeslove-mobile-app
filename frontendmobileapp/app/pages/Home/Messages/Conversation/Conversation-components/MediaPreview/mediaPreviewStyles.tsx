@@ -4,18 +4,18 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
 previewContainer: {
     position: "relative",
-    marginRight: 8,
+    marginRight: 10,
     marginBottom: 8,
   },
   previewImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    width: 92,
+    height: 92,
+    borderRadius: 12,
   },
   previewVideo: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    width: 92,
+    height: 92,
+    borderRadius: 12,
   },
   overlay: {
     position: "absolute",
@@ -49,6 +49,11 @@ previewContainer: {
     borderRadius: 12,
     width: "90%",
     maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   modalTitle: {
     fontSize: 18,
@@ -58,7 +63,7 @@ previewContainer: {
   },
   closeButton: {
     marginTop: 16,
-    backgroundColor: "#000",
+    backgroundColor: "#3f7cff",
     paddingVertical: 10,
     borderRadius: 8,
   },

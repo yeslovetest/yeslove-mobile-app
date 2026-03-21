@@ -14,20 +14,24 @@ const styles = StyleSheet.create({
     chatbotButton: {
         width: "95%",
         flexDirection: "row",
-        paddingVertical: 9,
+        paddingVertical: 10,
+        paddingRight: 12,
         marginTop: 10,
         marginBottom: 10,
         backgroundColor: "#7296ED",
         borderRadius: 8,
-        alignItems: 'center',
+        alignItems: 'flex-start',
         paddingLeft: 10,
         justifyContent: 'flex-start',
     },
 
     chatbotButtonText: {
-        fontSize: 16,
+        flex: 1,
+        flexShrink: 1,
+        fontSize: 15,
+        lineHeight: 21,
         fontWeight: '600',
-        color: "#fff"
+        color: "#fff",
     },
 
 })

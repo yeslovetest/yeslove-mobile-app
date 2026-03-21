@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import styles from './ConversationTextInputStyles';
 import { TextInput, View } from 'react-native';
 
@@ -33,7 +33,7 @@ const ConversationTextInput = ( props: Props) => {
 
   return (
     <View style={styles.textInputContainer}>
-      <AntDesign onPress={() => selectMedia('media')} style={styles.sendIcon} name="camera" size={18} />
+      <Ionicons onPress={() => selectMedia('media')} style={styles.mediaIcon} name="camera-outline" size={18} />
       <TextInput
         style={[styles.textInput, { outlineWidth: 0, outlineColor: 'transparent' }]}
         placeholder="Type message"
@@ -46,10 +46,11 @@ const ConversationTextInput = ( props: Props) => {
         onKeyPress={({ nativeEvent }) => {
           if (nativeEvent.key === 'Enter') send(text);
         }}
+        returnKeyType="send"
         multiline
       />
       
-      <AntDesign onPress={() => send(text)} style={styles.sendIcon} name="arrowup" size={18} />
+      <Ionicons onPress={() => send(text)} style={styles.sendIcon} name="send" size={18} />
     </View>
   );
 };

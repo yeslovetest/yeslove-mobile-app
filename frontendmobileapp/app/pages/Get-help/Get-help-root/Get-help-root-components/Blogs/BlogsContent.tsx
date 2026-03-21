@@ -27,7 +27,7 @@ const BlogsContent = () => {
     }   
 
     return (
-        <View>
+        <View style={{ width: '100%' }}>
             <GetHelpSearchBar placeholder="Enter Keyword..." currentSection='blogs'/>
             <BlogsList />
             {totalPages > 0 && (

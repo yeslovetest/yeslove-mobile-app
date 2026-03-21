@@ -16,7 +16,17 @@ const ProfileInformation = () => {
     <>
     <Header></Header>
     <View style={styles.container}>
-        <ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.headerRow}>
+            <Text style={styles.pageTitle}>Profile Information</Text>
+            <Text style={styles.pageSubtitle}>Your saved contact and account details.</Text>
+          </View>
+
           <View style={styles.viewItemContainer}>
             <Text style={styles.viewItemText}>Name</Text>
             <Text style={styles.viewItemInfo}>{name}</Text>

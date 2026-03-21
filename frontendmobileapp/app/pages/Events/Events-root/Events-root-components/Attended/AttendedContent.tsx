@@ -30,7 +30,7 @@ const AttendedContent = () => {
     }
 
     return (
-        <View>
+        <View style={{ width: '100%' }}>
             <DateFilterDropdown onSearch={handleSearch} />
             <EventsList eventType='attended'/>
                 {totalPages > 0 && (

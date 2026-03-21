@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
 import AskChatbotButton from './Messages-root-components/Ask-chatbot-button/AskChatbotButton'
 import { fetchChatMessages } from '@/app/store/Chat/chatSlice'
-import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice'
 
 const Messages = () => {
     const dispatch = useAppDispatch()
@@ -36,6 +35,7 @@ const Messages = () => {
     return (
         <>
             <Header mainTitle={userName}></Header>
+            <View style={messagesSharedStyles.container}>
             <Text style={messagesSharedStyles.messagesText}>Messages</Text>
             <AskChatbotButton onClick={() => dispatch(openTabOnTopAction({ type: TabType.CHATBOT }))} />
 
@@ -84,16 +84,23 @@ const Messages = () => {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={messagesSharedStyles.contentContainer} style={messagesSharedStyles.container}>
+            <ScrollView
+                contentContainerStyle={messagesSharedStyles.contentContainer}
+                style={{ width: '100%' }}
+                keyboardShouldPersistTaps="handled"
+                contentInsetAdjustmentBehavior="automatic"
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={{width: '100%'}}>
                 {filteredFriendList.map((friend, key) => (
                     <TouchableOpacity onPress={() => openConversation(friend.id  ?? '', friend.profile_pic ?? '')} 
                         key={friend.id ?? key}>
-                        <OneMessage message={friend}  key={friend.id ?? key}></OneMessage>
+                        <OneMessage message={friend}></OneMessage>
                     </TouchableOpacity>)
                 )}
                 </View>   
             </ScrollView>
+            </View>
         </>
     )
 }

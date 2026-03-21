@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Animated, View, Dimensions } from 'react-native';
+import { Animated, View, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import ChatbotScrollView from './ChatbotScrollView';
 import TextInputContainer from './Chatbot-components/TextInputContainer';
 import styles from './SharedChatbotStyles';
@@ -66,8 +66,16 @@ const Chatbot = () => {
       ]}
     >
       <Header />
-      <ChatbotScrollView messages={messages} loading={loading} />
-      <TextInputContainer onSend={handleSend} />
+      <KeyboardAvoidingView
+        style={styles.chatBody}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={60}
+      >
+        <ChatbotScrollView messages={messages} loading={loading} />
+        <View style={styles.chatInputDock}>
+          <TextInputContainer onSend={handleSend} />
+        </View>
+      </KeyboardAvoidingView>
     </Animated.View>
   );
 };

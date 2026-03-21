@@ -13,7 +13,7 @@ const AskChatbotButton = (props: Props) => {
   <View style={styles.chatbotButton}>
     <MaterialCommunityIcons name="account-heart-outline" size={24} style={styles.icon}/>
     <Text style={styles.chatbotButtonText}>
-      Need advice? Ask our chatbot
+      Need support right now? Chat with Sera
     </Text>
   </View>
 </TouchableOpacity>

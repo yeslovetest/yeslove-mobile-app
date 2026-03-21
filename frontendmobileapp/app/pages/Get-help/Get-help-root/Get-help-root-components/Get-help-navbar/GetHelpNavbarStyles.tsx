@@ -4,19 +4,20 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
      navBarContainer: {
-    flex: 1,
+      flex: 0,
     justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: vw(5),
-    marginBottom: vw(5),
+      marginTop: 8,
+      marginBottom: 6,
+      width: '100%',
   },
   navBar: {
     flexDirection: "row",
     flexWrap: "wrap",
-    width: theme.spacing.postWidth,
+    width: '100%',
     justifyContent: "center",
     backgroundColor: "#fff",
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 10,
     elevation: 3,
     shadowColor: "#000",
@@ -26,11 +27,11 @@ const styles = StyleSheet.create({
   },
   navItem: {
     width: "50%",
-    paddingVertical: 10,
+    paddingVertical: 11,
     alignItems: "center",
   },
   navText: {
-    fontSize: 16,
+    fontSize: 15,
     color: theme.colors.iconNotActive,
     fontWeight: "500",
   },
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   activeNavText: {
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#000",
   },
   activeIndicator: {

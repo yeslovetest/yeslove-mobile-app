@@ -15,7 +15,7 @@ const ProfessionalsContent = () => {
   }, []));
 
   return (
-    <View>
+    <View style={{ width: '100%' }}>
       <GetHelpSearchBar placeholder="Search professionals..."  currentSection='professionals'/>
       <GetHelpProfessionals />
     </View>
