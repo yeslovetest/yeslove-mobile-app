@@ -1,13 +1,21 @@
-import React, { useState } from 'react'
-import { ImageBackground, Text, View, Image } from 'react-native';
+import React, { useMemo, useState } from 'react'
+import { ActivityIndicator, Alert, ImageBackground, Text, View, Image, TouchableOpacity } from 'react-native';
 import styles from './ProfileHeaderAndBioStyles';
-import { useFocusEffect } from "@react-navigation/native";
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { ProfileApiFactory } from '@/generated-api';
 import { updateProfile } from '@/app/store/Profile-store/profileSlice';
 import axios from 'axios';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
-import { uploadMedia } from '@/app/store/Profile-store/mediaSlice';
+import * as ImagePicker from 'expo-image-picker';
+
+const MAX_PROFILE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+type SelectedProfileFile = {
+  uri: string;
+  type: string;
+  name?: string;
+  fileSize?: number;
+};
 
 const ProfileHeaderAndBio = () => {
   const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
@@ -17,42 +25,156 @@ const ProfileHeaderAndBio = () => {
   const userPosts = useAppSelector((state) => state.profile.profiles[userId]?.user_posts ?? 0);
   const userFollowers = useAppSelector((state) => state.profile.profiles[userId]?.user_followers ?? 0);
   const userFollowing = useAppSelector((state) => state.profile.profiles[userId]?.user_following ?? 0);
+  const isCurrentUserProfile = useAppSelector((state) => state.profile.isCurrentUserProfile);
+  const isProfileImageUploading = useAppSelector((state) => state.profile.isProfileImageUploading);
   const dispatch = useAppDispatch();
-  const [selectedFile, setSelectedFile] = useState<{ uri: string; type: string; name?: string } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<SelectedProfileFile | null>(null);
+  const [validationMessage, setValidationMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  /** 
-  useFocusEffect(React.useCallback(() => {
-    ProfileApiFactory()
-      .getUserProfile(userId)
-      .then((response) => {
-        dispatch(setProfileInformationAction({id: tabStack.at(-1)?.data?.userId, data: response.data}));
+  const currentProfileImageUri = useMemo(() => {
+    if (!profileImage) {
+      return '';
+    }
+
+    return `${axios.defaults.baseURL}/api/media/${profileImage}`;
+  }, [profileImage]);
+
+  const displayedProfileImageUri = selectedFile?.uri || currentProfileImageUri;
+
+  const validateAndSetSelectedImage = (asset: ImagePicker.ImagePickerAsset) => {
+    const detectedType = asset.mimeType || 'image/jpeg';
+
+    if (!SUPPORTED_IMAGE_TYPES.includes(detectedType)) {
+      setValidationMessage('Please select a JPG, PNG, or WEBP image.');
+      return;
+    }
+
+    if (asset.fileSize && asset.fileSize > MAX_PROFILE_IMAGE_SIZE_BYTES) {
+      setValidationMessage('Image must be 5MB or smaller.');
+      return;
+    }
+
+    setSelectedFile({
+      uri: asset.uri,
+      type: detectedType,
+      name: asset.fileName || `profile_${Date.now()}.jpg`,
+      fileSize: asset.fileSize,
+    });
+  };
+
+  const pickFromGallery = async () => {
+    setValidationMessage('');
+    setSuccessMessage('');
+
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert('Permission needed', 'Please allow photo library access to choose a profile picture.');
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
       });
-  }, [tabStack]));  
-  */
 
-  const uploadProfilePic = (text: string) => {
-    const mediaData = new FormData(); // form data for profile pic upload
-
-    if (selectedFile) {
-      const fieldName = "profile_pic"; 
-      
-      // detect if it's base64 or file URI
-      if (selectedFile.uri.startsWith("file:")) {
-        // handle both image and video here
-        const file = selectedFile;
-        mediaData.append(fieldName, file as any);
-      } 
-      else if (selectedFile.uri.startsWith("data:")) {
-        // handle base64 (e.g., for web)
-        const file: File | any = dataURLtoFile(
-          selectedFile.uri,
-          selectedFile.name ??
-            (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
-        );
-        mediaData.append(fieldName, file);
+      if (result.canceled || !result.assets?.[0]) {
+        return;
       }
-    
-      dispatch(updateProfile({file: mediaData}));  
+
+      validateAndSetSelectedImage(result.assets[0]);
+    } catch (error) {
+      console.error('failed to pick profile image', error);
+      setValidationMessage('Unable to open image picker right now.');
+    }
+  };
+
+  const takePhoto = async () => {
+    setValidationMessage('');
+    setSuccessMessage('');
+
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert('Permission needed', 'Please allow camera access to take a profile picture.');
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+
+      if (result.canceled || !result.assets?.[0]) {
+        return;
+      }
+
+      validateAndSetSelectedImage(result.assets[0]);
+    } catch (error) {
+      console.error('failed to capture profile image', error);
+      setValidationMessage('Unable to open camera right now.');
+    }
+  };
+
+  const openPhotoSourcePicker = () => {
+    if (isProfileImageUploading) {
+      return;
+    }
+
+    Alert.alert('Update Profile Picture', 'Choose how you want to add your photo.', [
+      { text: 'Take Photo', onPress: takePhoto },
+      { text: 'Choose from Library', onPress: pickFromGallery },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  const clearSelection = () => {
+    if (isProfileImageUploading) {
+      return;
+    }
+
+    setSelectedFile(null);
+    setValidationMessage('');
+    setSuccessMessage('');
+  };
+
+  const uploadProfilePic = async () => {
+    if (!selectedFile) {
+      setValidationMessage('Please choose an image first.');
+      return;
+    }
+
+    setValidationMessage('');
+    setSuccessMessage('');
+
+    const mediaData = new FormData(); // form data for profile pic upload
+    const fieldName = 'profile_pic';
+
+    if (selectedFile.uri.startsWith('file:')) {
+      mediaData.append(fieldName, {
+        uri: selectedFile.uri,
+        type: selectedFile.type,
+        name: selectedFile.name || 'photo.jpg',
+      } as any);
+    } else if (selectedFile.uri.startsWith('data:')) {
+      const file = dataURLtoFile(selectedFile.uri, selectedFile.name || 'photo.jpg');
+      mediaData.append(fieldName, file as any);
+    }
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        dispatch(updateProfile({ file: mediaData, resolve, reject }));
+      });
+
+      setSuccessMessage('Profile picture updated successfully.');
+      setSelectedFile(null);
+    } catch (error) {
+      console.error('failed to upload profile picture', error);
+      setValidationMessage('Upload failed. Please try again.');
     }
   };
 
@@ -62,7 +184,50 @@ const ProfileHeaderAndBio = () => {
       <View style={styles.profileImageContainer}>
         <ImageBackground style={styles.profileBackgroundImage} imageStyle={{ borderRadius: 15 }} source={{ uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/dummy-banner.jpg" }}>
           <View style={styles.overlay}></View>
-          <Image style={styles.profileImage} source={{ uri:   axios.defaults.baseURL + "/api/media/" +  profileImage}} />
+          <View style={styles.profileImageWrapper}>
+            <Image
+              style={styles.profileImage}
+              source={{ uri: displayedProfileImageUri || 'https://i.pravatar.cc/300?img=12' }}
+            />
+
+            {isCurrentUserProfile && (
+              <TouchableOpacity style={styles.changePhotoBadge} onPress={openPhotoSourcePicker}>
+                <Text style={styles.changePhotoBadgeText}>Change Photo</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {isCurrentUserProfile && selectedFile && (
+            <View style={styles.previewActionsContainer}>
+              <Text style={styles.previewMessage}>Preview selected. Upload to apply.</Text>
+
+              <View style={styles.previewButtonsRow}>
+                <TouchableOpacity
+                  style={[styles.previewButton, styles.cancelButton]}
+                  onPress={clearSelection}
+                  disabled={isProfileImageUploading}
+                >
+                  <Text style={[styles.previewButtonText, styles.cancelButtonText]}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.previewButton, styles.uploadButton, isProfileImageUploading ? styles.disabledButton : undefined]}
+                  onPress={uploadProfilePic}
+                  disabled={isProfileImageUploading}
+                >
+                  {isProfileImageUploading ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text style={styles.previewButtonText}>Upload Photo</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {validationMessage ? <Text style={styles.validationMessage}>{validationMessage}</Text> : null}
+          {successMessage ? <Text style={styles.successMessage}>{successMessage}</Text> : null}
+
           <Text style={styles.userName}>{userName}</Text>
           <View style={styles.userStatsContainer}>
             <Text style={styles.userStats}>Posts: <Text style={styles.userStatsNumber}>{userPosts}</Text></Text>

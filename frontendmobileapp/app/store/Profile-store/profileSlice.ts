@@ -14,6 +14,7 @@ const profileSlice = createSlice({
     profilePicData: null as FormData | null , 
     loadingScreenActive: false,
     isCurrentUserProfile: false, //default value            
+    isProfileImageUploading: false,
 
   }, //defines initial state
   reducers: {
@@ -24,7 +25,7 @@ const profileSlice = createSlice({
       state.profiles[action.payload.id] = action.payload.data;
     },
     updateProfile: (state, action: PayloadAction<{data?: Partial<UserProfile>, 
-      file?: FormData }>) => {},
+      file?: FormData, resolve?: () => void, reject?: (error: unknown) => void }>) => {},
     setActiveTabAction: (state, action: PayloadAction<string>) => {
       state.view.activeTab = action.payload;
     },
@@ -79,6 +80,9 @@ const profileSlice = createSlice({
     setUserProfileState: (state, action: PayloadAction<boolean>) => {
       state.isCurrentUserProfile = action.payload
     },
+    setProfileImageUploading: (state, action: PayloadAction<boolean>) => {
+      state.isProfileImageUploading = action.payload;
+    },
   },
 });
 
@@ -99,6 +103,7 @@ export const {
   setProfileVisibility,
   updateProfileVisibilitySettings,
   activateLoadingScreen,
-  setUserProfileState
+  setUserProfileState,
+  setProfileImageUploading
 } = profileSlice.actions;
 export default profileSlice.reducer;
