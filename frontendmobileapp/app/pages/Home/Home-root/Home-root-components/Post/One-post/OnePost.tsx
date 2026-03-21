@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
-import { Video } from 'expo-av';
+import { Video } from '@/app/Universal-components/Video/Video';
 import styles from './OnePostStyles';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import dayjs from 'dayjs';
 import { retrievePostReactions, postReactionToPost, setPostReactionTab, SendFollowUser } from '@/app/store/Home-store/feedSlice';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview';
 
 export interface Props {

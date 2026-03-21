@@ -1,9 +1,9 @@
 import React from 'react'
 import { View, Image } from 'react-native'
-import { Video } from 'expo-av';
+import { Video } from '@/app/Universal-components/Video/Video';
 import styles from './OneMediumStyles'
 import { MediaFile } from '@/generated-api';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 
 export interface Props{
     media: MediaFile;
