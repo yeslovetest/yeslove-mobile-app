@@ -139,6 +139,13 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     marginBottom: 8,
   },
+  helperText: {
+    alignSelf: 'flex-start',
+    color: theme.colors.footerFontColor,
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 12,
+  },
   button: {
     width: '100%',
     backgroundColor: theme.colors.mainBkgColor,
