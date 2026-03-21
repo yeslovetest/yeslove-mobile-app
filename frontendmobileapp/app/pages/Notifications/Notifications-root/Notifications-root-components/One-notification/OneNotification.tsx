@@ -5,7 +5,7 @@ import { Notification } from '@/generated-api';
 import styles from './OneNotificationStyles';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/app/config/baseUrl';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
 import { retrieveOnePost, setPostReactionTab } from '@/app/store/Home-store/feedSlice';
