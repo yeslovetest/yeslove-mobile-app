@@ -4,7 +4,7 @@ import { logInAction, setLoginStateAction, LoginState, setErrorMessage } from '.
 import axios from 'axios';
 import theme from '@/assets/variables/Variables';
 
-axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.baseURL = "http://localhost:5001";
 
 export const useLogin = () => {
   const dispatch = useAppDispatch();

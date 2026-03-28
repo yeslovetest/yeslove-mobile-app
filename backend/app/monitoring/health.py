@@ -23,8 +23,8 @@ def readiness_check():
     """Kubernetes readiness probe"""
     checks = {
         "database": check_database(),
-        "neptune": check_neptune(),
-        "redis": check_redis()
+        "redis": check_redis(),
+        "neo4j": check_neo4j(),
     }
     
     all_healthy = all(checks.values())
@@ -64,15 +64,6 @@ def check_database():
     except:
         return False
 
-def check_neptune():
-    """Check Neptune connectivity"""
-    try:
-        if hasattr(current_app, 'neptune_client'):
-            return True
-        return True  # Optional service
-    except:
-        return False
-
 def check_redis():
     """Check Redis connectivity"""
     try:
@@ -82,3 +73,17 @@ def check_redis():
         return True
     except:
         return True  # Optional service
+
+
+def check_neo4j():
+    """Check Neo4j connectivity when configured."""
+    try:
+        driver = getattr(current_app, "graph_driver", None)
+        if not driver:
+            return True  # Optional service
+
+        with driver.session() as session:
+            session.run("RETURN 1 AS ok").single()
+        return True
+    except:
+        return False

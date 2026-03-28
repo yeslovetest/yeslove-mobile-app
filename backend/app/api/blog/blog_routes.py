@@ -38,7 +38,7 @@ class BlogPosts(Resource):
             content = data.get("content")
             summary = data.get("summary")
             
-            # Handle image upload to S3 if provided
+            # Accept a pre-uploaded object storage URL if provided
             image_url = data.get("image_url")
 
             # ✅ Basic validation
@@ -183,4 +183,3 @@ class GetSingleBlog(Resource):
             "author": post.author.username if post.author else None,
             "timestamp": post.timestamp.isoformat() + "Z" if post.timestamp else None
         }, 200
-

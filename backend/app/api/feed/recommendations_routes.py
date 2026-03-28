@@ -20,18 +20,16 @@ class UserRecommendations(Resource):
             return {"message": "User not found"}, 404
         
         limit = int(request.args.get("limit", 10))
-        
+
         if hasattr(current_app, 'graph_repository'):
             try:
                 recommendations = current_app.graph_repository.recommendations(
                     user_id=current_user.keycloak_id,
                     limit=limit
                 )
-                
                 if recommendations:
-                    user_ids = [r["user_id"] for r in recommendations]
+                    user_ids = [r["user_id"] for r in recommendations if r.get("user_id")]
                     users = User.query.filter(User.keycloak_id.in_(user_ids)).all()
-                    
                     return {
                         "recommendations": [
                             {
@@ -43,9 +41,9 @@ class UserRecommendations(Resource):
                         ]
                     }, 200
             except Exception as e:
-                logger.warning(f"Neptune recommendations failed: {e}")
+                logger.warning(f"Neo4j recommendations failed: {e}")
         
-        # Fallback: recommend users with most followers
+        # Recommend users with most followers.
         from app.models import Follow
         from sqlalchemy import func
         

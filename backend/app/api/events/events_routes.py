@@ -123,7 +123,7 @@ class EventInfo(Resource):
     @api.doc(description="""Add event to events table,
                         Can take an address id if the address is already within in the database,
                         otherwise can be added line by line. Address isn't required to allow for online events.
-                        Image will be uploaded to S3 if provided.
+                        Image will be uploaded to object storage if provided.
                          """)
     @api.response(201, "Success")
     def post(self):
@@ -184,7 +184,7 @@ class EventInfo(Resource):
 
         logger.info("Creating Event")
         
-        # Handle image upload to S3 if provided
+        # Handle image upload to object storage if provided
         image_url = None
         if 'image' in request.files:
             from app.services.media.media_service import MediaService
@@ -195,7 +195,7 @@ class EventInfo(Resource):
                     folder='events'
                 )
                 image_url = upload_result.get('s3_url') if upload_result else None
-                logger.info(f"Event image uploaded to S3: {image_url}")
+                logger.info(f"Event image uploaded to object storage: {image_url}")
             except Exception as e:
                 logger.error(f"Image upload failed: {e}")
                 # Continue without image rather than failing
@@ -208,7 +208,7 @@ class EventInfo(Resource):
             creator_id=creator.id,
             address=event_address,
             address_id=event_address.id if event_address else None,
-            image_url=image_url  # S3 URL stored in PostgreSQL
+            image_url=image_url  # Object storage URL stored in PostgreSQL
         )
 
         logger.info("Adding event to database")
@@ -776,4 +776,3 @@ class GetProfessionals(Resource):
         except Exception as e:
             logger.error(f"Error fetching professionals: {e}")
             return {"message": "Error fetching professionals"}, 500
-

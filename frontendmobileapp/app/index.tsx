@@ -3,8 +3,7 @@ import axios from "axios";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import App from "./App";
-
-export const BASE_URL = "http://localhost:5000";
+import { BASE_URL } from "@/constants/api";
 
 const Login = () => {
   axios.defaults.baseURL = BASE_URL;

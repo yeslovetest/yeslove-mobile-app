@@ -3,7 +3,7 @@ from app.logging_setup import setup_logger
 from flask import abort
 from datetime import datetime
 from .media_validator import MediaValidator
-from .media_processor import MediaProcessor, S3Storage
+from .media_processor import MediaProcessor, ObjectStorage
 from .security import SecurityService
 import uuid
 
@@ -42,18 +42,17 @@ class MediaService:
         metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
         '''
         
-        # ✅ Upload to S3 if enabled
-        # Upload to S3 (optional)
+        # Upload to object storage when enabled.
         s3_url = None
         if current_app.config.get("USE_S3_STORAGE", False):
-            s3 = S3Storage()
+            storage = ObjectStorage()
             key = f"media/{uuid.uuid4()}/{file.filename}"
-            s3_url = s3.upload_file(content, key, file.content_type)
+            s3_url = storage.upload_file(content, key, file.content_type)
 
         # ✅ Create and save Media record
         media = Media(
             content_type=file.content_type,
-            content=content if not s3_url else None,  # store locally or use S3
+            content=content if not s3_url else None,  # store locally or in object storage
             filename=file.filename,
             file_size=len(content),
             width=metadata.get("width"),
@@ -67,7 +66,7 @@ class MediaService:
         db.session.add(media)
         db.session.commit()
 
-        # ✅ Return both ID and URL (local or S3)
+        # Return both ID and URL (local or object storage).
         media_url = s3_url or f"/api/media/{media.id}"
 
         return {
@@ -123,7 +122,7 @@ class MediaService:
     
     @staticmethod
     def upload_file(file, user_id, folder='media'):
-        """Upload file to S3 and return metadata"""
+        """Upload file to object storage and return metadata."""
         if not file:
             return None
         
@@ -142,17 +141,18 @@ class MediaService:
         # Extract metadata
         metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
         
-        # Upload to S3
+        # Upload to object storage.
         from flask import current_app
         s3_url = None
         if current_app.config.get('USE_S3_STORAGE', False):
-            s3 = S3Storage()
+            storage = ObjectStorage()
             key = f"{folder}/{uuid.uuid4()}/{file.filename}"
-            s3_url = s3.upload_file(content, key, file.content_type)
+            s3_url = storage.upload_file(content, key, file.content_type)
         
         return {
             'id': str(uuid.uuid4()),
             's3_url': s3_url,
+            'storage_url': s3_url,
             'filename': file.filename,
             'content_type': file.content_type,
             'file_size': len(content),

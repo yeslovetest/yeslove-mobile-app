@@ -47,23 +47,6 @@ def paginate_query(query, page=None, per_page=None):
         }
     }
 
-def safe_neptune_operation(operation_func, *args, **kwargs):
-    """Safely execute Neptune operation with error handling"""
-    if hasattr(current_app, 'graph_repository'):
-        try:
-            result = operation_func(current_app.graph_repository, *args, **kwargs)
-            # Track successful Neptune operation
-            from app.monitoring.metrics import track_neptune_operation
-            track_neptune_operation('graph_operation', True)
-            return result
-        except Exception as e:
-            logger.warning(f"Neptune operation failed: {e}")
-            # Track failed Neptune operation
-            from app.monitoring.metrics import track_neptune_operation
-            track_neptune_operation('graph_operation', False)
-            return False
-    return False
-
 def extract_jwt_token():
     """Extract JWT token from Authorization header"""
     auth_header = request.headers.get('Authorization', '')

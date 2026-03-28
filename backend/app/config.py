@@ -1,9 +1,4 @@
 import os
-try:
-    from app.aws_config import get_config_value
-except ImportError:
-    get_config_value = lambda key, default=None: os.getenv(key, default)
-
 
 class Config:
     """Base Configuration"""
@@ -63,7 +58,7 @@ class DevelopmentConfig(Config):
         return f"{DevelopmentConfig.keycloak_issuer()}/protocol/openid-connect/certs"
 
     # Development overrides for Graph/Cache/Queue
-    NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://neo4j:7687')
+    NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
     NEO4J_USER = os.environ.get('NEO4J_USER', 'neo4j')
     NEO4J_PASS = os.environ.get('NEO4J_PASS', 'testpassword')
 
@@ -85,7 +80,7 @@ class ProductionConfig(Config):
     TESTING = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://admin:password@localhost/yeslove'
     
-    # AWS Services
+    # Object storage
     USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "true"
     
     # Security
@@ -97,17 +92,6 @@ class ProductionConfig(Config):
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
     KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET")
     KEYCLOAK_ADMIN_PASS = os.getenv('KEYCLOAK_ADMIN_PASS')
-    
-    # AWS Secrets Manager integration (for future production use)
-    @classmethod
-    def init_aws_secrets(cls):
-        """Initialize AWS secrets when ready for production"""
-        try:
-            cls.SECRET_KEY = get_config_value('SECRET_KEY') or cls.SECRET_KEY
-            cls.KEYCLOAK_CLIENT_SECRET = get_config_value('KEYCLOAK_CLIENT_SECRET') or cls.KEYCLOAK_CLIENT_SECRET
-            cls.SQLALCHEMY_DATABASE_URI = get_config_value('DATABASE_URL') or cls.SQLALCHEMY_DATABASE_URI
-        except Exception:
-            pass  # Fallback to environment variables
     
     @staticmethod
     def keycloak_issuer():

@@ -12,13 +12,13 @@ class SQSWorker:
     def __init__(self):
         self.sqs_service = SQSService()
         self.running = False
-        self.max_retries = int(os.getenv('SQS_MAX_RETRIES', 5))
-        self.dlq_url = os.getenv('SQS_DLQ_URL')
+        self.max_retries = int(os.getenv('QUEUE_MAX_RETRIES', 5))
+        self.has_dlq = bool(os.getenv('QUEUE_DLQ_NAME'))
     
     def start(self):
-        """Start processing SQS messages"""
+        """Start processing queued messages."""
         self.running = True
-        logger.info("SQS Worker started")
+        logger.info("Queue worker started")
         
         while self.running:
             try:
@@ -28,7 +28,7 @@ class SQSWorker:
                     self.process_message(message)
                     
                 if not messages:
-                    time.sleep(int(os.getenv('SQS_POLL_WAIT', 20)))
+                    time.sleep(int(os.getenv('QUEUE_POLL_WAIT', 20)))
                     
             except KeyboardInterrupt:
                 logger.info("Worker stopped by user")
@@ -65,7 +65,7 @@ class SQSWorker:
         """Handle failed message with exponential backoff"""
         if receive_count >= self.max_retries:
             # Move to DLQ if configured
-            if self.dlq_url:
+            if self.has_dlq:
                 self.move_to_dlq(message)
             self.sqs_service.delete_message(message['ReceiptHandle'])
             logger.error(f"Message failed after {self.max_retries} retries, moved to DLQ")
@@ -77,7 +77,7 @@ class SQSWorker:
     
     def move_to_dlq(self, message):
         """Move message to dead letter queue"""
-        if self.dlq_url:
+        if self.has_dlq:
             try:
                 self.sqs_service.send_to_dlq(message['Body'])
             except Exception as e:

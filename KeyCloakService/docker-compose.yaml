@@ -24,11 +24,12 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRESQL_DB}
       KC_DB_USERNAME: ${POSTGRESQL_USER}
       KC_DB_PASSWORD: ${POSTGRESQL_PASS}
+      KC_HTTP_ENABLED: true
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASS}
     env_file:
       - .env
-    command: start-dev --import-realm
+    command: start-dev --import-realm --hostname-strict=false
     depends_on:
       - postgres
     restart: unless-stopped

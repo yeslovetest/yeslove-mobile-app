@@ -35,7 +35,7 @@ def run_read(driver, cypher: str, params: Optional[Dict[str, Any]] = None):
     """
     params = params or {}
     with driver.session() as session:
-        result = session.read_transaction(lambda tx: tx.run(cypher, **params).data())
+        result = session.execute_read(lambda tx: tx.run(cypher, **params).data())
     return result
 
 
@@ -47,7 +47,7 @@ def run_write(driver, cypher: str, params: Optional[Dict[str, Any]] = None):
     """
     params = params or {}
     with driver.session() as session:
-        result = session.write_transaction(lambda tx: tx.run(cypher, **params).data())
+        result = session.execute_write(lambda tx: tx.run(cypher, **params).data())
     return result
 
 

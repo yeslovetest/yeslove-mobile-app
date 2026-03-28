@@ -65,7 +65,7 @@ AddEventRequest = api.model("AddEventRequest", {
     "location": fields.String(description="Description of the event location i.e second floor conference room"),
     "event_time": fields.String(required=True, description="Date and time of event in ISO format"),
     "creator_attending": fields.Boolean(),
-    "image": fields.Raw(required=False, description="Event image file (will be uploaded to S3)"),
+    "image": fields.Raw(required=False, description="Event image file (will be uploaded to object storage)"),
     "address_id": fields.Integer(description="Address ID for if the address is already in the database"),
     "address_number": fields.String(description="House number (or name) for address"),
     "address_street": fields.String(description="Street Name"),
@@ -110,7 +110,7 @@ UpdateEventRequest = api.model("UpdateEventRequest", {
     "description": fields.String(required=False, description="Event description"),
     "location": fields.String(required=False, description="Event location"),
     "event_time": fields.String(required=False, description="Event datetime in ISO format"),
-    "image": fields.Raw(required=False, description="Event image file (will be uploaded to S3)")
+    "image": fields.Raw(required=False, description="Event image file (will be uploaded to object storage)")
 })
 
 ProfessionalResponse = api.model("ProfessionalResponse", {
@@ -128,4 +128,3 @@ ProfessionalsListResponse = api.model("ProfessionalsListResponse", {
     "professionals": fields.List(fields.Nested(ProfessionalResponse)),
     "pagination": fields.Raw(description="Pagination info")
 })
-

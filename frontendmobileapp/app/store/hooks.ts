@@ -14,5 +14,5 @@ export const appSelect: <Fn extends (state: State, ...args: any[]) => any>(
     ...args: Tail<Parameters<Fn>>
   ) => SelectEffect = select;
 
-
-
+// Default export to satisfy routing requirements
+export default { useAppDispatch, useAppSelector, appSelect };

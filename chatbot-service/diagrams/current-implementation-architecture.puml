@@ -1,0 +1,76 @@
+@startuml
+title Chatbot Service - Current Implementation Architecture
+
+skinparam componentStyle rectangle
+left to right direction
+
+actor "YesLove App User" as User
+actor "Admin / Ops" as Admin
+actor "Main YesLove App" as MainApp
+actor "External Content Sources" as Sources
+
+package "chatbot-service (Flask + Flask-RESTX)" {
+  package "API Layer" {
+    [POST /api/v1/chat/message] as APIChat
+    [POST /api/v1/sync/blogs] as APIBlogs
+    [POST /api/v1/migrate/documents] as APIMigrate
+    [POST /api/v1/sync/external(+/batch)] as APIExternal
+    [POST /api/v1/webhook/content, /webhook/blog] as APIWebhook
+    [POST /api/v1/admin/sync/{trigger,start,stop}] as APIAdmin
+    [GET /api/v1/health] as APIHealth
+  }
+
+  package "Core + Services" {
+    [require_auth (JWT)] as Auth
+    [RAGEngine\n- crisis keyword check\n- category/priority retrieval\n- OpenAI ChatCompletion] as RAG
+    [SyncService\n(blog ingestion)] as SyncService
+    [ExternalSyncService\n(URL fetch + BeautifulSoup parse)] as ExtSync
+    [MCPSyncService\n(webhook/RSS ingest)] as MCPSync
+    [RSSyncService] as RSS
+    [AutoSyncService\n(schedule daily/weekly)] as AutoSync
+    [HybridSyncService\n(startup: scheduler + RSS sync)] as HybridSync
+    [chunk_text + embed_text] as Processing
+  }
+}
+
+database "SQLite DB\nchatbot.db\n- documents\n- chat_sessions\n- chat_history" as DB
+cloud "OpenAI API\nEmbedding + ChatCompletion" as OpenAI
+cloud "Keycloak JWKS\n(token verification)" as Keycloak
+cloud "Allowed websites / RSS feeds" as ExternalFeeds
+
+User --> APIChat
+User --> APIHealth
+Admin --> APIAdmin
+Admin --> APIExternal
+MainApp --> APIBlogs
+MainApp --> APIMigrate
+MainApp --> APIWebhook
+Sources --> APIWebhook
+
+APIChat --> Auth
+Auth --> Keycloak
+APIChat --> RAG
+RAG --> DB
+RAG --> OpenAI
+
+APIBlogs --> SyncService
+SyncService --> Processing
+Processing --> OpenAI
+SyncService --> DB
+
+APIExternal --> ExtSync
+ExtSync --> ExternalFeeds
+ExtSync --> Processing
+ExtSync --> DB
+
+APIWebhook --> MCPSync
+MCPSync --> Processing
+MCPSync --> DB
+
+RSS --> MCPSync
+RSS --> ExternalFeeds
+AutoSync --> ExtSync
+HybridSync --> AutoSync
+HybridSync --> RSS
+
+@enduml

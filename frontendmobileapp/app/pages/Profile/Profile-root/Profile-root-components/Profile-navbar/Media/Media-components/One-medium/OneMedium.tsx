@@ -3,7 +3,7 @@ import { View, Image } from 'react-native'
 import { Video } from 'expo-av';
 import styles from './OneMediumStyles'
 import { MediaFile } from '@/generated-api';
-import { BASE_URL } from '@/app/index';
+import { BASE_URL } from '@/constants/api';
 
 export interface Props{
     media: MediaFile;
