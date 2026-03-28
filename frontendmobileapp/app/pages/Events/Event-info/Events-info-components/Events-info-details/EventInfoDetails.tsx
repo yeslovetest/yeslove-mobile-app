@@ -1,9 +1,8 @@
 
 import { View, Text } from 'react-native';
 import styles from './EventsInfoDetailsStyles';
-import { Event } from '../../../Events-root/Events-root-components/Events-list/placeholderEvents';
 import { useAppSelector } from '@/app/store/hooks';
-import { EventsModelResponse, EventListResponse } from "@/generated-api";
+import { EventsModelResponse } from "@/generated-api";
 import dayjs from 'dayjs';
 
 
@@ -14,7 +13,7 @@ const EventInfoDetails = () => {
             <View style={styles.eventInfo}>
                 <View style={styles.addressContainer}>
                     <Text style={styles.addressHeader}>Address</Text>
-                    <Text style={styles.eventAddress}>{event.location}</Text>
+                    <Text style={styles.eventAddress}>{event.location || 'Address not available'}</Text>
                 </View>
                 <View style={styles.dateAndTimeContainer}>
                     <View style={styles.dateContainer2}>
@@ -28,7 +27,7 @@ const EventInfoDetails = () => {
                 </View>
                 <View style={styles.extraInfoContainer}>
                     <Text style={styles.extraInfoHeader}>Extra Information</Text>
-                    <Text style={styles.eventExtraInfo}>{event.description}</Text>
+                    <Text style={styles.eventExtraInfo}>{event.description || 'No extra information provided for this event yet.'}</Text>
                 </View>
             </View>
 

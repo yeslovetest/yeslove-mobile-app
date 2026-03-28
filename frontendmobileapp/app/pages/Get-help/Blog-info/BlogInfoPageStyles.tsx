@@ -26,12 +26,6 @@ const styles = StyleSheet.create({
       paddingVertical: 8,
       marginBottom: 8,
     },
-    progressLabel: {
-      fontSize: 12,
-      color: "#5f6b7c",
-      fontWeight: "600",
-      marginBottom: 6,
-    },
     progressTrack: {
       width: "100%",
       height: 6,
