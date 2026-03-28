@@ -14,6 +14,7 @@ import theme from '@/assets/variables/Variables';
 export interface Props {
   mainTitle?: string;
   icon?: string;
+  onEventsFilterPress?: () => void;
 }
 
 export default function Header(props: Props) {
@@ -170,6 +171,13 @@ export default function Header(props: Props) {
       {!hasTabToGoBackTo && currentTab === TabType.EVENTS && (
         <View style={styles.homeHeaderDistribution}>
           <Text style={[styles.title, styles.homeTitle]}>{props.mainTitle}</Text>
+          <TouchableOpacity
+            style={[styles.homeActionButton, styles.homeMessagesIcon]}
+            onPress={props.onEventsFilterPress}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="filter" size={20} color="black" />
+          </TouchableOpacity>
         </View>
       )}
 
