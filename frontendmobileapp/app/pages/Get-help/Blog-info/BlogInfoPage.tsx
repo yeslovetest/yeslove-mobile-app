@@ -26,7 +26,6 @@ const BlogInfoPage = () => {
         <Header></Header>
         <View style={styles.screenContainer}>
         <View style={styles.progressContainer}>
-            <Text style={styles.progressLabel}>Reading progress {Math.round(scrollProgress * 100)}%</Text>
             <View style={styles.progressTrack}>
                 <View style={[styles.progressFill, { width: `${scrollProgress * 100}%` }]} />
             </View>

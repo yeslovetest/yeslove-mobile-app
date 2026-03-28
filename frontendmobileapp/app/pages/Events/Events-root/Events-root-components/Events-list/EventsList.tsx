@@ -14,7 +14,7 @@ const EventsList = (props: Props) => {
     const allEvents = useAppSelector(state => state.events.allEvents.events ?? []);
     const userEvents = useAppSelector(state => state.events.userEvents.events ?? []);
     const events = props.eventType === "upcoming" ? allEvents : userEvents;  
-
+    
     return (
         <View style={styles.eventsContainer}>
             {events.map((event, index) => (
