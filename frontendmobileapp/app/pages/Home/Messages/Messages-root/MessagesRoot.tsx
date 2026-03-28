@@ -1,16 +1,18 @@
 import Header from '@/app/Universal-components/Header/Header'
 import React, { useState } from 'react'
-import { ScrollView, TouchableOpacity, Text, View } from 'react-native'
+import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, TouchableOpacity, Text, View } from 'react-native'
 import messagesSharedStyles from '../MessagesSharedStyles'
 import OneMessage from './Messages-root-components/One-message/OneMessage'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
 import AskChatbotButton from './Messages-root-components/Ask-chatbot-button/AskChatbotButton'
-import { fetchChatMessages } from '@/app/store/Chat/chatSlice'
+import { fetchChatMessages, setMessagesScrollViewPosition } from '@/app/store/Chat/chatSlice'
+import { useFocusEffect } from 'expo-router'
 
 const Messages = () => {
     const dispatch = useAppDispatch()
     const [filter, setFilter] = useState<'all' | 'read' | 'unread'>('all')
+    const scrollViewRef = React.useRef<ScrollView>(null);
     const userId = useAppSelector(
         (state) => state.navigation.tabStack.at(-1)?.data?.userId
     );
@@ -18,6 +20,25 @@ const Messages = () => {
         (state) => state.profile.profiles[userId]?.username ?? ""
     );
     const friendList = useAppSelector(state => state.chat.friends) || [];
+        const messagesScrollViewPosition = useAppSelector(state => state.chat.messagesScrollViewPosition);
+
+        useFocusEffect(
+            React.useCallback(() => {
+                let restoreTimer: ReturnType<typeof setTimeout> | undefined;
+
+                if (scrollViewRef.current && messagesScrollViewPosition > 0) {
+                    restoreTimer = setTimeout(() => {
+                        scrollViewRef.current?.scrollTo({ y: messagesScrollViewPosition, animated: false });
+                    }, 10);
+                }
+
+                return () => {
+                    if (restoreTimer) {
+                        clearTimeout(restoreTimer);
+                    }
+                };
+            }, [])
+        );
 
     const openConversation = (otherUserId: string, profilePic: string) => {
         dispatch(fetchChatMessages(otherUserId ?? ''));
@@ -30,6 +51,10 @@ const Messages = () => {
         if (filter === 'unread') return friend.unread === true
         return true
     })
+
+        const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            dispatch(setMessagesScrollViewPosition(event.nativeEvent.contentOffset.y));
+        }
 
     
     return (
@@ -85,11 +110,14 @@ const Messages = () => {
             </View>
 
             <ScrollView
+                ref={scrollViewRef}
                 contentContainerStyle={messagesSharedStyles.contentContainer}
                 style={{ width: '100%' }}
                 keyboardShouldPersistTaps="handled"
                 contentInsetAdjustmentBehavior="automatic"
                 showsVerticalScrollIndicator={false}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
             >
                 <View style={{width: '100%'}}>
                 {filteredFriendList.map((friend, key) => (

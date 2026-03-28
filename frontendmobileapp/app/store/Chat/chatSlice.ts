@@ -7,6 +7,7 @@ const chatSlice = createSlice({
     initialState: {
         messages: [] as Chat[],
         friends: [] as FriendInfo[],
+        messagesScrollViewPosition: 0,
         chatbotResponse: {
             response: '',
             user_id: '',
@@ -28,6 +29,9 @@ const chatSlice = createSlice({
         fetchFriendList: (state, action: PayloadAction<string>) => {},
         setFriendList: (state, action: PayloadAction<FriendInfo[]>) => {
             state.friends = action.payload
+        },
+        setMessagesScrollViewPosition: (state, action: PayloadAction<number>) => {
+            state.messagesScrollViewPosition = action.payload;
         },
         sendChatbotMessage: (state, action: PayloadAction<{prompt: string}>) => {},
         setChatbotResponse: (state, action: PayloadAction<chatbotApiResponse | null>) => {
@@ -51,7 +55,7 @@ const chatSlice = createSlice({
 export const {
     fetchChatMessages, setChatMessages, sendChatMessage, 
     markChatOpened, fetchFriendList, setFriendList,
-    sendChatbotMessage, setChatbotResponse, setMediaFormData
+    sendChatbotMessage, setChatbotResponse, setMediaFormData, setMessagesScrollViewPosition
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -6,6 +6,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAppDispatch } from "@/app/store/hooks"
 import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSlice"
 import { BlogPostModel } from "@/generated-api";
+import defaultBlogImg from "@/assets/images/blogimg2.png"
 import dayjs from "dayjs";
 
 
@@ -27,7 +28,7 @@ const OneBlog = (props: Props) => {
                 borderTopLeftRadius: 12,
                 borderTopRightRadius: 12,
                 overflow: 'hidden'
-            }]} source={props.blog?.image_url ?? '../../assets/images/blogimg2.png'}></ImageBackground>
+            }]} source={props.blog?.image_url ? { uri: props.blog.image_url } : defaultBlogImg}></ImageBackground>
             <Text onPress={handleBlogClick} style={styles.blogTitle}>{props.blog?.title}</Text>
             <View style={styles.authorAndDateContainer}>
                 <View style={styles.authorContainer}>

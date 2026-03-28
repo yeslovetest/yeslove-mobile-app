@@ -5,6 +5,7 @@ const getHelpSlice = createSlice({
     name: "getHelp",
     initialState: {
         view: { activeTab: "Professionals" },
+        scrollViewPosition: 0,
         blogs: [] as BlogPostModel[],
         totalBlogs: 0,
         blogPage: 1,
@@ -19,6 +20,9 @@ const getHelpSlice = createSlice({
     reducers: {
         setActiveGetHelpTabAction: (state, action: PayloadAction<string>) => {
             state.view.activeTab = action.payload;
+        },
+        setGetHelpScrollViewPosition: (state, action: PayloadAction<number>) => {
+            state.scrollViewPosition = action.payload;
         },
         fetchBlogPosts: (state, action: PayloadAction<{searchquery?: string, perPage?: number, currentPage?: number}>) => {},
         setBlogPosts: (state, action:PayloadAction<{blogs: BlogPostList}>) => {
@@ -45,7 +49,7 @@ const getHelpSlice = createSlice({
 })
 
 export const {
-    setActiveGetHelpTabAction, fetchBlogPosts, setBlogPosts, setSearchQuery,
+    setActiveGetHelpTabAction, setGetHelpScrollViewPosition, fetchBlogPosts, setBlogPosts, setSearchQuery,
     fetchProfessionals, setProfessionals, fetchOneBlogPost, setOneBlogPost
 } = getHelpSlice.actions;
 export default getHelpSlice.reducer;

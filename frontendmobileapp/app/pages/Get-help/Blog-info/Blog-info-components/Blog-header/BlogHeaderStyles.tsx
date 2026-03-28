@@ -1,76 +1,58 @@
 import theme from "@/assets/variables/Variables";
-import { vw } from "@/ts/viewport-units";
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
     indBlogContainer: {
-        flex: 1,
-        width: theme.spacing.postWidth,
+        width: "100%",
         backgroundColor: "#fff",
-        marginTop: vw(5),
-        borderRadius: 15
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
     },
     indBlogTitle: {
-        marginBottom: vw(5),
-        paddingHorizontal: vw(5),
-        fontSize: 26,
-        fontWeight: 600,
+        marginTop: 16,
+        marginBottom: 12,
+        paddingHorizontal: 16,
+        fontSize: 28,
+        lineHeight: 36,
+        color: "#1d2735",
+        fontWeight: '700',
     },
     indAuthorAndDateContainer: {
-        display: "flex",
         width: "100%",
-        justifyContent: "space-between",
-        paddingHorizontal: vw(5),
-        paddingVertical: vw(5),
+        justifyContent: "flex-start",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         alignItems: "center",
         flexDirection: "row",
-        borderBottomColor: "#222",
+        flexWrap: "wrap",
+        gap: 14,
+        borderBottomColor: "#d9e0ec",
         borderBottomWidth: 1
-    },
-        blogContainer: {
-        display: "flex",
-        width: "100%",
-        backgroundColor: "#fff",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-        borderRadius: 15,
-        marginBottom: 40,
     },
     blogImage: {
         width: "100%",
-        height: 250,
+        minHeight: 220,
+        maxHeight: 300,
     },
-    blogTitle: {
-        textAlign: "left",
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        marginTop: 15,
-        fontSize: 23,
-        fontWeight: "600"
-    },
-    authorAndDateContainer: {
-        display: "flex",
-        width: "100%",
-        justifyContent: "flex-start",
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        alignItems: "center",
-        flexDirection: "row"
+    blogImageContent: {
+        borderRadius: 0,
+        resizeMode: "cover",
     },
 
     authorContainer: {
-        display: "flex",
         alignItems: "center",
         flexDirection: "row",
-        marginRight: 30
+        maxWidth: "100%",
     },
     authorIcon: {
         color: theme.colors.primaryBlue,
-        paddingRight: 5,
+        paddingRight: 7,
     },
     dateAndAuthorText: {
-        color: "#666",
-        fontSize: 14
+        color: "#5a6478",
+        fontSize: 14,
+        lineHeight: 18,
+        fontWeight: '500',
     },
 })
 

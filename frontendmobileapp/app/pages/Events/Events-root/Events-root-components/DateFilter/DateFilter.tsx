@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   Modal,
+  Alert,
   Button,
   Platform,
   TextInput,
@@ -11,12 +12,45 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Styles from './DateFilterDropdownStyles';
 
-const DateFilterDropdown = ({ onSearch }) => {
-  const [visible, setVisible] = useState(false);
+interface DateRange {
+  startDate?: string;
+  endDate?: string;
+}
+
+interface Props {
+  onSearch: (dates: DateRange) => void;
+  showTrigger?: boolean;
+  visible?: boolean;
+  onVisibleChange?: (visible: boolean) => void;
+  initialDates?: DateRange;
+}
+
+const DateFilterDropdown = ({ onSearch, showTrigger = true, visible, onVisibleChange, initialDates }: Props) => {
+  const [internalVisible, setInternalVisible] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const isVisible = typeof visible === 'boolean' ? visible : internalVisible;
+
+  const setVisibility = (nextVisible: boolean) => {
+    if (typeof visible !== 'boolean') {
+      setInternalVisible(nextVisible);
+    }
+    onVisibleChange?.(nextVisible);
+  };
+
+  React.useEffect(() => {
+    if (!initialDates) {
+      setStartDate(null);
+      setEndDate(null);
+      return;
+    }
+
+    setStartDate(initialDates.startDate ? new Date(initialDates.startDate) : null);
+    setEndDate(initialDates.endDate ? new Date(initialDates.endDate) : null);
+  }, [initialDates?.endDate, initialDates?.startDate]);
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -24,7 +58,12 @@ const DateFilterDropdown = ({ onSearch }) => {
   };
 
   const handleSearch = () => {
-    setVisible(false);
+    if (startDate && endDate && endDate < startDate) {
+      Alert.alert('Invalid date range', 'End date cannot be before start date.');
+      return;
+    }
+
+    setVisibility(false);
     onSearch({
       startDate: startDate ? formatDate(startDate) : undefined,
       endDate: endDate ? formatDate(endDate) : undefined,
@@ -34,15 +73,17 @@ const DateFilterDropdown = ({ onSearch }) => {
   return (
     <View style={Styles.filterRow}>
       {/* Dropdown toggle */}
-      <TouchableOpacity
-        onPress={() => setVisible(!visible)}
-        style={Styles.dropdownToggle}
-      >
-        <Text style={Styles.dropdownToggleText}>Filter by Date ▼</Text>
-      </TouchableOpacity>
+      {showTrigger && (
+        <TouchableOpacity
+          onPress={() => setVisibility(!isVisible)}
+          style={Styles.dropdownToggle}
+        >
+          <Text style={Styles.dropdownToggleText}>Filter by Date ▼</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Dropdown modal */}
-      <Modal visible={visible} transparent animationType="fade">
+      <Modal visible={isVisible} transparent animationType="fade">
         <View
           style={Styles.modalOverlay}
         >
@@ -83,7 +124,13 @@ const DateFilterDropdown = ({ onSearch }) => {
                 value={endDate ? formatDate(endDate) : ''}
                 onChangeText={(text) => {
                   const parsed = new Date(text);
-                  if (!isNaN(parsed.getTime())) setEndDate(parsed);
+                  if (!isNaN(parsed.getTime())) {
+                    if (startDate && parsed < startDate) {
+                      Alert.alert('Invalid date range', 'End date cannot be before start date.');
+                      return;
+                    }
+                    setEndDate(parsed);
+                  }
                 }}
                 style={Styles.inputWithMargin}
               />
@@ -99,7 +146,7 @@ const DateFilterDropdown = ({ onSearch }) => {
 
             {/* Buttons */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Button style={Styles.cancelButton} title="Cancel" onPress={() => setVisible(false)} />
+              <Button style={Styles.cancelButton} title="Cancel" onPress={() => setVisibility(false)} />
               <Button title="Search" onPress={handleSearch} />
             </View>
           </View>
@@ -126,7 +173,13 @@ const DateFilterDropdown = ({ onSearch }) => {
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={(e, date) => {
             setShowEndPicker(false);
-            if (date) setEndDate(date);
+            if (date) {
+              if (startDate && date < startDate) {
+                Alert.alert('Invalid date range', 'End date cannot be before start date.');
+                return;
+              }
+              setEndDate(date);
+            }
           }}
         />
       )}

@@ -5,6 +5,7 @@ const eventSlice = createSlice({
     name: "events",
     initialState: {
         view: { activeTab: "Upcoming" },
+        scrollViewPosition: 0,
         allEvents: {events: [] as EventsModelResponse[],
             totalEvents: 0,
             eventPage: 1,
@@ -21,6 +22,9 @@ const eventSlice = createSlice({
     reducers: {
         setActiveEventsTabAction: (state, action: PayloadAction<string>) => {
             state.view.activeTab = action.payload;
+        },
+        setEventsScrollViewPosition: (state, action: PayloadAction<number>) => {
+            state.scrollViewPosition = action.payload;
         },
         fetchAllEvents: (state, action: PayloadAction<{endDate?: string, startDate?: string, perPage?: number, currentPage?: number}>) => {},
         setAllEvents: (state, action:PayloadAction<{events: EventListResponse}>) => {
@@ -47,7 +51,7 @@ const eventSlice = createSlice({
 })
 
 export const {
-    setActiveEventsTabAction, fetchAllEvents, setAllEvents, 
+    setActiveEventsTabAction, setEventsScrollViewPosition, fetchAllEvents, setAllEvents, 
     fetchUserEvents, setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent,
     fetchOneEvent, setOneEvent
 } = eventSlice.actions;
