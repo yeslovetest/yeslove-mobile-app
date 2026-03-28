@@ -4,6 +4,7 @@ import styles from "./OneEventStyles";
 import { View, Text, ImageBackground, TouchableOpacity } from "react-native";
 import eventPlaceholders, { Event } from "../Events-list/placeholderEvents";
 import { EventsModelResponse, EventListResponse } from "@/generated-api";
+import defaultEventImg from "@/assets/images/eventimg1.jpg"
 import dayjs from 'dayjs';
 
 export interface Props {
@@ -28,7 +29,7 @@ const OneEvent = (props: Props) => {
                         <Text style={styles.dateText}>{dayjs(props.event?.event_time).format('MMM D')}</Text>
                         <Text style={styles.yearText}>{dayjs(props.event?.event_time).format('YYYY')}</Text>
                     </View>
-                    <ImageBackground style={styles.eventImg} imageStyle={{ borderRadius: 10 }} source={props.event?.image_url ?? ''}>
+                    <ImageBackground style={styles.eventImg} imageStyle={{ borderRadius: 10 }} source={{ uri: props.event?.image_url ?? defaultEventImg }}>
                         <View style={styles.overlay}>
                             
                                 <Text style={styles.eventName}>{props.event?.name}</Text>
