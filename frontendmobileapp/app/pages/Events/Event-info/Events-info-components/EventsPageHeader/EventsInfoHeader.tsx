@@ -4,6 +4,7 @@ import styles from "./EventsInfoHeaderStyles";
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { addAttendeeToEvent, removeAttendeeFromEvent } from "@/app/store/Events-store/eventsSlice";
 import { EventsModelResponse } from "@/generated-api";
+import defaultEventImg from "@/assets/images/eventimg1.jpg"
 import dayjs from 'dayjs';
 
 const EventsInfoHeader = () => {
@@ -28,7 +29,7 @@ const EventsInfoHeader = () => {
   return (
     <View>
       <View style={styles.indEventContainer}>
-              <ImageBackground style={styles.indEventImg} source={event.image_url ?? ''} >
+              <ImageBackground style={styles.indEventImg} source={{ uri: event.image_url ?? defaultEventImg }} >
                 {isFuture && (
                   <Pressable onPress={() => toggleAttending(isAttending)} style={styles.favouriteContainer}>
                   {isAttending ? (

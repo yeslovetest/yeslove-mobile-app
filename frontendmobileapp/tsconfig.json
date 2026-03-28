@@ -11,6 +11,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
 , "app/+not-found.jsx", "app/_layout.jsx", "app/tabs/index.jsx", "app/tabs/explore.jsx", "app/tabs/Footer.jsx", "app/tabs/profile.jsx", "app/tabs/profile.sx", "app/pages/Events/Event-info/Events-info-components/EventsPageHeader"  ]
