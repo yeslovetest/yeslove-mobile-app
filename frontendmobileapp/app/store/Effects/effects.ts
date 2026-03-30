@@ -1,7 +1,7 @@
 import { call, put, take, takeEvery, takeLatest, race, delay } from "redux-saga/effects";
 import { activateLoadingScreen, fetchUserDataAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileImageUploading, setProfileVisibilitySettings, setUserProfileState, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
 import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
-  TokenResponse, UserProfile, UserQueryResponse, SignupRequest, SignupResponse, GetCommentResponse,
+  TokenResponse, UserProfile, SignupRequest, SignupResponse, GetCommentResponse,
   GetReactionsResponse, ReactToPostResponse,
   ChangePasswordRequest, DeleteAccountRequest,
   EmailNotificationSettings, ProfileVisibilitySettings,
@@ -33,7 +33,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
    setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost,
    setFollowing,
    fetchFollowedUsers,
-   SendFollowUser, retrieveOnePost, setDetailedPost, storeMediaFormData,
+   SendFollowUser, retrieveOnePost, setDetailedPost,
    setPostReactionTab
  } from "../Home-store/feedSlice";
 import { changeTabAction, openTabOnTopAction, TabType } from "../Navigation/navigationSlice";
@@ -52,6 +52,7 @@ import { fetchUserNotifications, markNotificationRead, setUserNotification,
    updateNotificationPreferences
  } from "../Notification-store/notificationSlice";
 import { ChatRequest, ChatResponse as ChatbotApiResponse, apiFactory as chatbotApiFactory } from "@/chatbot-client-api/api";
+import dataURLtoFile from '@/utils/mediaUrlConverter';
 
 
 /**
@@ -121,6 +122,13 @@ const getSignupFriendlyMessage = (status?: number, apiMessage?: string): string 
   return 'We could not complete signup right now. Please try again.';
 };
 
+type UserIdentityResponse = {
+  keycloak_id?: string;
+  user_id?: number;
+  username?: string;
+  email?: string;
+};
+
 
 /** 
  * Auth Api 
@@ -160,7 +168,7 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     yield put(activateLoadingScreen(false));
     return;
   }
-  console.log('Login successful:', loginResponse);
+  //console.log('Login successful:', loginResponse);
   const accessToken = loginResponse.access_token ?? "";
   const refreshToken = loginResponse.refresh_token ?? "";
 
@@ -185,7 +193,7 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     try {
       const syncResponse = ((yield call(axios.post, '/api/auth/sync_user', {
         username: request.username,
-      })) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+      })) as AxiosResponse<UserIdentityResponse>).data as UserIdentityResponse;
 
       if (syncResponse?.keycloak_id) {
         resolvedKeycloakId = syncResponse.keycloak_id;
@@ -201,9 +209,8 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     if (!resolvedKeycloakId) {
       try {
         const identityResponse = ((yield call(
-          ProfileApiFactory().postGetUserKeycloakIdFlexible,
-          { username: request.username }
-        )) as AxiosResponse<UserQueryResponse>).data as UserQueryResponse;
+          ProfileApiFactory().postGetUserKeycloakId
+        )) as AxiosResponse<UserIdentityResponse>).data as UserIdentityResponse;
 
         if (identityResponse?.keycloak_id) {
           resolvedKeycloakId = identityResponse.keycloak_id;
@@ -487,7 +494,7 @@ function* handlePostSendMessage(action: PayloadAction<{id: string, message: stri
 function* updateChatOpened(action: PayloadAction<string>){
   try{
     const response = ((yield call(ChatApiFactory().putMarkChatOpened, action.payload)) as AxiosResponse<MarkChatOpenedResponse>).data as MarkChatOpenedResponse;
-    console.log(response.message);
+    //console.log(response.message);
   } catch (error) {
     console.error('failed to mark chat opened', error);  
   }
@@ -606,8 +613,8 @@ function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, curr
  * */
 function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | undefined, page: number | undefined}>){
   const response = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
-  console.log(action.payload.feedType)
-  console.log(response)
+  //console.log(action.payload.feedType)
+  //console.log(response)
   yield put(setFeedDataAction({post: response.posts ?? [], 
     feedType: action.payload.feedType, pagination: response.pagination}));
 }
@@ -615,7 +622,7 @@ function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | 
 function* handleGetOnePost(action: PayloadAction<{postID: number}>){
   try {
     const post = ((yield call(FeedApiFactory().getGetPost, action.payload.postID)) as AxiosResponse<Post>).data as Post;
-    console.log(post)
+    //console.log(post)
     yield put(setDetailedPost(post));
     yield put(retrievePostReactions({postId: action.payload.postID}));
     yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: post}));
@@ -626,46 +633,38 @@ function* handleGetOnePost(action: PayloadAction<{postID: number}>){
   
 }
 
-function* postNewPost(action: PayloadAction<{ requestForm: FormData }>){
+function* postNewPost(action: PayloadAction<{
+  content: string,
+  anonymous: boolean,
+  mediaFiles?: Array<{ uri: string; type: string; name?: string }>
+}>){
   try {
-    // ✅ Create API instance
-    const api = FeedApiFactory();
-
-    // ✅ Extract post details and image from FormData
-    const content = action.payload.requestForm.get("content") as string;
-    const anonymous = action.payload.requestForm.get("anonymous") as string | null;
-    const media = action.payload.requestForm.get("media") as File | null; // not in use - form data only returns Content
-    const isAnonymous = anonymous === "true";
-
-    // ✅ Call API using its expected parameters
-    const response = (yield call(
-      { context: api, fn: api.postCreatePost },
-      content,
-      isAnonymous,
-      media ?? undefined
-    )) as AxiosResponse<{ post_id?: string }>;
-
-    const postId = response.data?.post_id;
-    let mediaData: FormData = yield appSelect(state => state.feed.mediaData.mediaFormData);
-    if (mediaData && mediaData.getAll("file").length === 1) {
-      //mediaData.set("file", mediaData.getAll("file")[0]);
-      if (postId) {
-        mediaData.append("post_id", String(postId));
-      }
-      // ✅ Send multipart/form-data directly (no JSON serialization!)
-      yield put(uploadMedia({requestBody: mediaData}));
-      // ⏳ Wait for single upload completion
-      yield take("uploadMediaSuccess");
-    }  
-    else if (mediaData && mediaData.getAll("file").length > 1) {
-      if (postId) {
-        mediaData.append("post_id", String(postId));
-      }
-      // ✅ Send multipart/form-data directly (no JSON serialization!)
-      yield put(uploadBulkMedia({requestBody: mediaData}));
-      // ⏳ Wait for bulk upload completion
-      yield take("uploadBulkMediaSuccess");
+    const content = action.payload.content?.trim() ?? "";
+    if (!content) {
+      console.warn("Skipping post creation: content cannot be empty.");
+      return;
     }
+
+    // Keep payload aligned with backend parser: anonymous as "true"/"false" and repeated media files.
+    const normalizedMedia = (action.payload.mediaFiles ?? [])
+      .filter((file) => !!file?.uri && !!file?.type)
+      .map((file) => {
+        if (file.uri.startsWith("data:")) {
+          return dataURLtoFile(
+            file.uri,
+            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg")
+          ) as any;
+        }
+
+        return file as any;
+      });
+
+    yield call(
+      FeedApiFactory().postCreatePost,
+      content,
+      action.payload.anonymous ? "true" : "false",
+      normalizedMedia.length ? normalizedMedia : undefined
+    );
     
     yield put(updatePostsForFeedAction({feedType: 'all'}));
     yield put(updatePostsForFeedAction({feedType: 'friends'}));
@@ -734,7 +733,6 @@ function* handleUploadMedia(action: PayloadAction<{requestBody: FormData, resolv
   try {
     const response = (yield call(MediaApiFactory().postUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{media_id: string}>;
     yield put(setUploadedMediaId([response.data.media_id]));
-    yield put(storeMediaFormData({mediaFormData: null})); // Clear media form data (for creating Posts) after upload
     yield put({ type: "uploadMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
 
     // Resolve promise - required for posting message when it contains media
@@ -756,7 +754,6 @@ function* handleUploadBulkMedia(action: PayloadAction<{requestBody: FormData, re
   try {
     const response = (yield call(MediaApiFactory().postBulkUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{ids: string[]}>;
     yield put(setUploadedMediaId(response.data.ids));
-    yield put(storeMediaFormData({mediaFormData: null}));
     yield put({ type: "uploadBulkMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
 
     // Resolve promise - required for posting message when it contains media
@@ -859,7 +856,7 @@ function* updateUserProfile(action: PayloadAction<{data?: Partial<UserProfile>,
       profilePayload,
       { data: action.payload.file || undefined }
     )) as AxiosResponse<{message: string}>;
-    console.log(response?.data.message)
+    //console.log(response?.data.message)
     let userId: string = yield appSelect(state => state.user.id);
     const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
     yield put(setName(profile.username));

@@ -266,8 +266,8 @@ function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, curr
  * */
 function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | undefined, page: number | undefined}>){
   const posts = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
-  console.log(action.payload.feedType)
-  console.log(posts)
+  //console.log(action.payload.feedType)
+  //console.log(posts)
   yield put(setFeedDataAction({post: posts.posts ?? [], feedType: action.payload.feedType}));
 }
 

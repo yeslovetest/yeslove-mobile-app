@@ -9,7 +9,7 @@
             "description": "Success"
           }
         },
-        "summary": "Change user password via Keycloak API",
+        "summary": "Change password in the configured auth provider",
         "operationId": "post_change_password",
         "parameters": [
           {
@@ -38,7 +38,7 @@
             "description": "Success"
           }
         },
-        "summary": "Delete user account via Keycloak API",
+        "summary": "Delete user account from provider and local DB",
         "operationId": "delete_delete_account",
         "parameters": [
           {
@@ -70,7 +70,7 @@
             }
           }
         },
-        "summary": "Exchange user credentials for a Keycloak access token and check user type",
+        "summary": "Exchange credentials for access and refresh tokens",
         "operationId": "post_login",
         "parameters": [
           {
@@ -94,7 +94,7 @@
             "description": "Success"
           }
         },
-        "summary": "Logout user from Keycloak",
+        "summary": "Logout the current user session from the configured provider",
         "operationId": "post_logout",
         "parameters": [
           {
@@ -126,7 +126,7 @@
             }
           }
         },
-        "summary": "Refresh expired access token using Keycloak refresh token",
+        "summary": "Refresh access token using refresh token",
         "operationId": "post_refresh_token",
         "parameters": [
           {
@@ -150,7 +150,7 @@
             "description": "Success"
           }
         },
-        "summary": "Send password reset email via Keycloak API",
+        "summary": "Trigger password reset flow in the configured auth provider",
         "operationId": "post_reset_password",
         "parameters": [
           {
@@ -174,7 +174,7 @@
             "description": "Success"
           }
         },
-        "summary": "Set user type (professional or standard) for new users",
+        "summary": "Set user type (professional or standard) for the authenticated user",
         "operationId": "post_set_user_type",
         "parameters": [
           {
@@ -206,7 +206,7 @@
             }
           }
         },
-        "summary": "Creates a new KeyCloak user via Admin API",
+        "summary": "Create a new user in the configured auth provider and sync local DB",
         "operationId": "post_signup",
         "parameters": [
           {
@@ -216,6 +216,25 @@
             "schema": {
               "$ref": "#/definitions/SignupRequest"
             }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/sync_user": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Create or update the local user row from JWT claims",
+        "operationId": "post_sync_user",
+        "security": [
+          {
+            "Bearer": []
           }
         ],
         "tags": [
@@ -480,6 +499,47 @@
         ]
       }
     },
+    "/api/chat/upload_media": {
+      "post": {
+        "responses": {
+          "404": {
+            "description": "User not found"
+          },
+          "400": {
+            "description": "Bad request - invalid file"
+          },
+          "201": {
+            "description": "Media uploaded successfully",
+            "schema": {
+              "$ref": "#/definitions/UploadChatMediaResponse"
+            }
+          }
+        },
+        "summary": "Upload media file for chat",
+        "description": "Upload media file for chat message",
+        "operationId": "post_upload_chat_media",
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "Media file to upload"
+          }
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
     "/api/chatbot/message": {
       "post": {
         "responses": {
@@ -487,7 +547,7 @@
             "description": "Success"
           }
         },
-        "summary": "Send a message to chatbot",
+        "summary": "Send a message to chatbot microservice",
         "operationId": "post_send_chatbot_message",
         "parameters": [
           {
@@ -732,19 +792,6 @@
           "type": "integer"
         }
       ],
-      "delete": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Delete event",
-        "description": "Delete event - only event creator can delete",
-        "operationId": "delete_event_management",
-        "tags": [
-          "events"
-        ]
-      },
       "put": {
         "responses": {
           "200": {
@@ -764,6 +811,19 @@
             }
           }
         ],
+        "tags": [
+          "events"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Delete event",
+        "description": "Delete event - only event creator can delete",
+        "operationId": "delete_event_management",
         "tags": [
           "events"
         ]
@@ -1076,14 +1136,18 @@
           {
             "name": "anonymous",
             "in": "formData",
-            "type": "boolean",
+            "type": "string",
             "description": "if post is to be anonymous"
           },
           {
             "name": "media",
             "in": "formData",
-            "type": "file",
-            "description": "Optional image or video file (jpg, png, gif, mp4, mov, avi)"
+            "type": "array",
+            "description": "Multiple media files (images/videos/audio)",
+            "items": {
+              "type": "file"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "security": [
@@ -1092,6 +1156,7 @@
           }
         ],
         "consumes": [
+          "application/x-www-form-urlencoded",
           "multipart/form-data"
         ],
         "tags": [
@@ -1376,33 +1441,6 @@
       }
     },
     "/api/media/{media_id}": {
-      "delete": {
-        "responses": {
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Media not found"
-          },
-          "200": {
-            "description": "Media deleted successfully"
-          }
-        },
-        "description": "Delete media file",
-        "operationId": "delete_get_media",
-        "parameters": [
-          {
-            "name": "media_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Unique media identifier"
-          }
-        ],
-        "tags": [
-          "media"
-        ]
-      },
       "get": {
         "responses": {
           "403": {
@@ -1417,6 +1455,33 @@
         },
         "description": "Get media file by ID",
         "operationId": "get_get_media",
+        "parameters": [
+          {
+            "name": "media_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Unique media identifier"
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Media not found"
+          },
+          "200": {
+            "description": "Media deleted successfully"
+          }
+        },
+        "description": "Delete media file",
+        "operationId": "delete_get_media",
         "parameters": [
           {
             "name": "media_id",
@@ -1521,18 +1586,6 @@
       }
     },
     "/api/notifications/preferences": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Get user's notification preferences",
-        "operationId": "get_notification_preferences_resource",
-        "tags": [
-          "notifications"
-        ]
-      },
       "put": {
         "responses": {
           "200": {
@@ -1551,6 +1604,18 @@
             }
           }
         ],
+        "tags": [
+          "notifications"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get user's notification preferences",
+        "operationId": "get_notification_preferences_resource",
         "tags": [
           "notifications"
         ]
@@ -1788,24 +1853,12 @@
       "post": {
         "responses": {
           "200": {
-            "description": "Success",
-            "schema": {
-              "$ref": "#/definitions/UserQueryResponse"
-            }
+            "description": "Success"
           }
         },
-        "summary": "Retrieve a user's Keycloak ID by username (required), with optional email or user ID",
-        "operationId": "post_get_user_keycloak_id_flexible",
-        "parameters": [
-          {
-            "name": "payload",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/UserQuery"
-            }
-          }
-        ],
+        "summary": "Return authenticated user's Keycloak ID directly from JWT",
+        "description": "This endpoint must NOT depend on database state.",
+        "operationId": "post_get_user_keycloak_id",
         "security": [
           {
             "Bearer": []
@@ -2067,38 +2120,6 @@
       },
       "type": "object"
     },
-    "UserQuery": {
-      "required": [
-        "username"
-      ],
-      "properties": {
-        "username": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string",
-          "description": "User's email (Optional)"
-        },
-        "user_id": {
-          "type": "integer",
-          "description": "User's database ID (Optional)"
-        }
-      },
-      "type": "object"
-    },
-    "UserQueryResponse": {
-      "properties": {
-        "keycloak_id": {
-          "type": "string",
-          "description": "User's Keycloak ID"
-        },
-        "user_id": {
-          "type": "integer",
-          "description": "User's database ID"
-        }
-      },
-      "type": "object"
-    },
     "ProfileVisibilitySettings": {
       "properties": {
         "settings": {
@@ -2267,11 +2288,15 @@
       "properties": {
         "username": {
           "type": "string",
-          "description": "User's Keycloak username"
+          "description": "User login identifier (username or email)"
+        },
+        "email": {
+          "type": "string",
+          "description": "Optional email alias for Supabase login"
         },
         "password": {
           "type": "string",
-          "description": "User's Keycloak password"
+          "description": "User password"
         },
         "device_token": {
           "type": "string",
@@ -2321,6 +2346,18 @@
         "scope": {
           "type": "string",
           "description": "Scopes associated with the token"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Auth provider that issued the token"
+        },
+        "keycloak_id": {
+          "type": "string",
+          "description": "Provider subject id used by backend"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "Local backend user id"
         }
       },
       "type": "object"
@@ -2334,6 +2371,7 @@
         "last_name",
         "password",
         "phone_number",
+        "user_type",
         "username"
       ],
       "properties": {
@@ -2347,11 +2385,11 @@
         },
         "password": {
           "type": "string",
-          "description": "User password"
+          "description": "User password (minimum 6 characters)"
         },
         "confirm_password": {
           "type": "string",
-          "description": "Confirm your password"
+          "description": "Confirm your password (minimum 6 characters)"
         },
         "first_name": {
           "type": "string",
@@ -2416,6 +2454,22 @@
         "message": {
           "type": "string",
           "description": "Response message indicating success or failure of signup"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Auth provider handling signup (supabase/keycloak)"
+        },
+        "keycloak_id": {
+          "type": "string",
+          "description": "Provider subject id when available"
+        },
+        "user_id": {
+          "type": "integer",
+          "description": "Local backend user id when available"
+        },
+        "pending_local_sync": {
+          "type": "boolean",
+          "description": "True when provider accepted signup but local user will be created on first authenticated sync"
         }
       },
       "type": "object"
@@ -2424,7 +2478,7 @@
       "properties": {
         "refresh_token": {
           "type": "string",
-          "description": "Users refresh token"
+          "description": "User refresh token"
         }
       },
       "type": "object"
@@ -2453,6 +2507,24 @@
         "license": {
           "type": "string",
           "description": "License number (for professional users only)"
+        },
+        "license_number": {
+          "type": "string",
+          "description": "License number (for professional users only)"
+        },
+        "license_body": {
+          "type": "string",
+          "description": "License body (HCPC, BACP, UKCP)",
+          "example": "HCPC",
+          "enum": [
+            "HCPC",
+            "BACP",
+            "UKCP"
+          ]
+        },
+        "consent_license_data": {
+          "type": "boolean",
+          "description": "Consent to use and display license data"
         },
         "specialization": {
           "type": "string",
@@ -2790,6 +2862,23 @@
         "profile_pic": {
           "type": "string",
           "description": "URL to the followed user's profile picture"
+        }
+      },
+      "type": "object"
+    },
+    "UploadChatMediaResponse": {
+      "properties": {
+        "media_id": {
+          "type": "string",
+          "description": "Unique ID of uploaded media"
+        },
+        "media_url": {
+          "type": "string",
+          "description": "URL to access the uploaded media"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "MIME type of the uploaded file"
         }
       },
       "type": "object"
