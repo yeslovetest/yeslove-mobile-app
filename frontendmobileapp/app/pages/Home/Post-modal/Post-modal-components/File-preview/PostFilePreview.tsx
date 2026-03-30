@@ -3,6 +3,7 @@ import { View, Text, FlatList, Image, Pressable, Dimensions } from "react-native
 import { Video } from '@/app/Universal-components/Video/Video';
 import styles from "./PostFilePreviewStyles";
 import { BASE_URL } from '@/app/config/baseUrl';
+import { MediaFile } from '@/generated-api';
 
 interface FileItem {
   uri: string;
@@ -13,50 +14,72 @@ interface FileItem {
 }
 
 interface Props {
-  file: FileItem[];
+  file: Array<FileItem | MediaFile>;
   editable?: boolean;
   delFunc?: (index: number) => void;
 }
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
-const MAX_MEDIA_HEIGHT = SCREEN_HEIGHT * 0.55
+const MAX_MEDIA_HEIGHT = SCREEN_HEIGHT * 0.56;
+
+const normalizeFileItem = (input: FileItem | MediaFile): FileItem => {
+  if ('uri' in input && 'type' in input) {
+    return {
+      uri: input.uri,
+      type: input.type,
+      name: input.name,
+      width: input.width,
+      height: input.height,
+    };
+  }
+
+  return {
+    uri: input.url ?? '',
+    type: input.content_type ?? 'image/jpeg',
+    name: input.filename,
+  };
+};
 
 const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
+  const normalizedFiles = file.map(normalizeFileItem).filter((item) => !!item.uri && !!item.type);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
+  const itemGap = 10;
+  const cardWidth = normalizedFiles.length > 1 ? containerWidth * 0.9 : containerWidth;
+  const itemSnapSize = cardWidth + itemGap;
  
   
   const sliderRef = useRef<FlatList<FileItem>>(null);
 
   useEffect(() => {
-    if (!file.length) {
+    if (!normalizedFiles.length) {
       setCurrentIndex(0);
       return;
     }
 
-    const lastIndex = file.length - 1;
-    setCurrentIndex(lastIndex);
+    const nextIndex = editable ? normalizedFiles.length - 1 : 0;
+    setCurrentIndex(nextIndex);
 
     if (containerWidth > 0) {
       setTimeout(() => {
-        sliderRef.current?.scrollToIndex({ index: lastIndex, animated: true });
+        sliderRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       }, 0);
     }
-  }, [file.length, containerWidth]);
+  }, [editable, normalizedFiles.length, containerWidth]);
 
   // Compute dynamic aspect ratio 
   const getMediaStyle = (item: FileItem) => {
-    if (!containerWidth) return {};
+    if (!cardWidth) return {};
 
     if (!item.width || !item.height) {
       return {
-        width: containerWidth,
-        height: Math.min(containerWidth * 0.75, MAX_MEDIA_HEIGHT),
+        width: cardWidth,
+        height: Math.min(cardWidth * 1.1, MAX_MEDIA_HEIGHT),
       };
     }
 
     const ratio = item.width / item.height;
-    let finalWidth = containerWidth;
+    let finalWidth = cardWidth;
     let finalHeight = finalWidth / ratio;
 
     // Cap height
@@ -73,7 +96,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
   };
 
   const goNext = () => {
-    if (currentIndex < file.length - 1) {
+    if (currentIndex < normalizedFiles.length - 1) {
       scrollToIndex(currentIndex + 1);
       setCurrentIndex(currentIndex + 1);
     }
@@ -92,27 +115,36 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
     >
       <FlatList
         ref={sliderRef}
-        data={file}
+        data={normalizedFiles}
         keyExtractor={(_,index) => index.toString()}
         horizontal
-        pagingEnabled
+        decelerationRate="fast"
+        snapToInterval={itemSnapSize}
+        snapToAlignment="start"
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          paddingRight: normalizedFiles.length > 1 ? itemGap : 0,
+        }}
         onScrollToIndexFailed={(info) => {
           sliderRef.current?.scrollToOffset({
-            offset: info.index * containerWidth,
+            offset: info.index * itemSnapSize,
             animated: true,
           });
         }}
-        contentContainerStyle={{alignItems: 'center', justifyContent: 'center'}}  
         onMomentumScrollEnd={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / containerWidth);
+          const index = Math.round(e.nativeEvent.contentOffset.x / itemSnapSize);
           setCurrentIndex(index);
         }}
         renderItem={({ item, index }) => {
           const isImage = item.type.startsWith("image");
-          const uri = item.uri.startsWith("/api") ? `${BASE_URL}${item.uri}` : item.uri;
+          const uri = /^(https?:\/\/|file:|data:)/i.test(item.uri)
+            ? item.uri
+            : `${BASE_URL}${item.uri.startsWith('/') ? '' : '/'}${item.uri}`;
 
           return (
-            <View style={{ width: containerWidth || '100%' }}>
+            <View style={{ width: cardWidth || '100%', marginRight: normalizedFiles.length > 1 ? itemGap : 0 }}>
               {editable && (
                 <Pressable
                   style={styles.deleteWrapper}
@@ -126,18 +158,18 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                 <Image
                   source={{ uri }}
                   style={{ ...getMediaStyle(item), borderRadius: 10}}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
               ) : (
                 <Video
                   source={{ uri }}
                   style={{ ...getMediaStyle(item), borderRadius: 10 }}
                   useNativeControls
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
               )}
 
-              {file.length > 1 && (
+              {normalizedFiles.length > 1 && (
                 <View style={styles.arrowWrapper}>
                   <Pressable
                     style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
@@ -155,14 +187,14 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                   </Pressable>
 
                   <Pressable
-                    style={[styles.navButton, currentIndex === file.length - 1 && styles.navButtonDisabled]}
+                    style={[styles.navButton, currentIndex === normalizedFiles.length - 1 && styles.navButtonDisabled]}
                     onPress={goNext}
-                    disabled={currentIndex === file.length - 1}
+                    disabled={currentIndex === normalizedFiles.length - 1}
                   >
                     <Text
                       style={[
                         styles.navButtonText,
-                        { opacity: currentIndex === file.length - 1 ? 0.4 : 1 },
+                        { opacity: currentIndex === normalizedFiles.length - 1 ? 0.4 : 1 },
                       ]}
                     >
                       ▶
@@ -171,15 +203,21 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                 </View>
               )}
 
-              {file.length > 1 && (
-                <View style={styles.pageIndicator}>
-                  <Text style={styles.pageIndicatorText}>{currentIndex + 1}/{file.length}</Text>
-                </View>
-              )}
             </View>
           );
         }}
       />
+
+      {normalizedFiles.length > 1 && (
+        <View style={styles.dotsContainer}>
+          {normalizedFiles.map((_, index) => (
+            <View
+              key={`dot-${index}`}
+              style={[styles.dot, index === currentIndex && styles.dotActive]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 };

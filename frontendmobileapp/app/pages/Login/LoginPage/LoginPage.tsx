@@ -33,6 +33,12 @@ const LoginPage = () => {
   const isLoadingScreen = useAppSelector(state => state.profile.loadingScreenActive);
 
   const [errorDisplay, setErrorDisplay ] = useState<'none' | 'flex'>('none');
+  const [hasTriedLogin, setHasTriedLogin] = useState(false);
+
+  const handleLoginPress = () => {
+    setHasTriedLogin(true);
+    handleLogin();
+  };
 
   const hideError = () => {
     setErrorDisplay('none');
@@ -113,9 +119,9 @@ const LoginPage = () => {
           autoCorrect={false}
         />
         <Text style={[styles.helperText, isCompactScreen ? styles.compactHelperText : undefined]}>
-          {identifierMode === 'email'
-            ? ''
-            : 'Are you logging in for the first time? use your email instead of username.'}
+          {identifierMode !== 'email' && hasTriedLogin && !!errorMessage
+            ? 'Are you logging in for the first time? use your email instead of username.'
+            : ''}
         </Text>
 
         <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>Password</Text>
@@ -127,7 +133,7 @@ const LoginPage = () => {
           secureTextEntry
         />
 
-        <TouchableOpacity style={[styles.button, isCompactScreen ? styles.compactButton : undefined]} onPress={handleLogin}>
+        <TouchableOpacity style={[styles.button, isCompactScreen ? styles.compactButton : undefined]} onPress={handleLoginPress}>
           <Text style={[styles.buttonText, isCompactScreen ? styles.compactButtonText : undefined]}>LOGIN</Text>
         </TouchableOpacity>
 

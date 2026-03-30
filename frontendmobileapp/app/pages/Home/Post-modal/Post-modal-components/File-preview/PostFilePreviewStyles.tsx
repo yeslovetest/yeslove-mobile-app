@@ -126,6 +126,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  dotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    marginBottom: 2,
+    gap: 6,
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  dotActive: {
+    width: 16,
+    backgroundColor: '#1E3A8A',
+  },
 });
 
 export default styles;

@@ -45,9 +45,6 @@ export default function HomeRoot() {
     const isCloseToBottom =
       layoutMeasurement.height + contentOffset.y >= contentSize.height - THRESHOLD;
 
-    // Persist scroll position so returning users land where they left off.
-    dispatch(setScrollViewPosition(contentOffset.y));
-
     if (isCloseToBottom) {
       // update feed when user is close to the bottom of the page
       if (paginationValues.hasNextPage) {
@@ -62,6 +59,10 @@ export default function HomeRoot() {
     }
   };
 
+  const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    dispatch(setScrollViewPosition(event.nativeEvent.contentOffset.y));
+  };
+
 
   return (
     <>
@@ -70,6 +71,8 @@ export default function HomeRoot() {
         contentContainerStyle={sharedStyles.contentContainer} 
         style={sharedStyles.container}
         onScroll={handleScroll}
+        onScrollEndDrag={handleScrollEnd}
+        onMomentumScrollEnd={handleScrollEnd}
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"

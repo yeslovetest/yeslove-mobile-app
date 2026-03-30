@@ -12,12 +12,10 @@ import {
 } from "react-native";
 import styles from "./PostModalStyles";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { postNewPostAction, storeMediaFormData } from "@/app/store/Home-store/feedSlice";
+import { postNewPostAction } from "@/app/store/Home-store/feedSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import PostInput from "./Post-modal-components/Post-input/PostInput";
 import PostingUserProfile from "./Post-modal-components/Posting-user-profile/PostingUserProfile";
-import { uploadMedia } from "@/app/store/Profile-store/mediaSlice";
-import dataURLtoFile from '@/utils/mediaUrlConverter';
 
 interface PostModalProps {
   visible: boolean;
@@ -67,7 +65,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
     onClose();
     setUserPost("");
     setSelectedFile(null);
-    console.log('media id:', mediaID);
+
    
   };
 
@@ -75,41 +73,12 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const handlePost = async (anonymous?: boolean) => {
     if (!userPost.trim()) return;
 
-    const postData = new FormData(); //form data for Post
-    const mediaData = new FormData(); // form data for Media upload
-    console.log(anonymous);
-    postData.append("anonymous", anonymous ? "true" : "false");
-    postData.append("content", userPost);
-    
+    dispatch(postNewPostAction({
+      content: userPost,
+      anonymous: !!anonymous,
+      mediaFiles: selectedFile ?? undefined,
+    }));
 
-    //console.log("Selected file for upload:", selectedFile);
-
-    if (selectedFile) {
-      const fieldName = "file"; 
-     
-      selectedFile.forEach((selectedFile) => {
-         // detect if it's base64 or file URI
-        if (selectedFile.uri.startsWith("file:")) {
-          // handle both image and video here
-          const file = selectedFile;
-          mediaData.append(fieldName, file as any);
-        } 
-        else if (selectedFile.uri.startsWith("data:")) {
-          // handle base64 (e.g., for web)
-          const file: File | any = dataURLtoFile(
-            selectedFile.uri,
-            selectedFile.name ??
-              (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
-          );
-          mediaData.append(fieldName, file);
-        }
-      });  
-      dispatch(storeMediaFormData({mediaFormData: mediaData}));
-    }
-
-    dispatch(postNewPostAction({ requestForm: postData as any }));
-    
-    //dispatch(uploadMedia({requestBody: mediaData as any}));
     handleClose();
   };
 
