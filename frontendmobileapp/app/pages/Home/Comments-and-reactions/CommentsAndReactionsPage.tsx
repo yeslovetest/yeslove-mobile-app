@@ -1,9 +1,9 @@
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Modal, Pressable, Keyboard, Platform } from 'react-native';
 import sharedStyles from '../HomeSharedStyles';
 import styles from './CommentsAndReactionsStyles';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { useFocusEffect } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Video } from '@/app/Universal-components/Video/Video';
 import { setPostReactionTab, postReactionToPost } from '@/app/store/Home-store/feedSlice';
 import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
@@ -16,7 +16,6 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Header from '@/app/Universal-components/Header/Header';
 import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '../Post-modal/Post-modal-components/File-preview/PostFilePreview';
-import type { ViewStyle } from 'react-native';
 
 export interface Post {
     id: number;
@@ -30,6 +29,7 @@ export interface Post {
     comments: number;
     timestamp: string;
     current_user_reaction: string;
+    media_files?: Array<{ uri?: string; type?: string; name?: string; width?: number; height?: number }>;
 }
 
 const IndividualPost = () => {
@@ -45,7 +45,30 @@ const IndividualPost = () => {
 
     const [contentDisplay, setContentDisplay] = useState("hide");
     const [reactionType, setReactionType] = useState(individualPost.current_user_reaction ?? 'default');
-    const [popUpState, setPopUpState] = useState<ViewStyle['visibility']>('hidden');
+    const [isReactionModalVisible, setReactionModalVisible] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const resolveMediaUrl = (url?: string) => {
+        if (!url) {
+            return '';
+        }
+
+        if (/^https?:\/\//i.test(url)) {
+            return url;
+        }
+
+        return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
+    const postMedia: Array<{ uri: string; type: string; name?: string; width?: number; height?: number }> = (individualPost.media_files ?? [])
+        .filter((item) => !!item?.uri && !!item?.type)
+        .map((item) => ({
+            uri: item.uri ?? '',
+            type: item.type ?? 'image/jpeg',
+            name: item.name,
+            width: item.width,
+            height: item.height,
+        }));
 
     const showComment = () => {
         setContentDisplay('show');
@@ -57,6 +80,24 @@ const IndividualPost = () => {
         }, 1000);
         return () => clearTimeout(timer);
     }, []));
+
+    useEffect(() => {
+        const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+        const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+        const showSubscription = Keyboard.addListener(showEvent, (event) => {
+            setKeyboardHeight(event.endCoordinates?.height ?? 0);
+        });
+
+        const hideSubscription = Keyboard.addListener(hideEvent, () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            showSubscription.remove();
+            hideSubscription.remove();
+        };
+    }, []);
 
 
 
@@ -79,32 +120,33 @@ const IndividualPost = () => {
         else if (reactionType !== reaction) {
             dispatch(postReactionToPost({ postId: individualPost.id ?? 0, reactionType: reaction }));
             setReactionType(reaction);
-            setPopUpState('hidden')
+            setReactionModalVisible(false);
 
         }
         else {
             dispatch(postReactionToPost({ postId: individualPost.id ?? 0, reactionType: reactionType }));
             setReactionType('default');
-            setPopUpState('hidden')
+            setReactionModalVisible(false);
         }
     }
 
 
     const displayReactions = () => {
-        setPopUpState('visible')
+        setReactionModalVisible(true);
     };
 
     return (
         <>
             <Header></Header>
             <View style={sharedStyles.container}>
-                <ScrollView
-                    keyboardShouldPersistTaps="handled"
-                    contentInsetAdjustmentBehavior="automatic"
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.contentContainer}
-                >
-                    <View style={[styles.postContainer, styles.indPostContainer]}>
+                <View style={styles.keyboardContainer}>
+                    <ScrollView
+                        keyboardShouldPersistTaps="handled"
+                        contentInsetAdjustmentBehavior="automatic"
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.contentContainer}
+                    >
+                        <View style={[styles.postContainer, styles.indPostContainer]}>
                         <View style={styles.profileImageContainer}>
                             <Image style={styles.profileImage} source={{ uri: individualPost.author_pic }} />
                             <View style={styles.profileInfoContainer}>
@@ -114,45 +156,34 @@ const IndividualPost = () => {
                                 <Text style={styles.timePosted}>{individualPost.timestamp ? dayjs(individualPost.timestamp).format('MMM D, YYYY h:mm A') : 'Unknown date'}</Text>
                             </View>
                         </View>
-                        <Text style={styles.postContent}>
-                            {individualPost.content}
-                        </Text>
-                        {individualPost.media_files && (
-                            <PostFilePreview file={individualPost.media_files} />
+                        {postMedia.length > 0 && (
+                            <View style={styles.postMediaWrapper}>
+                                <PostFilePreview file={postMedia} />
+                            </View>
                         )}
                         {individualPost.image &&  (
                             <Image style={styles.postImage} 
-                                source={{ uri: `${BASE_URL}${individualPost.image.startsWith('/') ? '' : '/'}${individualPost.image}` }}
+                                source={{ uri: resolveMediaUrl(individualPost.image) }}
                             /> 
                              
                         )}
 
                         {individualPost.video_url && (
                             <Video
-                                source={{ uri: `${BASE_URL}${individualPost.video_url.startsWith('/') ? '' : '/'}${individualPost.video_url}` }}
+                                source={{ uri: resolveMediaUrl(individualPost.video_url) }}
                                 style={styles.postVideo}
                                 useNativeControls
                                 resizeMode={"contain" as any}
                             /> 
                         )}
 
-                        <View style={{ ...styles.seeLessAndLikeContainer, borderTopWidth: 0 }} onPointerLeave={() => setPopUpState('hidden')}>
+                        <Text style={styles.postContent}>
+                            {individualPost.content}
+                        </Text>
+
+                        <View style={{ ...styles.seeLessAndLikeContainer, borderTopWidth: 0 }}>
                             <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >
-                                <View style={{ ...styles.reactionPopUp, visibility: popUpState }}
-                                    onPointerLeave={() => setPopUpState('hidden')}>
-                                    <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('like')} >
-                                        <Ionicons name="thumbs-up-sharp" size={24} color='blue' />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('love')} >
-                                        <Ionicons name="heart" size={24} color="red" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.likeIcon} onPress={() => changeReaction('laugh')} >
-                                        <FontAwesome6 name="laugh" size={24} color="black" />
-                                    </TouchableOpacity>
-                                </View>
-
-
-                                <TouchableOpacity style={[styles.likeIcon, styles.reactionIcon]} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
+                                <TouchableOpacity style={styles.reactionIcon} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
                                     {(reactionType === 'default') &&
                                         (<Ionicons name="thumbs-up-outline" size={24} color='black' />)
                                     }
@@ -170,10 +201,10 @@ const IndividualPost = () => {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </View>
+                        </View>
 
 
-                    <View style={[styles.homeNavBarContainer, styles.indPostNavBarContainer]}>
+                        <View style={[styles.homeNavBarContainer, styles.indPostNavBarContainer]}>
                         <View style={[styles.homeNavBar, styles.indPostNavBar]}>
                             <TouchableOpacity style={styles.homeItem} onPress={() => dispatch(setPostReactionTab('reactions'))}>
                                 {reactionTypeTab === 'comments' && <Text style={styles.navText} >Reactions</Text>}
@@ -188,34 +219,61 @@ const IndividualPost = () => {
  />}
                             </TouchableOpacity>
                         </View>
+                        </View>
+
+                        {(reactionTypeTab === 'reactions' && contentDisplay === 'show') && (
+                            <View>
+                                {reactions.toReversed().map((reaction, index) => (
+                                    <PostReaction
+                                        key={index}
+                                        reaction={reaction}
+                                    />
+                                ))}
+                            </View>
+                        )}
+
+                        {(reactionTypeTab === 'comments' && contentDisplay === 'show') && (
+                            <View>
+                                {comments.toReversed().map((comment, index) => (
+                                    <PostComment
+                                        key={index}
+                                        comment={comment}
+                                    />
+                                ))}
+                            </View>
+                        )}
+                    </ScrollView>
+                    <View style={[styles.commentComposerWrap, { marginBottom: keyboardHeight }]}>
+                        <PostCommentField id={individualPost.id} pic={profilePic} />
                     </View>
-
-                    {(reactionTypeTab === 'reactions' && contentDisplay === 'show') && (
-                        <View>
-                            {reactions.toReversed().map((reaction, index) => (
-                                <PostReaction
-                                    key={index}
-                                    reaction={reaction}
-                                />
-                            ))}
-                        </View>
-                    )}
-
-                    {(reactionTypeTab === 'comments' && contentDisplay === 'show') && (
-                        <View>
-                            {comments.toReversed().map((comment, index) => (
-                                <PostComment
-                                    key={index}
-                                    comment={comment}
-                                />
-                            ))}
-                        </View>
-                    )}
-                </ScrollView>
-                <View>
-                    <PostCommentField id={individualPost.id} pic={profilePic} />
-
                 </View>
+
+                <Modal
+                    visible={isReactionModalVisible}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setReactionModalVisible(false)}
+                >
+                    <Pressable style={styles.modalBackdrop} onPress={() => setReactionModalVisible(false)}>
+                        <Pressable style={styles.reactionModalCard}>
+                            <Text style={styles.modalTitle}>Choose reaction</Text>
+                            <View style={styles.reactionModalActions}>
+                                <TouchableOpacity style={styles.reactionAction} onPress={() => changeReaction('like')}>
+                                    <Ionicons name="thumbs-up-sharp" size={28} color='blue' />
+                                    <Text style={styles.reactionActionLabel}>Like</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.reactionAction} onPress={() => changeReaction('love')}>
+                                    <Ionicons name="heart" size={28} color="red" />
+                                    <Text style={styles.reactionActionLabel}>Love</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.reactionAction} onPress={() => changeReaction('laugh')}>
+                                    <FontAwesome6 name="laugh" size={28} color="black" />
+                                    <Text style={styles.reactionActionLabel}>Laugh</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </Pressable>
+                    </Pressable>
+                </Modal>
             </View>
         </>
     );

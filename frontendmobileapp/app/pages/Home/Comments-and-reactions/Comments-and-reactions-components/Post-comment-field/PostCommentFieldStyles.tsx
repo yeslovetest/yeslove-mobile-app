@@ -1,30 +1,45 @@
 import theme from "@/assets/variables/Variables";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const fontSize = Math.min(Math.max(SCREEN_WIDTH * 0.038, 14), 17);
 
 const styles = StyleSheet.create({
     commentContainer: {
       justifyContent: "center",
       alignItems: "center",
-      paddingVertical: 10,
+      paddingTop: 10,
+      paddingBottom: 12,
+      paddingHorizontal: 12,
       backgroundColor: "#fff",
+      borderTopWidth: 1,
+      borderTopColor: "#E8EAF0",
+      width: "100%",
 
     },
 
     postCommentContainer: {
-      paddingHorizontal: 15,
-      justifyContent: "center",
+      width: "100%",
+      justifyContent: "flex-start",
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-end",
+      gap: 10,
     },
 
     commentBox: {
-      width: "70%",
-      height: 35,
-      borderWidth: 2,
-      borderColor: "#ccc",
+      flex: 1,
+      minHeight: 46,
+      maxHeight: 118,
+      borderWidth: 1,
+      borderColor: "#D7DBE6",
       outlineColor: "#ccc",
-      borderRadius: 15,
-      paddingHorizontal: 3,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize,
+      lineHeight: Math.round(fontSize * 1.45),
+      color: "#1f1f1f",
+      backgroundColor: "#FBFCFF",
     },
 
     commentProfileImage: {
@@ -33,22 +48,29 @@ const styles = StyleSheet.create({
       borderRadius: 60, 
       borderWidth: 1,
       borderColor: "#ccc",
-      marginRight: 10,
+      marginBottom: 2,
     },
 
     submitCommentButton: {
-      width: 80,
-      height: 35,
+      minWidth: 84,
+      height: 42,
       backgroundColor: theme.colors.primaryBlue,
       justifyContent: "center",
       alignItems: "center",
-      borderRadius: 15,
+      borderRadius: 12,
       opacity: 0.95,
-      marginLeft: 10,
+      paddingHorizontal: 14,
+      marginBottom: 2,
+    },
+
+    submitCommentButtonDisabled: {
+      opacity: 0.55,
     },
 
     submitCommentButtonText: {
-            color: "#f1f1f1"
+      color: "#f1f1f1",
+      fontSize,
+      fontWeight: '600',
     },
 })
 

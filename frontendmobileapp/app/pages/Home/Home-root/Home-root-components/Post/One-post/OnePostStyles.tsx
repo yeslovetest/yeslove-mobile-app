@@ -48,11 +48,17 @@ const styles = StyleSheet.create({
   postContent: {
     color: theme.colors.blackText,
     paddingHorizontal: 3,
-    marginTop: 10,
-    paddingBottom: 10,
+    marginTop: 6,
+    paddingBottom: 8,
     width: "100%",
     fontSize: 16,
     lineHeight: 24,
+  },
+
+  postMediaWrapper: {
+    width: '100%',
+    marginTop: 4,
+    marginBottom: 4,
   },
 
   profileImage: {
@@ -122,7 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     width: "auto",
     gap: 16,
-    marginTop: 15,
+    marginTop: 12,
   },
   likeIcon: {
     color: theme.colors.blackText

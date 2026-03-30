@@ -4,12 +4,26 @@ import { StyleSheet, Dimensions } from "react-native";
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const bodyFontSize = Math.min(Math.max(SCREEN_WIDTH * 0.040, 15), 18);
+const metaFontSize = Math.min(Math.max(SCREEN_WIDTH * 0.031, 12), 14);
+const titleFontSize = Math.min(Math.max(SCREEN_WIDTH * 0.043, 16), 20);
 
 const styles = StyleSheet.create({
+    keyboardContainer: {
+      flex: 1,
+      width: '100%',
+    },
+
+    commentComposerWrap: {
+      width: '100%',
+      backgroundColor: '#fff',
+    },
+
     contentContainer: {
       width: "100%",
-      alignItems: "center",
-      paddingBottom: 88,
+      alignItems: "stretch",
+      paddingBottom: 100,
+      paddingHorizontal: 0,
     },
         indPostContainer: {
     borderBottomStartRadius: 0,
@@ -17,7 +31,7 @@ const styles = StyleSheet.create({
   },
         timePosted: {
       color: "#6f6f6f",
-      fontSize: 12,
+      fontSize: metaFontSize,
   },
 
     seeLessAndLikeContainer: {
@@ -47,9 +61,10 @@ const styles = StyleSheet.create({
   },
   postImage: { 
     width: '100%',
-    maxWidth: SCREEN_WIDTH - 60,
+    maxWidth: SCREEN_WIDTH - 48,
     borderRadius: 10, 
-    marginTop: 10,
+    marginTop: 8,
+    marginBottom: 8,
     resizeMode: 'contain',
     aspectRatio: 1.3,
   },
@@ -58,22 +73,23 @@ const styles = StyleSheet.create({
     minHeight: 220,
     maxHeight: Math.min(SCREEN_HEIGHT * 0.5, 340),
     borderRadius: 10, 
-    marginTop: 10,
-    marginBottom: 14,
+    marginTop: 8,
+    marginBottom: 8,
     resizeMode: 'cover' 
   },
     profileName: {
     marginBottom: 4,
     fontWeight: "600",
-    fontSize: 15,
+    fontSize: titleFontSize,
   },
     postContent: {
     color: "#3f3f3f",
     paddingHorizontal: 3,
+    paddingTop: 6,
     paddingBottom: 10,
     width: "100%",
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: bodyFontSize,
+    lineHeight: Math.round(bodyFontSize * 1.5),
   },
     profileInfoContainer: {
     display: "flex",
@@ -86,7 +102,6 @@ const styles = StyleSheet.create({
       postContainer: {
     marginBottom: vw(5),
     width: '100%',
-    maxWidth: 760,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "flex-start",
@@ -99,22 +114,11 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-       reactionPopUp :{
-    visibility: 'hidden', 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    borderWidth: 0, 
-    width: 110,
-    borderRadius: 10, 
-    padding: 5,
-    position: 'absolute', 
-    bottom: 30, 
-    backgroundColor: 'white', 
-    zIndex: 1000, 
-    shadowOffset: {width: 3, height: -2}, 
-    shadowOpacity: 0.1, 
-    elevation: 2 
+
+  postMediaWrapper: {
+    width: '100%',
+    marginTop: 4,
+    marginBottom: 4,
   },
     
     likeButtonContainer: {
@@ -125,10 +129,16 @@ const styles = StyleSheet.create({
       flex: 1, 
       marginTop: 8
     },
+    likeIcon: {
+      color: theme.colors.blackText,
+    },
+    reactionIcon: {
+      marginRight: 8,
+    },
         homeNavBarContainer: {
       flex: 0,
       justifyContent: "flex-start",
-      alignItems: "center",
+      alignItems: "stretch",
       width: "100%",
       marginTop: 2,
       marginBottom: 10,
@@ -138,7 +148,6 @@ const styles = StyleSheet.create({
       flexDirection: "row",
       flexWrap: "wrap", 
       width: '100%',
-      maxWidth: SCREEN_WIDTH - 20,
       justifyContent: "center",
       backgroundColor: "#fff",
       paddingVertical: 3,
@@ -171,10 +180,10 @@ const styles = StyleSheet.create({
     activeHomeNavText: {
       fontWeight: "bold",
       color: "#111",
-      fontSize: 15,
+      fontSize: bodyFontSize,
     },
     navText: {
-        fontSize: 15,
+        fontSize: bodyFontSize,
         color: theme.colors.iconNotActive,
         fontWeight: "500",
       },
@@ -185,6 +194,53 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: -2, 
       },
+
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.35)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+    },
+
+    reactionModalCard: {
+      width: '92%',
+      maxWidth: 380,
+      backgroundColor: '#FFFFFF',
+      borderRadius: 14,
+      paddingVertical: 18,
+      paddingHorizontal: 14,
+    },
+
+    modalTitle: {
+      fontSize: titleFontSize,
+      fontWeight: '700',
+      color: '#111',
+      marginBottom: 14,
+      textAlign: 'center',
+    },
+
+    reactionModalActions: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
+
+    reactionAction: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: 80,
+      paddingVertical: 8,
+      borderRadius: 10,
+      backgroundColor: '#F7F8FA',
+    },
+
+    reactionActionLabel: {
+      marginTop: 6,
+      fontSize: metaFontSize,
+      fontWeight: '600',
+      color: '#111',
+    },
 })
 
 export default styles

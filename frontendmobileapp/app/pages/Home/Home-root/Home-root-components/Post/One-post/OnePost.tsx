@@ -39,11 +39,11 @@ const OnePost = (props: Props) => {
     };
 
     const postMedia: Array<{ uri: string; type: string; name?: string }> = (props.post.media_files ?? [])
-        .filter((item) => !!item?.url && !!item?.content_type)
+        .filter((item) => !!item?.uri && !!item?.type)
         .map((item) => ({
-            uri: item.url ?? '',
-            type: item.content_type ?? 'image/jpeg',
-            name: item.filename,
+            uri: item.uri ?? '',
+            type: item.type ?? 'image/jpeg',
+            name: item.name,
         }));
 
 
@@ -156,33 +156,21 @@ const OnePost = (props: Props) => {
                 )}
 
             </View>
+            {postMedia.length > 0 && (
+                <View style={styles.postMediaWrapper}>
+                    <PostFilePreview file={postMedia} />
+                </View>
+            )}
+
             <Text style={styles.postContent}>
                 {expanded || !isLongText ? props.post.content : `${props.post.content?.substring(0, CHAR_LIMIT)}...`}
             </Text>
 
-                {postMedia.length > 0 && (
-                    <PostFilePreview file={postMedia} />
-            )}
-
-            {props.post.image &&  ( 
-               <Image style={styles.postImage} 
-                    source={{ uri: resolveMediaUrl(props.post.image) }} 
-               /> 
-    
-            )}  
-            {props.post.video_url && (
-               <Video
-                    source={{ uri: resolveMediaUrl(props.post.video_url) }}
-                    style={styles.postVideo}
-                    useNativeControls
-                    resizeMode={"contain" as any}
-                /> 
-            )}  
-
+             
             <View style={styles.seeLessAndLikeContainer}>
                 <View style={{ ...styles.likeButtonContainer, backgroundColor: 'white' }} >
 
-        <View style={styles.likeAndCommentContainer}>
+                <View style={styles.likeAndCommentContainer}>
                     <TouchableOpacity style={[styles.likeIcon, { marginRight: 8 }]} onPress={() => changeReaction('reverseReaction')} onLongPress={displayReactions}>
                         {(reactionType === 'default') &&
                             (<Ionicons name="thumbs-up-outline" size={24} style={styles.likeIcon} />)
@@ -196,16 +184,14 @@ const OnePost = (props: Props) => {
                         {reactionType === 'laugh' &&
                             (<FontAwesome6 name="laugh" size={24} color="black" />)
                         }
-
-
                     </TouchableOpacity>
                     <Text>{props.post.likes}</Text>
-                    </View>
-                    <View style={styles.likeAndCommentContainer}>
+                </View>
+                <View style={styles.likeAndCommentContainer}>
                     <FontAwesome6 onPress={() => displayIndividualPost('comments')} name="comment-dots" size={24} style={styles.likeIcon} />
                     <Text style={styles.numberOfLikesAndComments}>{props.post.comments} </Text>
-                    </View>
                 </View>
+            </View>
                 {isLongText && (
                     <TouchableOpacity onPress={handleToggle}>
                         <Text style={{ color: '#2c2e35ff', marginTop: 10 }}>

@@ -91,24 +91,6 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
     return { width: finalWidth, height: finalHeight };
   };
 
-  const scrollToIndex = (index: number) => {
-    sliderRef.current?.scrollToIndex({ index, animated: true });
-  };
-
-  const goNext = () => {
-    if (currentIndex < normalizedFiles.length - 1) {
-      scrollToIndex(currentIndex + 1);
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const goPrev = () => {
-    if (currentIndex > 0) {
-      scrollToIndex(currentIndex - 1);
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
   return (
     <View style={{backgroundColor: 'white', width: '100%' }}
       onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
@@ -168,41 +150,6 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
                   resizeMode="cover"
                 />
               )}
-
-              {normalizedFiles.length > 1 && (
-                <View style={styles.arrowWrapper}>
-                  <Pressable
-                    style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
-                    onPress={goPrev}
-                    disabled={currentIndex === 0}
-                  >
-                    <Text
-                      style={[
-                        styles.navButtonText,
-                        { opacity: currentIndex === 0 ? 0.4 : 1 },
-                      ]}
-                    >
-                      ◀
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={[styles.navButton, currentIndex === normalizedFiles.length - 1 && styles.navButtonDisabled]}
-                    onPress={goNext}
-                    disabled={currentIndex === normalizedFiles.length - 1}
-                  >
-                    <Text
-                      style={[
-                        styles.navButtonText,
-                        { opacity: currentIndex === normalizedFiles.length - 1 ? 0.4 : 1 },
-                      ]}
-                    >
-                      ▶
-                    </Text>
-                  </Pressable>
-                </View>
-              )}
-
             </View>
           );
         }}
