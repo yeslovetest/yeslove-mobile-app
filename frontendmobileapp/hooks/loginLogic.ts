@@ -4,7 +4,7 @@ import { logInAction, setLoginStateAction, LoginState, setErrorMessage } from '.
 import axios from 'axios';
 import theme from '@/assets/variables/Variables';
 import { activateLoadingScreen } from '@/app/store/Profile-store/profileSlice';
-import { BASE_URL } from '@/constants/api';
+import { BASE_URL } from '@/app/config/baseUrl';
 
 axios.defaults.baseURL = BASE_URL;
 
