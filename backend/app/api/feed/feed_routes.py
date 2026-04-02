@@ -195,7 +195,6 @@ class CreatePost(Resource):
             files = [files] if files else []
         logger.info(f'files found: {len(files)}')
 
-       
         """Create a new post with automatic moderation."""
 
         if not content:
@@ -244,7 +243,6 @@ class CreatePost(Resource):
             content=content,
             user_id=user.id,
             is_anonymous = is_anonymous,
-        
         )
         db.session.add(post)
         db.session.flush()  # Get post.id

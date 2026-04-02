@@ -18,3 +18,4 @@ export const appSelect: <Fn extends (state: State, ...args: any[]) => any>(
 export default function HooksRoutePlaceholder() {
   return null;
 }
+
