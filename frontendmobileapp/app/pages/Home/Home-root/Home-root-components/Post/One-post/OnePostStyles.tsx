@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
 
   profileName: {
     marginBottom: 7,
+  },
+
+  profileNameText: {
     fontWeight: "600",
     color: theme.colors.blackText,
     fontSize: 16,
@@ -45,10 +48,17 @@ const styles = StyleSheet.create({
   postContent: {
     color: theme.colors.blackText,
     paddingHorizontal: 3,
-    marginTop: 10,
-    paddingBottom: 10,
+    marginTop: 6,
+    paddingBottom: 8,
     width: "100%",
-    fontSize: 15,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+
+  postMediaWrapper: {
+    width: '100%',
+    marginTop: 4,
+    marginBottom: 4,
   },
 
   profileImage: {
@@ -96,7 +106,8 @@ const styles = StyleSheet.create({
   },
 
   timePosted: {
-    color: "#888"
+    color: "#888",
+    fontSize: 12,
   },
 
   seeLessAndLikeContainer: {
@@ -114,40 +125,32 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    width: "45%",
-    marginTop: 15,
-  },
-  reactionPopUp: {
-    visibility: 'hidden',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 0,
-    width: 110,
-    borderRadius: 10,
-    padding: 5,
-    position: 'absolute',
-    bottom: 30,
-    backgroundColor: 'white',
-    zIndex: 1000,
-    shadowOffset: { width: 3, height: -2 },
-    shadowOpacity: 0.1,
-    elevation: 2
+    justifyContent: "flex-start",
+    width: "auto",
+    gap: 16,
+    marginTop: 12,
   },
   likeIcon: {
     color: theme.colors.blackText
   },
+
+  reactionIcon: {
+    marginRight: 8,
+  },
   numberOfLikesAndComments: {
-    color: theme.colors.blackText
+    color: theme.colors.blackText,
+    fontSize: 15,
+    fontWeight: '500',
+    marginLeft: 5,
   },
 
   likeAndCommentContainer: {
     flexDirection: "row",
     height: "100%",
-    width: "30%",
-    justifyContent: "space-between",
-    alignItems: "center"
+    width: "auto",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    paddingRight: 6,
   },
 
   emoji: {
@@ -158,14 +161,20 @@ const styles = StyleSheet.create({
 
   followUserText: {
     color: theme.colors.primaryBlue,
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
-    fontWeight: '300',
+    fontWeight: '500',
     borderColor: theme.colors.primaryBlue,
-    paddingVertical: 4,
+    paddingVertical: 6,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderRadius: 5,
+  },
+
+  followUser: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    maxWidth: '42%',
   },
 
   followMenuPopUp: {
@@ -181,13 +190,16 @@ const styles = StyleSheet.create({
   followMenuPopUpText: {
     color: theme.colors.blackText,
     textAlign: 'left',
-    fontSize: 16,
-    fontWeight: '400',
+    fontSize: 15,
+    fontWeight: '500',
     width: '100%',
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
   followMenuOptions: {
     width: '100%',
+    borderBottomColor: '#EBEDF1',
+    borderBottomWidth: 1,
 
   },
 
@@ -205,7 +217,62 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#ffffff",
+    fontSize: 14,
+  },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+
+  reactionModalCard: {
+    width: '92%',
+    maxWidth: 380,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+  },
+
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.blackText,
+    marginBottom: 14,
+    textAlign: 'center',
+  },
+
+  reactionModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+
+  reactionAction: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#F7F8FA',
+  },
+
+  reactionActionLabel: {
+    marginTop: 6,
     fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.blackText,
+  },
+
+  followMenuCard: {
+    width: '86%',
+    maxWidth: 360,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    overflow: 'hidden',
   },
 
 

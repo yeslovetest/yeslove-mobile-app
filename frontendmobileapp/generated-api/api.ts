@@ -1001,13 +1001,19 @@ export interface LikePostRequest {
  */
 export interface LoginRequest {
     /**
-     * User\'s Keycloak username
+     * User login identifier (username or email)
      * @type {string}
      * @memberof LoginRequest
      */
     'username': string;
     /**
-     * User\'s Keycloak password
+     * Optional email alias for Supabase login
+     * @type {string}
+     * @memberof LoginRequest
+     */
+    'email'?: string;
+    /**
+     * User password
      * @type {string}
      * @memberof LoginRequest
      */
@@ -1038,7 +1044,7 @@ export interface LoginRequest {
  */
 export interface LogoutRequest {
     /**
-     * Users refresh token
+     * User refresh token
      * @type {string}
      * @memberof LogoutRequest
      */
@@ -1654,12 +1660,39 @@ export interface SetUserTypeRequest {
      */
     'license'?: string;
     /**
+     * License number (for professional users only)
+     * @type {string}
+     * @memberof SetUserTypeRequest
+     */
+    'license_number'?: string;
+    /**
+     * License body (HCPC, BACP, UKCP)
+     * @type {string}
+     * @memberof SetUserTypeRequest
+     */
+    'license_body'?: SetUserTypeRequestLicenseBodyEnum;
+    /**
+     * Consent to use and display license data
+     * @type {boolean}
+     * @memberof SetUserTypeRequest
+     */
+    'consent_license_data'?: boolean;
+    /**
      * Specialization field (for professional users only)
      * @type {string}
      * @memberof SetUserTypeRequest
      */
     'specialization'?: string;
 }
+
+export const SetUserTypeRequestLicenseBodyEnum = {
+    Hcpc: 'HCPC',
+    Bacp: 'BACP',
+    Ukcp: 'UKCP'
+} as const;
+
+export type SetUserTypeRequestLicenseBodyEnum = typeof SetUserTypeRequestLicenseBodyEnum[keyof typeof SetUserTypeRequestLicenseBodyEnum];
+
 /**
  * 
  * @export
@@ -1679,13 +1712,13 @@ export interface SignupRequest {
      */
     'confirm_email': string;
     /**
-     * User password
+     * User password (minimum 6 characters)
      * @type {string}
      * @memberof SignupRequest
      */
     'password': string;
     /**
-     * Confirm your password
+     * Confirm your password (minimum 6 characters)
      * @type {string}
      * @memberof SignupRequest
      */
@@ -1719,7 +1752,7 @@ export interface SignupRequest {
      * @type {string}
      * @memberof SignupRequest
      */
-    'user_type'?: SignupRequestUserTypeEnum;
+    'user_type': SignupRequestUserTypeEnum;
     /**
      * License body (HCPC, BACP, UKCP)
      * @type {string}
@@ -1784,6 +1817,30 @@ export interface SignupResponse {
      * @memberof SignupResponse
      */
     'message'?: string;
+    /**
+     * Auth provider handling signup (supabase/keycloak)
+     * @type {string}
+     * @memberof SignupResponse
+     */
+    'provider'?: string;
+    /**
+     * Provider subject id when available
+     * @type {string}
+     * @memberof SignupResponse
+     */
+    'keycloak_id'?: string;
+    /**
+     * Local backend user id when available
+     * @type {number}
+     * @memberof SignupResponse
+     */
+    'user_id'?: number;
+    /**
+     * True when provider accepted signup but local user will be created on first authenticated sync
+     * @type {boolean}
+     * @memberof SignupResponse
+     */
+    'pending_local_sync'?: boolean;
 }
 /**
  * 
@@ -1870,6 +1927,24 @@ export interface TokenResponse {
      * @memberof TokenResponse
      */
     'scope'?: string;
+    /**
+     * Auth provider that issued the token
+     * @type {string}
+     * @memberof TokenResponse
+     */
+    'provider'?: string;
+    /**
+     * Provider subject id used by backend
+     * @type {string}
+     * @memberof TokenResponse
+     */
+    'keycloak_id'?: string;
+    /**
+     * Local backend user id
+     * @type {number}
+     * @memberof TokenResponse
+     */
+    'user_id'?: number;
 }
 /**
  * 
@@ -1907,6 +1982,31 @@ export interface UpdateEventRequest {
      * @memberof UpdateEventRequest
      */
     'image'?: object;
+}
+/**
+ * 
+ * @export
+ * @interface UploadChatMediaResponse
+ */
+export interface UploadChatMediaResponse {
+    /**
+     * Unique ID of uploaded media
+     * @type {string}
+     * @memberof UploadChatMediaResponse
+     */
+    'media_id'?: string;
+    /**
+     * URL to access the uploaded media
+     * @type {string}
+     * @memberof UploadChatMediaResponse
+     */
+    'media_url'?: string;
+    /**
+     * MIME type of the uploaded file
+     * @type {string}
+     * @memberof UploadChatMediaResponse
+     */
+    'content_type'?: string;
 }
 /**
  * 
@@ -2036,50 +2136,6 @@ export interface UserProfile {
      */
     'education_info'?: EducationInfo;
 }
-/**
- * 
- * @export
- * @interface UserQuery
- */
-export interface UserQuery {
-    /**
-     * 
-     * @type {string}
-     * @memberof UserQuery
-     */
-    'username': string;
-    /**
-     * User\'s email (Optional)
-     * @type {string}
-     * @memberof UserQuery
-     */
-    'email'?: string;
-    /**
-     * User\'s database ID (Optional)
-     * @type {number}
-     * @memberof UserQuery
-     */
-    'user_id'?: number;
-}
-/**
- * 
- * @export
- * @interface UserQueryResponse
- */
-export interface UserQueryResponse {
-    /**
-     * User\'s Keycloak ID
-     * @type {string}
-     * @memberof UserQueryResponse
-     */
-    'keycloak_id'?: string;
-    /**
-     * User\'s database ID
-     * @type {number}
-     * @memberof UserQueryResponse
-     */
-    'user_id'?: number;
-}
 
 /**
  * AuthApi - axios parameter creator
@@ -2089,7 +2145,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @summary Delete user account via Keycloak API
+         * @summary Delete user account from provider and local DB
          * @param {DeleteAccountRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2128,7 +2184,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Change user password via Keycloak API
+         * @summary Change password in the configured auth provider
          * @param {ChangePasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2167,7 +2223,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Exchange user credentials for a Keycloak access token and check user type
+         * @summary Exchange credentials for access and refresh tokens
          * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2206,7 +2262,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Logout user from Keycloak
+         * @summary Logout the current user session from the configured provider
          * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2245,7 +2301,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Refresh expired access token using Keycloak refresh token
+         * @summary Refresh access token using refresh token
          * @param {RefreshTokenRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2284,7 +2340,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Send password reset email via Keycloak API
+         * @summary Trigger password reset flow in the configured auth provider
          * @param {ResetPasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2323,7 +2379,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Set user type (professional or standard) for new users
+         * @summary Set user type (professional or standard) for the authenticated user
          * @param {SetUserTypeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2362,7 +2418,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Creates a new KeyCloak user via Admin API
+         * @summary Create a new user in the configured auth provider and sync local DB
          * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2399,6 +2455,39 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @summary Create or update the local user row from JWT claims
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postSyncUser: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/auth/sync_user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -2411,7 +2500,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Delete user account via Keycloak API
+         * @summary Delete user account from provider and local DB
          * @param {DeleteAccountRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2424,7 +2513,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Change user password via Keycloak API
+         * @summary Change password in the configured auth provider
          * @param {ChangePasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2437,7 +2526,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Exchange user credentials for a Keycloak access token and check user type
+         * @summary Exchange credentials for access and refresh tokens
          * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2450,7 +2539,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Logout user from Keycloak
+         * @summary Logout the current user session from the configured provider
          * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2463,7 +2552,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Refresh expired access token using Keycloak refresh token
+         * @summary Refresh access token using refresh token
          * @param {RefreshTokenRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2476,7 +2565,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Send password reset email via Keycloak API
+         * @summary Trigger password reset flow in the configured auth provider
          * @param {ResetPasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2489,7 +2578,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Set user type (professional or standard) for new users
+         * @summary Set user type (professional or standard) for the authenticated user
          * @param {SetUserTypeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2502,7 +2591,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Creates a new KeyCloak user via Admin API
+         * @summary Create a new user in the configured auth provider and sync local DB
          * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2511,6 +2600,18 @@ export const AuthApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postSignup(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postSignup']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Create or update the local user row from JWT claims
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postSyncUser(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postSyncUser(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthApi.postSyncUser']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2525,7 +2626,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
     return {
         /**
          * 
-         * @summary Delete user account via Keycloak API
+         * @summary Delete user account from provider and local DB
          * @param {DeleteAccountRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2535,7 +2636,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Change user password via Keycloak API
+         * @summary Change password in the configured auth provider
          * @param {ChangePasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2545,7 +2646,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Exchange user credentials for a Keycloak access token and check user type
+         * @summary Exchange credentials for access and refresh tokens
          * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2555,7 +2656,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Logout user from Keycloak
+         * @summary Logout the current user session from the configured provider
          * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2565,7 +2666,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Refresh expired access token using Keycloak refresh token
+         * @summary Refresh access token using refresh token
          * @param {RefreshTokenRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2575,7 +2676,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Send password reset email via Keycloak API
+         * @summary Trigger password reset flow in the configured auth provider
          * @param {ResetPasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2585,7 +2686,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Set user type (professional or standard) for new users
+         * @summary Set user type (professional or standard) for the authenticated user
          * @param {SetUserTypeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2595,13 +2696,22 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Creates a new KeyCloak user via Admin API
+         * @summary Create a new user in the configured auth provider and sync local DB
          * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
             return localVarFp.postSignup(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Create or update the local user row from JWT claims
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postSyncUser(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postSyncUser(options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2615,7 +2725,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
 export class AuthApi extends BaseAPI {
     /**
      * 
-     * @summary Delete user account via Keycloak API
+     * @summary Delete user account from provider and local DB
      * @param {DeleteAccountRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2627,7 +2737,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Change user password via Keycloak API
+     * @summary Change password in the configured auth provider
      * @param {ChangePasswordRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2639,7 +2749,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Exchange user credentials for a Keycloak access token and check user type
+     * @summary Exchange credentials for access and refresh tokens
      * @param {LoginRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2651,7 +2761,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Logout user from Keycloak
+     * @summary Logout the current user session from the configured provider
      * @param {LogoutRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2663,7 +2773,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Refresh expired access token using Keycloak refresh token
+     * @summary Refresh access token using refresh token
      * @param {RefreshTokenRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2675,7 +2785,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Send password reset email via Keycloak API
+     * @summary Trigger password reset flow in the configured auth provider
      * @param {ResetPasswordRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2687,7 +2797,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Set user type (professional or standard) for new users
+     * @summary Set user type (professional or standard) for the authenticated user
      * @param {SetUserTypeRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2699,7 +2809,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Creates a new KeyCloak user via Admin API
+     * @summary Create a new user in the configured auth provider and sync local DB
      * @param {SignupRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2707,6 +2817,17 @@ export class AuthApi extends BaseAPI {
      */
     public postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).postSignup(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Create or update the local user row from JWT claims
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public postSyncUser(options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).postSyncUser(options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -3122,6 +3243,50 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
+         * Upload media file for chat message
+         * @summary Upload media file for chat
+         * @param {File} file Media file to upload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUploadChatMedia: async (file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('postUploadChatMedia', 'file', file)
+            const localVarPath = `/api/chat/upload_media`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
          * @summary Mark all messages in the chat as opened
          * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
@@ -3209,6 +3374,19 @@ export const ChatApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Upload media file for chat message
+         * @summary Upload media file for chat
+         * @param {File} file Media file to upload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postUploadChatMedia(file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadChatMediaResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postUploadChatMedia(file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatApi.postUploadChatMedia']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
          * @summary Mark all messages in the chat as opened
          * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
@@ -3261,6 +3439,16 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
          */
         postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postSendMessage(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Upload media file for chat message
+         * @summary Upload media file for chat
+         * @param {File} file Media file to upload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUploadChatMedia(file: File, options?: RawAxiosRequestConfig): AxiosPromise<UploadChatMediaResponse> {
+            return localVarFp.postUploadChatMedia(file, options).then((request) => request(axios, basePath));
         },
         /**
          * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
@@ -3320,6 +3508,18 @@ export class ChatApi extends BaseAPI {
     }
 
     /**
+     * Upload media file for chat message
+     * @summary Upload media file for chat
+     * @param {File} file Media file to upload
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatApi
+     */
+    public postUploadChatMedia(file: File, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).postUploadChatMedia(file, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
      * @summary Mark all messages in the chat as opened
      * @param {string} receiverId The Keycloak ID of the user on the other end of the chat
@@ -3342,7 +3542,7 @@ export const ChatbotApiAxiosParamCreator = function (configuration?: Configurati
     return {
         /**
          * 
-         * @summary Send a message to chatbot
+         * @summary Send a message to chatbot microservice
          * @param {MessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3391,7 +3591,7 @@ export const ChatbotApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Send a message to chatbot
+         * @summary Send a message to chatbot microservice
          * @param {MessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3414,7 +3614,7 @@ export const ChatbotApiFactory = function (configuration?: Configuration, basePa
     return {
         /**
          * 
-         * @summary Send a message to chatbot
+         * @summary Send a message to chatbot microservice
          * @param {MessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3434,7 +3634,7 @@ export const ChatbotApiFactory = function (configuration?: Configuration, basePa
 export class ChatbotApi extends BaseAPI {
     /**
      * 
-     * @summary Send a message to chatbot
+     * @summary Send a message to chatbot microservice
      * @param {MessageRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -4743,12 +4943,12 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {boolean} [anonymous] if post is to be anonymous
-         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+         * @param {string} [anonymous] if post is to be anonymous
+         * @param {Array<File>} [media] Multiple media files (images/videos/audio)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost: async (content: string, anonymous?: boolean, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postCreatePost: async (content: string, anonymous?: string, media?: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'content' is not null or undefined
             assertParamExists('postCreatePost', 'content', content)
             const localVarPath = `/api/feed/post`;
@@ -4773,12 +4973,14 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             }
     
             if (anonymous !== undefined) { 
-                localVarFormParams.append('anonymous', String(anonymous) as any);
+                localVarFormParams.append('anonymous', anonymous as any);
             }
-    
-            if (media !== undefined) { 
-                localVarFormParams.append('media', media as any);
+                if (media) {
+                media.forEach((element) => {
+                    localVarFormParams.append('media', element as any);
+                })
             }
+
     
     
             localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -5032,12 +5234,12 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {boolean} [anonymous] if post is to be anonymous
-         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+         * @param {string} [anonymous] if post is to be anonymous
+         * @param {Array<File>} [media] Multiple media files (images/videos/audio)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postCreatePost(content: string, anonymous?: string, media?: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, anonymous, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postCreatePost']?.[localVarOperationServerIndex]?.url;
@@ -5174,12 +5376,12 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {boolean} [anonymous] if post is to be anonymous
-         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+         * @param {string} [anonymous] if post is to be anonymous
+         * @param {Array<File>} [media] Multiple media files (images/videos/audio)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        postCreatePost(content: string, anonymous?: string, media?: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.postCreatePost(content, anonymous, media, options).then((request) => request(axios, basePath));
         },
         /**
@@ -5318,13 +5520,13 @@ export class FeedApi extends BaseAPI {
      * 
      * @summary Create a new post
      * @param {string} content Content of the post
-     * @param {boolean} [anonymous] if post is to be anonymous
-     * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+     * @param {string} [anonymous] if post is to be anonymous
+     * @param {Array<File>} [media] Multiple media files (images/videos/audio)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public postCreatePost(content: string, anonymous?: boolean, media?: File, options?: RawAxiosRequestConfig) {
+    public postCreatePost(content: string, anonymous?: string, media?: Array<File>, options?: RawAxiosRequestConfig) {
         return FeedApiFp(this.configuration).postCreatePost(content, anonymous, media, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -6440,15 +6642,12 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
-         * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-         * @param {UserQuery} payload 
+         * This endpoint must NOT depend on database state.
+         * @summary Return authenticated user\'s Keycloak ID directly from JWT
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postGetUserKeycloakIdFlexible: async (payload: UserQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postGetUserKeycloakIdFlexible', 'payload', payload)
+        postGetUserKeycloakId: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/profile/user/keycloak_id`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6466,12 +6665,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
 
 
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -6645,16 +6841,15 @@ export const ProfileApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-         * @param {UserQuery} payload 
+         * This endpoint must NOT depend on database state.
+         * @summary Return authenticated user\'s Keycloak ID directly from JWT
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postGetUserKeycloakIdFlexible(payload: UserQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserQueryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postGetUserKeycloakIdFlexible(payload, options);
+        async postGetUserKeycloakId(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postGetUserKeycloakId(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ProfileApi.postGetUserKeycloakIdFlexible']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ProfileApi.postGetUserKeycloakId']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6754,14 +6949,13 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.postEmailNotifications(payload, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-         * @param {UserQuery} payload 
+         * This endpoint must NOT depend on database state.
+         * @summary Return authenticated user\'s Keycloak ID directly from JWT
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postGetUserKeycloakIdFlexible(payload: UserQuery, options?: RawAxiosRequestConfig): AxiosPromise<UserQueryResponse> {
-            return localVarFp.postGetUserKeycloakIdFlexible(payload, options).then((request) => request(axios, basePath));
+        postGetUserKeycloakId(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postGetUserKeycloakId(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6866,15 +7060,14 @@ export class ProfileApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-     * @param {UserQuery} payload 
+     * This endpoint must NOT depend on database state.
+     * @summary Return authenticated user\'s Keycloak ID directly from JWT
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProfileApi
      */
-    public postGetUserKeycloakIdFlexible(payload: UserQuery, options?: RawAxiosRequestConfig) {
-        return ProfileApiFp(this.configuration).postGetUserKeycloakIdFlexible(payload, options).then((request) => request(this.axios, this.basePath));
+    public postGetUserKeycloakId(options?: RawAxiosRequestConfig) {
+        return ProfileApiFp(this.configuration).postGetUserKeycloakId(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

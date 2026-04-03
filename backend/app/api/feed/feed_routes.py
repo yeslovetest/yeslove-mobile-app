@@ -227,16 +227,6 @@ class CreatePost(Resource):
         score = moderation_result["score"]
 
         media_ids = []
-        
-        # ✅ Handle multiple file uploads
-        if files:
-            for file in files:
-                try:
-                    result = MediaService.store_file(file=file, user_id=user.id)
-                    media_ids.append(result.get("media_id"))
-                    logger.info(f'Media file uploaded: {result.get("media_id")}')
-                except Exception as e:
-                    logger.error(f"Media upload failed for {file.filename}: {e}")
 
         # ✅ Create post record
         post = Post(
@@ -246,14 +236,25 @@ class CreatePost(Resource):
         )
         db.session.add(post)
         db.session.flush()  # Get post.id
-        
+
+        # ✅ Handle multiple file uploads
+        if files:
+            for file in files:
+                try:
+                    result = MediaService.store_file(file=file, user_id=user.id, post_id=post.id)
+                    media_ids.append(result.get("media_id"))
+                    logger.info(f'Media file uploaded: {result.get("media_id")}')
+                except Exception as e:
+                    logger.error(f"Media upload failed for {file.filename}: {e}")
+        '''
+       
         # ✅ Link media to post
         if media_ids:
             from app.models import PostMedia
             for media_id in media_ids:
                 post_media = PostMedia(post_id=post.id, media_id=media_id)
                 db.session.add(post_media)
-        
+         '''
         db.session.commit()
         
         # Posts are not synced to chatbot - only blogs are synced
