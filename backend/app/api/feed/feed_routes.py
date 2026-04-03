@@ -244,7 +244,8 @@ class CreatePost(Resource):
                     media_ids.append(result.get("media_id"))
                     logger.info(f'Media file uploaded: {result.get("media_id")}')
                 except Exception as e:
-                    logger.error(f"Media upload failed for {file.filename}: {e}")
+                    file_name = getattr(file, "filename", "unknown-file")
+                    logger.error(f"Media upload failed for {file_name}: {e}")
         '''
        
         # ✅ Link media to post

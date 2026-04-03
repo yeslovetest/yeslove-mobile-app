@@ -37,9 +37,12 @@ class MediaService:
         # ✅ Validate file type, size, etc.
         MediaValidator.validate_file(file)
 
+        content_type = getattr(file, 'content_type', None) or getattr(file, 'mimetype', None) or 'application/octet-stream'
+        mimetype = getattr(file, 'mimetype', None) or content_type
+
         content = file.read()
 
-        if  not file.mimetype.startswith(("image/", "video/")):
+        if not mimetype.startswith(("image/", "video/")):
             # Skip text-based scanning for images - image binary data might accidentally contain pattern
             # improved scanning for images to be implemented later👈
              # ✅ Security scan
@@ -47,11 +50,11 @@ class MediaService:
     
        
         # ✅ Process image (e.g., compression)
-        if file.content_type.startswith("image/"):
+        if content_type.startswith("image/"):
             content = MediaProcessor.compress_image(content)
 
         # ✅ Extract metadata (width, height, etc.)
-        metadata = MediaValidator.extract_image_metadata(content, file.content_type)
+        metadata = MediaValidator.extract_image_metadata(content, content_type)
 
        
         '''
@@ -65,7 +68,7 @@ class MediaService:
         if use_cloud_storage:
             s3_url = MediaService._upload_to_cloud(
                 content=content,
-                content_type=file.content_type,
+                content_type=content_type,
                 filename=file.filename,
                 folder='media',
                 allow_s3_fallback=current_app.config.get("USE_S3_STORAGE", False),
@@ -73,7 +76,7 @@ class MediaService:
 
         # ✅ Create and save Media record
         media = Media(
-            content_type=file.content_type,
+            content_type=content_type,
             content=content if not s3_url else None,  # store locally or use S3
             filename=file.filename,
             file_size=len(content),
@@ -150,6 +153,8 @@ class MediaService:
         
         # Validate file
         MediaValidator.validate_file(file)
+
+        content_type = getattr(file, 'content_type', None) or getattr(file, 'mimetype', None) or 'application/octet-stream'
         
         content = file.read()
         
@@ -157,11 +162,11 @@ class MediaService:
         SecurityService.scan_file_content(content)
         
         # Process image if needed
-        if file.content_type.startswith('image/'):
+        if content_type.startswith('image/'):
             content = MediaProcessor.compress_image(content)
         
         # Extract metadata
-        metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
+        metadata = MediaProcessor.extract_media_metadata(content, content_type, file.filename)
         
         # Upload to Supabase bucket (preferred) or S3 fallback.
         from flask import current_app
@@ -170,7 +175,7 @@ class MediaService:
         if use_cloud_storage:
             s3_url = MediaService._upload_to_cloud(
                 content=content,
-                content_type=file.content_type,
+                content_type=content_type,
                 filename=file.filename,
                 folder=folder,
                 allow_s3_fallback=current_app.config.get('USE_S3_STORAGE', False),
@@ -180,7 +185,7 @@ class MediaService:
             'id': str(uuid.uuid4()),
             's3_url': s3_url,
             'filename': file.filename,
-            'content_type': file.content_type,
+            'content_type': content_type,
             'file_size': len(content),
             'width': metadata.get('width'),
             'height': metadata.get('height'),
