@@ -11,6 +11,7 @@ interface FileItem {
   name?: string;
   width?: number;
   height?: number;
+  fileSize?: number;
 }
 
 interface Props {
@@ -30,6 +31,7 @@ const normalizeFileItem = (input: FileItem | MediaFile): FileItem => {
       name: input.name,
       width: input.width,
       height: input.height,
+      fileSize: input.fileSize,
     };
   }
 

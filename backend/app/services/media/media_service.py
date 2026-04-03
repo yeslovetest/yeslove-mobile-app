@@ -3,13 +3,30 @@ from app.logging_setup import setup_logger
 from flask import abort
 from datetime import datetime
 from .media_validator import MediaValidator
-from .media_processor import MediaProcessor, S3Storage
+from .media_processor import MediaProcessor, S3Storage, SupabaseStorage
 from .security import SecurityService
 import uuid
 
 logger = setup_logger()
 
 class MediaService:
+    @staticmethod
+    def _upload_to_cloud(content, content_type, filename, folder='media', allow_s3_fallback=False):
+        """Upload to Supabase first, then optionally fall back to S3."""
+        key = f"{folder}/{uuid.uuid4()}/{filename}"
+
+        supabase = SupabaseStorage()
+        if supabase.is_configured():
+            supabase_url = supabase.upload_file(content, key, content_type)
+            if supabase_url:
+                return supabase_url
+
+        if allow_s3_fallback:
+            s3 = S3Storage()
+            return s3.upload_file(content, key, content_type)
+
+        return None
+
     @staticmethod
     @SecurityService.rate_limit_uploads()
     def store_file(file, user_id=None, post_id=None):
@@ -42,13 +59,17 @@ class MediaService:
         metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
         '''
         
-        # ✅ Upload to S3 if enabled
-        # Upload to S3 (optional)
+        # Upload to Supabase bucket (preferred) or S3 fallback.
         s3_url = None
-        if current_app.config.get("USE_S3_STORAGE", False):
-            s3 = S3Storage()
-            key = f"media/{uuid.uuid4()}/{file.filename}"
-            s3_url = s3.upload_file(content, key, file.content_type)
+        use_cloud_storage = current_app.config.get("USE_S3_STORAGE", False) or SupabaseStorage().is_configured()
+        if use_cloud_storage:
+            s3_url = MediaService._upload_to_cloud(
+                content=content,
+                content_type=file.content_type,
+                filename=file.filename,
+                folder='media',
+                allow_s3_fallback=current_app.config.get("USE_S3_STORAGE", False),
+            )
 
         # ✅ Create and save Media record
         media = Media(
@@ -123,7 +144,7 @@ class MediaService:
     
     @staticmethod
     def upload_file(file, user_id, folder='media'):
-        """Upload file to S3 and return metadata"""
+        """Upload file to cloud storage and return metadata."""
         if not file:
             return None
         
@@ -142,13 +163,18 @@ class MediaService:
         # Extract metadata
         metadata = MediaProcessor.extract_media_metadata(content, file.content_type, file.filename)
         
-        # Upload to S3
+        # Upload to Supabase bucket (preferred) or S3 fallback.
         from flask import current_app
         s3_url = None
-        if current_app.config.get('USE_S3_STORAGE', False):
-            s3 = S3Storage()
-            key = f"{folder}/{uuid.uuid4()}/{file.filename}"
-            s3_url = s3.upload_file(content, key, file.content_type)
+        use_cloud_storage = current_app.config.get('USE_S3_STORAGE', False) or SupabaseStorage().is_configured()
+        if use_cloud_storage:
+            s3_url = MediaService._upload_to_cloud(
+                content=content,
+                content_type=file.content_type,
+                filename=file.filename,
+                folder=folder,
+                allow_s3_fallback=current_app.config.get('USE_S3_STORAGE', False),
+            )
         
         return {
             'id': str(uuid.uuid4()),

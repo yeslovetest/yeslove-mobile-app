@@ -99,7 +99,7 @@ class Feed(Resource):
                 "content": post.content,
                 "media": [{
                     "id": pm.media_id,
-                    "url": f"/api/media/{pm.media_id}",
+                    "url": pm.media.s3_url or f"/api/media/{pm.media_id}",
                     "type": pm.media.content_type,
                     "filename": pm.media.filename
                 } for pm in post.post_media],
@@ -109,7 +109,7 @@ class Feed(Resource):
                 "anonymous": post.is_anonymous,
                 "media_files": [
                     {
-                        "uri": f"/api/media/{media.id}",
+                        "uri": media.s3_url or f"/api/media/{media.id}",
                         "type": media.content_type,
                         "width": media.width,
                         "height": media.height
@@ -335,7 +335,15 @@ class GetPost(Resource):
             "likes": len(post.likes),
             "comments": len(post.comments),
             "anonymous": post.is_anonymous,
-            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
+            "media_files": [
+                {
+                    'uri': media.s3_url or f"/api/media/{media.id}",
+                    'type': media.content_type,
+                    'width': media.width,
+                    'height': media.height
+                }
+                for media in post.media_files if post.media_files
+            ],
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
     

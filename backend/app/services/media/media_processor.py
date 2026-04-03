@@ -3,6 +3,7 @@ import io
 import boto3
 from flask import current_app
 import os
+import requests
 try:
     from mutagen import File as MutagenFile
 except ImportError:
@@ -118,4 +119,44 @@ class S3Storage:
                 ExpiresIn=expiration
             )
         except:
+            return None
+
+
+class SupabaseStorage:
+    def __init__(self):
+        self.supabase_url = (os.getenv('SUPABASE_URL') or '').rstrip('/')
+        self.service_key = (
+            os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+            or os.getenv('SUPABASE_SERVICE_KEY')
+            or os.getenv('SUPABASE_ANON_KEY')
+            or os.getenv('SUPABASE_PUBLIC_API_KEY')
+            or ''
+        )
+        self.bucket = os.getenv('SUPABASE_STORAGE_BUCKET', 'media')
+
+    def is_configured(self):
+        return bool(self.supabase_url and self.service_key and self.bucket)
+
+    def upload_file(self, content, key, content_type):
+        """Upload file to a Supabase storage bucket."""
+        if not self.is_configured():
+            return None
+
+        try:
+            upload_url = f"{self.supabase_url}/storage/v1/object/{self.bucket}/{key}"
+            headers = {
+                'apikey': self.service_key,
+                'Authorization': f'Bearer {self.service_key}',
+                'Content-Type': content_type,
+                # Overwrite if key already exists.
+                'x-upsert': 'true',
+            }
+            response = requests.post(upload_url, headers=headers, data=content, timeout=30)
+            if response.status_code >= 400:
+                print(f"Supabase upload error {response.status_code}: {response.text}")
+                return None
+
+            return f"{self.supabase_url}/storage/v1/object/public/{self.bucket}/{key}"
+        except Exception as e:
+            print(f"Supabase upload error: {e}")
             return None
