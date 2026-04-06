@@ -28,6 +28,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#f5f7fb",
   },
+  validationMessage: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#b42318",
+    lineHeight: 18,
+  },
 })
 
 export default styles

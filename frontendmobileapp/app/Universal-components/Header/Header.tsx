@@ -124,7 +124,10 @@ export default function Header(props: Props) {
   >
       {hasTabToGoBackTo && currentTab !== TabType.CHATBOT && (
         <View style={styles.headerDistribution}>
-          <FontAwesome5 onPress={returnToPreviousTab} name="chevron-left" size={20} />
+          <FontAwesome5 
+          onPress={returnToPreviousTab} 
+          name="chevron-left" size={20} 
+          />
           {hasTabToGoBackTo && currentTab === TabType.MESSAGES && (
             <Text style={styles.title}>{props.mainTitle}</Text>
           )}
@@ -174,6 +177,8 @@ export default function Header(props: Props) {
           <TouchableOpacity
             style={[styles.homeActionButton, styles.homeMessagesIcon]}
             onPress={props.onEventsFilterPress}
+            pressRetentionOffset={10}
+            hitSlop={10}
             activeOpacity={0.8}
           >
             <Ionicons name="filter" size={20} color="black" />

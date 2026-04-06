@@ -16,6 +16,7 @@ import { postNewPostAction } from "@/app/store/Home-store/feedSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import PostInput from "./Post-modal-components/Post-input/PostInput";
 import PostingUserProfile from "./Post-modal-components/Posting-user-profile/PostingUserProfile";
+import { MEDIA_UPLOAD_LIMITS } from "@/constants/mediaLimits";
 
 interface PostModalProps {
   visible: boolean;
@@ -28,7 +29,8 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const [isRendered, setIsRendered] = useState(visible);
   const [userPost, setUserPost] = useState("");
-  const [selectedFile, setSelectedFile] = useState<Array<{ uri: string; type: string; name?: string }> | null>(null);
+  const [selectedFile, setSelectedFile] = useState<Array<{ uri: string; type: string; name?: string; fileSize?: number }> | null>(null);
+  const [validationMessage, setValidationMessage] = useState("");
 
   const userName = useAppSelector(
     (state) => state.user.name ?? ""
@@ -65,6 +67,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
     onClose();
     setUserPost("");
     setSelectedFile(null);
+    setValidationMessage("");
 
    
   };
@@ -72,6 +75,18 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
 
   const handlePost = async (anonymous?: boolean) => {
     if (!userPost.trim()) return;
+
+    const hasOversizedMedia = (selectedFile ?? []).some(
+      (file) =>
+        typeof file.fileSize === "number" &&
+        file.fileSize > MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes
+    );
+    if (hasOversizedMedia) {
+      setValidationMessage("One or more selected media files exceed the 15MB limit.");
+      return;
+    }
+
+    setValidationMessage("");
 
     dispatch(postNewPostAction({
       content: userPost,
@@ -127,7 +142,10 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
                 userPost={userPost} 
                 setUserPost={setUserPost} 
                 selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile}/>
+                setSelectedFile={setSelectedFile}
+                validationMessage={validationMessage}
+                setValidationMessage={setValidationMessage}
+              />
             </ScrollView>
           </KeyboardAvoidingView>
         </Animated.View>
