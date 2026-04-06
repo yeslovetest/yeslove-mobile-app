@@ -6,8 +6,7 @@ import { updateProfile } from '@/app/store/Profile-store/profileSlice';
 import axios from 'axios';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
 import * as ImagePicker from 'expo-image-picker';
-
-const MAX_PROFILE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from '@/constants/mediaLimits';
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 type SelectedProfileFile = {
@@ -50,8 +49,10 @@ const ProfileHeaderAndBio = () => {
       return;
     }
 
-    if (asset.fileSize && asset.fileSize > MAX_PROFILE_IMAGE_SIZE_BYTES) {
-      setValidationMessage('Image must be 5MB or smaller.');
+    if (asset.fileSize && asset.fileSize > MEDIA_UPLOAD_LIMITS.profileImageMaxBytes) {
+      setValidationMessage(
+        `Image must be ${formatSizeMb(MEDIA_UPLOAD_LIMITS.profileImageMaxBytes)} or smaller.`
+      );
       return;
     }
 

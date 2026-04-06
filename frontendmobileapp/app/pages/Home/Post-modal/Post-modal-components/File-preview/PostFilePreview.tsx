@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, FlatList, Image, Pressable, Dimensions } from "react-native";
+import { View, Text, FlatList, Image, Pressable, Dimensions, useWindowDimensions } from "react-native";
 import { Video } from '@/app/Universal-components/Video/Video';
 import styles from "./PostFilePreviewStyles";
 import { BASE_URL } from '@/app/config/baseUrl';
@@ -11,12 +11,14 @@ interface FileItem {
   name?: string;
   width?: number;
   height?: number;
+  fileSize?: number;
 }
 
 interface Props {
   file: Array<FileItem | MediaFile>;
   editable?: boolean;
   delFunc?: (index: number) => void;
+  showNextPreview?: boolean;
 }
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -30,6 +32,7 @@ const normalizeFileItem = (input: FileItem | MediaFile): FileItem => {
       name: input.name,
       width: input.width,
       height: input.height,
+      fileSize: input.fileSize,
     };
   }
 
@@ -40,12 +43,22 @@ const normalizeFileItem = (input: FileItem | MediaFile): FileItem => {
   };
 };
 
-const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
+const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc, showNextPreview = false }) => {
+  const { width: screenWidth } = useWindowDimensions();
   const normalizedFiles = file.map(normalizeFileItem).filter((item) => !!item.uri && !!item.type);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
-  const itemGap = 10;
-  const cardWidth = normalizedFiles.length > 1 ? containerWidth * 0.9 : containerWidth;
+  const hasMultipleMedia = normalizedFiles.length > 1;
+  const shouldShowPeek = showNextPreview && hasMultipleMedia;
+  const previewPeekWidth = shouldShowPeek
+    ? Math.min(Math.max(screenWidth * 0.08, 18), 36)
+    : 0;
+  const itemGap = shouldShowPeek
+    ? Math.min(Math.max(screenWidth * 0.02, 6), 12)
+    : 0;
+  const cardWidth = shouldShowPeek
+    ? Math.max(containerWidth - previewPeekWidth, 0)
+    : containerWidth;
   const itemSnapSize = cardWidth + itemGap;
  
   
@@ -67,28 +80,36 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
     }
   }, [editable, normalizedFiles.length, containerWidth]);
 
-  // Compute dynamic aspect ratio 
-  const getMediaStyle = (item: FileItem) => {
-    if (!cardWidth) return {};
-
-    if (!item.width || !item.height) {
+  // Keep media full-width with natural aspect ratio; only crop when height exceeds max.
+  const getMediaPresentation = (item: FileItem) => {
+    if (!cardWidth) {
       return {
-        width: cardWidth,
-        height: Math.min(cardWidth * 1.1, MAX_MEDIA_HEIGHT),
+        style: {},
+        resizeMode: "cover" as const,
       };
     }
 
-    const ratio = item.width / item.height;
-    let finalWidth = cardWidth;
-    let finalHeight = finalWidth / ratio;
-
-    // Cap height
-    if (finalHeight > MAX_MEDIA_HEIGHT) {
-      finalHeight = MAX_MEDIA_HEIGHT;
-      finalWidth = finalHeight * ratio;
+    if (!item.width || !item.height) {
+      return {
+        style: {
+          width: cardWidth,
+          height: Math.min(cardWidth, MAX_MEDIA_HEIGHT),
+        },
+        resizeMode: "cover" as const,
+      };
     }
 
-    return { width: finalWidth, height: finalHeight };
+    const naturalHeight = cardWidth * (item.height / item.width);
+    const cappedHeight = Math.min(naturalHeight, MAX_MEDIA_HEIGHT);
+    const shouldCrop = naturalHeight > MAX_MEDIA_HEIGHT;
+
+    return {
+      style: {
+        width: cardWidth,
+        height: cappedHeight,
+      },
+      resizeMode: shouldCrop ? ("cover" as const) : ("contain" as const),
+    };
   };
 
   return (
@@ -100,6 +121,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
         data={normalizedFiles}
         keyExtractor={(_,index) => index.toString()}
         horizontal
+        pagingEnabled
         decelerationRate="fast"
         snapToInterval={itemSnapSize}
         snapToAlignment="start"
@@ -107,6 +129,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
         contentContainerStyle={{
           alignItems: 'center',
           justifyContent: 'flex-start',
+          paddingLeft: shouldShowPeek ? 2 : 0,
           paddingRight: normalizedFiles.length > 1 ? itemGap : 0,
         }}
         onScrollToIndexFailed={(info) => {
@@ -116,7 +139,9 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
           });
         }}
         onMomentumScrollEnd={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / itemSnapSize);
+          const index = itemSnapSize > 0
+            ? Math.round(e.nativeEvent.contentOffset.x / itemSnapSize)
+            : 0;
           setCurrentIndex(index);
         }}
         renderItem={({ item, index }) => {
@@ -124,6 +149,7 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
           const uri = /^(https?:\/\/|file:|data:)/i.test(item.uri)
             ? item.uri
             : `${BASE_URL}${item.uri.startsWith('/') ? '' : '/'}${item.uri}`;
+          const mediaPresentation = getMediaPresentation(item);
 
           return (
             <View style={{ width: cardWidth || '100%', marginRight: normalizedFiles.length > 1 ? itemGap : 0 }}>
@@ -139,15 +165,15 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc }) => {
               {isImage ? (
                 <Image
                   source={{ uri }}
-                  style={{ ...getMediaStyle(item), borderRadius: 10}}
-                  resizeMode="cover"
+                  style={{ ...mediaPresentation.style, borderRadius: 10}}
+                  resizeMode={mediaPresentation.resizeMode}
                 />
               ) : (
                 <Video
                   source={{ uri }}
-                  style={{ ...getMediaStyle(item), borderRadius: 10 }}
+                  style={{ ...mediaPresentation.style, borderRadius: 10 }}
                   useNativeControls
-                  resizeMode="cover"
+                  resizeMode={mediaPresentation.resizeMode}
                 />
               )}
             </View>

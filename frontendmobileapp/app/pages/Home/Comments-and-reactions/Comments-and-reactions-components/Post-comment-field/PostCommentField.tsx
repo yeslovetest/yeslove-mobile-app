@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, TouchableOpacity, TextInput, Text, Image } from "react-native";
+import { View, TouchableOpacity, TextInput, Text, Image, Keyboard } from "react-native";
 import styles from './PostCommentFieldStyles';
 import { postComment, retrievePostReactions } from '@/app/store/Home-store/feedSlice';
 import { useAppDispatch } from '@/app/store/hooks';
@@ -13,16 +13,28 @@ const PostCommentField = ({ id, pic }: Props) => {
   
   const dispatch = useAppDispatch();
   const [userComment, setUserComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-  const handleCommentButton = () => {
+  const handleCommentButton = async () => {
       if (!userComment.trim()) {
       return;
       }
 
-     dispatch(postComment({postId: id, content: userComment}));
-     setUserComment("");
-     dispatch(retrievePostReactions({postId: id ?? 0}));
+     if (isSubmitting) {
+      return;
+     }
+
+     setIsSubmitting(true);
+
+     try {
+      await dispatch(postComment({postId: id, content: userComment}));
+      setUserComment("");
+      Keyboard.dismiss();
+      dispatch(retrievePostReactions({postId: id ?? 0}));
+     } finally {
+      setIsSubmitting(false);
+     }
   }
 
   
@@ -45,7 +57,7 @@ const PostCommentField = ({ id, pic }: Props) => {
                         <TouchableOpacity
                           style={[styles.submitCommentButton, !userComment.trim() && styles.submitCommentButtonDisabled]}
                           onPress={handleCommentButton}
-                          disabled={!userComment.trim()}
+                          disabled={!userComment.trim() || isSubmitting}
                         >
                             <Text style={styles.submitCommentButtonText}>Submit</Text>
                         </TouchableOpacity>

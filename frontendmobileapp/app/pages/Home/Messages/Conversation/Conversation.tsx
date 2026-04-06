@@ -1,7 +1,7 @@
 import Header from '@/app/Universal-components/Header/Header';
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import * as ImagePicker from "expo-image-picker";
-import { View, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, FlatList, Alert } from 'react-native';
 import ChatResponse from './Conversation-components/Chat-response/ChatResponse';
 import Message from './Conversation-components/Message/Message';
 import ConversationTextInput from './Conversation-components/Conversation-text-input/ConversationTextInput';
@@ -14,6 +14,7 @@ import { uploadBulkMedia, uploadMedia } from '@/app/store/Profile-store/mediaSli
 import MediaFilePreview from './Conversation-components/MediaPreview/mediaPreview';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
 import LoadingOverlay from '@/app/Universal-components/LoadingScreen/Screen';
+import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from '@/constants/mediaLimits';
 
 const Conversation = () => {
 
@@ -122,6 +123,17 @@ const Conversation = () => {
 
         if (!result.canceled && result.assets.length > 0) {
           const asset = result.assets[0];
+          if (
+            typeof asset.fileSize === 'number' &&
+            asset.fileSize > MEDIA_UPLOAD_LIMITS.chatMediaFileMaxBytes
+          ) {
+            Alert.alert(
+              'File too large',
+              `Please choose a file up to ${formatSizeMb(MEDIA_UPLOAD_LIMITS.chatMediaFileMaxBytes)}.`
+            );
+            return;
+          }
+
           setSelectedFiles((prev) => [
             ...(prev || []),
             {

@@ -656,7 +656,11 @@ function* postNewPost(action: PayloadAction<{
           ) as any;
         }
 
-        return file as any;
+        return {
+          uri: file.uri,
+          type: file.type,
+          name: file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"),
+        } as any;
       });
 
     yield call(

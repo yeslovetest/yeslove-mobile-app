@@ -1,9 +1,11 @@
 import { FontAwesome, Entypo, Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { View, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import styles from "./PostInputStyles";
 import PostFilePreview from "../File-preview/PostFilePreview";
+import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from "@/constants/mediaLimits";
 
 interface FileItem {
   uri: string;
@@ -11,6 +13,7 @@ interface FileItem {
   name?: string;
   width?: number;
   height?: number;
+  fileSize?: number;
 }
 
 interface PostInputProps {
@@ -18,6 +21,8 @@ interface PostInputProps {
   selectedFile: FileItem[] | null;
   setSelectedFile: React.Dispatch<React.SetStateAction<FileItem[] | null>>;
   setUserPost: (text: string) => void;
+  validationMessage: string;
+  setValidationMessage: (message: string) => void;
 }
 
 const PostInput: React.FC<PostInputProps> = ({
@@ -25,7 +30,55 @@ const PostInput: React.FC<PostInputProps> = ({
   setUserPost,
   selectedFile,
   setSelectedFile,
+  validationMessage,
+  setValidationMessage,
 }) => {
+  const getAssetFileSize = async (asset: ImagePicker.ImagePickerAsset): Promise<number | undefined> => {
+    if (asset.fileSize) {
+      return asset.fileSize;
+    }
+
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+      if (fileInfo.exists && typeof (fileInfo as any).size === "number") {
+        return (fileInfo as any).size;
+      }
+    } catch {
+      // Ignore size read failure and proceed without strict size metadata.
+    }
+
+    return undefined;
+  };
+
+  const appendAssetIfValid = async (
+    asset: ImagePicker.ImagePickerAsset,
+    fallbackType: "image" | "video"
+  ) => {
+    if (asset.type !== "image" && asset.type !== "video") return;
+
+    const fileSize = await getAssetFileSize(asset);
+    if (
+      typeof fileSize === "number" &&
+      fileSize > MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes
+    ) {
+      setValidationMessage(
+        `Media must be ${formatSizeMb(MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes)} or smaller. ${asset.fileName ?? "Selected file"} is ${formatSizeMb(fileSize)}.`
+      );
+      return;
+    }
+
+    setValidationMessage("");
+    appendFile({
+      uri: asset.uri,
+      type: asset.type === "video" ? "video/mp4" : "image/jpeg",
+      name:
+        asset.fileName ??
+        `${fallbackType}.${fallbackType === "image" ? "jpg" : "mp4"}`,
+      width: asset.width,
+      height: asset.height,
+      fileSize,
+    });
+  };
   
   const appendFile = (file: FileItem) => {
     setSelectedFile((prev) => [...(prev || []), file]);
@@ -43,18 +96,13 @@ const PostInput: React.FC<PostInputProps> = ({
       });
 
       if (!result.canceled && result.assets?.length) {
-        result.assets.forEach((asset) => {
-          appendFile({
-            uri: asset.uri,
-            type: asset.type === "video" ? "video/mp4" : "image/jpeg",
-            name: asset.fileName ?? `${type}.${type === "image" ? "jpg" : "mp4"}`,
-            width: asset.width,
-            height: asset.height,
-          });
-        });
+        for (const asset of result.assets) {
+          await appendAssetIfValid(asset, type);
+        }
       }
     } catch (err) {
       console.error("File picking error:", err);
+      setValidationMessage("Unable to pick media right now. Please try again.");
     }
   };
 
@@ -67,23 +115,13 @@ const PostInput: React.FC<PostInputProps> = ({
       });
 
       if (!result.canceled && result.assets?.length) {
-        result.assets.forEach((asset) => {
-          // Keep feature scope limited to image and video for now.
-          if (asset.type !== "image" && asset.type !== "video") return;
-
-        appendFile({
-          uri: asset.uri,
-            type: asset.type === "video" ? "video/mp4" : "image/jpeg",
-            name:
-              asset.fileName ??
-              (asset.type === "video" ? "video.mp4" : "photo.jpg"),
-            width: asset.width,
-            height: asset.height,
-        });
-        });
+        for (const asset of result.assets) {
+          await appendAssetIfValid(asset, asset.type === "video" ? "video" : "image");
+        }
       }
     } catch (err) {
       console.error("File picking error:", err);
+      setValidationMessage("Unable to pick media right now. Please try again.");
     }
   };
 
@@ -92,6 +130,9 @@ const PostInput: React.FC<PostInputProps> = ({
       if (!prev) return prev;
       const copy = [...prev];
       copy.splice(index, 1);     
+      if (copy.length === 0) {
+        setValidationMessage("");
+      }
       return copy;
     });
   };
@@ -131,6 +172,10 @@ const PostInput: React.FC<PostInputProps> = ({
           <Ionicons name="images-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
+
+      {!!validationMessage && (
+        <Text style={styles.validationMessage}>{validationMessage}</Text>
+      )}
     </View>
   );
 };

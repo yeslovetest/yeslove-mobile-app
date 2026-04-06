@@ -158,7 +158,7 @@ const OnePost = (props: Props) => {
             </View>
             {postMedia.length > 0 && (
                 <View style={styles.postMediaWrapper}>
-                    <PostFilePreview file={postMedia} />
+                    <PostFilePreview file={postMedia} showNextPreview />
                 </View>
             )}
 
