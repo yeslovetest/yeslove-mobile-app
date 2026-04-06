@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, Platform, StyleProp, View, ViewStyle } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import * as VideoThumbnails from 'expo-video-thumbnails';
+import styles from './VideoStyles';
 
 type ResizeMode = 'cover' | 'contain' | 'stretch' | 'none';
 
@@ -28,6 +31,16 @@ const getContentFit = (resizeMode?: ResizeMode | string): 'cover' | 'contain' | 
   return 'contain';
 };
 
+const getImageResizeMode = (resizeMode?: ResizeMode | string): 'cover' | 'contain' | 'stretch' => {
+  if (resizeMode === 'cover') {
+    return 'cover';
+  }
+  if (resizeMode === 'stretch') {
+    return 'stretch';
+  }
+  return 'contain';
+};
+
 export const Video: React.FC<VideoProps> = ({
   source,
   style,
@@ -37,6 +50,10 @@ export const Video: React.FC<VideoProps> = ({
   isLooping = false,
   shouldPlay = false,
 }) => {
+  const [thumbnailUri, setThumbnailUri] = useState<string | null>(null);
+  const [hasFirstFrameRendered, setHasFirstFrameRendered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const player = useVideoPlayer(source.uri, (createdPlayer) => {
     createdPlayer.muted = muted;
     createdPlayer.loop = isLooping;
@@ -57,13 +74,77 @@ export const Video: React.FC<VideoProps> = ({
     }
   }, [player, muted, isLooping, shouldPlay]);
 
+  useEffect(() => {
+    setIsPlaying(player.playing);
+
+    const subscription = player.addListener('playingChange', ({ isPlaying: nextIsPlaying }) => {
+      setIsPlaying(nextIsPlaying);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player]);
+
+  useEffect(() => {
+    setHasFirstFrameRendered(false);
+
+    if (!source.uri) {
+      setThumbnailUri(null);
+      return;
+    }
+
+    let isCancelled = false;
+
+    VideoThumbnails.getThumbnailAsync(source.uri, {
+      time: 1000,
+      quality: 0.6,
+    })
+      .then((result) => {
+        if (!isCancelled) {
+          setThumbnailUri(result.uri);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setThumbnailUri(null);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [source.uri]);
+
   return (
-    <VideoView
-      player={player}
-      style={style}
-      nativeControls={useNativeControls}
-      contentFit={getContentFit(resizeMode)}
-    />
+    <View style={[style, styles.container]}>
+      <VideoView
+        player={player}
+        style={styles.mediaFill}
+        nativeControls={useNativeControls}
+        contentFit={getContentFit(resizeMode)}
+        // Texture rendering is more stable for inline Android playback in lists/cards.
+        surfaceType={Platform.OS === 'android' ? 'textureView' : undefined}
+        useExoShutter={false}
+        onFirstFrameRender={() => setHasFirstFrameRendered(true)}
+      />
+
+      {!!thumbnailUri && !hasFirstFrameRendered && (
+        <Image
+          source={{ uri: thumbnailUri }}
+          style={styles.mediaFill}
+          resizeMode={getImageResizeMode(resizeMode)}
+        />
+      )}
+
+      {!isPlaying && (
+        <View style={styles.playIconWrap} pointerEvents="none">
+          <View style={styles.playIconBadge}>
+            <Ionicons name="play" size={12} color="#FFFFFF" style={styles.playIcon} />
+          </View>
+        </View>
+      )}
+    </View>
   );
 };
 
