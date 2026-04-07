@@ -287,7 +287,7 @@ const OnePost = (props: Props) => {
                                     <Text style={styles.followMenuPopUpText}>Follow</Text>
                                 </TouchableOpacity>
                             )}
-                        {(isFollowing && followType !== 'friend') &&
+                        {((!isFollowing) || (isFollowing && followType !== 'friend')) &&
                             (
                                 <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('friend')} >
                                     <Text style={styles.followMenuPopUpText}>Follow as friend</Text>

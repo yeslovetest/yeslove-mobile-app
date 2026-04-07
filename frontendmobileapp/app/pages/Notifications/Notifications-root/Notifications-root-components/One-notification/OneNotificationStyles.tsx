@@ -60,6 +60,60 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         marginLeft: 12,
     },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.35)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+    },
+    modalCard: {
+        width: '92%',
+        maxWidth: 380,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 14,
+        padding: 16,
+    },
+    modalTitle: {
+        fontSize: 17,
+        fontWeight: '700',
+        color: '#111',
+        marginBottom: 8,
+    },
+    modalBody: {
+        fontSize: 14,
+        color: '#3E4655',
+        marginBottom: 14,
+    },
+    modalActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 10,
+    },
+    declineButton: {
+        borderWidth: 1,
+        borderColor: '#D7DBE3',
+        backgroundColor: '#F5F6F8',
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+        borderRadius: 10,
+    },
+    declineButtonText: {
+        color: '#516073',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    acceptButton: {
+        backgroundColor: theme.colors.primaryBlue,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+        borderRadius: 10,
+    },
+    acceptButtonText: {
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: '700',
+    },
 })
 
 export default styles

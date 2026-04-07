@@ -28,6 +28,37 @@ const styles = StyleSheet.create({
        color: theme.colors.primaryBlue,
          fontWeight: '700'
     },
+    tabRow: {
+        width: '100%',
+        flexDirection: 'row',
+        gap: 10,
+        marginTop: 14,
+        marginBottom: 6,
+    },
+    tabButton: {
+        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderWidth: 1,
+    },
+    tabButtonActive: {
+        backgroundColor: '#E6F0FF',
+        borderColor: theme.colors.primaryBlue,
+    },
+    tabButtonInactive: {
+        backgroundColor: '#F6F7FA',
+        borderColor: '#DADDE5',
+    },
+    tabButtonText: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    tabButtonTextActive: {
+        color: theme.colors.primaryBlue,
+    },
+    tabButtonTextInactive: {
+        color: '#546074',
+    },
     todayAndThisWeekText: {
         width: "100%",
         marginTop: 20,
