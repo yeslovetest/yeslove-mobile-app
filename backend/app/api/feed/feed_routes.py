@@ -594,7 +594,7 @@ class FollowUser(Resource):
         follow_action = data.get("action", "follow")  # Default to "follow"
         follow_type = data.get("follow_type", "basic")
 
-        if follow_action not in {"follow", "unfollow"}:
+        if follow_action not in {"follow", "unfollow", "decline"}:
             return {"message": "Invalid follow action"}, 400
 
         if follow_type not in {"basic", "friend"}:
@@ -651,6 +651,27 @@ class FollowUser(Resource):
                     return {"message": "Friendship removed"}, 200
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
+
+        # Decline incoming friend request
+        if follow_action == "decline":
+            if is_mutual_friendship:
+                return {"message": "Already friends"}, 400
+
+            incoming_request = (
+                followby_target_user is not None
+                and followby_target_user.follow_type == "friend"
+            )
+            if not incoming_request:
+                return {"message": "No incoming friend request"}, 400
+
+            db.session.delete(followby_target_user)
+            db.session.commit()
+
+            safe_neptune_operation(
+                lambda repo: repo.unfollow(target_user.keycloak_id, user.keycloak_id)
+            )
+
+            return {"message": "Friend request declined"}, 200
         
         # Follow
         if follow_type == "basic":
@@ -753,6 +774,54 @@ class FollowUser(Resource):
         )
 
         return {"message": "Friend request sent"}, 201
+
+
+@api.route("/friend-requests")
+class GetFriendRequests(Resource):
+    """List active incoming friend requests for the authenticated user."""
+    @require_auth()
+    @api.doc(security='Bearer')
+    def get(self):
+        from app.models import Follow, User
+        from app.utils.common_helpers import get_current_user
+
+        user, error_response, status_code = get_current_user()
+        if error_response:
+            return error_response, status_code
+
+        incoming_requests = Follow.query.filter_by(
+            followed_id=user.id,
+            follow_type="friend",
+        ).all()
+
+        requester_ids = [request.follower_id for request in incoming_requests]
+        outgoing_friend_links = Follow.query.filter(
+            Follow.follower_id == user.id,
+            Follow.followed_id.in_(requester_ids),
+            Follow.follow_type == "friend",
+        ).all() if requester_ids else []
+        outgoing_map = {follow.followed_id: follow for follow in outgoing_friend_links}
+
+        active_requesters = [
+            request.follower_id
+            for request in incoming_requests
+            if request.follower_id not in outgoing_map
+        ]
+
+        requesters = User.query.filter(User.id.in_(active_requesters)).all() if active_requesters else []
+        requester_map = {requester.id: requester for requester in requesters}
+
+        return {
+            "requests": [
+                {
+                    "keycloak_id": requester_map[requester_id].keycloak_id,
+                    "username": requester_map[requester_id].username,
+                    "image": requester_map[requester_id].profile_pic_url,
+                }
+                for requester_id in active_requesters
+                if requester_id in requester_map
+            ]
+        }, 200
 
 
 @api.route("/followers/<string:keycloak_id>")
