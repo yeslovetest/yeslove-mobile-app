@@ -74,9 +74,8 @@ class Feed(Resource):
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
         else:  # "all"
-            following = [follow.followed_id for follow in user.following]
-            following.append(user.id)
-            query = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc())
+            # "all" should be platform-wide updates, not only followed users.
+            query = Post.query.order_by(Post.timestamp.desc())
 
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
@@ -577,6 +576,7 @@ class FollowUser(Resource):
     def post(self, keycloak_id):
         """Follow or unfollow a user."""
         from app.models import User, Follow, db
+        from app.services.notification_service import NotificationService
         from app.utils.common_helpers import get_current_user, safe_neptune_operation
         
         user, error_response, status_code = get_current_user()
@@ -587,8 +587,18 @@ class FollowUser(Resource):
         if not target_user:
             return {"message": "Target user not found"}, 404
 
-        follow_action = request.json.get("action", "follow")  # Default to "follow"
-        follow_type = request.json.get("follow_type", "basic")
+        if target_user.id == user.id:
+            return {"message": "You cannot follow yourself"}, 400
+
+        data = request.get_json(silent=True) or {}
+        follow_action = data.get("action", "follow")  # Default to "follow"
+        follow_type = data.get("follow_type", "basic")
+
+        if follow_action not in {"follow", "unfollow"}:
+            return {"message": "Invalid follow action"}, 400
+
+        if follow_type not in {"basic", "friend"}:
+            return {"message": "Invalid follow type"}, 400
         
         # Get existing follow relationships (both directions)
         follows = Follow.query.filter(
@@ -599,15 +609,27 @@ class FollowUser(Resource):
 
         followby_current_user = existing.get((user.id, target_user.id))
         followby_target_user = existing.get((target_user.id, user.id))
+        is_mutual_friendship = (
+            followby_current_user is not None
+            and followby_target_user is not None
+            and followby_current_user.follow_type == "friend"
+            and followby_target_user.follow_type == "friend"
+        )
 
         # Unfollow
         if follow_action == "unfollow":
             if followby_current_user:
+                remove_reverse_friend = (
+                    followby_current_user.follow_type == "friend"
+                    and followby_target_user is not None
+                    and followby_target_user.follow_type == "friend"
+                )
+
                 db.session.delete(followby_current_user)
                 logger.info(f"User {user.username} unfollowed {target_user.username}")
-                if followby_target_user and followby_target_user.follow_type == 'friend':
-                   db.session.delete(followby_target_user) 
-                   logger.info('Also removed reverse friend follow')
+                if remove_reverse_friend:
+                    db.session.delete(followby_target_user)
+                    logger.info("Also removed reverse friend follow")
                 db.session.commit()
                 
                 # Remove from Neptune
@@ -617,7 +639,7 @@ class FollowUser(Resource):
                             follower_id=user.keycloak_id,
                             followed_id=target_user.keycloak_id
                         )
-                        if follow_type == "friend":
+                        if remove_reverse_friend:
                             current_app.graph_repository.unfollow(
                                 follower_id=target_user.keycloak_id,
                                 followed_id=user.keycloak_id
@@ -625,73 +647,112 @@ class FollowUser(Resource):
                     except Exception as e:
                         logger.warning(f"Neptune unfollow failed: {e}")
                 
+                if remove_reverse_friend:
+                    return {"message": "Friendship removed"}, 200
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
         
         # Follow
-        if followby_current_user:
-            # Already following
-            if follow_type == "basic":
+        if follow_type == "basic":
+            if followby_current_user:
+                if is_mutual_friendship:
+                    return {"message": "Already friends"}, 400
                 return {"message": "Already following"}, 400
-            if follow_type == "friend":
-                followby_current_user.follow_type = "friend" 
-                # Add reverse record if not exists  (send frienship request by email, To be done later)
-                if not followby_target_user:
-                    new_follow = Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend")
-                    db.session.add(new_follow)
-                    db.session.commit()
-                    return {"message": "Connected as friend"}, 201
-                # Otherwise just update both
-                followby_target_user.follow_type = "friend"
-                db.session.commit()
-                return {"message": "Follow type updated"}, 201
 
-        # Create new follows
-        records = []
-        if follow_type == "friend": # send frienship request by email, To be done later
-            records.append(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
-            records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
-            db.session.add_all(records)
+            new_follow = Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic")
+            db.session.add(new_follow)
             db.session.commit()
-            
-            # Create follow in Neptune
+
+            NotificationService.create_notification(
+                user_id=target_user.id,
+                title="New Follower",
+                body=f"{user.username} started following you",
+                notification_type="follows",
+                data={
+                    "type": "follow",
+                    "user_id": user.id,
+                    "keycloak_id": user.keycloak_id,
+                    "username": user.username,
+                    "image": user.profile_pic_url,
+                },
+            )
+
+            safe_neptune_operation(
+                lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "basic")
+            )
+
+            return {"message": "Followed successfully"}, 201
+
+        # friend flow:
+        # 1) first request creates one-way friend follow + notification to target
+        # 2) reverse request accepts and completes mutual friendship
+        if is_mutual_friendship:
+            return {"message": "Already friends"}, 400
+
+        if (
+            followby_current_user
+            and followby_current_user.follow_type == "friend"
+            and (not followby_target_user or followby_target_user.follow_type != "friend")
+        ):
+            return {"message": "Friend request already sent"}, 200
+
+        # Accept incoming friend request when reverse friend-follow already exists.
+        if followby_target_user and followby_target_user.follow_type == "friend":
+            if followby_current_user:
+                followby_current_user.follow_type = "friend"
+            else:
+                db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
+            db.session.commit()
+
+            NotificationService.create_notification(
+                user_id=target_user.id,
+                title="Friend Request Accepted",
+                body=f"{user.username} accepted your friend request",
+                notification_type="follows",
+                data={
+                    "type": "friend_request_accepted",
+                    "user_id": user.id,
+                    "keycloak_id": user.keycloak_id,
+                    "username": user.username,
+                    "image": user.profile_pic_url,
+                },
+            )
+
             safe_neptune_operation(
                 lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "friend")
             )
             safe_neptune_operation(
                 lambda repo: repo.follow(target_user.keycloak_id, user.keycloak_id, "friend")
             )
-            
-            return {"message": "Connected as friend"}, 201
 
-        # Basic follow
-        db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
+            return {"message": "Friend request accepted"}, 201
 
-        # Follow the user
-        existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
-        if existing_follow:
-            return {"message": "Already following"}, 400
-
-        new_follow = Follow(follower_id=user.id, followed_id=user_id)
-        db.session.add(new_follow)
+        # No reverse friend request exists yet: send/refresh outgoing friend request.
+        if followby_current_user:
+            followby_current_user.follow_type = "friend"
+        else:
+            db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
         db.session.commit()
-        
-        # Notify user about new follower
-        from app.services.notification_service import NotificationService
+
         NotificationService.create_notification(
-            user_id=user_id,
-            title="New Follower",
-            body=f"{user.username} started following you",
+            user_id=target_user.id,
+            title="Friend Request",
+            body=f"{user.username} sent you a friend request",
             notification_type="follows",
-            data={"type": "follow", "user_id": user.id}
+            data={
+                "type": "friend_request",
+                "user_id": user.id,
+                "keycloak_id": user.keycloak_id,
+                "username": user.username,
+                "image": user.profile_pic_url,
+            },
         )
-        
-        # Create follow in Neptune
+
         safe_neptune_operation(
-            lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "basic")
+            lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "friend")
         )
-        
-        return {"message": "Followed successfully"}, 201
+
+        return {"message": "Friend request sent"}, 201
 
 
 @api.route("/followers/<string:keycloak_id>")
@@ -726,9 +787,28 @@ class GetFollowing(Resource):
         from app.models import Follow, User
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         following = Follow.query.filter_by(follower_id=user.id).all()
+
+        followed_ids = [follow.followed_id for follow in following]
+        reverse_friend_links = Follow.query.filter(
+            Follow.follower_id.in_(followed_ids),
+            Follow.followed_id == user.id,
+            Follow.follow_type == "friend",
+        ).all() if followed_ids else []
+        reverse_friend_map = {link.follower_id: link for link in reverse_friend_links}
+
+        def relationship_status(follow):
+            if follow.follow_type == "friend":
+                return "friend" if follow.followed_id in reverse_friend_map else "requested"
+            return "following"
+
         return {'following':
                 [
-                    {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
-                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic_url}
+                    {
+                        "id": follow.followed.keycloak_id,
+                        "follow_type": follow.follow_type,
+                        "friendship_status": relationship_status(follow),
+                        "username": follow.followed.username,
+                        "profile_pic": follow.followed.profile_pic_url,
+                    }
                     for follow in following
                 ]}, 200

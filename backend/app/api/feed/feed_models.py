@@ -109,6 +109,7 @@ FollowedUser = api.model("FollowedUser", {
         "id": fields.String(description="Keycloak_ID of the followed user"), 
         "username": fields.String(description="Username of the followed user"),
         "follow_type": fields.String(description="Type of follow relationship: 'basic' or 'friend'"),
+    "friendship_status": fields.String(description="Relationship status: 'following', 'requested', or 'friend'"),
         "profile_pic": fields.String(description="URL to the followed user's profile picture")})
 
 GetFollowingResponse = api.model("GetFollowingResponse", {

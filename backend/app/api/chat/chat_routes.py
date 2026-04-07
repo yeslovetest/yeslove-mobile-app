@@ -318,22 +318,30 @@ class GetFriends(Resource):
     @api.response(code=404, description="User not found")
     def get(self, keycloak_id):
         """
-        Fetch all friends of the current user along with
+        Fetch all confirmed friends of the current user along with
         their last message and timestamp.
-        
-        This endpoint returns a list of users where the follow type is "friend".
+
+        This endpoint returns only mutual friend relationships
+        (friend follow exists in both directions).
         Each entry includes:
         - Friend’s username and profile picture
         - Last message exchanged
         - Timestamp of the last message
         """
         from app.models import Follow, User, Chat, db
+        from sqlalchemy.orm import aliased
         
 
         # Get current user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
+
+        if keycloak_id != user.keycloak_id:
+            return {"message": "Forbidden"}, 403
+
+        outgoing_friend = aliased(Follow)
+        incoming_friend = aliased(Follow)
 
         # Subquery: find last message timestamp for each conversation
         last_message_subq = (
@@ -363,17 +371,22 @@ class GetFriends(Resource):
                 Chat.sender_id
             )
             .join(
-                Follow,
-                or_(
-                    Follow.follower_id == User.id,
-                    Follow.followed_id == User.id
+                outgoing_friend,
+                and_(
+                    outgoing_friend.follower_id == user.id,
+                    outgoing_friend.followed_id == User.id,
+                    outgoing_friend.follow_type == "friend",
                 )
             )
-            .filter(Follow.follow_type == "friend")
-            .filter(or_(
-                Follow.follower_id == user.id,
-                Follow.followed_id == user.id
-            )).filter(User.id != user.id)
+            .join(
+                incoming_friend,
+                and_(
+                    incoming_friend.follower_id == User.id,
+                    incoming_friend.followed_id == user.id,
+                    incoming_friend.follow_type == "friend",
+                )
+            )
+            .filter(User.id != user.id)
             .outerjoin(
                 last_message_subq,
                 and_(
@@ -391,7 +404,6 @@ class GetFriends(Resource):
                     )
                 )
             )
-            .distinct(User.id)
             .all()
         )   
 
