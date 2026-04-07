@@ -14,7 +14,7 @@ const feedSlice = createSlice({
         feed: { posts: [] as Post[], friends: [] as Post[]},
         postReactionTab: 'comments',
         userPosts: { comments: [] as Comment[], reactions: [] as ReactionResponse[] },
-        followedUsers: {} as Record<string, [string, string, string]>, //list of followed users with 'username' as the key
+        followedUsers: {} as Record<string, [string, string, string, string]>, // keyed by keycloak_id: [id, follow_type, profile_pic, friendship_status]
         detailedPost: {} as Post,
     },
     reducers: {
@@ -71,9 +71,10 @@ const feedSlice = createSlice({
         fetchFollowedUsers: (state, action: PayloadAction<void>) => {},
         setFollowing: (state, action: PayloadAction<FollowedUser[]>) => {
         if (action.payload) {
-            let users = action.payload.reduce((acc: Record<string, [string, string, string]>, user) => {
-                if (user?.username) {
-                    acc[user.username] = [user.id ?? '', user.follow_type ?? '', user.profile_pic ?? ''];
+            let users = action.payload.reduce((acc: Record<string, [string, string, string, string]>, user) => {
+                if (user?.id) {
+                    const friendshipStatus = (user as FollowedUser & { friendship_status?: string }).friendship_status ?? '';
+                    acc[user.id] = [user.id ?? '', user.follow_type ?? '', user.profile_pic ?? '', friendshipStatus];
                 }
                 return acc;
             }, {});

@@ -502,8 +502,19 @@ function* updateChatOpened(action: PayloadAction<string>){
 }
 
 function* handleGetFriendList(action: PayloadAction<string>){
-  const friends = ((yield call(ChatApiFactory().getGetFriends, action.payload, {'keycloak_id': action.payload})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
-  yield put(setFriendList(friends.friends ?? []));
+  const currentUserId = (action.payload ?? '').trim();
+  if (!currentUserId) {
+    yield put(setFriendList([]));
+    return;
+  }
+
+  try {
+    const friends = ((yield call(ChatApiFactory().getGetFriends, currentUserId, {'keycloak_id': currentUserId})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
+    yield put(setFriendList(friends.friends ?? []));
+  } catch (error) {
+    console.error('failed to fetch friends list', error);
+    yield put(setFriendList([]));
+  }
 }
 
 
