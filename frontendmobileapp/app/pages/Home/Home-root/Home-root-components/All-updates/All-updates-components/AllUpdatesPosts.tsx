@@ -23,7 +23,7 @@ const AllUpdatesPosts = () => {
                 <Post
                     key={index}
                     post={post}
-                    follow={followedUsers[post?.author ?? '']}
+                    follow={followedUsers[post?.author_id ?? '']}
                 />
             ))}
         </View>

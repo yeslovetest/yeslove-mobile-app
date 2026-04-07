@@ -1,75 +1,144 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { AppNotification } from '../NotificationsPlaceholders';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Notification } from '@/generated-api';
 import styles from './OneNotificationStyles';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { BASE_URL } from '@/app/config/baseUrl';
-import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
-import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice';
+import { useAppDispatch } from '@/app/store/hooks';
 import { retrieveOnePost, setPostReactionTab } from '@/app/store/Home-store/feedSlice';
 import { fetchOneBlogPost } from '@/app/store/Get-help-store/getHelpSlice';
 import { fetchOneEvent } from '@/app/store/Events-store/eventsSlice';
-import { markNotificationRead } from '@/app/store/Notification-store/notificationSlice';
+import { markNotificationRead, FriendRequestItem, respondToFriendRequest } from '@/app/store/Notification-store/notificationSlice';
 
 
 dayjs.extend(relativeTime);
 
 interface OneNotificationProps {
-  notification: Notification;
+  notification?: Notification;
+  friendRequest?: FriendRequestItem;
 }
 
-const OneNotification: React.FC<OneNotificationProps> = ({ notification }) => {
+type NotificationData = {
+  type?: string;
+  image?: string;
+  post_id?: number;
+  blog_id?: number;
+  event_id?: number;
+};
+
+const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendRequest }) => {
 
   const dispatch = useAppDispatch();
-  const onePost = useAppSelector(state => state.feed.detailedPost);
-  const oneBlog = useAppSelector(state => state.getHelp.oneBlog);
-  const oneEvent = useAppSelector(state => state.events.oneEvent);
-  const imageUrl = `${BASE_URL}${notification.data?.image?.startsWith('/') ? '' : '/'}${notification.data?.image}`;
+  const [isFriendRequestModalVisible, setFriendRequestModalVisible] = useState(false);
+  const notificationData = (notification?.data ?? {}) as NotificationData;
+  const imagePath = friendRequest?.image ?? notificationData.image;
+  const imageUrl = imagePath ? `${BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}` : '';
+
+  if (!notification && !friendRequest) {
+    return null;
+  }
+
+  const isFriendRequestItem = !!friendRequest;
+
+  const handleRespond = (decision: 'accept' | 'decline') => {
+    if (!friendRequest?.keycloak_id) {
+      return;
+    }
+    dispatch(respondToFriendRequest({ keycloakId: friendRequest.keycloak_id, decision }));
+    setFriendRequestModalVisible(false);
+  };
   
   const handleNotificationPress = () => {
-    if (['posts', 'comments', 'likes'].includes(notification.type)) {
-        dispatch(retrieveOnePost({ postID: notification.data?.post_id ?? 0}));
+    if (isFriendRequestItem) {
+      setFriendRequestModalVisible(true);
+      return;
+    }
+
+    if (!notification) {
+      return;
+    }
+
+    if (['posts', 'comments', 'likes'].includes(notification.type ?? '')) {
+        dispatch(retrieveOnePost({ postID: notificationData.post_id ?? 0}));
         if (notification.type === 'likes'){
           dispatch(setPostReactionTab('reactions')); 
         }
         else {
           dispatch(setPostReactionTab('comments'));
         }
-        dispatch(markNotificationRead(notification.id));
+        if (typeof notification.id === 'number') {
+          dispatch(markNotificationRead(notification.id));
+        }
     }
     else if (notification.type === 'blogs') { 
-        dispatch(fetchOneBlogPost({ blogId: notification.data?.blog_id ?? 0}));
-        dispatch(markNotificationRead(notification.id))
+        dispatch(fetchOneBlogPost({ blogId: notificationData.blog_id ?? 0}));
+        if (typeof notification.id === 'number') {
+          dispatch(markNotificationRead(notification.id));
+        }
     }
     else if (notification.type === 'events') { 
-        dispatch(fetchOneEvent({ eventId: notification.data?.event_id ?? 0}));
-        dispatch(markNotificationRead(notification.id))
+        dispatch(fetchOneEvent({ eventId: notificationData.event_id ?? 0}));
+        if (typeof notification.id === 'number') {
+          dispatch(markNotificationRead(notification.id));
+        }
     }  
   };
   
 
   return (
+    <>
     <TouchableOpacity style={[
       styles.container,
-      !notification.is_read && styles.activeBackgroundColor
+      (!isFriendRequestItem && notification && !notification.is_read) && styles.activeBackgroundColor
     ]} onPress={handleNotificationPress}>
       
         
-        <View style={!notification.is_read && styles.activeIndicator}></View>
+        <View style={(!isFriendRequestItem && notification && !notification.is_read) ? styles.activeIndicator : undefined}></View>
         <Image source={{ uri: imageUrl?? '' }} style={styles.profileImage} />
 
         <View style={styles.textContainer}>
           <Text style={styles.messageText}>
-            <Text style={[styles.username, !notification.is_read && styles.usernameUnopened]}></Text>{' '}
-            {notification.body}
+            <Text style={[styles.username, (!isFriendRequestItem && notification && !notification.is_read) && styles.usernameUnopened]}>
+              {friendRequest?.username ?? ''}
+            </Text>{' '}
+            {isFriendRequestItem ? 'sent you a friend request' : notification?.body}
           </Text>
-          <Text style={styles.timeText}>{dayjs(notification.created_at).fromNow()}</Text>
+          {!isFriendRequestItem && notification?.created_at && (
+            <Text style={styles.timeText}>{dayjs(notification.created_at).fromNow()}</Text>
+          )}
         </View>
 
         <Image source={{ uri: imageUrl?? '' }} style={styles.postImage} />
     </TouchableOpacity>
+
+    {isFriendRequestItem && (
+      <Modal
+        visible={isFriendRequestModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFriendRequestModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setFriendRequestModalVisible(false)}
+        >
+          <Pressable style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Friend request</Text>
+            <Text style={styles.modalBody}>{friendRequest?.username ?? 'User'} wants to connect as a friend.</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.declineButton} onPress={() => handleRespond('decline')}>
+                <Text style={styles.declineButtonText}>Decline</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.acceptButton} onPress={() => handleRespond('accept')}>
+                <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    )}
+    </>
   );
 };
 

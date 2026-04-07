@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Modal, Pressable, Alert } from 'react-native';
 import { Video } from '@/app/Universal-components/Video/Video';
 import styles from './OnePostStyles';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -14,7 +14,7 @@ import PostFilePreview from '@/app/pages/Home/Post-modal/Post-modal-components/F
 
 export interface Props {
     post: PostData,
-    follow: string[],
+    follow?: [string, string, string, string],
 }
 
 const OnePost = (props: Props) => {
@@ -97,29 +97,74 @@ const OnePost = (props: Props) => {
         dispatch(setPostReactionTab(tab))
     }
 
+    const followType = props.follow?.[1] ?? '';
+    const friendshipStatus = props.follow?.[3] ?? '';
+    const isFollowing = !!props.follow;
+    const isFriend = friendshipStatus === 'friend';
+    const isFriendRequestPending = followType === 'friend' && friendshipStatus === 'requested';
+
+    const followButtonLabel = (() => {
+        if (isFriend) {
+            return 'Friend';
+        }
+        if (isFriendRequestPending) {
+            return 'Requested';
+        }
+        if (isFollowing) {
+            return 'Following';
+        }
+        return 'Follow';
+    })();
+
 
     const sendFollowReq = (action: string) => {
-        // runs when a user clicks 'follow' or 'unfollow' from the pop up
+        // runs when a user clicks follow/friend/unfollow from the pop up
+        const targetId = props.post.author_id ?? '';
+        if (!targetId) {
+            setFollowMenuVisible(false);
+            return;
+        }
+
         if (action === 'basic') {
             dispatch(SendFollowUser({
-                keycloakId: props.post.author_id ?? '',
+                keycloakId: targetId,
                 action: 'follow', type: 'basic'
             }));
             setFollowMenuVisible(false);
+            return;
         }
-        else if (action === 'friend') {
+
+        if (action === 'friend') {
             dispatch(SendFollowUser({
-                keycloakId: props.post.author_id ?? '',
+                keycloakId: targetId,
                 action: 'follow', type: 'friend'
             }));
             setFollowMenuVisible(false);
+            return;
         }
-        else if (action === 'unfollow') {
-            dispatch(SendFollowUser({
-                keycloakId: props.post.author_id ?? '',
-                action: 'unfollow', type: 'unfollow'
-            }));
-            setFollowMenuVisible(false);
+
+        if (action === 'unfollow') {
+            const doUnfollow = () => {
+                dispatch(SendFollowUser({
+                    keycloakId: targetId,
+                    action: 'unfollow', type: isFriend ? 'friend' : 'basic'
+                }));
+                setFollowMenuVisible(false);
+            };
+
+            if (isFriend) {
+                Alert.alert(
+                    'Remove friend?',
+                    'This user will also be removed from your friend list, are you sure you want to proceed?',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Proceed', style: 'destructive', onPress: doUnfollow },
+                    ]
+                );
+                return;
+            }
+
+            doUnfollow();
         }
     }
 
@@ -138,9 +183,9 @@ const OnePost = (props: Props) => {
                 {(props.post.author_id && props.post.author_id !== currentUserId) &&  (
                     <View style={{ justifyContent: 'center', alignItems: 'flex-end', maxWidth: '42%' }}>
                         <TouchableOpacity onPress={() => setFollowMenuVisible(true)}>
-                            {props?.follow ? (
+                            {isFollowing ? (
                                 <View style={styles.viewProfile}>
-                                    <Text style={styles.buttonText}>Following</Text>
+                                    <Text style={styles.buttonText}>{followButtonLabel}</Text>
                                     <Ionicons
                                         name="checkmark"
                                         size={16}
@@ -236,19 +281,25 @@ const OnePost = (props: Props) => {
             >
                 <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.35)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 }} onPress={() => setFollowMenuVisible(false)}>
                     <Pressable style={{ width: '86%', maxWidth: 360, backgroundColor: '#FFFFFF', borderRadius: 12, overflow: 'hidden' }}>
-                        {(props?.follow === undefined) &&
+                        {!isFollowing &&
                             (
                                 <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('basic')} >
                                     <Text style={styles.followMenuPopUpText}>Follow</Text>
                                 </TouchableOpacity>
                             )}
-                        {(props?.follow?.[1] !== 'friend') &&
+                        {((!isFollowing) || (isFollowing && followType !== 'friend')) &&
                             (
                                 <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('friend')} >
                                     <Text style={styles.followMenuPopUpText}>Follow as friend</Text>
                                 </TouchableOpacity>
                             )}
-                        {(props?.follow !== undefined) &&
+                        {(isFollowing && isFriendRequestPending) &&
+                            (
+                                <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('friend')} >
+                                    <Text style={styles.followMenuPopUpText}>Send friend request again</Text>
+                                </TouchableOpacity>
+                            )}
+                        {isFollowing &&
                             (
                                 <TouchableOpacity style={styles.followMenuOptions} onPress={() => sendFollowReq('unfollow')} >
                                     <Text style={styles.followMenuPopUpText}>Unfollow</Text>

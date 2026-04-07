@@ -48,6 +48,7 @@ import { fetchAllEvents, fetchUserEvents, setAllEvents,
    fetchOneEvent, setOneEvent } from "../Events-store/eventsSlice";
 import { fetchMediaItems, setMediaItems, setUploadedMediaId, uploadBulkMedia, uploadMedia } from "../Profile-store/mediaSlice";
 import { fetchUserNotifications, markNotificationRead, setUserNotification,
+  fetchFriendRequests, setFriendRequests, respondToFriendRequest,
    fetchNotificationPreferences, setNotificationPreferences,
    updateNotificationPreferences
  } from "../Notification-store/notificationSlice";
@@ -502,8 +503,19 @@ function* updateChatOpened(action: PayloadAction<string>){
 }
 
 function* handleGetFriendList(action: PayloadAction<string>){
-  const friends = ((yield call(ChatApiFactory().getGetFriends, action.payload, {'keycloak_id': action.payload})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
-  yield put(setFriendList(friends.friends ?? []));
+  const currentUserId = (action.payload ?? '').trim();
+  if (!currentUserId) {
+    yield put(setFriendList([]));
+    return;
+  }
+
+  try {
+    const friends = ((yield call(ChatApiFactory().getGetFriends, currentUserId, {'keycloak_id': currentUserId})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
+    yield put(setFriendList(friends.friends ?? []));
+  } catch (error) {
+    console.error('failed to fetch friends list', error);
+    yield put(setFriendList([]));
+  }
 }
 
 
@@ -781,6 +793,10 @@ function* handleGetUserNotifications(action: PayloadAction<{perPage?: number, cu
   try {
     const response = ((yield call(NotificationsApiFactory().getNotificationList, action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined)) as AxiosResponse<NotificationListResponse>).data as NotificationListResponse;
     yield put(setUserNotification(response));
+
+    // Keep follow-state current so "Requested" can flip to "Friend" (or clear after decline)
+    // as soon as notifications are refreshed.
+    yield put(fetchFollowedUsers());
   }
   catch (error){
     console.error('failed to retrieve notification', (error))
@@ -796,6 +812,39 @@ function* updateNotificationOpened(action: PayloadAction<number>){
     console.error('failed to update notification', error);  
   }
   
+}
+
+function* handleGetFriendRequests(action: PayloadAction<void>) {
+  try {
+    const response = (yield call(axios.get, '/api/feed/friend-requests')) as AxiosResponse<{requests: Array<{keycloak_id: string, username: string, image?: string}>}>;
+    yield put(setFriendRequests(response.data?.requests ?? []));
+  } catch (error) {
+    console.error('failed to retrieve friend requests', error);
+    yield put(setFriendRequests([]));
+  }
+}
+
+function* handleRespondFriendRequest(action: PayloadAction<{keycloakId: string, decision: 'accept' | 'decline'}>) {
+  try {
+    if (action.payload.decision === 'accept') {
+      yield call(FeedApiFactory().postFollowUser, action.payload.keycloakId, {
+        action: 'follow',
+        follow_type: 'friend',
+      });
+    } else {
+      yield call(axios.post, `/api/feed/follow/${action.payload.keycloakId}`, {
+        action: 'decline',
+        follow_type: 'friend',
+      });
+    }
+
+    yield put(fetchFriendRequests());
+    yield put(fetchUserNotifications({ currentPage: 1 }));
+    yield put(fetchFollowedUsers());
+    yield put(fetchFriendList((yield appSelect(state => state.user.id)) as string));
+  } catch (error) {
+    console.error('failed to respond to friend request', error);
+  }
 }
 
 function* handleGetNotificationPreferences(action: PayloadAction<void>){
@@ -960,6 +1009,8 @@ function* appSaga() {
 /**Notification Api saga */
   yield takeEvery(fetchUserNotifications.type, handleGetUserNotifications);
   yield takeEvery(markNotificationRead.type, updateNotificationOpened);
+  yield takeEvery(fetchFriendRequests.type, handleGetFriendRequests);
+  yield takeEvery(respondToFriendRequest.type, handleRespondFriendRequest);
   yield takeEvery(fetchNotificationPreferences.type, handleGetNotificationPreferences);
   yield takeEvery(updateNotificationPreferences.type, handleUpdateNotificationPreferences);
 /**Profile Api saga */
