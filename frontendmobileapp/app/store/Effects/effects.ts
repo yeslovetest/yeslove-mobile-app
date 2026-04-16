@@ -50,7 +50,7 @@ import { fetchMediaItems, setMediaItems, setUploadedMediaId, uploadBulkMedia, up
 import { fetchUserNotifications, markNotificationRead, setUserNotification,
   fetchFriendRequests, setFriendRequests, respondToFriendRequest,
    fetchNotificationPreferences, setNotificationPreferences,
-   updateNotificationPreferences
+   updateNotificationPreferences, setNotificationRequestFailed
  } from "../Notification-store/notificationSlice";
 import { ChatRequest, ChatResponse as ChatbotApiResponse, apiFactory as chatbotApiFactory } from "@/chatbot-client-api/api";
 import dataURLtoFile from '@/utils/mediaUrlConverter';
@@ -800,6 +800,7 @@ function* handleGetUserNotifications(action: PayloadAction<{perPage?: number, cu
   }
   catch (error){
     console.error('failed to retrieve notification', (error))
+    yield put(setNotificationRequestFailed());
   } 
 } 
 
@@ -838,8 +839,9 @@ function* handleRespondFriendRequest(action: PayloadAction<{keycloakId: string, 
       });
     }
 
+    const currentPerPage = (yield appSelect((state) => state.notification.perPage)) as number;
     yield put(fetchFriendRequests());
-    yield put(fetchUserNotifications({ currentPage: 1 }));
+    yield put(fetchUserNotifications({ currentPage: 1, perPage: currentPerPage }));
     yield put(fetchFollowedUsers());
     yield put(fetchFriendList((yield appSelect(state => state.user.id)) as string));
   } catch (error) {
@@ -1007,7 +1009,8 @@ function* appSaga() {
   yield takeEvery(uploadMedia.type, handleUploadMedia);
   yield takeEvery(uploadBulkMedia.type, handleUploadBulkMedia);
 /**Notification Api saga */
-  yield takeEvery(fetchUserNotifications.type, handleGetUserNotifications);
+  // Keep only one notifications list request active to avoid duplicate page appends.
+  yield takeLatest(fetchUserNotifications.type, handleGetUserNotifications);
   yield takeEvery(markNotificationRead.type, updateNotificationOpened);
   yield takeEvery(fetchFriendRequests.type, handleGetFriendRequests);
   yield takeEvery(respondToFriendRequest.type, handleRespondFriendRequest);

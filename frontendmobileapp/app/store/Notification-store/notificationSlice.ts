@@ -11,6 +11,7 @@ const notificationSlice = createSlice({
     name: " notification",
     initialState: {
         scrollViewPosition: 0,   //default initial value
+        isFetchingNotifications: false,
         allNotifications: [] as Notification[],
         currentPage: 1,
         perPage: 20,
@@ -29,7 +30,9 @@ const notificationSlice = createSlice({
         setScrollViewPosition: (state, action: PayloadAction<number>) => {
             state.scrollViewPosition = action.payload;
         },
-        fetchUserNotifications: (state, action: PayloadAction<{perPage?: number, currentPage?: number}>) => {},
+        fetchUserNotifications: (state, action: PayloadAction<{perPage?: number, currentPage?: number}>) => {
+            state.isFetchingNotifications = true;
+        },
         setUserNotification: (state, action: PayloadAction<NotificationListResponse>) => {
             const page = action.payload.current_page ?? 1;
             const notifications = action.payload.notifications ?? [];
@@ -38,12 +41,23 @@ const notificationSlice = createSlice({
                 state.allNotifications = notifications;
             }
             else if (page > 1){
-                state.allNotifications = state.allNotifications.concat(notifications)
+                const existingIds = new Set(state.allNotifications.map((item) => item.id).filter((id): id is number => typeof id === 'number'));
+                const uniqueNotifications = notifications.filter((item) => {
+                    if (typeof item.id !== 'number') {
+                        return true;
+                    }
+                    return !existingIds.has(item.id);
+                });
+                state.allNotifications = state.allNotifications.concat(uniqueNotifications)
             }
             state.currentPage = page;
             state.perPage = action.payload.per_page || 20;
             state.totalNotifications = action.payload.total || 0;
             state.unreadNotifications = action.payload.unread || 0;
+            state.isFetchingNotifications = false;
+        },
+        setNotificationRequestFailed: (state) => {
+            state.isFetchingNotifications = false;
         },
         markNotificationRead: (state, action: PayloadAction<number>) => {},
         fetchFriendRequests: (state) => {},
@@ -67,7 +81,8 @@ export const {
     fetchUserNotifications, setUserNotification, markNotificationRead, 
     fetchFriendRequests, setFriendRequests, respondToFriendRequest,
     fetchNotificationPreferences, setNotificationPreferences, updateNotificationPreferences, 
-    changeNotificationPreference, setScrollViewPosition
+    changeNotificationPreference, setScrollViewPosition,
+    setNotificationRequestFailed
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;
