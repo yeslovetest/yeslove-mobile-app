@@ -575,9 +575,27 @@ class FollowUser(Resource):
     @api.expect(FollowUserRequest)  # ✅ Attach model
     def post(self, keycloak_id):
         """Follow or unfollow a user."""
-        from app.models import User, Follow, db
+        from app.models import User, Follow, Notification, db
         from app.services.notification_service import NotificationService
         from app.utils.common_helpers import get_current_user, safe_neptune_operation
+
+        def resolve_friend_request_notifications(recipient_user_id: int, requester_user_id: int) -> None:
+            """Mark pending friend request notifications as read once request state changes."""
+            candidate_notifications = Notification.query.filter_by(
+                user_id=recipient_user_id,
+                notification_type="follows",
+                is_read=False,
+            ).all()
+
+            changed = False
+            for item in candidate_notifications:
+                payload = item.get_data() or {}
+                if payload.get("type") == "friend_request" and payload.get("user_id") == requester_user_id:
+                    item.is_read = True
+                    changed = True
+
+            if changed:
+                db.session.flush()
         
         user, error_response, status_code = get_current_user()
         if error_response:
@@ -625,7 +643,15 @@ class FollowUser(Resource):
                     and followby_target_user.follow_type == "friend"
                 )
 
+                is_canceling_pending_friend_request = (
+                    followby_current_user.follow_type == "friend"
+                    and not remove_reverse_friend
+                )
+
                 db.session.delete(followby_current_user)
+                if is_canceling_pending_friend_request:
+                    # Sender canceled an outgoing request; clear unread request notification for recipient.
+                    resolve_friend_request_notifications(target_user.id, user.id)
                 logger.info(f"User {user.username} unfollowed {target_user.username}")
                 if remove_reverse_friend:
                     db.session.delete(followby_target_user)
@@ -665,6 +691,8 @@ class FollowUser(Resource):
                 return {"message": "No incoming friend request"}, 400
 
             db.session.delete(followby_target_user)
+            # Recipient declined an incoming request; clear the corresponding unread request notification.
+            resolve_friend_request_notifications(user.id, target_user.id)
             db.session.commit()
 
             safe_neptune_operation(
@@ -723,6 +751,9 @@ class FollowUser(Resource):
                 followby_current_user.follow_type = "friend"
             else:
                 db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
+
+            # Recipient accepted an incoming request; clear the corresponding unread request notification.
+            resolve_friend_request_notifications(user.id, target_user.id)
             db.session.commit()
 
             NotificationService.create_notification(

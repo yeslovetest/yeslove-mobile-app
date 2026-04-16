@@ -79,6 +79,8 @@ class NotificationList(Resource):
         """Return notifications for the logged-in user."""
         from app.models import Notification, User 
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
 
         # Pagination parameters
         try:
@@ -93,20 +95,26 @@ class NotificationList(Resource):
         if per_page < 1:
             per_page = 20
 
-        # Total notifications
-        total_notifications = Notification.query.filter_by(user_id=user.id).count()
-
-        unread_notifications = Notification.query.filter_by(user_id=user.id, is_read=False).count()
-
-        # Paginated query
-        notifications = (
+        # Fetch and filter first so totals/unread match what the app actually renders.
+        # Friend requests are displayed in a dedicated tab and should not affect the "All" unread count.
+        all_notifications = (
             Notification.query
             .filter_by(user_id=user.id)
             .order_by(Notification.created_at.desc())
-            .offset((page - 1) * per_page)
-            .limit(per_page)
             .all()
         )
+
+        filtered_notifications = [
+            n for n in all_notifications
+            if ((n.get_data() or {}).get("type") != "friend_request")
+        ]
+
+        total_notifications = len(filtered_notifications)
+        unread_notifications = sum(1 for n in filtered_notifications if not n.is_read)
+
+        start_index = (page - 1) * per_page
+        end_index = start_index + per_page
+        notifications = filtered_notifications[start_index:end_index]
 
         # Serialize notifications
         data = [{
