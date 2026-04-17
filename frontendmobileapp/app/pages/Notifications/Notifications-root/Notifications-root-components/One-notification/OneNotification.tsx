@@ -21,6 +21,7 @@ interface OneNotificationProps {
 
 type NotificationData = {
   type?: string;
+  username?: string;
   image?: string;
   post_id?: number;
   blog_id?: number;
@@ -31,6 +32,7 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
 
   const dispatch = useAppDispatch();
   const [isFriendRequestModalVisible, setFriendRequestModalVisible] = useState(false);
+  const [isFollowModalVisible, setFollowModalVisible] = useState(false);
   const notificationData = (notification?.data ?? {}) as NotificationData;
   const imagePath = friendRequest?.image ?? notificationData.image;
   const imageUrl = imagePath ? `${BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}` : '';
@@ -40,6 +42,14 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
   }
 
   const isFriendRequestItem = !!friendRequest;
+  const isFollowNotification =
+    !isFriendRequestItem &&
+    !!notification &&
+    (notification.type === 'follows' || notificationData.type === 'follow');
+  const followUserName =
+    typeof notificationData.username === 'string' && notificationData.username.trim().length > 0
+      ? notificationData.username
+      : 'Someone';
 
   const handleRespond = (decision: 'accept' | 'decline') => {
     if (!friendRequest?.keycloak_id) {
@@ -56,6 +66,15 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
     }
 
     if (!notification) {
+      return;
+    }
+
+    if (isFollowNotification) {
+      setFollowModalVisible(true);
+      if (!notification.is_read && typeof notification.id === 'number') {
+        // Follow notifications stay on this screen, so mark as read when modal opens.
+        dispatch(markNotificationRead(notification.id));
+      }
       return;
     }
 
@@ -132,6 +151,31 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
               </TouchableOpacity>
               <TouchableOpacity style={styles.acceptButton} onPress={() => handleRespond('accept')}>
                 <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    )}
+
+    {isFollowNotification && (
+      <Modal
+        visible={isFollowModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFollowModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setFollowModalVisible(false)}
+        >
+          <Pressable style={styles.modalCard}>
+            <Text style={styles.modalTitle}>You have a new follower</Text>
+            <Image source={{ uri: imageUrl ?? '' }} style={styles.profileImage} />
+            <Text style={styles.modalBody}>{followUserName} is now following your updates.</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.acceptButton} onPress={() => setFollowModalVisible(false)}>
+                <Text style={styles.acceptButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
           </Pressable>

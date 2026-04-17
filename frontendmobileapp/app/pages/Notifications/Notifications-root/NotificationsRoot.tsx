@@ -17,6 +17,7 @@ const NotificationsRoot = () => {
 
   const dispatch = useAppDispatch();
   const scrollViewPosition = useAppSelector(state => state.notification.scrollViewPosition);
+  const isFetchingNotifications = useAppSelector(state => state.notification.isFetchingNotifications);
   const [activeTab, setActiveTab] = useState<'all' | 'friend_requests'>('all');
   const userName = useAppSelector(
     (state) => state.user.name ?? ""
@@ -28,6 +29,7 @@ const NotificationsRoot = () => {
   const totalNotifications = useAppSelector(state => state.notification.totalNotifications);
   const unreadNotifications = useAppSelector(state => state.notification.unreadNotifications);
   const scrollViewRef = useRef<ScrollView>(null);
+  const lastPaginationRequestAtRef = useRef(0);
 
   useFocusEffect(   // maintain previous scroll position after user returns to this screen via the Back button 
     React.useCallback(() => {
@@ -39,7 +41,7 @@ const NotificationsRoot = () => {
           scrollViewRef.current?.scrollTo({ y: scrollViewPosition, animated: false });
         }, 10);
       }
-    }, [dispatch, perPage, scrollViewPosition])
+    }, [dispatch, perPage])
   );
 
   const nonFriendRequestNotifications = notificationList.filter(
@@ -48,20 +50,40 @@ const NotificationsRoot = () => {
 
   // Keep prefetch distance generous to avoid visible loading gaps while users scroll fast.
   const THRESHOLD = 400;
+  const MIN_PAGINATION_INTERVAL_MS = 500;
+  const hasMoreNotifications =
+    notificationList.length < totalNotifications &&
+    currentPage * perPage < totalNotifications;
   
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+    const now = Date.now();
 
     const isCloseToBottom =
       layoutMeasurement.height + contentOffset.y >= contentSize.height - THRESHOLD;
 
-    // Persist scroll position so users can continue where they left off.
-    dispatch(setScrollViewPosition(contentOffset.y));
+    // Skip auto-pagination when list cannot actually scroll yet.
+    const isScrollable = contentSize.height > layoutMeasurement.height;
 
-    if (activeTab === 'all' && isCloseToBottom && notificationList.length < totalNotifications) {
+    if (now - lastPaginationRequestAtRef.current < MIN_PAGINATION_INTERVAL_MS) {
+      return;
+    }
+
+    if (
+      activeTab === 'all' &&
+      !isFetchingNotifications &&
+      isScrollable &&
+      isCloseToBottom &&
+      hasMoreNotifications
+    ) {
+      lastPaginationRequestAtRef.current = now;
       dispatch(fetchUserNotifications({currentPage: currentPage + 1, perPage: perPage}));
       
     }
+  };
+
+  const persistScrollPosition = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    dispatch(setScrollViewPosition(event.nativeEvent.contentOffset.y));
   };
 
   return (
@@ -72,6 +94,8 @@ const NotificationsRoot = () => {
         contentContainerStyle={sharedStyles.contentContainer}
         style={sharedStyles.container}
         onScroll={handleScroll}
+        onScrollEndDrag={persistScrollPosition}
+        onMomentumScrollEnd={persistScrollPosition}
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
@@ -101,12 +125,15 @@ const NotificationsRoot = () => {
         </View>
 
         {activeTab === 'all' && nonFriendRequestNotifications.map((notification, index) => (
-          <OneNotification notification={notification} key={`${notification.id}-${index}`} />
+          <OneNotification
+            notification={notification}
+            key={typeof notification.id === 'number' ? String(notification.id) : `${notification.created_at ?? 'notification'}-${index}`}
+          />
         ))}
 
-        {activeTab === 'friend_requests' && friendRequestList.map((request, index) => (
+        {activeTab === 'friend_requests' && friendRequestList.map((request) => (
           <OneNotification
-            key={`${request.keycloak_id}-${index}`}
+            key={request.keycloak_id}
             friendRequest={request}
           />
         ))}

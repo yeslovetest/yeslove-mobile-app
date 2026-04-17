@@ -85,6 +85,28 @@ const styles = StyleSheet.create({
         color: '#3E4655',
         marginBottom: 14,
     },
+    followModalImage: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        alignSelf: 'center',
+        marginBottom: 12,
+    },
+    followModalActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    followModalCloseButton: {
+        backgroundColor: theme.colors.primaryBlue,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+        borderRadius: 10,
+    },
+    followModalCloseButtonText: {
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: '700',
+    },
     modalActions: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
