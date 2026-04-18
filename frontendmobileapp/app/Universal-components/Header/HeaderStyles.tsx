@@ -93,6 +93,26 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  conversationHeaderCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  conversationAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#eef3ff',
+  },
+  conversationTitle: {
+    color: theme.colors.blackText,
+    fontSize: 16,
+    fontWeight: '700',
+    maxWidth: '76%',
+  },
   assistantGlow: {
     position: "absolute",
     width: 30,

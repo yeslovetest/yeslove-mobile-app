@@ -1,13 +1,13 @@
 import Header from '@/app/Universal-components/Header/Header';
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import * as ImagePicker from "expo-image-picker";
-import { View, KeyboardAvoidingView, Platform, FlatList, Alert } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, FlatList, Alert, Keyboard } from 'react-native';
 import ChatResponse from './Conversation-components/Chat-response/ChatResponse';
 import Message from './Conversation-components/Message/Message';
 import ConversationTextInput from './Conversation-components/Conversation-text-input/ConversationTextInput';
 import styles from './ConversationStyles';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { sendChatMessage, markChatOpened, setChatMessages, fetchFriendList, setMediaFormData } from '@/app/store/Chat/chatSlice';
+import { sendChatMessage, markChatOpened, setChatMessages, fetchFriendList } from '@/app/store/Chat/chatSlice';
 import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import { uploadBulkMedia, uploadMedia } from '@/app/store/Profile-store/mediaSlice';
@@ -15,10 +15,12 @@ import MediaFilePreview from './Conversation-components/MediaPreview/mediaPrevie
 import dataURLtoFile from '@/utils/mediaUrlConverter';
 import LoadingOverlay from '@/app/Universal-components/LoadingScreen/Screen';
 import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from '@/constants/mediaLimits';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Conversation = () => {
 
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
   const messages = useAppSelector(state => state.chat.messages ?? []);
   const userName = useAppSelector(state => state.user.name ?? "");
   const currentUserId = useAppSelector(state => state.user.id ?? "");
@@ -27,9 +29,14 @@ const Conversation = () => {
   );
   const otherUserProfilePic = useAppSelector(
     (state) => state.navigation.tabStack.at(-1)?.data?.profile_pic);
-  const uploadedMediaId = useAppSelector(state => state.media.uploadedMediaId);
+  const otherUserName = useAppSelector((state) =>
+    state.chat.friends.find((friend) => friend.id === otherUserId)?.username ||
+    (otherUserId ? state.profile.profiles[otherUserId]?.username : '') ||
+    'Conversation'
+  );
   const [selectedFiles, setSelectedFiles] = useState<Array<{ uri: string; type: string; name?: string }> | null>(null);
   const [loadingVisible, setLoadingVisible] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
   useFocusEffect(
@@ -59,6 +66,23 @@ const Conversation = () => {
     //hide loading screen once messages are loaded
     setLoadingVisible(false)
   }, [messages])
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const onShow = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates?.height ?? 0);
+    });
+    const onHide = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      onShow.remove();
+      onHide.remove();
+    };
+  }, []);
     
   // this function is used only when message conatins media files to be uploaded
   const uploadMediaAsync = (formData: FormData) => {
@@ -108,7 +132,13 @@ const Conversation = () => {
     } else {
         setLoadingVisible(true)
         dispatch(sendChatMessage({ id: otherUserId, message: text }));
-    }  
+    }
+
+    // Keep latest sent message visible after keyboard interaction.
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 70);
+    Keyboard.dismiss();
     
   };
 
@@ -163,11 +193,11 @@ const Conversation = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={60}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 70 : 0}
     >
       <LoadingOverlay visible={loadingVisible}/>
-      <Header />
+      <Header mainTitle={otherUserName} />
       <View style={styles.chatContainer}>
        
         <FlatList
@@ -190,12 +220,20 @@ const Conversation = () => {
           
           onContentSizeChange={() => {
             setTimeout(() => {
-              flatListRef.current?.scrollToEnd({ animated: false });
+              flatListRef.current?.scrollToEnd({ animated: true });
             }, 90);
           }}
         />
        
-        <View style={styles.inputDock}>
+        <View
+          style={[
+            styles.inputDock,
+            {
+              // Keep the full composer above keyboard edge on both platforms.
+              marginBottom: keyboardHeight > 0 ? Math.max(insets.bottom, 8) : 0,
+            },
+          ]}
+        >
           {selectedFiles && selectedFiles.length > 0 && (
             <View style={styles.mediaPreviewContainer}>
               <MediaFilePreview file={selectedFiles} editable={true} deleteMedia={deleteSelectedFile}/>

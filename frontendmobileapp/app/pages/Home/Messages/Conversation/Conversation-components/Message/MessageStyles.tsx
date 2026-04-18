@@ -3,33 +3,48 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
     chatMessageContainer: {
         width: "100%",
-        padding: 15,
-        marginBottom: 4,
-        marginTop: "auto"
+        paddingHorizontal: 10,
+        paddingVertical: 4,
     },
     messageAndTimeSentContainer: {
         marginLeft: "auto",
-        maxWidth: "50%",
+        maxWidth: "80%",
+        minWidth: "24%",
     },
 
     chatMessage: {
-        marginLeft: "auto",
-        borderRadius: 15,
-        backgroundColor: "#2d5be3",
-        padding: 10
+        position: 'relative',
+        borderRadius: 18,
+        borderBottomRightRadius: 10,
+        backgroundColor: "#2f6cf6",
+        paddingHorizontal: 10,
+        paddingTop: 8,
+        paddingBottom: 6,
+    },
+    tailSent: {
+        position: 'absolute',
+        right: -6,
+        bottom: 8,
+        width: 12,
+        height: 12,
+        borderRadius: 8,
+        backgroundColor: '#2f6cf6',
+        transform: [{ rotate: '-28deg' }],
     },
 
     messageText: {
-        color: "#f5f5f5",
-        fontSize: 17,
-        fontFamily: "sans-serif",
-        marginVertical: 10,
+        color: "#f8fbff",
+        fontSize: 15,
+        lineHeight: 21,
+        marginTop: 4,
+        marginBottom: 2,
     },
 
     timeSentMessage: {
         marginTop: 2,
         marginLeft: "auto",
-        color: "#fefefe"
+        color: "#dbe8ff",
+        fontSize: 11,
     },
 
 

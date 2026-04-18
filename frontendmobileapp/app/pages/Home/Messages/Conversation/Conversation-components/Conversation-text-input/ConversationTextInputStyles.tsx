@@ -22,14 +22,14 @@ const styles = StyleSheet.create({
     textInput: {
         flex: 1,
         minHeight: 34,
-        maxHeight: 96,
+        maxHeight: 120,
         fontSize: 15,
         lineHeight: 20,
         color: "#1b2430",
         paddingHorizontal: 10,
         paddingTop: 6,
         paddingBottom: 6,
-        textAlignVertical: "center",
+        textAlignVertical: "top",
         includeFontPadding: false,
     },
 
@@ -38,6 +38,10 @@ const styles = StyleSheet.create({
         color: "#fafafa",
         backgroundColor: "#3f7cff",
         borderRadius: 20,
+    },
+    sendIconDisabled: {
+        color: "#eef2f7",
+        backgroundColor: "#c6d0e2",
     },
     mediaIcon: {
         padding: 8,
