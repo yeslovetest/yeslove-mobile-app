@@ -489,10 +489,6 @@ function* handlePostSendMessage(action: PayloadAction<{
   reject?: (error: unknown) => void,
 }>) {
   try{
-    const formData = new FormData();
-    formData.append('receiver_id', action.payload.id);
-    formData.append('message', action.payload.message ?? '');
-
     // Keep payload aligned with backend parser: repeated "media" files.
     const normalizedMedia = (action.payload.mediaFiles ?? [])
       .filter((file) => !!file?.uri && !!file?.type)
@@ -511,12 +507,18 @@ function* handlePostSendMessage(action: PayloadAction<{
         } as any;
       });
 
-    normalizedMedia.forEach((file) => {
-      formData.append('media', file);
-    });
-
-    // Let Axios set multipart boundaries automatically for React Native FormData.
-    yield call(axios.post, '/api/chat/send_message', formData, { timeout: 60000 });
+    // Use generated API factory for consistency with other sagas.
+    yield call(
+      ChatApiFactory().postSendMessage,
+      action.payload.id,
+      action.payload.message ?? undefined,
+      normalizedMedia.length ? (normalizedMedia as any) : undefined,
+      {
+        timeout: 60000,
+        // Override generated header value so Axios can set multipart boundary.
+        headers: { 'Content-Type': undefined as any },
+      }
+    );
 
     yield put(fetchChatMessages(action.payload.id));
     yield put(setUploadedMediaId([]));
@@ -525,6 +527,13 @@ function* handlePostSendMessage(action: PayloadAction<{
     }
   }catch (error) {
     console.error('failed to send message', error);  
+    if (axios.isAxiosError(error) && !error.response) {
+      console.error('chat send network details', {
+        baseURL: axios.defaults.baseURL,
+        url: 'ChatApiFactory.postSendMessage',
+        message: error.message,
+      });
+    }
     if (action.payload.reject) {
       action.payload.reject(error);
     }

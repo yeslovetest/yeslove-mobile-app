@@ -281,8 +281,15 @@ class GetMessages(Resource):
         current_group = None
 
         for msg in messages:
-            media_url = f"/api/media/{msg.media_id}" if msg.media_id else None
-            media_type = msg.media.content_type if msg.media else None
+            media_url = None
+            media_type = None
+            if msg.media:
+                media_url = msg.media.s3_url or (f"/api/media/{msg.media_id}" if msg.media_id else None)
+                media_type = msg.media.content_type
+            elif msg.media_id:
+                # Fallback when relationship is missing but media_id exists.
+                media_url = f"/api/media/{msg.media_id}"
+
             sender = msg.sender.username
             receiver_name = msg.receiver.username
             content = msg.message
