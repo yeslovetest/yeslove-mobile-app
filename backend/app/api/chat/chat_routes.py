@@ -68,7 +68,16 @@ class SendMessage(Resource):
 
         data = request.json
         receiver_id = data.get("receiver_id")
-        message = data.get("message")
+        raw_message = data.get("message")
+        message = raw_message.strip() if isinstance(raw_message, str) else ""
+        raw_media_id = data.get("media_id")
+        if isinstance(raw_media_id, list):
+            media_id = [str(item).strip() for item in raw_media_id if str(item).strip()]
+        elif isinstance(raw_media_id, str) and raw_media_id.strip():
+            media_id = [raw_media_id.strip()]
+        else:
+            media_id = []
+        has_media = isinstance(media_id, list) and len(media_id) > 0
 
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         receiver = User.query.filter_by(keycloak_id=receiver_id).first()
@@ -76,10 +85,11 @@ class SendMessage(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
-        if not message or not receiver_id:
-            logger.error("❌ Message content or receiver ID missing")
-            return {"message": "Message and receiver ID are required"}, 400
-        if (not message and not data.get("media_id")) or not receiver_id:
+        if not receiver_id:
+            logger.error("❌ Receiver ID missing")
+            return {"message": "Receiver ID is required"}, 400
+
+        if not message and not has_media:
             logger.error("❌ Message content/media or receiver ID missing")
             return {"message": "Message or media and receiver ID are required"}, 400
 
@@ -113,8 +123,6 @@ class SendMessage(Resource):
 
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
-        media_id = data.get("media_id") 
-        print(media_id)
         if media_id:  
             for id in media_id:
               new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=id)

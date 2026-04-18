@@ -9,20 +9,24 @@ interface Props {
   text: string;
   time: string;
   profilePic: string,
-  media: { uri?: string, type?: string, media_url?: string, name?: string }[] | MediaFile[];
+  media: { uri: string, type: string, name?: string }[] | MediaFile[];
 }
 
 const ChatResponse = ({ text, time, profilePic, media }: Props) => {
+  const responseText = (text ?? '').trim();
 
   return (
     <View style={styles.chatResponseContainer}>
       <UserProfile photo={profilePic} />
       <View style={{ flexShrink: 1 }}>
         <View style={styles.chatResponse}>
+          <View style={styles.tailReceived} />
           <MediaFilePreview file={media}/>
-          <Text numberOfLines={3} ellipsizeMode="tail" style={styles.responseText}>
-            {text}
-          </Text>
+          {responseText.length > 0 && (
+            <Text style={styles.responseText}>
+              {responseText}
+            </Text>
+          )}
           <Text style={styles.timeSentResponse}>{time}</Text>
         </View>
       </View>

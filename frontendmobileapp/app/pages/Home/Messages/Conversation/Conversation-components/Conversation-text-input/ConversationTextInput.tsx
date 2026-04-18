@@ -11,6 +11,10 @@ interface Props {
 const ConversationTextInput = ( props: Props) => {
 
   const [text, setText] = useState('');
+  const MIN_INPUT_HEIGHT = 34;
+  const MAX_INPUT_HEIGHT = 120;
+  const [inputHeight, setInputHeight] = useState(MIN_INPUT_HEIGHT);
+  const isSendDisabled = text.trim().length === 0;
   
 
   const send = (msg: string) => {
@@ -18,6 +22,7 @@ const ConversationTextInput = ( props: Props) => {
     if (trimmed) {
       props.onSend?.(trimmed);
       setText('');
+      setInputHeight(MIN_INPUT_HEIGHT);
     }
   };
 
@@ -35,22 +40,36 @@ const ConversationTextInput = ( props: Props) => {
     <View style={styles.textInputContainer}>
       <Ionicons onPress={() => selectMedia('media')} style={styles.mediaIcon} name="camera-outline" size={18} />
       <TextInput
-        style={[styles.textInput, { outlineWidth: 0, outlineColor: 'transparent' }]}
+        style={[
+          styles.textInput,
+          {
+            height: Math.max(MIN_INPUT_HEIGHT, Math.min(MAX_INPUT_HEIGHT, inputHeight)),
+            outlineWidth: 0,
+            outlineColor: 'transparent',
+          },
+        ]}
         placeholder="Type message"
         placeholderTextColor="#c9c9c9"
         value={text}
-        onChangeText={(t) => {
-          if (t.endsWith('\n')) send(t.replace(/\n+$/, ''));
-          else setText(t);
+        onChangeText={setText}
+        onContentSizeChange={(event) => {
+          const nextHeight = event.nativeEvent.contentSize.height;
+          setInputHeight(Math.max(MIN_INPUT_HEIGHT, Math.min(MAX_INPUT_HEIGHT, nextHeight)));
         }}
-        onKeyPress={({ nativeEvent }) => {
-          if (nativeEvent.key === 'Enter') send(text);
-        }}
-        returnKeyType="send"
+        blurOnSubmit={false}
         multiline
       />
       
-      <Ionicons onPress={() => send(text)} style={styles.sendIcon} name="send" size={18} />
+      <Ionicons
+        onPress={() => {
+          if (!isSendDisabled) {
+            send(text);
+          }
+        }}
+        style={[styles.sendIcon, isSendDisabled && styles.sendIconDisabled]}
+        name="send"
+        size={18}
+      />
     </View>
   );
 };
