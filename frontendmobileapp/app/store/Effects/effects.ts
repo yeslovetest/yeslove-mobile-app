@@ -484,7 +484,9 @@ function* handleGetMessages(action: PayloadAction<string>){
 function* handlePostSendMessage(action: PayloadAction<{
   id: string,
   message: string,
-  mediaFiles?: Array<{ uri: string; type: string; name?: string }>
+  mediaFiles?: Array<{ uri: string; type: string; name?: string }>,
+  resolve?: () => void,
+  reject?: (error: unknown) => void,
 }>) {
   try{
     const formData = new FormData();
@@ -513,16 +515,19 @@ function* handlePostSendMessage(action: PayloadAction<{
       formData.append('media', file);
     });
 
-    yield call(axios.post, '/api/chat/send_message', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Let Axios set multipart boundaries automatically for React Native FormData.
+    yield call(axios.post, '/api/chat/send_message', formData, { timeout: 60000 });
 
     yield put(fetchChatMessages(action.payload.id));
     yield put(setUploadedMediaId([]));
+    if (action.payload.resolve) {
+      action.payload.resolve();
+    }
   }catch (error) {
     console.error('failed to send message', error);  
+    if (action.payload.reject) {
+      action.payload.reject(error);
+    }
   }
 }
 

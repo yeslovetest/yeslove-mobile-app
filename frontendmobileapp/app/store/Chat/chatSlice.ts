@@ -8,6 +8,14 @@ export type ChatOutboundMediaFile = {
     name?: string;
 };
 
+export type SendChatMessagePayload = {
+    id: string;
+    message: string;
+    mediaFiles?: ChatOutboundMediaFile[] | undefined;
+    resolve?: () => void;
+    reject?: (error: unknown) => void;
+};
+
 const chatSlice = createSlice({
     name: "chat",     // Slice for messaging and chatbot
     initialState: {
@@ -27,7 +35,7 @@ const chatSlice = createSlice({
         setChatMessages: (state, action: PayloadAction<Chat[]>) => {
             state.messages = action.payload
         },
-        sendChatMessage: (state, action: PayloadAction<{id: string, message: string, mediaFiles?: ChatOutboundMediaFile[] | undefined}>) => {},
+        sendChatMessage: (state, action: PayloadAction<SendChatMessagePayload>) => {},
         setMediaFormData: (state, action: PayloadAction<{ mediaFormData: FormData | null}>) => {
             state.mediaData.mediaFormData = action.payload.mediaFormData
         },

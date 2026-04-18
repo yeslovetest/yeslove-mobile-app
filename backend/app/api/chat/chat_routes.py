@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from flask import request
 from flask_restx import Namespace, Resource, reqparse
 from sqlalchemy import func, or_, and_
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.datastructures import FileStorage
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 
@@ -171,16 +172,26 @@ class SendMessage(Resource):
                     db.session.rollback()
                     return {"message": "Upload failed"}, 400
 
+        # If only media was sent but no valid media IDs were stored, fail fast.
+        if not message and not media_ids:
+            db.session.rollback()
+            return {"message": "No valid media uploaded"}, 400
+
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
-        if media_ids:
-            for media_ref in media_ids:
-                new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_ref)
+        try:
+            if media_ids:
+                for media_ref in media_ids:
+                    new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_ref)
+                    db.session.add(new_message)
+            else:
+                new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message)
                 db.session.add(new_message)
-        else:
-            new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message)  
-            db.session.add(new_message)    
-        db.session.commit()
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logger.error(f"Chat message commit failed: {e}")
+            return {"message": "Failed to save message"}, 500
 
         # Send realtime message + notifications
         from app.services.notification_service import NotificationService

@@ -109,13 +109,18 @@ const Conversation = () => {
       // Send text and media in one request so message creation is atomic from the client perspective.
       setLoadingVisible(true);
 
-      dispatch(
-        sendChatMessage({
-          id: otherUserId,
-          message: trimmedText,
-          mediaFiles: filesToUpload.length > 0 ? filesToUpload : undefined,
-        })
-      );
+      await new Promise<void>((resolve, reject) => {
+        dispatch(
+          sendChatMessage({
+            id: otherUserId,
+            message: trimmedText,
+            mediaFiles: filesToUpload.length > 0 ? filesToUpload : undefined,
+            resolve,
+            reject,
+          })
+        );
+      });
+
       setSelectedFiles([]);
     } catch (error) {
       console.error('failed to send chat message', error);
