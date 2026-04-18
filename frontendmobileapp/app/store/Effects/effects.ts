@@ -481,12 +481,46 @@ function* handleGetMessages(action: PayloadAction<string>){
   yield put(setChatMessages(messages.messages ?? []));
 }
 
-function* handlePostSendMessage(action: PayloadAction<{id: string, message: string, mediaID?: string[] | undefined}>) {
+function* handlePostSendMessage(action: PayloadAction<{
+  id: string,
+  message: string,
+  mediaFiles?: Array<{ uri: string; type: string; name?: string }>
+}>) {
   try{
-    yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, 
-      message: action.payload.message, media_id: action.payload.mediaID}); 
+    const formData = new FormData();
+    formData.append('receiver_id', action.payload.id);
+    formData.append('message', action.payload.message ?? '');
+
+    // Keep payload aligned with backend parser: repeated "media" files.
+    const normalizedMedia = (action.payload.mediaFiles ?? [])
+      .filter((file) => !!file?.uri && !!file?.type)
+      .map((file) => {
+        if (file.uri.startsWith("data:")) {
+          return dataURLtoFile(
+            file.uri,
+            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg")
+          ) as any;
+        }
+
+        return {
+          uri: file.uri,
+          type: file.type,
+          name: file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"),
+        } as any;
+      });
+
+    normalizedMedia.forEach((file) => {
+      formData.append('media', file);
+    });
+
+    yield call(axios.post, '/api/chat/send_message', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
     yield put(fetchChatMessages(action.payload.id));
-    yield put(setUploadedMediaId([])); // Clear uploaded media IDs after sending message
+    yield put(setUploadedMediaId([]));
   }catch (error) {
     console.error('failed to send message', error);  
   }

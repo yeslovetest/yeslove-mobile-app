@@ -29,7 +29,7 @@ class MediaService:
 
     @staticmethod
     @SecurityService.rate_limit_uploads()
-    def store_file(file, user_id=None, post_id=None):
+    def store_file(file, user_id=None, post_id=None, auto_commit=True):
         from flask import current_app
         
         if not file:
@@ -89,7 +89,11 @@ class MediaService:
         )
 
         db.session.add(media)
-        db.session.commit()
+        if auto_commit:
+            db.session.commit()
+        else:
+            # Flush so callers can use media.id within the same transaction.
+            db.session.flush()
 
         # ✅ Return both ID and URL (local or S3)
         media_url = s3_url or f"/api/media/{media.id}"

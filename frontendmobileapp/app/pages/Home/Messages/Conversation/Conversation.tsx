@@ -1,7 +1,7 @@
 import Header from '@/app/Universal-components/Header/Header';
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import * as ImagePicker from "expo-image-picker";
-import { View, KeyboardAvoidingView, Platform, FlatList, Alert, Keyboard } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, FlatList, Alert, Keyboard, Animated } from 'react-native';
 import ChatResponse from './Conversation-components/Chat-response/ChatResponse';
 import Message from './Conversation-components/Message/Message';
 import ConversationTextInput from './Conversation-components/Conversation-text-input/ConversationTextInput';
@@ -10,9 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { sendChatMessage, markChatOpened, setChatMessages, fetchFriendList } from '@/app/store/Chat/chatSlice';
 import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import { uploadBulkMedia, uploadMedia } from '@/app/store/Profile-store/mediaSlice';
 import MediaFilePreview from './Conversation-components/MediaPreview/mediaPreview';
-import dataURLtoFile from '@/utils/mediaUrlConverter';
 import LoadingOverlay from '@/app/Universal-components/LoadingScreen/Screen';
 import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from '@/constants/mediaLimits';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,6 +36,8 @@ const Conversation = () => {
   const [loadingVisible, setLoadingVisible] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  const hasSelectedMedia = (selectedFiles?.length ?? 0) > 0;
+  const mediaTrayAnim = useRef(new Animated.Value(0)).current;
 
   useFocusEffect(
     useCallback(() => {
@@ -83,55 +83,45 @@ const Conversation = () => {
       onHide.remove();
     };
   }, []);
-    
-  // this function is used only when message conatins media files to be uploaded
-  const uploadMediaAsync = (formData: FormData) => {
-    return new Promise<string[]>((resolve, reject) => {
-      if (formData.getAll("file").length === 1) {
-        dispatch(uploadMedia({ requestBody: formData, resolve, reject }));
-      } else {
-        dispatch(uploadBulkMedia({ requestBody: formData, resolve, reject }));
-      }
-    });
-  };
+
+  useEffect(() => {
+    Animated.timing(mediaTrayAnim, {
+      toValue: hasSelectedMedia ? 1 : 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  }, [hasSelectedMedia, mediaTrayAnim]);
   
   const handleSend = async (text: string) => {
-      let mediaIds : string[] = []
-      const mediaData = new FormData(); // form data for Media upload
-  
-      if (selectedFiles) {
-        const fieldName = "file"; 
+      const trimmedText = (text ?? '').trim();
+      const filesToUpload = selectedFiles ?? [];
 
-        selectedFiles.forEach((selectedFile) => {
-           // detect if it's base64 or file URI
-          if (selectedFile.uri.startsWith("file:")) {
-            // handle both image and video here
-            const file = selectedFile;
-            mediaData.append(fieldName, file as any);
-          } 
-          else if (selectedFile.uri.startsWith("data:")) {
-            // handle base64 (e.g., for web)
-            const file: File | any = dataURLtoFile(
-              selectedFile.uri,
-              selectedFile.name ??
-                (selectedFile.type.startsWith("video") ? "video.mp4" : "photo.jpg") 
-            );
-            mediaData.append(fieldName, file);
-          }
-        });  
-        setSelectedFiles([]); //clear selected media files
+      if (!otherUserId) {
+        Alert.alert('Unable to send', 'Conversation recipient is missing. Please reopen the chat.');
+        return;
       }
 
-    // Upload media first
-    if (mediaData.getAll("file").length > 0) {
-        setLoadingVisible(true)
-        mediaIds = await uploadMediaAsync(mediaData); 
-        // send chat messages AFTER upload is done
-        dispatch(sendChatMessage({ id: otherUserId, message: text, mediaID: mediaIds ?? undefined }));
+      if (!trimmedText && filesToUpload.length === 0) {
+        return;
+      }
 
-    } else {
-        setLoadingVisible(true)
-        dispatch(sendChatMessage({ id: otherUserId, message: text }));
+    try {
+      // Send text and media in one request so message creation is atomic from the client perspective.
+      setLoadingVisible(true);
+
+      dispatch(
+        sendChatMessage({
+          id: otherUserId,
+          message: trimmedText,
+          mediaFiles: filesToUpload.length > 0 ? filesToUpload : undefined,
+        })
+      );
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error('failed to send chat message', error);
+      setLoadingVisible(false);
+      Alert.alert('Send failed', 'Unable to send your message right now. Please try again.');
+      return;
     }
 
     // Keep latest sent message visible after keyboard interaction.
@@ -204,7 +194,10 @@ const Conversation = () => {
           ref={flatListRef}
           data={messages}
           keyExtractor={(_, idx) => idx.toString()}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[
+            styles.contentContainer,
+            hasSelectedMedia ? { paddingBottom: 182 } : { paddingBottom: 96 },
+          ]}
           renderItem={({ item }) =>
             item?.sender !== userName ? (
               <ChatResponse text={item?.content ?? ''} 
@@ -224,6 +217,45 @@ const Conversation = () => {
             }, 90);
           }}
         />
+
+        {hasSelectedMedia && (
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                zIndex: 12,
+                backgroundColor: '#ffffff',
+                borderWidth: 1,
+                borderColor: '#d7deea',
+                borderRadius: 14,
+                paddingHorizontal: 10,
+                paddingTop: 8,
+                paddingBottom: 4,
+                shadowColor: '#0f172a',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+                elevation: 6,
+              },
+              {
+                bottom: 64 + (keyboardHeight > 0 ? Math.max(insets.bottom, 8) : 0),
+                opacity: mediaTrayAnim,
+                transform: [
+                  {
+                    translateY: mediaTrayAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [14, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <MediaFilePreview file={selectedFiles ?? []} editable={true} deleteMedia={deleteSelectedFile} />
+          </Animated.View>
+        )}
        
         <View
           style={[
@@ -234,12 +266,6 @@ const Conversation = () => {
             },
           ]}
         >
-          {selectedFiles && selectedFiles.length > 0 && (
-            <View style={styles.mediaPreviewContainer}>
-              <MediaFilePreview file={selectedFiles} editable={true} deleteMedia={deleteSelectedFile}/>
-            </View>
-          
-          )}
           <ConversationTextInput onSend={handleSend} openMedia={selectMedia}/>
         </View>
         

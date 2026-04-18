@@ -1,7 +1,8 @@
 from datetime import date, timedelta
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, reqparse
 from sqlalchemy import func, or_, and_
+from werkzeug.datastructures import FileStorage
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 
 from app.logging_setup import setup_logger
@@ -51,36 +52,69 @@ class UploadChatMedia(Resource):
 @api.route("/send_message")
 class SendMessage(Resource):
     from .chat_models import SendMessageRequest
+    send_message_parser = api.parser()
+    send_message_parser.add_argument(
+        "receiver_id",
+        type=str,
+        location="form",
+        required=True,
+        help="keycloak ID of the recipient user"
+    )
+    send_message_parser.add_argument(
+        "message",
+        type=str,
+        location="form",
+        required=False,
+        help="Message content (required if no media)"
+    )
+    send_message_parser.add_argument(
+        "media",
+        type=FileStorage,
+        location="files",
+        required=False,
+        action="append",
+        help="One or more media files"
+    )
+
     @require_auth() 
     @api.doc(
-        description="Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided."
+        description="Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files."
     )
-    @api.expect(SendMessageRequest)  # ✅ Attach model
+    @api.expect(send_message_parser)  # Accept multipart/form-data payload
     @api.response(201, 'Message sent successfully')
     @api.response(400, 'Bad request - missing message/media or invalid receiver')
     @api.response(404, 'User not found')
     @api.response(401, 'Unauthorized')
     def post(self):
         """Send a private message with moderation."""
-        from app.models import User, Chat, ModerationLog, db
-        from datetime import datetime
+        from app.models import User, Chat, db
+        from app.services.media.media_service import MediaService
 
 
-        data = request.json
-        receiver_id = data.get("receiver_id")
-        raw_message = data.get("message")
-        message = raw_message.strip() if isinstance(raw_message, str) else ""
-        raw_media_id = data.get("media_id")
-        if isinstance(raw_media_id, list):
-            media_id = [str(item).strip() for item in raw_media_id if str(item).strip()]
-        elif isinstance(raw_media_id, str) and raw_media_id.strip():
-            media_id = [raw_media_id.strip()]
+        data = request.get_json(silent=True) or {}
+
+        if request.content_type and "multipart/form-data" in request.content_type.lower():
+            receiver_id = (request.form.get("receiver_id") or "").strip()
+            raw_message = request.form.get("message")
+            uploaded_files = request.files.getlist("media") or request.files.getlist("file")
+            media_files = [file for file in uploaded_files if getattr(file, "filename", "")]
+            media_ids = []
         else:
-            media_id = []
-        has_media = isinstance(media_id, list) and len(media_id) > 0
+            receiver_id = data.get("receiver_id")
+            raw_message = data.get("message")
+            media_files = []
+            raw_media_id = data.get("media_id")
+            if isinstance(raw_media_id, list):
+                media_ids = [str(item).strip() for item in raw_media_id if str(item).strip()]
+            elif isinstance(raw_media_id, str) and raw_media_id.strip():
+                media_ids = [raw_media_id.strip()]
+            else:
+                media_ids = []
+
+        message = raw_message.strip() if isinstance(raw_message, str) else ""
+        has_media = len(media_ids) > 0 or len(media_files) > 0
 
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
-        receiver = User.query.filter_by(keycloak_id=receiver_id).first()
 
         if not user:
             return {"message": "User not found"}, 404
@@ -96,6 +130,8 @@ class SendMessage(Resource):
         if user.keycloak_id == receiver_id:
             logger.warning(f"❌ User {user.username} tried to message themselves")
             return {"message": "You cannot message yourself"}, 400
+
+        receiver = User.query.filter_by(keycloak_id=receiver_id).first()
 
         if not receiver:
             logger.warning(f"❌ Receiver ID {receiver_id} not found")
@@ -121,12 +157,26 @@ class SendMessage(Resource):
                     "triggered": moderation_result.get("triggered", {})
                 }, 400
 
+        # Store files in the same request flow so clients can send text + media in one API call.
+        if media_files:
+            for media_file in media_files:
+                try:
+                    result = MediaService.store_file(file=media_file, user_id=user.id, auto_commit=False)
+                    media_ref = result.get("media_id")
+                    if media_ref:
+                        media_ids.append(str(media_ref))
+                except Exception as e:
+                    file_name = getattr(media_file, "filename", "unknown-file")
+                    logger.error(f"Chat media upload failed for {file_name}: {e}")
+                    db.session.rollback()
+                    return {"message": "Upload failed"}, 400
+
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
-        if media_id:  
-            for id in media_id:
-              new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=id)
-              db.session.add(new_message)
+        if media_ids:
+            for media_ref in media_ids:
+                new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_ref)
+                db.session.add(new_message)
         else:
             new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message)  
             db.session.add(new_message)    
@@ -142,7 +192,7 @@ class SendMessage(Resource):
             "sender": user.username,
             "sender_id": user.id,
             "content": message,
-            "media_id": media_id,
+            "media_id": media_ids,
             "timestamp": new_message.timestamp.isoformat()
         }
         
