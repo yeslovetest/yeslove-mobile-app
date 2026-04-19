@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
   chatContainer: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 10,
+    paddingHorizontal: 4,
     paddingBottom: 8,
   },
   contentContainer: {

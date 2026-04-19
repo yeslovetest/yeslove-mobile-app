@@ -18,7 +18,7 @@ export default function Message({ prompt, time, media }: Props) {
             <View style={styles.messageAndTimeSentContainer}>
                 <View style={styles.chatMessage}>
                     <View style={styles.tailSent} />
-                    <MediaFilePreview file={media}/>
+                    <MediaFilePreview file={media} bubbleTone="sent" />
                     {messageText.length > 0 && (
                         <Text style={styles.messageText}>
                             {messageText}

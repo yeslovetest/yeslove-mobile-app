@@ -193,8 +193,7 @@ class SendMessage(Resource):
             logger.error(f"Chat message commit failed: {e}")
             return {"message": "Failed to save message"}, 500
 
-        # Send realtime message + notifications
-        from app.services.notification_service import NotificationService
+        # Send realtime message and optional push delivery.
         from app.services.push_notification_service import PushNotificationService
         from flask import current_app
         
@@ -218,17 +217,9 @@ class SendMessage(Resource):
                         title="New Message",
                         body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
                         data={"type": "message", "sender_id": user.id, "chat_id": new_message.id},
-                        notification_type="messages"
+                        notification_type="messages",
+                        persist_in_db=False,
                     )
-            
-            # Always create in-app notification
-            NotificationService.create_notification(
-                user_id=receiver.id,
-                title="New Message",
-                body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
-                notification_type="messages",
-                data={"type": "message", "sender_id": user.id, "chat_id": new_message.id}
-            )
             
         except Exception as e:
             logger.error(f"Realtime/notification failed for message {new_message.id}: {e}")

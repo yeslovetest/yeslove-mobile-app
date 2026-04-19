@@ -30,6 +30,7 @@ const ProfileHeaderAndBio = () => {
   const [selectedFile, setSelectedFile] = useState<SelectedProfileFile | null>(null);
   const [validationMessage, setValidationMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const hasBio = bio.trim().length > 0;
 
   const currentProfileImageUri = useMemo(() => {
     if (!profileImage) {
@@ -179,7 +180,6 @@ const ProfileHeaderAndBio = () => {
     }
   };
 
-
   return (
     <View>
       <View style={styles.profileImageContainer}>
@@ -242,7 +242,18 @@ const ProfileHeaderAndBio = () => {
       {/* User bio */}
 
       <View style={styles.userBioContainer}>
-        <Text style={styles.userBioText}>{bio}</Text>
+        {hasBio ? (
+          <Text style={styles.userBioText}>{bio}</Text>
+        ) : isCurrentUserProfile ? (
+          <>
+            <Text style={styles.emptyBioTitle}>Tell people about yourself</Text>
+            <Text style={styles.emptyBioText}>
+              Add a short bio so others can get to know you. Click Edit your profile information to update it.
+            </Text>
+          </>
+        ) : (
+          <Text style={styles.emptyBioText}>This user has not added a bio yet.</Text>
+        )}
       </View>
     </View>
 

@@ -4,9 +4,13 @@ from flask_restx import fields
 MediaFile = api.model("MediaFile", {
         "id": fields.String(description="Unique media ID"),
         "url": fields.String(description="Media URL (local or S3)"),    
+    "media_url": fields.String(description="Media URL alias for client compatibility"),
         "filename": fields.String(description="Original filename"),
         "content_type": fields.String(description="MIME type of the media"),
         "file_size": fields.Integer(description="Size of the file in bytes"),
+    "width": fields.Integer(description="Media width in pixels"),
+    "height": fields.Integer(description="Media height in pixels"),
+    "duration": fields.Integer(description="Media duration in seconds (for video/audio)"),
         "created_at": fields.String(description="Timestamp when the media was uploaded"),
     })
 

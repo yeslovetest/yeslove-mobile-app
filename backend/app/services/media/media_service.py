@@ -126,13 +126,17 @@ class MediaService:
     
     @staticmethod
     def get_user_media(user_id):
-        media_list = Media.query.filter_by(user_id=user_id, is_public=True).all()
+        media_list = Media.query.filter_by(user_id=user_id, is_public=True).order_by(Media.created_at.desc()).all()
         return [{
             "id": m.id,
             "url": m.s3_url or f"/api/media/{m.id}",
+            "media_url": m.s3_url or f"/api/media/{m.id}",
             "filename": m.filename,
             "content_type": m.content_type,
             "file_size": m.file_size,
+            "width": m.width,
+            "height": m.height,
+            "duration": m.duration,
             "created_at": m.created_at.isoformat() if m.created_at else None
         } for m in media_list]
     

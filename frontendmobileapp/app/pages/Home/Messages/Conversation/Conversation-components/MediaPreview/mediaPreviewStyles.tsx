@@ -4,34 +4,43 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
 previewContainer: {
     position: "relative",
-    marginRight: 6,
+    alignSelf: "center",
     marginBottom: 6,
   },
   previewImage: {
-    width: 84,
-    height: 84,
-    borderRadius: 10,
+    borderRadius: 14,
+    backgroundColor: "#dbe3ef",
   },
   previewVideo: {
-    width: 84,
-    height: 84,
-    borderRadius: 10,
+    borderRadius: 14,
+    backgroundColor: "#0f172a",
   },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
+  moreChip: {
+    alignSelf: "flex-end",
+    marginBottom: 4,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
-  overlayText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
+  moreChipSent: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.35)",
+  },
+  moreChipReceived: {
+    backgroundColor: "#dfeaff",
+    borderColor: "#c9dcff",
+  },
+  moreChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  moreChipTextSent: {
+    color: "#f5f9ff",
+  },
+  moreChipTextReceived: {
+    color: "#1f3b75",
   },
   text: {
     textAlign: "center",

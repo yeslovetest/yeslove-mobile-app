@@ -3,19 +3,24 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
    chatResponseContainer: {
         width: "100%",
-        paddingHorizontal: 10,
+        paddingLeft: 0,
+        paddingRight: 8,
         paddingVertical: 4,
         justifyContent: "flex-start",
-        alignItems: "flex-end",
+        alignItems: "flex-start",
         flexDirection: "row",
-        gap: 6,
+        gap: 2,
+    },
+
+    bubbleWrap: {
+        flexShrink: 1,
+        maxWidth: "78%",
     },
 
     chatResponse: {
         position: 'relative',
         width: "100%",
-        maxWidth: "80%",
-        minWidth: "24%",
+        alignSelf: "flex-start",
         borderRadius: 18,
         borderBottomLeftRadius: 10,
         backgroundColor: "#edf3ff",

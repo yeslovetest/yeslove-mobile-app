@@ -7,7 +7,7 @@ import Message from './Conversation-components/Message/Message';
 import ConversationTextInput from './Conversation-components/Conversation-text-input/ConversationTextInput';
 import styles from './ConversationStyles';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { sendChatMessage, markChatOpened, setChatMessages, fetchFriendList } from '@/app/store/Chat/chatSlice';
+import { sendChatMessage, markChatOpened, setChatMessages, fetchFriendList, resetSendChatMessageStatus } from '@/app/store/Chat/chatSlice';
 import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import MediaFilePreview from './Conversation-components/MediaPreview/mediaPreview';
@@ -20,6 +20,8 @@ const Conversation = () => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const messages = useAppSelector(state => state.chat.messages ?? []);
+  const sendMessageStatus = useAppSelector(state => state.chat.sendMessageStatus);
+  const sendMessageError = useAppSelector(state => state.chat.sendMessageError);
   const userName = useAppSelector(state => state.user.name ?? "");
   const currentUserId = useAppSelector(state => state.user.id ?? "");
   const otherUserId = useAppSelector(
@@ -38,6 +40,7 @@ const Conversation = () => {
   const flatListRef = useRef<FlatList>(null);
   const hasSelectedMedia = (selectedFiles?.length ?? 0) > 0;
   const mediaTrayAnim = useRef(new Animated.Value(0)).current;
+  const previousSendStatusRef = useRef(sendMessageStatus);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,8 +94,30 @@ const Conversation = () => {
       useNativeDriver: true,
     }).start();
   }, [hasSelectedMedia, mediaTrayAnim]);
+
+  useEffect(() => {
+    const previousStatus = previousSendStatusRef.current;
+
+    if (sendMessageStatus === 'sending') {
+      setLoadingVisible(true);
+    }
+
+    if (sendMessageStatus === 'succeeded' && previousStatus !== 'succeeded') {
+      setLoadingVisible(false);
+      setSelectedFiles([]);
+      dispatch(resetSendChatMessageStatus());
+    }
+
+    if (sendMessageStatus === 'failed' && previousStatus !== 'failed') {
+      setLoadingVisible(false);
+      Alert.alert('Send failed', sendMessageError || 'Unable to send your message right now. Please try again.');
+      dispatch(resetSendChatMessageStatus());
+    }
+
+    previousSendStatusRef.current = sendMessageStatus;
+  }, [dispatch, sendMessageStatus, sendMessageError]);
   
-  const handleSend = async (text: string) => {
+  const handleSend = (text: string) => {
       const trimmedText = (text ?? '').trim();
       const filesToUpload = selectedFiles ?? [];
 
@@ -105,29 +130,14 @@ const Conversation = () => {
         return;
       }
 
-    try {
-      // Send text and media in one request so message creation is atomic from the client perspective.
-      setLoadingVisible(true);
-
-      await new Promise<void>((resolve, reject) => {
-        dispatch(
-          sendChatMessage({
-            id: otherUserId,
-            message: trimmedText,
-            mediaFiles: filesToUpload.length > 0 ? filesToUpload : undefined,
-            resolve,
-            reject,
-          })
-        );
-      });
-
-      setSelectedFiles([]);
-    } catch (error) {
-      console.error('failed to send chat message', error);
-      setLoadingVisible(false);
-      Alert.alert('Send failed', 'Unable to send your message right now. Please try again.');
-      return;
-    }
+    // Send text and media in one request so message creation is atomic from the client perspective.
+    dispatch(
+      sendChatMessage({
+        id: otherUserId,
+        message: trimmedText,
+        mediaFiles: filesToUpload.length > 0 ? filesToUpload : undefined,
+      })
+    );
 
     // Keep latest sent message visible after keyboard interaction.
     setTimeout(() => {

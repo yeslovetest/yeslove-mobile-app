@@ -7,23 +7,24 @@ import os
 class PushNotificationService:
     
     @staticmethod
-    def send_to_user(user_id, title, body, data=None, notification_type="posts"):
+    def send_to_user(user_id, title, body, data=None, notification_type="posts", persist_in_db=True):
         """Send push notification to user if they have notifications enabled"""
         from app.models import NotificationSettings, Notification, db
         
         # Check if user has this notification type enabled
         settings = NotificationSettings.query.filter_by(user_id=user_id).first()
 
-        # save new notification to database
-        notification = Notification(
-            user_id=user_id,
-            title=title,
-            body=body,
-            data=data,
-            notification_type=notification_type
-        )
-        db.session.add(notification)
-        db.session.commit()
+        if persist_in_db:
+            # Save new notification to database when persistence is requested.
+            notification = Notification(
+                user_id=user_id,
+                title=title,
+                body=body,
+                data=data,
+                notification_type=notification_type
+            )
+            db.session.add(notification)
+            db.session.commit()
 
         if settings:
             enabled = getattr(settings, f"{notification_type}_enabled", True)

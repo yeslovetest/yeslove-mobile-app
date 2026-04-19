@@ -37,6 +37,9 @@ export default function Header(props: Props) {
     conversationUserNameFromFriends ||
     conversationUserNameFromProfiles ||
     'Conversation';
+  const unreadMessageCount = useAppSelector((state) =>
+    (state.chat.friends ?? []).reduce((count, friend) => count + (friend.unread ? 1 : 0), 0)
+  );
   const conversationPhoto = conversationData?.profile_pic || '';
   // Shared assistant avatar used in the Get-help header CTA.
   const assistantAvatar = require('../../pages/Home/Messages/Chatbot/Chatbot-assets/robot.webp');
@@ -143,10 +146,15 @@ export default function Header(props: Props) {
   >
       {hasTabToGoBackTo && currentTab !== TabType.CHATBOT && (
         <View style={styles.headerDistribution}>
-          <FontAwesome5 
-          onPress={returnToPreviousTab} 
-          name="chevron-left" size={20} 
-          />
+          <TouchableOpacity
+            onPress={returnToPreviousTab}
+            style={styles.backButtonTouchable}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            pressRetentionOffset={{ top: 16, bottom: 16, left: 16, right: 16 }}
+            activeOpacity={0.7}
+          >
+            <FontAwesome5 name="chevron-left" size={20} />
+          </TouchableOpacity>
           {hasTabToGoBackTo && currentTab === TabType.MESSAGES && (
             <Text style={styles.title}>{props.mainTitle}</Text>
           )}
@@ -183,6 +191,13 @@ export default function Header(props: Props) {
               activeOpacity={0.8}
             >
               <SimpleLineIcons name="bubbles" size={21} color="black" />
+              {unreadMessageCount > 0 && (
+                <View style={styles.messagesBadge}>
+                  <Text style={styles.messagesBadgeText}>
+                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
