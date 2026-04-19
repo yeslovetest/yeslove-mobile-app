@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   },
 userBioContainer:{
   width: "100%",
-  height: 80,
+  minHeight: 88,
   marginTop: 20,
   borderRadius: 10,
   backgroundColor: "#fff",
@@ -148,7 +148,20 @@ userBioContainer:{
   padding: 13,
 },
 userBioText: {
-  color: "#000"
+  color: "#000",
+  fontSize: 14,
+  lineHeight: 20,
+},
+emptyBioTitle: {
+  color: "#1f2937",
+  fontSize: 15,
+  fontWeight: "700",
+  marginBottom: 4,
+},
+emptyBioText: {
+  color: "#4b5563",
+  fontSize: 13,
+  lineHeight: 18,
 },
 })
 

@@ -12,9 +12,9 @@ export type SendChatMessagePayload = {
     id: string;
     message: string;
     mediaFiles?: ChatOutboundMediaFile[] | undefined;
-    resolve?: () => void;
-    reject?: (error: unknown) => void;
 };
+
+type SendMessageStatus = 'idle' | 'sending' | 'succeeded' | 'failed';
 
 const chatSlice = createSlice({
     name: "chat",     // Slice for messaging and chatbot
@@ -29,6 +29,8 @@ const chatSlice = createSlice({
             sources: ''
         },
         mediaData: { mediaFormData: null as FormData | null },
+        sendMessageStatus: 'idle' as SendMessageStatus,
+        sendMessageError: '' as string,
     },
     reducers: {
         fetchChatMessages: (state, action: PayloadAction<string>) => {},
@@ -36,6 +38,22 @@ const chatSlice = createSlice({
             state.messages = action.payload
         },
         sendChatMessage: (state, action: PayloadAction<SendChatMessagePayload>) => {},
+        sendChatMessageStarted: (state) => {
+            state.sendMessageStatus = 'sending';
+            state.sendMessageError = '';
+        },
+        sendChatMessageSucceeded: (state) => {
+            state.sendMessageStatus = 'succeeded';
+            state.sendMessageError = '';
+        },
+        sendChatMessageFailed: (state, action: PayloadAction<string>) => {
+            state.sendMessageStatus = 'failed';
+            state.sendMessageError = action.payload;
+        },
+        resetSendChatMessageStatus: (state) => {
+            state.sendMessageStatus = 'idle';
+            state.sendMessageError = '';
+        },
         setMediaFormData: (state, action: PayloadAction<{ mediaFormData: FormData | null}>) => {
             state.mediaData.mediaFormData = action.payload.mediaFormData
         },
@@ -68,6 +86,7 @@ const chatSlice = createSlice({
 
 export const {
     fetchChatMessages, setChatMessages, sendChatMessage, 
+    sendChatMessageStarted, sendChatMessageSucceeded, sendChatMessageFailed, resetSendChatMessageStatus,
     markChatOpened, fetchFriendList, setFriendList,
     sendChatbotMessage, setChatbotResponse, setMediaFormData, setMessagesScrollViewPosition
 } = chatSlice.actions;

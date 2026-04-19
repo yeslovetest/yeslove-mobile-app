@@ -20,6 +20,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 20,
   },
+  backButtonTouchable: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: -2,
+  },
   header: {
     width: '100%',
     minHeight: 58,
@@ -64,6 +72,26 @@ const styles = StyleSheet.create({
   },
   homeActionSpacing: {
     marginLeft: 10,
+  },
+  messagesBadge: {
+    position: "absolute",
+    top: -5,
+    right: -6,
+    minWidth: 17,
+    height: 17,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    backgroundColor: "#ef4444",
+    borderWidth: 1,
+    borderColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  messagesBadgeText: {
+    color: "#ffffff",
+    fontSize: 10,
+    fontWeight: "700",
+    lineHeight: 11,
   },
   chatbotHeader: {
     flexDirection: "row",

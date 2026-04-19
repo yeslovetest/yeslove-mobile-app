@@ -18,10 +18,10 @@ const ChatResponse = ({ text, time, profilePic, media }: Props) => {
   return (
     <View style={styles.chatResponseContainer}>
       <UserProfile photo={profilePic} />
-      <View style={{ flexShrink: 1 }}>
+      <View style={styles.bubbleWrap}>
         <View style={styles.chatResponse}>
           <View style={styles.tailReceived} />
-          <MediaFilePreview file={media}/>
+          <MediaFilePreview file={media} bubbleTone="received" maxPreviewWidth={168} />
           {responseText.length > 0 && (
             <Text style={styles.responseText}>
               {responseText}

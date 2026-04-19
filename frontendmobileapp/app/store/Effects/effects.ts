@@ -38,7 +38,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
  } from "../Home-store/feedSlice";
 import { changeTabAction, openTabOnTopAction, TabType } from "../Navigation/navigationSlice";
 import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList,
-   sendChatbotMessage, setChatbotResponse
+  sendChatbotMessage, setChatbotResponse, sendChatMessageStarted, sendChatMessageSucceeded, sendChatMessageFailed
  } from "../Chat/chatSlice";
 import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals,
     fetchOneBlogPost, setOneBlogPost
@@ -485,10 +485,9 @@ function* handlePostSendMessage(action: PayloadAction<{
   id: string,
   message: string,
   mediaFiles?: Array<{ uri: string; type: string; name?: string }>,
-  resolve?: () => void,
-  reject?: (error: unknown) => void,
 }>) {
   try{
+    yield put(sendChatMessageStarted());
     // Keep payload aligned with backend parser: repeated "media" files.
     const normalizedMedia = (action.payload.mediaFiles ?? [])
       .filter((file) => !!file?.uri && !!file?.type)
@@ -522,9 +521,7 @@ function* handlePostSendMessage(action: PayloadAction<{
 
     yield put(fetchChatMessages(action.payload.id));
     yield put(setUploadedMediaId([]));
-    if (action.payload.resolve) {
-      action.payload.resolve();
-    }
+    yield put(sendChatMessageSucceeded());
   }catch (error) {
     console.error('failed to send message', error);  
     if (axios.isAxiosError(error) && !error.response) {
@@ -534,9 +531,7 @@ function* handlePostSendMessage(action: PayloadAction<{
         message: error.message,
       });
     }
-    if (action.payload.reject) {
-      action.payload.reject(error);
-    }
+    yield put(sendChatMessageFailed('Unable to send your message right now. Please try again.'));
   }
 }
 
