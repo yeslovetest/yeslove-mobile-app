@@ -7,19 +7,23 @@ import { MediaFile } from '@/generated-api';
 interface Props {
     prompt: string;
     time: string;
-    media: { uri?: string, type?: string, media_url?: string, name?: string }[] | MediaFile[];
+    media: { uri: string, type: string, name?: string }[] | MediaFile[];
 }
 
 export default function Message({ prompt, time, media }: Props) {
+    const messageText = (prompt ?? '').trim();
 
     return (
         <View style={styles.chatMessageContainer}>
             <View style={styles.messageAndTimeSentContainer}>
                 <View style={styles.chatMessage}>
-                    <MediaFilePreview file={media}/>
-                    <Text numberOfLines={3} ellipsizeMode="tail" style={styles.messageText}>
-                        {prompt}
-                    </Text>
+                    <View style={styles.tailSent} />
+                    <MediaFilePreview file={media} bubbleTone="sent" />
+                    {messageText.length > 0 && (
+                        <Text style={styles.messageText}>
+                            {messageText}
+                        </Text>
+                    )}
                     <Text style={styles.timeSentMessage}>{time}</Text>
                 </View>
             </View>

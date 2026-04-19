@@ -38,7 +38,7 @@ import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postCom
  } from "../Home-store/feedSlice";
 import { changeTabAction, openTabOnTopAction, TabType } from "../Navigation/navigationSlice";
 import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList,
-   sendChatbotMessage, setChatbotResponse
+  sendChatbotMessage, setChatbotResponse, sendChatMessageStarted, sendChatMessageSucceeded, sendChatMessageFailed
  } from "../Chat/chatSlice";
 import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals,
     fetchOneBlogPost, setOneBlogPost
@@ -481,14 +481,57 @@ function* handleGetMessages(action: PayloadAction<string>){
   yield put(setChatMessages(messages.messages ?? []));
 }
 
-function* handlePostSendMessage(action: PayloadAction<{id: string, message: string, mediaID?: string[] | undefined}>) {
+function* handlePostSendMessage(action: PayloadAction<{
+  id: string,
+  message: string,
+  mediaFiles?: Array<{ uri: string; type: string; name?: string }>,
+}>) {
   try{
-    yield call(ChatApiFactory().postSendMessage, {receiver_id: action.payload.id, 
-      message: action.payload.message, media_id: action.payload.mediaID}); 
+    yield put(sendChatMessageStarted());
+    // Keep payload aligned with backend parser: repeated "media" files.
+    const normalizedMedia = (action.payload.mediaFiles ?? [])
+      .filter((file) => !!file?.uri && !!file?.type)
+      .map((file) => {
+        if (file.uri.startsWith("data:")) {
+          return dataURLtoFile(
+            file.uri,
+            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg")
+          ) as any;
+        }
+
+        return {
+          uri: file.uri,
+          type: file.type,
+          name: file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"),
+        } as any;
+      });
+
+    // Use generated API factory for consistency with other sagas.
+    yield call(
+      ChatApiFactory().postSendMessage,
+      action.payload.id,
+      action.payload.message ?? undefined,
+      normalizedMedia.length ? (normalizedMedia as any) : undefined,
+      {
+        timeout: 60000,
+        // Override generated header value so Axios can set multipart boundary.
+        headers: { 'Content-Type': undefined as any },
+      }
+    );
+
     yield put(fetchChatMessages(action.payload.id));
-    yield put(setUploadedMediaId([])); // Clear uploaded media IDs after sending message
+    yield put(setUploadedMediaId([]));
+    yield put(sendChatMessageSucceeded());
   }catch (error) {
     console.error('failed to send message', error);  
+    if (axios.isAxiosError(error) && !error.response) {
+      console.error('chat send network details', {
+        baseURL: axios.defaults.baseURL,
+        url: 'ChatApiFactory.postSendMessage',
+        message: error.message,
+      });
+    }
+    yield put(sendChatMessageFailed('Unable to send your message right now. Please try again.'));
   }
 }
 

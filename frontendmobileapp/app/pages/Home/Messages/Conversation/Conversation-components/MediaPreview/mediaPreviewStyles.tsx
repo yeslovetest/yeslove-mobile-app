@@ -4,34 +4,43 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
 previewContainer: {
     position: "relative",
-    marginRight: 10,
-    marginBottom: 8,
+    alignSelf: "center",
+    marginBottom: 6,
   },
   previewImage: {
-    width: 92,
-    height: 92,
-    borderRadius: 12,
+    borderRadius: 14,
+    backgroundColor: "#dbe3ef",
   },
   previewVideo: {
-    width: 92,
-    height: 92,
-    borderRadius: 12,
+    borderRadius: 14,
+    backgroundColor: "#0f172a",
   },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
+  moreChip: {
+    alignSelf: "flex-end",
+    marginBottom: 4,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
-  overlayText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
+  moreChipSent: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.35)",
+  },
+  moreChipReceived: {
+    backgroundColor: "#dfeaff",
+    borderColor: "#c9dcff",
+  },
+  moreChipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  moreChipTextSent: {
+    color: "#f5f9ff",
+  },
+  moreChipTextReceived: {
+    color: "#1f3b75",
   },
   text: {
     textAlign: "center",
@@ -89,6 +98,53 @@ previewContainer: {
     fontSize: 14,
     fontWeight: "bold",
     lineHeight: 14,
+  },
+  fullScreenContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.95)",
+    justifyContent: "center",
+  },
+  fullScreenClose: {
+    position: "absolute",
+    top: 48,
+    right: 18,
+    zIndex: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.18)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 18,
+  },
+  fullScreenCloseText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  fullScreenItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullScreenImage: {
+    width: "100%",
+    height: "80%",
+  },
+  fullScreenVideo: {
+    width: "100%",
+    height: "80%",
+  },
+  fullScreenFooter: {
+    position: "absolute",
+    bottom: 24,
+    alignSelf: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  fullScreenCounter: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
   },
 
 });

@@ -1,26 +1,27 @@
-import { StyleSheet, Dimensions } from "react-native"
+import { StyleSheet } from "react-native"
 
 const styles = StyleSheet.create({
   mediumContainer: {
     display: 'flex',
-    justifyContent: 'flex-start',
-    width: Dimensions.get('window').width * 0.3,   
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 2,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#dce4f2',
   },
 
   imageMedium: {
-    borderRadius: 5,
-    width: '100%', 
-    marginTop: 2,
-    resizeMode: 'cover',
-    aspectRatio: 1.5,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f8fafc',
   },
-  videoMedium: { 
-      width: '100%', 
-      borderRadius: 5, 
-      marginTop: 2,
-      resizeMode: 'cover',
-      aspectRatio: 1.5,
+  videoMedium: {
+      width: '100%',
+      height: '100%',
+      backgroundColor: '#020817',
   },
 })
 

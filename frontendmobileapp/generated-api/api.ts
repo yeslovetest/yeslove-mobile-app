@@ -822,6 +822,12 @@ export interface FollowedUser {
      */
     'follow_type'?: string;
     /**
+     * Relationship status: \'following\', \'requested\', or \'friend\'
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'friendship_status'?: string;
+    /**
      * URL to the followed user\'s profile picture
      * @type {string}
      * @memberof FollowedUser
@@ -1615,31 +1621,6 @@ export interface ResetPasswordRequest {
      * @memberof ResetPasswordRequest
      */
     'email': string;
-}
-/**
- * 
- * @export
- * @interface SendMessageRequest
- */
-export interface SendMessageRequest {
-    /**
-     * keycloak ID of the recipient user
-     * @type {string}
-     * @memberof SendMessageRequest
-     */
-    'receiver_id': string;
-    /**
-     * Message content (required if no media_id)
-     * @type {string}
-     * @memberof SendMessageRequest
-     */
-    'message'?: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SendMessageRequest
-     */
-    'media_id'?: Array<string>;
 }
 /**
  * 
@@ -3124,8 +3105,8 @@ export class BlogApi extends BaseAPI {
 export const ChatApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-         * @summary Fetch all friends of the current user along with
+         * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all confirmed friends of the current user along with
          * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3204,15 +3185,17 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
+         * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
          * @summary Send a private message with moderation
-         * @param {SendMessageRequest} payload 
+         * @param {string} receiverId keycloak ID of the recipient user
+         * @param {string} [message] Message content (required if no media)
+         * @param {Array<File>} [media] One or more media files
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSendMessage: async (payload: SendMessageRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postSendMessage', 'payload', payload)
+        postSendMessage: async (receiverId: string, message?: string, media?: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'receiverId' is not null or undefined
+            assertParamExists('postSendMessage', 'receiverId', receiverId)
             const localVarPath = `/api/chat/send_message`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3224,18 +3207,33 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             // authentication Bearer required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
+            if (receiverId !== undefined) { 
+                localVarFormParams.append('receiver_id', receiverId as any);
+            }
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
+            if (message !== undefined) { 
+                localVarFormParams.append('message', message as any);
+            }
+                if (media) {
+                media.forEach((element) => {
+                    localVarFormParams.append('media', element as any);
+                })
+            }
 
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3334,8 +3332,8 @@ export const ChatApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ChatApiAxiosParamCreator(configuration)
     return {
         /**
-         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-         * @summary Fetch all friends of the current user along with
+         * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all confirmed friends of the current user along with
          * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3361,14 +3359,16 @@ export const ChatApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
+         * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
          * @summary Send a private message with moderation
-         * @param {SendMessageRequest} payload 
+         * @param {string} receiverId keycloak ID of the recipient user
+         * @param {string} [message] Message content (required if no media)
+         * @param {Array<File>} [media] One or more media files
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postSendMessage(payload, options);
+        async postSendMessage(receiverId: string, message?: string, media?: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postSendMessage(receiverId, message, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.postSendMessage']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -3410,8 +3410,8 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
     const localVarFp = ChatApiFp(configuration)
     return {
         /**
-         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-         * @summary Fetch all friends of the current user along with
+         * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all confirmed friends of the current user along with
          * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3431,14 +3431,16 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.getGetMessages(receiverId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
+         * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
          * @summary Send a private message with moderation
-         * @param {SendMessageRequest} payload 
+         * @param {string} receiverId keycloak ID of the recipient user
+         * @param {string} [message] Message content (required if no media)
+         * @param {Array<File>} [media] One or more media files
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postSendMessage(payload, options).then((request) => request(axios, basePath));
+        postSendMessage(receiverId: string, message?: string, media?: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postSendMessage(receiverId, message, media, options).then((request) => request(axios, basePath));
         },
         /**
          * Upload media file for chat message
@@ -3471,8 +3473,8 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
  */
 export class ChatApi extends BaseAPI {
     /**
-     * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-     * @summary Fetch all friends of the current user along with
+     * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+     * @summary Fetch all confirmed friends of the current user along with
      * @param {string} keycloakId Keycloak ID of the current user
      * @param {GetFriendsRequest} payload 
      * @param {*} [options] Override http request option.
@@ -3496,15 +3498,17 @@ export class ChatApi extends BaseAPI {
     }
 
     /**
-     * Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided.
+     * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
      * @summary Send a private message with moderation
-     * @param {SendMessageRequest} payload 
+     * @param {string} receiverId keycloak ID of the recipient user
+     * @param {string} [message] Message content (required if no media)
+     * @param {Array<File>} [media] One or more media files
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ChatApi
      */
-    public postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig) {
-        return ChatApiFp(this.configuration).postSendMessage(payload, options).then((request) => request(this.axios, this.basePath));
+    public postSendMessage(receiverId: string, message?: string, media?: Array<File>, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).postSendMessage(receiverId, message, media, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4824,6 +4828,38 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriendRequests: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/feed/friend-requests`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Fetch a single post by ID
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -5192,6 +5228,17 @@ export const FeedApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetFriendRequests(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFriendRequests(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFriendRequests']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Fetch a single post by ID
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -5343,6 +5390,14 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriendRequests(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getGetFriendRequests(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Fetch a single post by ID
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -5477,6 +5532,16 @@ export class FeedApi extends BaseAPI {
      */
     public getGetFollowing(keycloakId: string, payload: object, options?: RawAxiosRequestConfig) {
         return FeedApiFp(this.configuration).getGetFollowing(keycloakId, payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FeedApi
+     */
+    public getGetFriendRequests(options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).getGetFriendRequests(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

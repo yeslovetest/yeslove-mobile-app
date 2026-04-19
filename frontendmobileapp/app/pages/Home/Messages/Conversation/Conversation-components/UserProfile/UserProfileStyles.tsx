@@ -2,10 +2,10 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   profileImg: {
-    width: 40,
-    height: 40,
-    marginRight: 5,
-    borderRadius: 20,
+    width: 34,
+    height: 34,
+    marginRight: 2,
+    borderRadius: 17,
   }
 })
 

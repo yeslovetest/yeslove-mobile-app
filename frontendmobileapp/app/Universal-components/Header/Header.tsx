@@ -10,6 +10,7 @@ import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import { fetchFriendList } from '@/app/store/Chat/chatSlice';
 import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile';
 import theme from '@/assets/variables/Variables';
+import { BASE_URL } from '@/app/config/baseUrl';
 
 export interface Props {
   mainTitle?: string;
@@ -24,6 +25,22 @@ export default function Header(props: Props) {
   const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
   const dispatch = useAppDispatch();
   const currentTab = tabStack[tabStack.length - 1]?.type;
+  const conversationData = tabStack[tabStack.length - 1]?.data as { userId?: string; profile_pic?: string; username?: string } | undefined;
+  const conversationUserNameFromFriends = useAppSelector((state) =>
+    state.chat.friends.find((friend) => friend.id === conversationData?.userId)?.username
+  );
+  const conversationUserNameFromProfiles = useAppSelector((state) =>
+    conversationData?.userId ? state.profile.profiles[conversationData.userId]?.username : undefined
+  );
+  const conversationUserName =
+    conversationData?.username ||
+    conversationUserNameFromFriends ||
+    conversationUserNameFromProfiles ||
+    'Conversation';
+  const unreadMessageCount = useAppSelector((state) =>
+    (state.chat.friends ?? []).reduce((count, friend) => count + (friend.unread ? 1 : 0), 0)
+  );
+  const conversationPhoto = conversationData?.profile_pic || '';
   // Shared assistant avatar used in the Get-help header CTA.
   const assistantAvatar = require('../../pages/Home/Messages/Chatbot/Chatbot-assets/robot.webp');
   // Animation driver for the periodic wave motion.
@@ -115,6 +132,11 @@ export default function Header(props: Props) {
     outputRange: [0.06, 0.12, 0.24],
   });
 
+  const resolvedConversationPhoto =
+    conversationPhoto && conversationPhoto.startsWith('/api')
+      ? `${BASE_URL}${conversationPhoto}`
+      : conversationPhoto;
+
   return (
     <View
     style={[
@@ -124,12 +146,25 @@ export default function Header(props: Props) {
   >
       {hasTabToGoBackTo && currentTab !== TabType.CHATBOT && (
         <View style={styles.headerDistribution}>
-          <FontAwesome5 
-          onPress={returnToPreviousTab} 
-          name="chevron-left" size={20} 
-          />
+          <TouchableOpacity
+            onPress={returnToPreviousTab}
+            style={styles.backButtonTouchable}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            pressRetentionOffset={{ top: 16, bottom: 16, left: 16, right: 16 }}
+            activeOpacity={0.7}
+          >
+            <FontAwesome5 name="chevron-left" size={20} />
+          </TouchableOpacity>
           {hasTabToGoBackTo && currentTab === TabType.MESSAGES && (
             <Text style={styles.title}>{props.mainTitle}</Text>
+          )}
+          {hasTabToGoBackTo && currentTab === TabType.CONVERSATION && (
+            <View style={styles.conversationHeaderCenter}>
+              {!!resolvedConversationPhoto && (
+                <Image source={{ uri: resolvedConversationPhoto }} style={styles.conversationAvatar} />
+              )}
+              <Text style={styles.conversationTitle} numberOfLines={1}>{conversationUserName}</Text>
+            </View>
           )}
           <View />
         </View>
@@ -156,6 +191,13 @@ export default function Header(props: Props) {
               activeOpacity={0.8}
             >
               <SimpleLineIcons name="bubbles" size={21} color="black" />
+              {unreadMessageCount > 0 && (
+                <View style={styles.messagesBadge}>
+                  <Text style={styles.messagesBadgeText}>
+                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
