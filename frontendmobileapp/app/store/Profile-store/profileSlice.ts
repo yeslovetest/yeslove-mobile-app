@@ -49,9 +49,9 @@ const profileSlice = createSlice({
     ) => {
       state.profiles[action.payload.id] = action.payload.data;
     },
-    updateProfile: (state, action: PayloadAction<{data?: Partial<UserProfile>, 
+    : (state, action: PayloadAction<{data?: Partial<UserProfile>, 
       file?: FormData, resolve?: () => void, reject?: (error: unknown) => void }>) => {},
-    setActiveTabAction: (state, action: PayloadAction<string>) => {
+    setActiveTabAction: (state, action: PayloadAction<string>) => {updateProfile
       state.view.activeTab = action.payload;
     },
     setActiveAboutTabAction: (state, action: PayloadAction<string>) => {

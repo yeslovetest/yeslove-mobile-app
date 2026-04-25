@@ -106,6 +106,8 @@ class UpdateProfile(Resource):
         # Handle profile picture upload to S3 or to local storage
         if 'profile_pic' in request.files:
             from app.services.media.media_service import MediaService
+            uploaded_url = None
+
             if current_app.config.get("USE_S3_STORAGE", False):
                 try:
                     upload_result = MediaService.upload_file(
@@ -113,13 +115,16 @@ class UpdateProfile(Resource):
                         user_id=user.id,
                         folder='profiles'
                     )
-                    user.profile_pic_url = upload_result.get('s3_url') if upload_result else None
+                    uploaded_url = upload_result.get('s3_url') if upload_result else None
                 except Exception as e:
-                    logger.error(f"Profile pic upload failed: {e}")
-            else:
+                    logger.error(f"Profile pic upload failed on cloud path: {e}")
+
+            # Fallback to Media table/local retrieval path if cloud upload is disabled or unavailable.
+            if not uploaded_url:
                 result = MediaService.store_file(file=request.files['profile_pic'], user_id=user.id)
-                file_url = result.get("media_url")
-                user.profile_pic_url = file_url
+                uploaded_url = result.get("media_url")
+
+            user.profile_pic_url = uploaded_url
 
         db.session.commit()
         return {"message": "Profile updated successfully"}, 200

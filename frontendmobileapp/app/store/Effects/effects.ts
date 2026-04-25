@@ -1020,11 +1020,16 @@ function* updateUserProfile(action: PayloadAction<{data?: Partial<UserProfile>,
       yield put(setProfileImageUploading(true));
     }
 
-    const response = (yield call(
-      { context: profileApi, fn: profileApi.putUpdateProfile },
-      profilePayload,
-      { data: action.payload.file || undefined }
-    )) as AxiosResponse<{message: string}>;
+    const response = action.payload.file
+      ? ((yield call(axios.put, '/api/profile/update_profile', action.payload.file, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })) as AxiosResponse<{message: string}>)
+      : ((yield call(
+          { context: profileApi, fn: profileApi.putUpdateProfile },
+          profilePayload
+        )) as AxiosResponse<{message: string}>);
     //console.log(response?.data.message)
     let userId: string = yield appSelect(state => state.user.id);
     const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
