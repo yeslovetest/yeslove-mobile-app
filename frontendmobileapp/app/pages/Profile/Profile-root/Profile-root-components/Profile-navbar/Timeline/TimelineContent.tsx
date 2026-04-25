@@ -28,6 +28,22 @@ const TimelineContent = () => {
         return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
+    const resolveProfileImageUrl = (url?: string) => {
+        if (!url) {
+            return '';
+        }
+
+        if (/^https?:\/\//i.test(url)) {
+            return url;
+        }
+
+        if (url.startsWith('/')) {
+            return `${BASE_URL}${url}`;
+        }
+
+        return `${BASE_URL}/api/media/${url}`;
+    };
+
     useEffect(() => {
         if (!userId || activeTab !== 'Timeline') {
             return;
@@ -50,6 +66,10 @@ const TimelineContent = () => {
     return (
         <View style={styles.container}>
             {timeline.posts.map((post, index) => {
+                const postAuthorPic = resolveMediaUrl(post.author_pic);
+                const profilePicFallback = resolveProfileImageUrl(profile?.profile_pic);
+                const timelineCardImage = postAuthorPic || profilePicFallback || 'https://i.pravatar.cc/150?img=12';
+
                 const postMedia = (post.media_files ?? [])
                     .filter((media) => !!(media as any)?.url || !!(media as any)?.uri)
                     .map((media) => ({
@@ -67,7 +87,7 @@ const TimelineContent = () => {
                         <View style={styles.headerRow}>
                             <Image
                                 style={styles.profileImage}
-                                source={{ uri: resolveMediaUrl(post.author_pic) || 'https://i.pravatar.cc/150?img=12' }}
+                                source={{ uri: timelineCardImage }}
                             />
                             <View style={styles.authorInfo}>
                                 <Text style={styles.authorName}>{profile?.username || 'User'}</Text>

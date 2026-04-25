@@ -1035,6 +1035,7 @@ function* updateUserProfile(action: PayloadAction<{data?: Partial<UserProfile>,
     const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
     yield put(setName(profile.username));
     yield put(storeUserDataAction({id: userId, profile: profile}));
+    yield put(fetchUserTimelineAction({ id: userId, page: 1, perPage: 10, reset: true }));
 
     if (action.payload.resolve) {
       action.payload.resolve();
