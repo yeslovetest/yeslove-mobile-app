@@ -513,9 +513,7 @@ function* handlePostSendMessage(action: PayloadAction<{
       action.payload.message ?? undefined,
       normalizedMedia.length ? (normalizedMedia as any) : undefined,
       {
-        timeout: 60000,
-        // Override generated header value so Axios can set multipart boundary.
-        headers: { 'Content-Type': undefined as any },
+        timeout: 60000, // Enforce a timeout since media uploads can fail silently on mobile networks; this ensures we can show an error and re-enable the UI.
       }
     );
 
