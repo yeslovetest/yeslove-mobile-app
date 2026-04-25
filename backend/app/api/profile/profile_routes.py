@@ -1,6 +1,7 @@
 from flask import current_app, request
 from flask_restx import Namespace, Resource
 from typing import Dict, Any
+import json
 
 from app.logging_setup import setup_logger
 from app.utils import require_auth
@@ -66,15 +67,27 @@ class UpdateProfile(Resource):
     from app.api.profile.profile_models import UserProfile
     @require_auth()
     @api.doc(security='Bearer')
-    @api.expect(UserProfile)  # ✅ Attach model
+    @api.expect(UserProfile, validate=False)  # Accept JSON and multipart payloads.
     def put(self):
         """Update user profile."""
-        data = request.json or {}
+        data = request.get_json(silent=True) or {}
+
+        if not data and request.form:
+            data = request.form.to_dict(flat=True)
+            contact_info_raw = data.get("contact_info")
+            if isinstance(contact_info_raw, str):
+                try:
+                    data["contact_info"] = json.loads(contact_info_raw)
+                except ValueError:
+                    data["contact_info"] = None
         
         from app.models import User, db
         # Type hint for request.user added by @require_auth decorator
         user_data: Dict[str, Any] = getattr(request, 'user', {})
-        user = User.query.filter_by(email=user_data.get("email")).first()
+        keycloak_id = user_data.get("keycloak_id") or user_data.get("sub")
+        user = User.query.filter_by(keycloak_id=keycloak_id).first() if keycloak_id else None
+        if not user and user_data.get("email"):
+            user = User.query.filter_by(email=user_data.get("email")).first()
 
         if not user:
             return {"message": "User not found"}, 404

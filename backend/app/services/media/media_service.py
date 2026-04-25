@@ -165,9 +165,14 @@ class MediaService:
         content_type = getattr(file, 'content_type', None) or getattr(file, 'mimetype', None) or 'application/octet-stream'
         
         content = file.read()
-        
-        # Security scan
-        SecurityService.scan_file_content(content)
+    
+ 
+        # ✅ Process image (e.g., compression)
+        if content_type.startswith("image/"):
+            content = MediaProcessor.compress_image(content)
+
+        # ✅ Extract metadata (width, height, etc.)
+        metadata = MediaValidator.extract_image_metadata(content, content_type)
         
         # Process image if needed
         if content_type.startswith('image/'):

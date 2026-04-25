@@ -37,6 +37,14 @@ const ProfileHeaderAndBio = () => {
       return '';
     }
 
+    if (/^https?:\/\//i.test(profileImage)) {
+      return profileImage;
+    }
+
+    if (profileImage.startsWith('/')) {
+      return `${axios.defaults.baseURL}${profileImage}`;
+    }
+
     return `${axios.defaults.baseURL}/api/media/${profileImage}`;
   }, [profileImage]);
 
