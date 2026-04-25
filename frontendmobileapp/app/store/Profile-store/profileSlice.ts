@@ -1,7 +1,20 @@
 import { UserProfile, EmailNotificationSetting, EmailNotificationSettings, 
-        ProfileVisibilitySetting, ProfileVisibilitySettings } from "@/generated-api";
+  ProfileVisibilitySetting, ProfileVisibilitySettings, UserPost } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useAppSelector } from "../hooks";
+
+type TimelineState = {
+  posts: UserPost[];
+  total: number;
+  perPage: number;
+  currentPage: number;
+  hasMore: boolean;
+  loading: boolean;
+  fetchingMore: boolean;
+  keycloakId: string;
+  initialized: boolean;
+  error?: string;
+};
 
 const profileSlice = createSlice({
   name: "profile",
@@ -15,6 +28,18 @@ const profileSlice = createSlice({
     loadingScreenActive: false,
     isCurrentUserProfile: false, //default value            
     isProfileImageUploading: false,
+    timeline: {
+      posts: [],
+      total: 0,
+      perPage: 10,
+      currentPage: 0,
+      hasMore: true,
+      loading: false,
+      fetchingMore: false,
+      keycloakId: "",
+      initialized: false,
+      error: undefined,
+    } as TimelineState,
 
   }, //defines initial state
   reducers: {
@@ -83,6 +108,75 @@ const profileSlice = createSlice({
     setProfileImageUploading: (state, action: PayloadAction<boolean>) => {
       state.isProfileImageUploading = action.payload;
     },
+    fetchUserTimelineAction: (state, action: PayloadAction<{id: string, perPage?: number, page?: number, reset?: boolean}>) => {
+      const isFirstPage = (action.payload.page ?? 1) <= 1;
+      const reset = !!action.payload.reset || isFirstPage;
+
+      if (reset) {
+        state.timeline.loading = true;
+        state.timeline.fetchingMore = false;
+        state.timeline.error = undefined;
+        state.timeline.posts = [];
+        state.timeline.total = 0;
+        state.timeline.currentPage = 0;
+        state.timeline.hasMore = true;
+        state.timeline.keycloakId = action.payload.id;
+        state.timeline.initialized = false;
+        if (action.payload.perPage) {
+          state.timeline.perPage = action.payload.perPage;
+        }
+        return;
+      }
+
+      if (!state.timeline.loading && state.timeline.hasMore) {
+        state.timeline.fetchingMore = true;
+        state.timeline.error = undefined;
+      }
+    },
+    fetchUserTimelineNextPageAction: (state, action: PayloadAction<{id: string, perPage?: number}>) => {
+      if (state.timeline.loading || state.timeline.fetchingMore || !state.timeline.hasMore) {
+        return;
+      }
+
+      if (state.timeline.keycloakId && state.timeline.keycloakId !== action.payload.id) {
+        return;
+      }
+
+      if (action.payload.perPage) {
+        state.timeline.perPage = action.payload.perPage;
+      }
+
+      state.timeline.fetchingMore = true;
+      state.timeline.error = undefined;
+    },
+    setUserTimelineAction: (state, action: PayloadAction<{id: string, posts: UserPost[], total: number, perPage: number, currentPage: number}>) => {
+      const shouldReset = action.payload.currentPage <= 1 || state.timeline.keycloakId !== action.payload.id;
+      const existing = shouldReset ? [] : state.timeline.posts;
+      const merged = [...existing, ...action.payload.posts];
+      const uniquePosts = merged.filter((post, index, arr) => {
+        const postId = post.id ?? -1;
+        return arr.findIndex((item) => (item.id ?? -2) === postId) === index;
+      });
+
+      const hasMore = uniquePosts.length < action.payload.total;
+
+      state.timeline.posts = uniquePosts;
+      state.timeline.total = action.payload.total;
+      state.timeline.perPage = action.payload.perPage;
+      state.timeline.currentPage = action.payload.currentPage;
+      state.timeline.hasMore = hasMore;
+      state.timeline.loading = false;
+      state.timeline.fetchingMore = false;
+      state.timeline.keycloakId = action.payload.id;
+      state.timeline.initialized = true;
+      state.timeline.error = undefined;
+    },
+    setUserTimelineFailedAction: (state, action: PayloadAction<{message: string}>) => {
+      state.timeline.loading = false;
+      state.timeline.fetchingMore = false;
+      state.timeline.error = action.payload.message;
+      state.timeline.initialized = true;
+    },
   },
 });
 
@@ -104,6 +198,10 @@ export const {
   updateProfileVisibilitySettings,
   activateLoadingScreen,
   setUserProfileState,
-  setProfileImageUploading
+  setProfileImageUploading,
+  fetchUserTimelineAction,
+  fetchUserTimelineNextPageAction,
+  setUserTimelineAction,
+  setUserTimelineFailedAction,
 } = profileSlice.actions;
 export default profileSlice.reducer;

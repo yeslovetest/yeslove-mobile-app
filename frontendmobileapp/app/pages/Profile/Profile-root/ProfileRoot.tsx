@@ -1,4 +1,4 @@
-import { ScrollView, View } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from 'react-native';
 import sharedStyles from '../ProfileSharedStyles';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import Header from '@/app/Universal-components/Header/Header';
@@ -8,8 +8,8 @@ import TimelineContent from './Profile-root-components/Profile-navbar/Timeline/T
 import MediaContent from './Profile-root-components/Profile-navbar/Media/MediaContent';
 import Details from './Profile-root-components/Details/Details';
 import { useFocusEffect } from '@react-navigation/native';
-import { fetchUserDataAction } from '@/app/store/Profile-store/profileSlice';
-import React from 'react';
+import { fetchUserDataAction, fetchUserTimelineNextPageAction } from '@/app/store/Profile-store/profileSlice';
+import React, { useEffect, useRef } from 'react';
 
 export default function ProfileRoot() {
 
@@ -32,6 +32,31 @@ export default function ProfileRoot() {
   const activeMainTab = useAppSelector(
     (state) => state.profile.view.activeTab
   );
+  const timeline = useAppSelector((state) => state.profile.timeline);
+  const requestingNextPageRef = useRef(false);
+
+  useEffect(() => {
+    if (!timeline.fetchingMore) {
+      requestingNextPageRef.current = false;
+    }
+  }, [timeline.fetchingMore]);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (activeMainTab !== 'Timeline' || !userId) {
+      return;
+    }
+
+    if (timeline.loading || timeline.fetchingMore || !timeline.hasMore || requestingNextPageRef.current) {
+      return;
+    }
+
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const distanceFromBottom = contentSize.height - (layoutMeasurement.height + contentOffset.y);
+    if (distanceFromBottom <= 220) {
+      requestingNextPageRef.current = true;
+      dispatch(fetchUserTimelineNextPageAction({ id: userId, perPage: timeline.perPage || 10 }));
+    }
+  };
 
  
   return (
@@ -43,6 +68,8 @@ export default function ProfileRoot() {
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         <View style={sharedStyles.heroSection}>
           <ProfileHeaderAndBio />

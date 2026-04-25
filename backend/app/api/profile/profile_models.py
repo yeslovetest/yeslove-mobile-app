@@ -73,14 +73,18 @@ MediaFile = api.model("MediaFile", {
 
 UserPost = api.model('UserPost', {
     'id': fields.Integer(description='Post ID'),
+    'author': fields.String(description='Post author display name'),
+    'author_id': fields.String(description='Post author keycloak id'),
     'author_pic': fields.String(description='URL to author\'s profile picture'),
     'content': fields.String(description='Text content of the post'),
+    'image': fields.String(description='Legacy image URL field used by detailed post UI'),
     'image_url': fields.String(description='URL to image in the post'),
     'video_url': fields.String(description='URL to video in the post'),
     'timestamp': fields.String(description='Timestamp of the post in ISO format'),
     'likes': fields.Integer(description='Number of likes'),
     'comments': fields.Integer(description='Number of comments'),
-    'media_files': fields.List(fields.Nested(MediaFile), description='List of media file URLs associated with the post')  
+    'media_files': fields.List(fields.Nested(MediaFile), description='List of media file URLs associated with the post'),
+    'current_user_reaction': fields.String(description='Current user reaction type on the post'),
 })
 
 TimelineResponse = api.model('TimelineResponse', 

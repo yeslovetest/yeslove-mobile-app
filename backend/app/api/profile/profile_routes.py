@@ -326,10 +326,12 @@ class UserTimeline(Resource):
         '''
         retrieve all posts authored by a particular user to  displayed on timeline
         '''
-        from app.models import Post, User
+        from app.models import Post, User, Reaction
         user = User.query.filter_by(keycloak_id=keycloak_id).first()
         if not user:
             return {"message": "User not found"}, 404
+
+        viewer = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
 
         # Pagination parameters
         try:
@@ -344,29 +346,49 @@ class UserTimeline(Resource):
         if per_page < 1:
             per_page = 20
 
+        timeline_query = Post.query.filter_by(user_id=user.id, is_anonymous=False)
+
         # Total posts
-        total_posts = Post.query.filter_by(user_id=user.id).count()
+        total_posts = timeline_query.count()
 
         # Paginated query
         posts = (
-            Post.query
-            .filter_by(user_id=user.id)
+            timeline_query
             .order_by(Post.timestamp.desc())
             .offset((page - 1) * per_page)
             .limit(per_page)
             .all()
         )
 
+        post_ids = [post.id for post in posts]
+        reaction_map = {}
+        if viewer and post_ids:
+            reactions = Reaction.query.filter(
+                Reaction.post_id.in_(post_ids),
+                Reaction.user_id == viewer.id
+            ).all()
+            reaction_map = {reaction.post_id: reaction for reaction in reactions}
+
         data =  [{
             "id": post.id,
-            "author_pic": post.author.profile_pic_url,
+            "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+            "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+            "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
             "content": post.content,
+            "image": post.image_url,
             "image_url": post.image_url,
             "video_url": post.video_url,
             "timestamp": post.timestamp.isoformat(),
             "likes": len(post.likes),
             "comments": len(post.comments),
-            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type} for media in post.media_files if post.media_files]
+            "media_files": [
+                {
+                    'uri': media.s3_url or f"/api/media/{media.id}",
+                    'type': media.content_type,
+                }
+                for media in post.media_files if post.media_files
+            ],
+            "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
         } for post in posts]
 
         logger.info('list of posts succesfully retrieved')
