@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard, LayoutChangeEvent } from 'react-native'
 import styles from './EditProfileInformationStyles'
 import Header from '@/app/Universal-components/Header/Header'
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
@@ -26,6 +26,9 @@ const EditProfileInformation = () => {
   const [editedWebsite, setEditedWebsite] = useState(website);
   const [editedBio, setEditedBio] = useState(bio);
   const [displayMsg, setDisplayMsg] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const fieldPositionRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     setEditedName(name);
@@ -85,28 +88,103 @@ const EditProfileInformation = () => {
     // make the message appear for 3s
     msgToggle.toggleMsg(displayMsg);
   }, [displayMsg, profileData]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const onShow = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates?.height ?? 0);
+    });
+
+    const onHide = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      onShow.remove();
+      onHide.remove();
+    };
+  }, []);
+
+  const handleFieldLayout = (label: string, event: LayoutChangeEvent) => {
+    fieldPositionRef.current[label] = event.nativeEvent.layout.y;
+  };
+
+  const handleFieldFocus = (label: string) => {
+    const targetY = Math.max(0, (fieldPositionRef.current[label] ?? 0) - 12);
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo({ y: targetY, animated: true });
+    });
+  };
   
   return (
     <>
       <Header></Header>
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 20}
+      >
         <ScrollView
-          contentContainerStyle={styles.contentContainer}
+          ref={scrollViewRef}
+          contentContainerStyle={[
+            styles.contentContainer,
+            { paddingBottom: Math.max(34, keyboardHeight + 24) },
+          ]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
           contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets
         >
           <View style={styles.headerRow}>
             <Text style={styles.pageTitle}>Edit Profile</Text>
             <Text style={styles.pageSubtitle}>Update your contact details and bio information.</Text>
           </View>
 
-          <TextInputField label="Name" value={editedName} onChange={(value: string) => handleFieldChange("Name", value)} />
-          <TextInputField label="Bio" value={editedBio} onChange={(value: string) => handleFieldChange("Bio", value)} />
-          <TextInputField label="Email" value={editedEmail} onChange={(value: string) => handleFieldChange("Email", value)} />
-          <TextInputField label="Phone" value={editedPhone} onChange={(value: string) => handleFieldChange("Phone", value)} />
-          <TextInputField label="Address" value={editedAddress} onChange={(value: string) => handleFieldChange("Address", value)} />
-          <TextInputField label="Website" value={editedWebsite} onChange={(value: string) => handleFieldChange("Website", value)} />
+          <TextInputField
+            label="Name"
+            value={editedName}
+            onChange={(value: string) => handleFieldChange("Name", value)}
+            onFocus={() => handleFieldFocus("Name")}
+            onLayout={(event) => handleFieldLayout("Name", event)}
+          />
+          <TextInputField
+            label="Bio"
+            value={editedBio}
+            onChange={(value: string) => handleFieldChange("Bio", value)}
+            onFocus={() => handleFieldFocus("Bio")}
+            onLayout={(event) => handleFieldLayout("Bio", event)}
+          />
+          <TextInputField
+            label="Email"
+            value={editedEmail}
+            onChange={(value: string) => handleFieldChange("Email", value)}
+            onFocus={() => handleFieldFocus("Email")}
+            onLayout={(event) => handleFieldLayout("Email", event)}
+          />
+          <TextInputField
+            label="Phone"
+            value={editedPhone}
+            onChange={(value: string) => handleFieldChange("Phone", value)}
+            onFocus={() => handleFieldFocus("Phone")}
+            onLayout={(event) => handleFieldLayout("Phone", event)}
+          />
+          <TextInputField
+            label="Address"
+            value={editedAddress}
+            onChange={(value: string) => handleFieldChange("Address", value)}
+            onFocus={() => handleFieldFocus("Address")}
+            onLayout={(event) => handleFieldLayout("Address", event)}
+          />
+          <TextInputField
+            label="Website"
+            value={editedWebsite}
+            onChange={(value: string) => handleFieldChange("Website", value)}
+            onFocus={() => handleFieldFocus("Website")}
+            onLayout={(event) => handleFieldLayout("Website", event)}
+          />
           {msgToggle.msg && 
             <View style={styles.displayMsgBox}>
               <Text style={styles.displayMsgText}>{msgToggle.msg}</Text>
@@ -117,7 +195,7 @@ const EditProfileInformation = () => {
           </TouchableOpacity>
           
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </>
   )
 }
