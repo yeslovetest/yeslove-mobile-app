@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   profileNameText: {
     fontWeight: "600",
     color: theme.colors.blackText,
-    fontSize: 16,
+    fontSize: 14,
   },
 
   postContent: {
@@ -51,8 +51,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingBottom: 8,
     width: "100%",
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 20,
   },
 
   postMediaWrapper: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
 
   timePosted: {
     color: "#888",
-    fontSize: 12,
+    fontSize: 11,
   },
 
   seeLessAndLikeContainer: {
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   numberOfLikesAndComments: {
     color: theme.colors.blackText,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '500',
     marginLeft: 5,
   },
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
 
   followUserText: {
     color: theme.colors.primaryBlue,
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
     fontWeight: '500',
     borderColor: theme.colors.primaryBlue,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   followMenuPopUpText: {
     color: theme.colors.blackText,
     textAlign: 'left',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     width: '100%',
     paddingVertical: 12,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 13,
   },
 
   modalBackdrop: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: theme.colors.blackText,
     marginBottom: 14,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
 
   reactionActionLabel: {
     marginTop: 6,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: theme.colors.blackText,
   },
