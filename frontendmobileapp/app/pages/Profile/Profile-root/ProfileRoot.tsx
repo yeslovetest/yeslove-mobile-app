@@ -1,4 +1,4 @@
-import { ScrollView } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import sharedStyles from '../ProfileSharedStyles';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import Header from '@/app/Universal-components/Header/Header';
@@ -44,20 +44,29 @@ export default function ProfileRoot() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        <ProfileHeaderAndBio />
-        {isCurrentUserProfile && 
-          <Details />
-        }
-        
-        <ProfileNavbar />
+        <View style={sharedStyles.heroSection}>
+          <ProfileHeaderAndBio />
+        </View>
 
-        {activeMainTab === "Timeline" &&
-          <TimelineContent />
-        }
+        {isCurrentUserProfile && (
+          <View style={sharedStyles.detailsSection}>
+            <Details />
+          </View>
+        )}
 
-        {activeMainTab === "Media" &&
-          <MediaContent />
-        }
+        <View style={sharedStyles.tabSection}>
+          <ProfileNavbar />
+        </View>
+
+        <View style={sharedStyles.contentSection}>
+          {activeMainTab === "Timeline" &&
+            <TimelineContent />
+          }
+
+          {activeMainTab === "Media" &&
+            <MediaContent />
+          }
+        </View>
 
 
       </ScrollView>

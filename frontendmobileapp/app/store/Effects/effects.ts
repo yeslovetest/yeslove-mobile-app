@@ -506,7 +506,7 @@ function* handlePostSendMessage(action: PayloadAction<{
         } as any;
       });
 
-    // Use generated API factory for consistency with other sagas.
+    
     yield call(
       ChatApiFactory().postSendMessage,
       action.payload.id,
