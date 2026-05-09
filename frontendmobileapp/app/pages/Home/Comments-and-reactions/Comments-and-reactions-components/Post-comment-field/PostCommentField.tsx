@@ -3,6 +3,7 @@ import { View, TouchableOpacity, TextInput, Text, Image, Keyboard } from "react-
 import styles from './PostCommentFieldStyles';
 import { postComment, retrievePostReactions } from '@/app/store/Home-store/feedSlice';
 import { useAppDispatch } from '@/app/store/hooks';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 interface Props {
   id: number;
@@ -41,7 +42,7 @@ const PostCommentField = ({ id, pic }: Props) => {
   return (
     <View style={styles.commentContainer}>
                     <View style={styles.postCommentContainer}>
-                        <Image style={styles.commentProfileImage} source={{ uri: pic }} />
+                      <Image style={styles.commentProfileImage} source={getImageSource(pic, 'profile')} />
                         <TextInput
                           style={styles.commentBox}
                           onChangeText={(val) => setUserComment(val)}

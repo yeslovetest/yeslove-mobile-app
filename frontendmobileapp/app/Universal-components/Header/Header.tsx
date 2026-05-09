@@ -11,6 +11,7 @@ import { fetchFriendList } from '@/app/store/Chat/chatSlice';
 import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile';
 import theme from '@/assets/variables/Variables';
 import { BASE_URL } from '@/app/config/baseUrl';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export interface Props {
   mainTitle?: string;
@@ -160,9 +161,7 @@ export default function Header(props: Props) {
           )}
           {hasTabToGoBackTo && currentTab === TabType.CONVERSATION && (
             <View style={styles.conversationHeaderCenter}>
-              {!!resolvedConversationPhoto && (
-                <Image source={{ uri: resolvedConversationPhoto }} style={styles.conversationAvatar} />
-              )}
+              <Image source={getImageSource(resolvedConversationPhoto, 'profile')} style={styles.conversationAvatar} />
               <Text style={styles.conversationTitle} numberOfLines={1}>{conversationUserName}</Text>
             </View>
           )}

@@ -16,6 +16,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Header from '@/app/Universal-components/Header/Header';
 import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '../Post-modal/Post-modal-components/File-preview/PostFilePreview';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export interface Post {
     id: number;
@@ -39,7 +40,7 @@ const IndividualPost = () => {
 
     const reactionTypeTab = useAppSelector(state => state.feed.postReactionTab);
     const userId = useAppSelector(state => state.user.id);
-    const profilePic = useAppSelector(state => state.profile.profiles[Number(userId)]?.profile_pic ?? '');
+    const profilePic = useAppSelector(state => state.profile.profiles[userId]?.profile_pic ?? '');
     const comments = useAppSelector(state => state.feed.userPosts.comments);
     const reactions = useAppSelector(state => state.feed.userPosts.reactions);
 
@@ -148,7 +149,7 @@ const IndividualPost = () => {
                     >
                         <View style={[styles.postContainer, styles.indPostContainer]}>
                         <View style={styles.profileImageContainer}>
-                            <Image style={styles.profileImage} source={{ uri: individualPost.author_pic }} />
+                            <Image style={styles.profileImage} source={getImageSource(resolveMediaUrl(individualPost.author_pic), 'profile')} />
                             <View style={styles.profileInfoContainer}>
                                 <TouchableOpacity style={styles.profileName} onPress={openProfile}>
                                     <Text>{individualPost.author}</Text>
@@ -163,7 +164,7 @@ const IndividualPost = () => {
                         )}
                         {individualPost.image &&  (
                             <Image style={styles.postImage} 
-                                source={{ uri: resolveMediaUrl(individualPost.image) }}
+                                source={getImageSource(resolveMediaUrl(individualPost.image), 'generic')}
                             /> 
                              
                         )}

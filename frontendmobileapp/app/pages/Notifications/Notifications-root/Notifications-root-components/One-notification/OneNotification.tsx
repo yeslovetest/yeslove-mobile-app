@@ -4,7 +4,7 @@ import { Notification } from '@/generated-api';
 import styles from './OneNotificationStyles';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { BASE_URL } from '@/app/config/baseUrl';
+import { getImageSource } from '@/constants/imageFallbacks';
 import { useAppDispatch } from '@/app/store/hooks';
 import { retrieveOnePost, setPostReactionTab } from '@/app/store/Home-store/feedSlice';
 import { fetchOneBlogPost } from '@/app/store/Get-help-store/getHelpSlice';
@@ -34,8 +34,8 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
   const [isFriendRequestModalVisible, setFriendRequestModalVisible] = useState(false);
   const [isFollowModalVisible, setFollowModalVisible] = useState(false);
   const notificationData = (notification?.data ?? {}) as NotificationData;
+
   const imagePath = friendRequest?.image ?? notificationData.image;
-  const imageUrl = imagePath ? `${BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}` : '';
 
   if (!notification && !friendRequest) {
     return null;
@@ -46,6 +46,11 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
     !isFriendRequestItem &&
     !!notification &&
     (notification.type === 'follows' || notificationData.type === 'follow');
+  const isBlogOrEventNotification =
+    !isFriendRequestItem &&
+    !!notification &&
+    (notification.type === 'blogs' || notification.type === 'events');
+  const itemImageFallbackKind = isBlogOrEventNotification ? 'generic' : 'profile';
   const followUserName =
     typeof notificationData.username === 'string' && notificationData.username.trim().length > 0
       ? notificationData.username
@@ -114,7 +119,7 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
       
         
         <View style={(!isFriendRequestItem && notification && !notification.is_read) ? styles.activeIndicator : undefined}></View>
-        <Image source={{ uri: imageUrl?? '' }} style={styles.profileImage} />
+        <Image source={getImageSource(imagePath, itemImageFallbackKind, { treatBareAsMediaId: true })} style={styles.profileImage} />
 
         <View style={styles.textContainer}>
           <Text style={styles.messageText}>
@@ -128,7 +133,7 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
           )}
         </View>
 
-        <Image source={{ uri: imageUrl?? '' }} style={styles.postImage} />
+
     </TouchableOpacity>
 
     {isFriendRequestItem && (
@@ -171,7 +176,7 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
         >
           <Pressable style={styles.modalCard}>
             <Text style={styles.modalTitle}>You have a new follower</Text>
-            <Image source={{ uri: imageUrl ?? '' }} style={styles.profileImage} />
+            <Image source={getImageSource(imagePath, 'profile', { treatBareAsMediaId: true })} style={styles.profileImage} />
             <Text style={styles.modalBody}>{followUserName} is now following your updates.</Text>
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.acceptButton} onPress={() => setFollowModalVisible(false)}>

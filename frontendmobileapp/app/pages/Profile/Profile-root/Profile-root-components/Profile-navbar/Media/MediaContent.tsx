@@ -5,6 +5,7 @@ import OneMedium, { resolveMediaUrl } from './Media-components/One-medium/OneMed
 import {useAppSelector} from '@/app/store/hooks'
 import { MediaFile } from '@/generated-api'
 import { Video } from '@/app/Universal-components/Video/Video'
+import { getImageSource } from '@/constants/imageFallbacks';
 
 const MediaContent = () => {
 
@@ -96,7 +97,7 @@ const MediaContent = () => {
                       resizeMode="contain"
                     />
                   ) : (
-                    <Image source={{ uri: mediaUrl }} style={styles.viewerImage} resizeMode="contain" />
+                    <Image source={getImageSource(mediaUrl, 'generic')} style={styles.viewerImage} resizeMode="contain" />
                   )}
                 </View>
               );

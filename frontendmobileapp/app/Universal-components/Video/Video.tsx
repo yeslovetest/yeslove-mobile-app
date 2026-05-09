@@ -4,6 +4,7 @@ import { VideoView, useVideoPlayer } from 'expo-video';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import styles from './VideoStyles';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 type ResizeMode = 'cover' | 'contain' | 'stretch' | 'none';
 
@@ -131,7 +132,7 @@ export const Video: React.FC<VideoProps> = ({
 
       {!!thumbnailUri && !hasFirstFrameRendered && (
         <Image
-          source={{ uri: thumbnailUri }}
+          source={getImageSource(thumbnailUri, 'generic')}
           style={styles.mediaFill}
           resizeMode={getImageResizeMode(resizeMode)}
         />

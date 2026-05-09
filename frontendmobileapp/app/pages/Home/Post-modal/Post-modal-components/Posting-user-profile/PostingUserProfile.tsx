@@ -2,6 +2,7 @@
 import React from 'react'
 import { TouchableOpacity, View, Text, Image } from 'react-native'
 import styles from './PostingUserProfileStyles'
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export interface PostingUserProfileProps {
   profilePic: string;
@@ -15,7 +16,7 @@ const PostingUserProfile: React.FC<PostingUserProfileProps> = ({ profilePic, use
   return (
     <View style={styles.container}>
     <View style={styles.profileImageContainer}>
-      <Image style={styles.profileImage} source={{ uri: profilePic }} />
+      <Image style={styles.profileImage} source={getImageSource(profilePic, 'profile')} />
       <View style={styles.profileInfoContainer}>
         <TouchableOpacity>
           <Text style={styles.profileName}>{username}</Text>

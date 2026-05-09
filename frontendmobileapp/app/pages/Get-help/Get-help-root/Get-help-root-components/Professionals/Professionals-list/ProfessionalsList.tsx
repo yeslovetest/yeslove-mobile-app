@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useAppSelector } from '@/app/store/hooks';
 import styles from './ProfessionalsListStyles';
 import PlaceholderProfessionals from './PlaceholderProfessionals';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 const ProfessionalsList = () => {
   const professionals = useAppSelector(state => state.getHelp.professionals);
@@ -17,7 +18,7 @@ const ProfessionalsList = () => {
     <View>
       {professionals.map((professional, index) => (
         <View key={index} style={styles.professionalProfileContainer}>
-          <Image style={styles.profileImage} source={{ uri: professional?.profile_pic ?? ''}} />
+          <Image style={styles.profileImage} source={getImageSource(professional?.profile_pic, 'profile')} />
           <Text style={styles.professionalProfileName}>{professional?.username}</Text>
           <Text style={styles.professionalDescription}>
             {expanded === index ? professional?.bio : `${professional?.bio?.substring(0, 300)}...`}

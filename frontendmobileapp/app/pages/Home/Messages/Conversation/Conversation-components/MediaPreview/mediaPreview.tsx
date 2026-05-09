@@ -3,6 +3,7 @@ import { View, Text, FlatList, Image, Modal, Pressable, Dimensions } from "react
 import { Video } from "@/app/Universal-components/Video/Video";
 import styles from "./mediaPreviewStyles";
 import { BASE_URL } from "@/app/config/baseUrl";
+import { getImageSource } from '@/constants/imageFallbacks';
 
 interface PreviewFile {
   uri?: string;
@@ -102,7 +103,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
 
                 {isImage ? (
                   <Image
-                    source={{ uri: item.uri }}
+                    source={getImageSource(item.uri, 'generic')}
                     style={{ width: "100%", height: "100%", backgroundColor: "#f8fafc" }}
                     resizeMode="contain"
                   />
@@ -146,7 +147,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
                 return (
                   <View style={[styles.fullScreenItem, { width: screenWidth }]}> 
                     {isImage ? (
-                      <Image source={{ uri: item.uri }} style={styles.fullScreenImage} resizeMode="contain" />
+                      <Image source={getImageSource(item.uri, 'generic')} style={styles.fullScreenImage} resizeMode="contain" />
                     ) : (
                       <Video
                         source={{ uri: item.uri }}
@@ -180,7 +181,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
 
         {isFirstImage ? (
           <Image
-            source={{ uri: firstItem.uri }}
+            source={getImageSource(firstItem.uri, 'generic')}
             style={[styles.previewImage, { width: previewWidth, height: previewHeight }]}
             resizeMode="cover"
           />
@@ -240,7 +241,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
               return (
                 <View style={[styles.fullScreenItem, { width: screenWidth }]}> 
                   {isImage ? (
-                    <Image source={{ uri: item.uri }} style={styles.fullScreenImage} resizeMode="contain" />
+                    <Image source={getImageSource(item.uri, 'generic')} style={styles.fullScreenImage} resizeMode="contain" />
                   ) : (
                     <Video
                       source={{ uri: item.uri }}

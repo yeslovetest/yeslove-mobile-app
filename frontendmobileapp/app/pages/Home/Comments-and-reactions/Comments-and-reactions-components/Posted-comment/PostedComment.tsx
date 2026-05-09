@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import styles from './PostedCommentStyles';
 import { Comment } from '@/generated-api';  
 import dayjs from 'dayjs'; 
+import { getImageSource } from '@/constants/imageFallbacks';
 
  interface Props {
     key: number;
@@ -14,7 +15,7 @@ const PostedComment = (props: Props) => {
     return (
         <View style={[styles.postContainer, styles.indCommentContainer]}>
             <View style={styles.profileImageContainer}>
-                <Image style={styles.profileImage}/>  
+                <Image style={styles.profileImage} source={getImageSource(props.comment.picture, 'profile', { treatBareAsMediaId: true })}/>  
                 <View style={styles.profileInfoContainer}>
                     <TouchableOpacity style={styles.profileName}>
                         <Text>{props.comment.author}</Text>

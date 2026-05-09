@@ -7,6 +7,7 @@ import axios from 'axios';
 import dataURLtoFile from '@/utils/mediaUrlConverter';
 import * as ImagePicker from 'expo-image-picker';
 import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from '@/constants/mediaLimits';
+import { getImageSource } from '@/constants/imageFallbacks';
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 type SelectedProfileFile = {
@@ -196,7 +197,7 @@ const ProfileHeaderAndBio = () => {
           <View style={styles.profileImageWrapper}>
             <Image
               style={styles.profileImage}
-              source={{ uri: displayedProfileImageUri || 'https://i.pravatar.cc/300?img=12' }}
+              source={getImageSource(displayedProfileImageUri, 'profile')}
             />
 
             {isCurrentUserProfile && (
