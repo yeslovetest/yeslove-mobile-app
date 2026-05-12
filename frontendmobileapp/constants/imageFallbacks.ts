@@ -3,6 +3,7 @@ import { BASE_URL } from '@/app/config/baseUrl';
 
 export const DEFAULT_GENERIC_IMAGE: ImageSourcePropType = require('../assets/images/yeslove-ico.jpg');
 export const DEFAULT_PROFILE_IMAGE: ImageSourcePropType = require('../assets/images/default_profile_pic.webp');
+export const CHATBOT_HUMAN_AVATAR: ImageSourcePropType = require('../assets/images/profileImg1.jpg');
 
 type ImageFallbackKind = 'generic' | 'profile';
 

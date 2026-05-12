@@ -11,7 +11,7 @@ import { fetchFriendList } from '@/app/store/Chat/chatSlice';
 import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile';
 import theme from '@/assets/variables/Variables';
 import { BASE_URL } from '@/app/config/baseUrl';
-import { getImageSource } from '@/constants/imageFallbacks';
+import { CHATBOT_HUMAN_AVATAR, getImageSource } from '@/constants/imageFallbacks';
 
 export interface Props {
   mainTitle?: string;
@@ -43,7 +43,7 @@ export default function Header(props: Props) {
   );
   const conversationPhoto = conversationData?.profile_pic || '';
   // Shared assistant avatar used in the Get-help header CTA.
-  const assistantAvatar = require('../../pages/Home/Messages/Chatbot/Chatbot-assets/robot.webp');
+  const assistantAvatar = CHATBOT_HUMAN_AVATAR;
   // Animation driver for the periodic wave motion.
   const assistantMotion = React.useRef(new Animated.Value(0)).current;
 
