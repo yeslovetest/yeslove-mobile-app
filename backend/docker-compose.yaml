@@ -11,16 +11,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
-  neo4j:
-    image: neo4j:5.19
-    container_name: neo4j
-    environment:
-      NEO4J_AUTH: neo4j/testpassword
+  memgraph:
+    image: memgraph/memgraph:latest
+    container_name: memgraph
     ports:
-      - "7474:7474"  # HTTP
       - "7687:7687"  # Bolt
     volumes:
-      - neo4j_data:/data
+      - memgraph_data:/var/lib/memgraph
+
+  memgraph-lab:
+    image: memgraph/lab:latest
+    container_name: memgraph_lab
+    ports:
+      - "3000:3000"
+    depends_on:
+      - memgraph
 
   redis:
     image: redis:7
@@ -77,7 +82,7 @@ services:
 
 volumes:
   postgres_data:
-  neo4j_data:
+  memgraph_data:
   redis_data:
   rabbitmq_data:
   postgres_vector_data:

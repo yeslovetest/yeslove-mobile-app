@@ -306,6 +306,49 @@ class BlogPost(db.Model):
             "author": self.author.username if self.author else "YesLove",
             "timestamp": self.timestamp.isoformat() if self.timestamp else None
         }
+
+
+class VideoPodcast(db.Model):
+    __tablename__ = "video_podcasts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    transcript = db.Column(db.Text, nullable=True)
+    video_url = db.Column(db.String(1000), nullable=False)
+    thumbnail_url = db.Column(db.String(1000), nullable=True)
+    tags = db.Column(db.Text, nullable=True)
+    author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    published_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    author = db.relationship("User", backref="video_podcasts")
+
+    def tag_list(self):
+        if not self.tags:
+            return []
+        try:
+            value = json.loads(self.tags)
+            return value if isinstance(value, list) else []
+        except json.JSONDecodeError:
+            return [tag.strip() for tag in self.tags.split(",") if tag.strip()]
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "transcript": self.transcript,
+            "video_url": self.video_url,
+            "thumbnail_url": self.thumbnail_url,
+            "tags": self.tag_list(),
+            "author_id": self.author_id,
+            "author": self.author.username if self.author else None,
+            "published_at": self.published_at.isoformat() if self.published_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
     
 class DeviceToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)

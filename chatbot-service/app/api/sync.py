@@ -9,6 +9,11 @@ post_sync_request = api.model('PostSyncRequest', {
     'action': fields.String(description='Action: create, update, delete')
 })
 
+content_sync_request = api.model('ContentSyncRequest', {
+    'resources': fields.List(fields.Raw, required=True, description='Recommendable content resources to sync'),
+    'action': fields.String(description='Action: upsert, create, update, delete')
+})
+
 sync_response = api.model('SyncResponse', {
     'processed': fields.Integer(description='Number of items processed'),
     'errors': fields.List(fields.String, description='List of errors'),
@@ -27,4 +32,17 @@ class SyncBlogs(Resource):
         blogs = data.get('posts', [])  # Reuse same structure
         
         result = sync_service.sync_blog_posts(blogs)
+        return result
+
+
+@api.route('/content')
+class SyncContent(Resource):
+    @api.expect(content_sync_request)
+    @api.marshal_with(sync_response)
+    def post(self):
+        """Sync generic recommendable content resources from main application"""
+        data = request.json or {}
+        resources = data.get('resources', [])
+
+        result = sync_service.sync_content_resources(resources)
         return result

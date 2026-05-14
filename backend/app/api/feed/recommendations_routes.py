@@ -41,7 +41,7 @@ class UserRecommendations(Resource):
                         ]
                     }, 200
             except Exception as e:
-                logger.warning(f"Neo4j recommendations failed: {e}")
+                logger.warning(f"Graph recommendations failed: {e}")
         
         # Recommend users with most followers.
         from app.models import Follow

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import atexit
 import os
+import sys
 from flask_restx import Api
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -22,9 +23,9 @@ from app.api.events.events_routes import api as events_api
 from app.api.blog.blog_routes import api as blog_api
 # Device token API removed - handled by DeviceTokenService in auth routes
 from app.api.chatbot.chatbot_routes import api as chatbot_api
-from app.chatbot_package.chatbot import Chatbot
 from app.api.media.media_routes import api as media_api
 from app.api.notifications.notification_routes import api as notifications_api
+from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 
@@ -36,6 +37,10 @@ load_dotenv()
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
+
+
+def _running_flask_db_command():
+    return "flask" in os.path.basename(sys.argv[0]) and "db" in sys.argv
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -95,6 +100,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(chat_api, path="/api/chat")
     api.add_namespace(events_api, path="/api/events")
     api.add_namespace(blog_api, path="/api/blog")
+    api.add_namespace(video_podcast_api, path="/api/video-podcasts")
     # Device token API removed - handled by DeviceTokenService
     api.add_namespace(chatbot_api, path="/api/chatbot")
     api.add_namespace(media_api, path="/api/media")
@@ -117,27 +123,34 @@ def create_app(config_class=DevelopmentConfig):
             dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
             dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
 
+    skip_optional_services = _running_flask_db_command()
+
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
-    with app.app_context():
-        get_keycloak_public_keys()
+    if not skip_optional_services:
+        with app.app_context():
+            get_keycloak_public_keys()
 
-    # Initialize Neo4j graph repository when configured.
+    # Initialize graph repository when configured. Memgraph and Neo4j both use Bolt.
     try:
-        neo4j_uri = app.config.get("NEO4J_URI")
-        neo4j_user = app.config.get("NEO4J_USER")
-        neo4j_pass = app.config.get("NEO4J_PASS")
+        graph_provider = app.config.get("GRAPH_DB_PROVIDER", "memgraph")
+        graph_uri = app.config.get("GRAPH_DB_URI") or app.config.get("NEO4J_URI")
+        graph_user = app.config.get("GRAPH_DB_USER") or app.config.get("NEO4J_USER")
+        graph_pass = app.config.get("GRAPH_DB_PASS") or app.config.get("NEO4J_PASS")
 
-        if neo4j_uri and neo4j_user and neo4j_pass:
-            graph_driver = create_driver(neo4j_uri, neo4j_user, neo4j_pass)
+        if skip_optional_services:
+            app.logger.info("Skipping optional graph initialization during Flask db command")
+        elif graph_uri:
+            graph_driver = create_driver(graph_uri, graph_user, graph_pass)
             graph_repository = GraphRepository(graph_driver)
             graph_repository.ensure_constraints()
             setattr(app, "graph_driver", graph_driver)
             setattr(app, "graph_repository", graph_repository)
-            app.logger.info("Neo4j graph repository initialized")
+            setattr(app, "graph_provider", graph_provider)
+            app.logger.info("%s graph repository initialized", graph_provider)
         else:
-            app.logger.info("Neo4j not fully configured, using SQL-only graph fallback")
+            app.logger.info("Graph database not configured, using SQL-only graph fallback")
     except Exception:
-        app.logger.exception("Failed to initialize Neo4j graph repository")
+        app.logger.exception("Failed to initialize graph repository")
 
     def shutdown_graph():
         driver = getattr(app, "graph_driver", None)
@@ -146,11 +159,16 @@ def create_app(config_class=DevelopmentConfig):
                 close_driver(driver)
                 setattr(app, "graph_driver", None)
             except Exception:
-                app.logger.exception("Error closing Neo4j driver")
+                app.logger.exception("Error closing graph driver")
 
     atexit.register(shutdown_graph)
 
-    setattr(app, 'chatbot', Chatbot()) #initializing the chatbot
+    if os.getenv("ENABLE_EMBEDDED_CHATBOT", "false").lower() == "true":
+        try:
+            from app.chatbot_package.chatbot import Chatbot
+            setattr(app, 'chatbot', Chatbot())
+        except Exception:
+            app.logger.exception("Failed to initialize embedded chatbot")
     
     # Initalises professional user admin panel
     from .admin import init_admin

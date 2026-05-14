@@ -1,4 +1,4 @@
-from flask import request
+from flask import current_app, request
 from flask_restx import Namespace, Resource
 from app.logging_setup import setup_logger
 from app.utils import require_auth
@@ -84,6 +84,20 @@ class BlogPosts(Resource):
                     })
             except Exception as notify_err:
                 logger.error(f"Failed to queue blog notification for post {post.id}: {notify_err}")
+
+            # Sync blog content to chatbot after commit so chatbot recommendations stay fresh.
+            try:
+                from app.services.chatbot_client import ChatbotClient
+
+                blog_url_template = current_app.config.get("BLOG_PUBLIC_URL_TEMPLATE")
+                blog_url = blog_url_template.format(blog_id=post.id, id=post.id) if blog_url_template else None
+                sync_result = ChatbotClient(timeout=5).sync_blog_post(post, url=blog_url)
+                if sync_result.get("error"):
+                    logger.error(f"Failed to sync blog post {post.id} to chatbot: {sync_result['error']}")
+                else:
+                    logger.info(f"Synced blog post {post.id} to chatbot")
+            except Exception as chatbot_err:
+                logger.error(f"Failed to sync blog post {post.id} to chatbot: {chatbot_err}")
 
             return {
                 "message": "Blog post created successfully",

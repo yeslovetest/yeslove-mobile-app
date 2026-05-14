@@ -1,8 +1,8 @@
-"""Small Neo4j helper using the official driver.
+"""Small Bolt graph helper using the official Neo4j driver.
 
 This module provides helpers to create/close a driver and run read/write transactions.
 It intentionally keeps a thin wrapper so the app can call Cypher directly or build a
-higher-level repository on top.
+higher-level repository on top. Memgraph also speaks Bolt, so the same driver works.
 """
 from neo4j import GraphDatabase
 from typing import Any, Dict, Optional
@@ -11,20 +11,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def create_driver(uri: str, user: str, password: str):
-    """Create and return a Neo4j driver instance."""
-    logger.info("Creating Neo4j driver for %s", uri)
-    driver = GraphDatabase.driver(uri, auth=(user, password))
+def create_driver(uri: str, user: Optional[str] = None, password: Optional[str] = None):
+    """Create and return a Bolt graph driver instance."""
+    logger.info("Creating graph driver for %s", uri)
+    auth = (user, password or "") if user else None
+    driver = GraphDatabase.driver(
+        uri,
+        auth=auth,
+        connection_timeout=2,
+        max_transaction_retry_time=2,
+    )
     return driver
 
 
 def close_driver(driver):
-    """Close the given Neo4j driver."""
+    """Close the given graph driver."""
     try:
         driver.close()
-        logger.info("Neo4j driver closed")
+        logger.info("Graph driver closed")
     except Exception:
-        logger.exception("Error closing Neo4j driver")
+        logger.exception("Error closing graph driver")
 
 
 def run_read(driver, cypher: str, params: Optional[Dict[str, Any]] = None):
@@ -57,10 +63,36 @@ def create_constraints(driver):
     This will try to create constraints for :User.user_id and :Post.post_id,
     ignoring errors if they already exist.
     """
-    try:
-        # Use CREATE CONSTRAINT IF NOT EXISTS (Neo4j 4.1+)
-        run_write(driver, "CREATE CONSTRAINT IF NOT EXISTS FOR (u:User) REQUIRE u.user_id IS UNIQUE")
-        run_write(driver, "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Post) REQUIRE p.post_id IS UNIQUE")
-        logger.info("Ensured Neo4j constraints for User and Post")
-    except Exception:
-        logger.exception("Failed to create Neo4j constraints")
+    constraints = (
+        (
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (u:User) REQUIRE u.user_id IS UNIQUE",
+            "CREATE CONSTRAINT ON (u:User) ASSERT u.user_id IS UNIQUE",
+        ),
+        (
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Post) REQUIRE p.post_id IS UNIQUE",
+            "CREATE CONSTRAINT ON (p:Post) ASSERT p.post_id IS UNIQUE",
+        ),
+    )
+    for statements in constraints:
+        _run_first_supported_constraint(driver, statements)
+    logger.info("Ensured graph constraints for User and Post")
+
+
+def _run_first_supported_constraint(driver, statements):
+    last_error = None
+    for statement in statements:
+        try:
+            run_write(driver, statement)
+            return
+        except Exception as exc:
+            if _is_existing_constraint_error(exc):
+                return
+            last_error = exc
+
+    if last_error:
+        logger.warning("Could not create graph constraint: %s", last_error)
+
+
+def _is_existing_constraint_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "already exists" in message or "equivalent constraint" in message

@@ -21,17 +21,8 @@ def sync_blog_to_chatbot(blog_id: int):
         if not blog:
             return {"error": "Blog post not found"}
         
-        blog_data = {
-            "id": blog.id,
-            "title": blog.title,
-            "content": blog.content,
-            "author": blog.author.username if blog.author else "YesLove",
-            "timestamp": blog.timestamp.isoformat() if blog.timestamp else None
-        }
-        
-        result = chatbot_client.sync_blog_posts([blog_data])
+        result = chatbot_client.sync_blog_post(blog)
         return result
         
     except Exception as e:
         return {"error": str(e)}
-
