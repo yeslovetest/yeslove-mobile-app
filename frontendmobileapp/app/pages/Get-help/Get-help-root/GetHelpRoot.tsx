@@ -51,10 +51,10 @@ export default function GetHelpRoot() {
         scrollEventThrottle={16}
       >
         {activeTab === "Professionals" && (
-          <OrangeBanner icon="users" mainTitle="Our Professionals" description="Browse the list of professionals" />
+          <OrangeBanner icon="users" mainTitle="Our Professionals" description="Browse professionals" />
         )}
         {activeTab === "Blogs" && (
-          <OrangeBanner icon="book-open-reader" mainTitle="Our Blogs" description="Browse the list of blogs" />
+          <OrangeBanner icon="book-open-reader" mainTitle="Our Blogs" description="Browse blogs" />
         )}
         <GetHelpNavbar />
         {activeTab === "Professionals" && (

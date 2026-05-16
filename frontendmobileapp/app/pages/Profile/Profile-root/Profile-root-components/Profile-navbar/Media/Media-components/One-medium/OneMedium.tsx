@@ -4,6 +4,7 @@ import { Video } from '@/app/Universal-components/Video/Video';
 import styles from './OneMediumStyles'
 import { MediaFile } from '@/generated-api';
 import { BASE_URL } from '@/app/config/baseUrl';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export interface Props{
     media: MediaFile;
@@ -49,7 +50,7 @@ const OneMedium = (props: Props) => {
       onPress={props.onPress}
     >
       {props.media?.content_type?.startsWith('image') && (
-        <Image source={{ uri: mediaUrl }}
+        <Image source={getImageSource(mediaUrl, 'generic')}
           style={styles.imageMedium}
           resizeMode="contain"
         >

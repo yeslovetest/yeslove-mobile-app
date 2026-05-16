@@ -405,6 +405,12 @@ export interface Comment {
      * @memberof Comment
      */
     'timestamp'?: string;
+    /**
+     * URL to the author\'s profile picture
+     * @type {string}
+     * @memberof Comment
+     */
+    'picture'?: string;
 }
 /**
  * 
@@ -1088,6 +1094,12 @@ export interface MediaFile {
      */
     'url'?: string;
     /**
+     * Media URL alias for client compatibility
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'media_url'?: string;
+    /**
      * Original filename
      * @type {string}
      * @memberof MediaFile
@@ -1105,6 +1117,24 @@ export interface MediaFile {
      * @memberof MediaFile
      */
     'file_size'?: number;
+    /**
+     * Media width in pixels
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'width'?: number;
+    /**
+     * Media height in pixels
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'height'?: number;
+    /**
+     * Media duration in seconds (for video/audio)
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'duration'?: number;
     /**
      * Timestamp when the media was uploaded
      * @type {string}
@@ -2002,6 +2032,18 @@ export interface UserPost {
      */
     'id'?: number;
     /**
+     * Post author display name
+     * @type {string}
+     * @memberof UserPost
+     */
+    'author'?: string;
+    /**
+     * Post author keycloak id
+     * @type {string}
+     * @memberof UserPost
+     */
+    'author_id'?: string;
+    /**
      * URL to author\'s profile picture
      * @type {string}
      * @memberof UserPost
@@ -2013,6 +2055,12 @@ export interface UserPost {
      * @memberof UserPost
      */
     'content'?: string;
+    /**
+     * Legacy image URL field used by detailed post UI
+     * @type {string}
+     * @memberof UserPost
+     */
+    'image'?: string;
     /**
      * URL to image in the post
      * @type {string}
@@ -2049,6 +2097,12 @@ export interface UserPost {
      * @memberof UserPost
      */
     'media_files'?: Array<MediaFile>;
+    /**
+     * Current user reaction type on the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'current_user_reaction'?: string;
 }
 /**
  * 

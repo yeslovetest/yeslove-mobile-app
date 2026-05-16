@@ -3,6 +3,7 @@ import { View, Image, Text } from 'react-native'
 import styles from './OneMessageStyles'
 import { FriendInfo } from '@/generated-api'
 import dayjs from 'dayjs'
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export interface Props {
   message: FriendInfo
@@ -16,7 +17,7 @@ const OneMessage = ({ message }: Props) => {
     ]}>
       {message?.unread && <View style={styles.activeIndicator}></View>}
 
-      <Image source={message?.profile_pic ?? ''} style={styles.profilePicture} />
+      <Image source={getImageSource(message?.profile_pic, 'profile')} style={styles.profilePicture} />
 
       <View style={styles.messageContainer}>
         <Text style={!message?.unread ? styles.userOpened : styles.userUnopened}>

@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import PostFilePreview from '@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview';
 import { retrieveOnePost } from '@/app/store/Home-store/feedSlice';
 import styles from '@/app/pages/Profile/Profile-root/Profile-root-components/Profile-navbar/Timeline/TimelineContentStyles';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 const TimelineContent = () => {
     const dispatch = useAppDispatch();
@@ -68,7 +69,7 @@ const TimelineContent = () => {
             {timeline.posts.map((post, index) => {
                 const postAuthorPic = resolveMediaUrl(post.author_pic);
                 const profilePicFallback = resolveProfileImageUrl(profile?.profile_pic);
-                const timelineCardImage = postAuthorPic || profilePicFallback || 'https://i.pravatar.cc/150?img=12';
+                const timelineCardImage = postAuthorPic || profilePicFallback;
 
                 const postMedia = (post.media_files ?? [])
                     .filter((media) => !!(media as any)?.url || !!(media as any)?.uri)
@@ -87,7 +88,7 @@ const TimelineContent = () => {
                         <View style={styles.headerRow}>
                             <Image
                                 style={styles.profileImage}
-                                source={{ uri: timelineCardImage }}
+                                source={getImageSource(timelineCardImage, 'profile')}
                             />
                             <View style={styles.authorInfo}>
                                 <Text style={styles.authorName}>{profile?.username || 'User'}</Text>

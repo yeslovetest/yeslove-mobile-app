@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import { retrievePostReactions, postReactionToPost, setPostReactionTab, SendFollowUser } from '@/app/store/Home-store/feedSlice';
 import { BASE_URL } from '@/app/config/baseUrl';
 import PostFilePreview from '@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export interface Props {
     post: PostData,
@@ -172,7 +173,7 @@ const OnePost = (props: Props) => {
         <View style={styles.postContainer} >
             <View style={styles.postHeaderContent}>
                 <View style={styles.profileImageContainer}>
-                    <Image style={styles.profileImage} source={{ uri: props.post.author_pic }} />
+                    <Image style={styles.profileImage} source={getImageSource(resolveMediaUrl(props.post.author_pic), 'profile')} />
                     <View style={styles.profileInfoContainer}>
                         <TouchableOpacity style={styles.profileName} onPress={openProfile}>
                             <Text style={styles.profileNameText}>{props.post.author}</Text>
