@@ -10,13 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
+      "bundleIdentifier": "uk.co.yeslove.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.frontend"
+      "package": "uk.co.yeslove.app"
     },
     "web": {
       "bundler": "metro",
