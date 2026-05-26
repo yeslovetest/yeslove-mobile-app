@@ -90,7 +90,7 @@ class UpdateProfile(Resource):
             user.address = new_userinfo['address']
             user.website = new_userinfo['website']
         
-        # Handle profile picture upload to S3 or to local storage
+        # Handle profile picture upload to object storage or local storage
         if 'profile_pic' in request.files:
             from app.services.media.media_service import MediaService
             if current_app.config.get("USE_S3_STORAGE", False):

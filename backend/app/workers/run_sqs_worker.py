@@ -9,7 +9,9 @@ from app.workers.sqs_worker import SQSWorker
 class WorkerManager:
     def __init__(self):
         self.worker = SQSWorker()
-        self.executor = ThreadPoolExecutor(max_workers=int(os.getenv('SQS_WORKER_CONCURRENCY', 4)))
+        self.executor = ThreadPoolExecutor(
+            max_workers=int(os.getenv('QUEUE_WORKER_CONCURRENCY', 4))
+        )
         self.running = True
         
     def signal_handler(self, signum, frame):
@@ -24,7 +26,7 @@ class WorkerManager:
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
         
-        print("Starting SQS worker...")
+        print("Starting queue worker...")
         
         try:
             # Submit worker to thread pool

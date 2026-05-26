@@ -6,7 +6,7 @@ CreateBlogPost = api.model("CreateBlogPost", {
     "title": fields.String(required=True, description="Title of the blog post"),
     "content": fields.String(required=True, description="Blog post content"),
     "summary": fields.String(required=False, description="Blog post Summary /short intro to Blog"),
-    "image": fields.Raw(required=False, description="Blog image file (will be uploaded to S3)"),
+    "image": fields.Raw(required=False, description="Blog image file (will be uploaded to object storage)"),
     "image_url": fields.String(required=False, description="Optional image URL (alternative to file upload)")
 })
 

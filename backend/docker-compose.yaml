@@ -80,3 +80,4 @@ volumes:
   neo4j_data:
   redis_data:
   rabbitmq_data:
+  postgres_vector_data:

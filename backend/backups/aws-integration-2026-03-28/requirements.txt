@@ -1,0 +1,65 @@
+python-dotenv 
+
+Flask 
+
+Flask-SQLAlchemy 
+
+Flask-Migrate 
+
+Flask-Bcrypt 
+
+Flask-cors 
+
+Flask-restx
+
+Flask-SocketIO
+
+requests 
+
+SQLAlchemy 
+
+greenlet 
+
+alembic 
+
+Mako 
+
+typing-extensions 
+
+authlib 
+
+email-validator
+
+Flask-Admin
+
+python-dateutil
+
+prometheus-flask-exporter
+
+psutil
+
+openai==1.51.0
+
+# Graph database dependencies
+gremlinpython>=3.6.0
+
+# AWS SDK
+boto3>=1.26.0
+
+# Media processing
+Pillow>=9.0.0
+ffmpeg-python>=0.2.0
+mutagen>=1.45.0
+
+# Vector DB requirements
+tiktoken
+pgvector
+
+# Cache and queue
+redis>=4.0.0
+
+# Monitoring
+prometheus-client
+
+# Database
+psycopg2-binary

@@ -56,3 +56,6 @@ dist/
 **/td_list.txt
 **/body.json
 
+
+# Binary database files
+chatbot-service/chatbot.db

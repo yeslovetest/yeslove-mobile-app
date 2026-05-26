@@ -25,7 +25,7 @@ class User(db.Model):
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
     bio             = db.Column(db.String(250), default="")
-    profile_pic_url = db.Column(db.String(500), nullable=True)  # S3 URL for profile pictures
+    profile_pic_url = db.Column(db.String(500), nullable=True)  # Object storage URL for profile pictures
     user_type       = db.Column(db.String(20), default="standard")  # ✅ Defaulgt to "standard" or "professional"
 
 
@@ -120,7 +120,7 @@ class ProfessionalDetails(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # S3 URL for post images (if any)
+    image_url = db.Column(db.String(500), nullable=True)  # Object storage URL for post images (if any)
     video_url = db.Column(db.String(500), nullable=True) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -397,7 +397,7 @@ def generate_uuid():
 
 class Media(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
-    content = db.Column(db.LargeBinary, nullable=True)  # Nullable if using S3
+    content = db.Column(db.LargeBinary, nullable=True)  # Nullable if using object storage
     content_type = db.Column(db.String(50), nullable=False)
     filename = db.Column(db.String(255))
     file_size = db.Column(db.Integer)
@@ -408,7 +408,7 @@ class Media(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_public = db.Column(db.Boolean, default=True)
-    s3_url = db.Column(db.String(500))  # S3 URL for cloud storage
+    s3_url = db.Column(db.String(500))  # Legacy field name storing object storage URL
 
 class PostMedia(db.Model):
     __tablename__ = 'post_media'
@@ -438,4 +438,3 @@ class BlogView(db.Model):
     blog = db.relationship('BlogPost', backref='views')
     
     __table_args__ = (db.UniqueConstraint('user_id', 'blog_id', name='unique_user_blog_view'),)
-

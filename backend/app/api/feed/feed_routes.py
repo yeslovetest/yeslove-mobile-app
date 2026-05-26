@@ -53,23 +53,25 @@ class Feed(Resource):
         elif feed_type == "favorites":
             query = Post.query.join(Like).filter(Like.user_id == user.id).order_by(Post.timestamp.desc())
         elif feed_type == "friends":
-            # Try Neptune for friend recommendations first
             friend_ids = [follow.followed_id for follow in user.following]
             if hasattr(current_app, 'graph_repository') and not friend_ids:
                 try:
                     recommendations = current_app.graph_repository.recommendations(
-                        user_id=user.keycloak_id, limit=50
+                        user_id=user.keycloak_id,
+                        limit=50
                     )
                     if recommendations:
                         from app.models import User as UserModel
                         rec_users = UserModel.query.filter(
-                            UserModel.keycloak_id.in_([r["user_id"] for r in recommendations])
+                            UserModel.keycloak_id.in_([r["user_id"] for r in recommendations if r.get("user_id")])
                         ).all()
                         friend_ids = [u.id for u in rec_users]
                 except Exception as e:
-                    logger.warning(f"Neptune recommendations failed: {e}")
-            
-            query = Post.query.filter(Post.is_anonymous != true(), Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
+                    logger.warning(f"Neo4j recommendations failed: {e}")
+            query = Post.query.filter(
+                Post.is_anonymous != true(),
+                Post.user_id.in_(friend_ids)
+            ).order_by(Post.timestamp.desc())
             
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
@@ -189,7 +191,6 @@ class CreatePost(Resource):
         is_anonymous = str(args.get("anonymous")).lower() == "true"
 
         logger.info("is_anonymous: %s", is_anonymous)
-              
         if not isinstance(files, list):
             files = [files] if files else []
         logger.info(f'files found: {len(files)}')
@@ -231,7 +232,7 @@ class CreatePost(Resource):
         post = Post(
             content=content,
             user_id=user.id,
-            is_anonymous = is_anonymous 
+            is_anonymous = is_anonymous,
         )
         db.session.add(post)
         db.session.flush()  # Get post.id
@@ -280,7 +281,7 @@ class CreatePost(Resource):
                     }
                 )
             except Exception as e:
-                logger.warning(f"Neptune post creation failed: {e}")
+                logger.warning(f"Neo4j post creation failed: {e}")
 
         fanout_service = FanoutService()
         fanout_service.fanout_post(post.id, user.id)
@@ -431,8 +432,7 @@ class LikePost(Resource):
         new_like = Like(user_id=user.id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
-        
-        # Add like to Neptune graph
+
         if hasattr(current_app, 'graph_repository'):
             try:
                 current_app.graph_repository.like_post(
@@ -441,7 +441,7 @@ class LikePost(Resource):
                     reaction_type="like"
                 )
             except Exception as e:
-                logger.warning(f"Neptune like failed: {e}")
+                logger.warning(f"Neo4j like failed: {e}")
         
         # Notify post author about like
         from app.models import Post
@@ -568,7 +568,7 @@ class FollowUser(Resource):
     def post(self, keycloak_id):
         """Follow or unfollow a user."""
         from app.models import User, Follow, db
-        from app.utils.common_helpers import get_current_user, safe_neptune_operation
+        from app.utils.common_helpers import get_current_user
         
         user, error_response, status_code = get_current_user()
         if error_response:
@@ -600,8 +600,7 @@ class FollowUser(Resource):
                    db.session.delete(followby_target_user) 
                    logger.info('Also removed reverse friend follow')
                 db.session.commit()
-                
-                # Remove from Neptune
+
                 if hasattr(current_app, 'graph_repository'):
                     try:
                         current_app.graph_repository.unfollow(
@@ -614,7 +613,7 @@ class FollowUser(Resource):
                                 followed_id=user.keycloak_id
                             )
                     except Exception as e:
-                        logger.warning(f"Neptune unfollow failed: {e}")
+                        logger.warning(f"Neo4j unfollow failed: {e}")
                 
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
@@ -644,14 +643,13 @@ class FollowUser(Resource):
             records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
             db.session.add_all(records)
             db.session.commit()
-            
-            # Create follow in Neptune
-            safe_neptune_operation(
-                lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "friend")
-            )
-            safe_neptune_operation(
-                lambda repo: repo.follow(target_user.keycloak_id, user.keycloak_id, "friend")
-            )
+
+            if hasattr(current_app, 'graph_repository'):
+                try:
+                    current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "friend")
+                    current_app.graph_repository.follow(target_user.keycloak_id, user.keycloak_id, "friend")
+                except Exception as e:
+                    logger.warning(f"Neo4j friend follow failed: {e}")
             
             return {"message": "Connected as friend"}, 201
 
@@ -676,11 +674,12 @@ class FollowUser(Resource):
             notification_type="follows",
             data={"type": "follow", "user_id": user.id}
         )
-        
-        # Create follow in Neptune
-        safe_neptune_operation(
-            lambda repo: repo.follow(user.keycloak_id, target_user.keycloak_id, "basic")
-        )
+
+        if hasattr(current_app, 'graph_repository'):
+            try:
+                current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "basic")
+            except Exception as e:
+                logger.warning(f"Neo4j follow failed: {e}")
         
         return {"message": "Followed successfully"}, 201
 

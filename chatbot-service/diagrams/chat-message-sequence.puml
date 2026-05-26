@@ -1,0 +1,114 @@
+@startuml
+title Chat Message Sequence - Detailed Current Implementation
+
+actor "YesLove App User" as U
+participant "Flask Resource\nChatMessage.post()" as API
+participant "require_auth decorator" as Auth
+participant "verify_jwt_token()" as Verify
+participant "Keycloak JWKS endpoint" as KC
+participant "get_rag_engine()\n(global lazy init)" as Factory
+participant "RAGEngine.generate_response()" as RAG
+participant "RAGEngine.retrieve_context()" as Retrieve
+database "SessionLocal()\nSQLite chatbot.db" as DB
+participant "OpenAI SDK\nChatCompletion.create" as OAI
+
+U -> API: POST /api/v1/chat/message\nHeaders: Authorization: Bearer <jwt>\nBody: {message, history?, session_id?}
+activate API
+
+API -> Auth: require_auth wrapper executes
+activate Auth
+Auth -> Verify: verify_jwt_token(token)
+activate Verify
+Verify -> KC: GET {KEYCLOAK_URL}/realms/YesLove_Auth/.../certs
+KC --> Verify: JWKS keys
+Verify -> Verify: parse JWT header (kid)\nfind matching key\njwt.decode(audience='account')
+
+alt JWT invalid / missing key / decode failure
+  Verify --> Auth: None
+  Auth --> API: 401 JSON error
+  API --> U: 401 {error: "Authentication required" | "Invalid token"}
+  deactivate Verify
+  deactivate Auth
+  deactivate API
+else JWT valid
+  Verify --> Auth: payload{sub,email,...}
+  Auth -> Auth: request.user_id = payload['sub']\nrequest.user_email = payload['email']
+  Auth --> API: continue handler
+  deactivate Verify
+  deactivate Auth
+end
+
+API -> API: parse request.json
+alt Missing body or missing message
+  API --> U: 400 {error: "Message is required"}
+  deactivate API
+else Valid message
+  API -> API: history = data.get('history', [])\nsession_id = data.get('session_id', 'default')
+  API -> API: if default -> session_id = "user_{user_id}_{hash(message)%10000}"
+
+  API -> Factory: get_rag_engine()
+  activate Factory
+  alt rag_engine is None
+    Factory -> Factory: rag_engine = RAGEngine(model='gpt-4o-mini', top_k=5)
+  else rag_engine already initialized
+    Factory -> Factory: reuse existing instance
+  end
+  Factory --> API: RAGEngine instance
+  deactivate Factory
+
+  API -> RAG: generate_response(message, history)
+  activate RAG
+  RAG -> RAG: api_key = OPENAI_API_KEY
+  alt API key missing
+    RAG --> API: fallback unavailable message
+    API --> U: 200 {response: fallback, session_id, user_id, sources}
+    deactivate RAG
+    deactivate API
+  else API key present
+    RAG -> Retrieve: retrieve_context(query)
+    activate Retrieve
+    Retrieve -> Retrieve: is_crisis = any(keyword in query.lower())
+    Retrieve -> DB: open SessionLocal()
+    activate DB
+
+    alt Crisis query
+      Retrieve -> DB: SELECT content, source_name\nFROM documents\nWHERE category='relationships.abuse-support'\nLIMIT top_k
+    else Standard query
+      Retrieve -> DB: SELECT content, source_name\nFROM documents\nWHERE category IN (\n yeslove.blogs,\n relationships.core,\n relationships.abuse-support)\nORDER BY priority\nLIMIT top_k
+    end
+
+    DB --> Retrieve: rows[(content, source_name)...]
+    alt No rows found
+      Retrieve -> Retrieve: return KB fallback text
+    else Rows found
+      Retrieve -> Retrieve: format chunks + source tags\njoin with separators
+    end
+    Retrieve -> DB: close session
+    deactivate DB
+    Retrieve --> RAG: context string
+    deactivate Retrieve
+
+    RAG -> RAG: enhanced_message = message + context
+    RAG -> RAG: messages = [system] + valid history(role/content only) + [user]
+    RAG -> RAG: setup_openai() sets openai.api_key
+    RAG -> OAI: ChatCompletion.create(model='gpt-4o-mini', messages=messages)
+    activate OAI
+    OAI --> RAG: response.choices[0].message.content
+    deactivate OAI
+    RAG --> API: generated response text
+    deactivate RAG
+
+    API --> U: 200 {\nresponse,\nsession_id,\nuser_id,\nsources: "Multiple credible relationship advice sources"\n}
+    deactivate API
+  end
+end
+
+== Error fallback path ==
+group Exception in RAGEngine.generate_response()
+  API -> RAG: generate_response(...)
+  RAG -> RAG: catch Exception
+  RAG --> API: technical difficulties fallback text
+  API --> U: 200 {response: fallback, session_id, user_id, sources}
+end
+
+@enduml

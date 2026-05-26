@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Production application entry point for AWS deployment"""
+"""Production application entry point."""
 import os
 from app import create_app
 from app.config import DevelopmentConfig, ProductionConfig
@@ -12,4 +12,4 @@ application = create_app(config_class)
 
 if __name__ == "__main__":
     # For local development
-    application.run(host='0.0.0.0', port=5000, debug=True)
+    application.run(host='0.0.0.0', port=5001, debug=True)

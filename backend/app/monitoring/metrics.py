@@ -12,7 +12,6 @@ api_request_duration = Histogram('api_request_duration_seconds', 'API request du
 
 # System Metrics
 active_users = Gauge('active_users_current', 'Currently active users')
-neptune_operations = Counter('neptune_operations_total', 'Neptune graph operations', ['operation', 'status'])
 
 def track_user_registration(user_type='standard'):
     """Track user registration"""
@@ -25,8 +24,3 @@ def track_user_login():
 def track_post_creation():
     """Track post creation"""
     posts_created.inc()
-
-def track_neptune_operation(operation, success=True):
-    """Track Neptune operations"""
-    status = 'success' if success else 'failure'
-    neptune_operations.labels(operation=operation, status=status).inc()

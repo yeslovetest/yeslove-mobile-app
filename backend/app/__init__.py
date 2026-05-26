@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+import atexit
 import os
 from flask_restx import Api
 from flask_cors import CORS
@@ -10,8 +11,8 @@ from prometheus_flask_exporter import PrometheusMetrics
 from dotenv import load_dotenv
 from app.config import DevelopmentConfig
 from app.utils import get_keycloak_public_keys
-from app.graph.neptune_client import create_neptune_client
-from app.graph.neptune_repository import NeptuneRepository
+from app.graph.neo4j_client import create_driver, close_driver
+from app.graph.repository import GraphRepository
 from app.api.auth.auth_routes import api as auth_api
 from app.api.profile.profile_routes import api as profile_api
 from app.api.feed.feed_routes import api as feed_api
@@ -69,10 +70,6 @@ def create_app(config_class=DevelopmentConfig):
     app.config["KEYCLOAK_ISSUER"] = config_class.keycloak_issuer()
     app.config["KEYCLOAK_CERTS_URL"] = config_class.keycloak_certs_url()
     
-    # 🌊 Neptune Configuration
-    app.config["NEPTUNE_ENDPOINT"] = os.getenv('NEPTUNE_ENDPOINT')
-    app.config["NEPTUNE_PORT"] = int(os.getenv('NEPTUNE_PORT', 8182))
-
     # 📊 Initialize API with JWT authorization
     authorizations = {
         'Bearer': {
@@ -124,32 +121,34 @@ def create_app(config_class=DevelopmentConfig):
     with app.app_context():
         get_keycloak_public_keys()
 
-    # --- Initialize Neptune client (optional) ---
+    # Initialize Neo4j graph repository when configured.
     try:
-        neptune_endpoint = app.config.get('NEPTUNE_ENDPOINT')
-        neptune_port = app.config.get('NEPTUNE_PORT', 8182)
-        
-        if neptune_endpoint:
-            neptune_client = create_neptune_client(neptune_endpoint, neptune_port)
-            if neptune_client:
-                setattr(app, 'neptune_client', neptune_client)
-                setattr(app, 'graph_repository', NeptuneRepository(neptune_client))
-                app.logger.info('Neptune client initialized successfully')
-            else:
-                app.logger.warning('Failed to connect to Neptune')
-        else:
-            app.logger.info('Neptune not configured, skipping graph database')
-    except Exception:
-        app.logger.exception('Failed to initialize Neptune client')
+        neo4j_uri = app.config.get("NEO4J_URI")
+        neo4j_user = app.config.get("NEO4J_USER")
+        neo4j_pass = app.config.get("NEO4J_PASS")
 
-    @app.teardown_appcontext
-    def shutdown_neptune(exception=None):
-        client = getattr(app, 'neptune_client', None)
-        if client:
+        if neo4j_uri and neo4j_user and neo4j_pass:
+            graph_driver = create_driver(neo4j_uri, neo4j_user, neo4j_pass)
+            graph_repository = GraphRepository(graph_driver)
+            graph_repository.ensure_constraints()
+            setattr(app, "graph_driver", graph_driver)
+            setattr(app, "graph_repository", graph_repository)
+            app.logger.info("Neo4j graph repository initialized")
+        else:
+            app.logger.info("Neo4j not fully configured, using SQL-only graph fallback")
+    except Exception:
+        app.logger.exception("Failed to initialize Neo4j graph repository")
+
+    def shutdown_graph():
+        driver = getattr(app, "graph_driver", None)
+        if driver:
             try:
-                client.close()
+                close_driver(driver)
+                setattr(app, "graph_driver", None)
             except Exception:
-                app.logger.exception('Error closing Neptune client')
+                app.logger.exception("Error closing Neo4j driver")
+
+    atexit.register(shutdown_graph)
 
     setattr(app, 'chatbot', Chatbot()) #initializing the chatbot
     
