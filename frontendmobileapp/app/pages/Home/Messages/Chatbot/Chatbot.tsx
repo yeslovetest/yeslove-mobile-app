@@ -10,12 +10,30 @@ import { sendChatbotMessage } from '@/app/store/Chat/chatSlice';
 const Chatbot = () => {
 
   const dispatch = useAppDispatch();
-  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string; createdAt?: Date }[]>([]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string; createdAt: Date }[]>([]);
   const [loading, setLoading] = useState(false);
+  const streamSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const screenHeight = Dimensions.get('window').height;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const chatBotResponse = useAppSelector((state) => state.chat.chatbotResponse.response ?? "");
   const chatBotResponseSources = useAppSelector((state) => state.chat.chatbotResponse.sources ?? "");
+  const chatBotResponseUpdatedAt = useAppSelector((state) => state.chat.chatbotResponse.updated_at ?? 0);
+
+  const formatSources = (sources: unknown): string => {
+    if (!sources) {
+      return "";
+    }
+
+    if (Array.isArray(sources)) {
+      return sources.map((item) => String(item ?? "")).filter(Boolean).join(", ");
+    }
+
+    if (typeof sources === "string") {
+      return sources.trim();
+    }
+
+    return String(sources);
+  };
 
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -23,6 +41,12 @@ const Chatbot = () => {
       duration: 300,
       useNativeDriver: true,
     }).start();
+
+    return () => {
+      if (streamSettleTimerRef.current) {
+        clearTimeout(streamSettleTimerRef.current);
+      }
+    };
   }, []);
 
   const postPrompt = async (prompt: string) => {
@@ -39,19 +63,48 @@ const Chatbot = () => {
   };
 
   useEffect(() => {
-    if (!chatBotResponse) return;
+    if (!chatBotResponseUpdatedAt) return;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "bot",
-        text: `${chatBotResponse}. Sources: ${chatBotResponseSources}`,
-        createdAt: new Date(),
-      },
-    ]);
+    if (!chatBotResponse) {
+      setLoading(false);
+      return;
+    }
 
-    setLoading(false);
-  }, [chatBotResponse, chatBotResponseSources]);
+    const formattedSources = formatSources(chatBotResponseSources);
+    const responseText = String(chatBotResponse);
+    const botText = formattedSources
+      ? `${responseText}\n\nSources: ${formattedSources}`
+      : responseText;
+
+    setMessages((prev) => {
+      const lastMessage = prev[prev.length - 1];
+      if (lastMessage?.role === 'bot') {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          ...lastMessage,
+          text: botText,
+        };
+        return updated;
+      }
+
+      return [
+        ...prev,
+        {
+          role: "bot",
+          text: botText,
+          createdAt: new Date(),
+        },
+      ];
+    });
+
+    if (streamSettleTimerRef.current) {
+      clearTimeout(streamSettleTimerRef.current);
+    }
+    // Keep spinner active during rapid stream deltas; hide after stream settles.
+    streamSettleTimerRef.current = setTimeout(() => {
+      setLoading(false);
+    }, 350);
+  }, [chatBotResponse, chatBotResponseSources, chatBotResponseUpdatedAt]);
 
   const handleSend = (text: string) => {
     if (!text.trim()) return;
