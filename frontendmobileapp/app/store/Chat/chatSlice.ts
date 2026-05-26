@@ -26,7 +26,8 @@ const chatSlice = createSlice({
             response: '',
             user_id: '',
             session_id: '',
-            sources: ''
+            sources: '',
+            updated_at: 0,
         },
         mediaData: { mediaFormData: null as FormData | null },
         sendMessageStatus: 'idle' as SendMessageStatus,
@@ -68,16 +69,18 @@ const chatSlice = createSlice({
         sendChatbotMessage: (state, action: PayloadAction<{prompt: string}>) => {},
         setChatbotResponse: (state, action: PayloadAction<chatbotApiResponse | null>) => {
             if (action.payload) {
-                state.chatbotResponse.response = action.payload.response;
-                state.chatbotResponse.user_id = action.payload.user_id;
-                state.chatbotResponse.session_id = action.payload.session_id;
-                state.chatbotResponse.sources = action.payload.sources;
+                state.chatbotResponse.response = String(action.payload.response ?? '');
+                state.chatbotResponse.user_id = String(action.payload.user_id ?? '');
+                state.chatbotResponse.session_id = String(action.payload.session_id ?? '');
+                state.chatbotResponse.sources = String(action.payload.sources ?? '');
+                state.chatbotResponse.updated_at = Date.now();
             } else {
                 state.chatbotResponse = {
                     response: '',
                     user_id: '',
                     session_id: '',
-                    sources: ''
+                    sources: '',
+                    updated_at: Date.now(),
                 };
             }
         },

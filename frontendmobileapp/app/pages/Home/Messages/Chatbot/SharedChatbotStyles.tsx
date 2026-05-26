@@ -86,16 +86,17 @@ const styles = StyleSheet.create({
         width: "100%",
         alignItems: "center",
         justifyContent: "flex-start",
-        position: "relative"
+        position: "relative",
+        backgroundColor: "#eef3f8",
     },
 
 
     contentContainer: {
         flexGrow: 1,
-        backgroundColor: theme.colors.mainBkgColor,
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 12,
+        backgroundColor: "#eef3f8",
+        paddingHorizontal: 12,
+        paddingTop: 14,
+        paddingBottom: 20,
     },
     backgroundContainer: {
         alignItems: "center",
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     background: {
         minHeight: "100%",
         width: "100%",
-        backgroundColor: "#fbfbfb",
+        backgroundColor: "#eef3f8",
         justifyContent: "flex-start",
         alignItems: "center",
     },
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
     chatBody: {
         flex: 1,
         width: "100%",
+        backgroundColor: "#eef3f8",
     },
 
     /*greeting container */
@@ -182,79 +184,94 @@ const styles = StyleSheet.create({
         width: "100%",
         alignItems: "center",
         justifyContent: "center",
-        paddingHorizontal: 10,
-        paddingBottom: 10,
+        paddingHorizontal: 12,
+        paddingTop: 10,
+        paddingBottom: 12,
+        backgroundColor: "#f8fafc",
+        borderTopWidth: 1,
+        borderTopColor: "#e2e8f0",
     },
 
     /*chat prompt */
 
     chatPromptContainer: {
         width: "100%",
-        padding: 15,
-        marginBottom: 20,
-        marginTop: "auto"
+        paddingHorizontal: 8,
+        marginBottom: 12,
+        marginTop: "auto",
     },
     promptAndTimeSentContainer: {
         alignSelf: "flex-end",
-        maxWidth: "80%",
+        maxWidth: "86%",
         flexDirection: "row",
         alignItems: "flex-end",
     },
 
     chatPrompt: {
         backgroundColor: theme.colors.primaryBlue,
-        borderRadius: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        borderRadius: 20,
+        borderBottomRightRadius: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
         flexShrink: 1,
     },
 
     promptText: {
         color: "#fbfbfb",
-        fontSize: 17,
+        fontSize: 16,
         fontFamily: "sans-serif",
         flexShrink: 1,
         flexWrap: "wrap",
         flex: 1,
+        lineHeight: 22,
     },
 
 
     timeSentPrompt: {
-        marginLeft: "auto",
-        color: "#e1e1e1"
+        marginTop: 6,
+        alignSelf: "flex-end",
+        color: "#dbe7f3",
+        fontSize: 11,
     },
 
     profileImg: {
-        width: 40,
-        height: 40,
-        marginLeft: 5,
-        marginTop: 5,
-        borderRadius: 20
+        width: 34,
+        height: 34,
+        marginLeft: 6,
+        marginBottom: 2,
+        borderRadius: 17,
+        borderWidth: 1,
+        borderColor: "#d1d5db",
     },
 
 
     /*chat response */
 
     chatResponseContainer: {
-        width: "90%",
-        marginRight: "auto",
-        padding: 20,
-        display: "flex",
-        justifyContent: "flex-start",
+        width: "100%",
+        paddingHorizontal: 8,
+        marginBottom: 12,
         alignItems: "flex-start",
-        flexDirection: "row",
-        marginBottom: 4
     },
 
     chatResponse: {
         fontFamily: "sans-serif",
         width: "100%",
-        borderRadius: 15,
-        backgroundColor: "#f1f1f1",
-        color: "#4e4e4e",
-        paddingVertical: 15,
-        paddingHorizontal: 10,
-        fontSize: 17
+        maxWidth: "92%",
+        borderRadius: 20,
+        borderBottomLeftRadius: 8,
+        backgroundColor: "#ffffff",
+        borderWidth: 1,
+        borderColor: "#e5e7eb",
+        color: "#334155",
+        paddingVertical: 14,
+        paddingHorizontal: 14,
+        fontSize: 16,
+        shadowColor: "#0f172a",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 1,
     },
 
     timeSentResponseContainer: {
@@ -265,9 +282,10 @@ const styles = StyleSheet.create({
     },
 
     timeSentResponse: {
-        marginTop: 2,
-        marginLeft: "auto",
-        color: "#4e4e4e"
+        marginTop: 6,
+        marginLeft: 6,
+        color: "#64748b",
+        fontSize: 11,
     },
 
     /*bot profile picture */
@@ -301,18 +319,22 @@ const styles = StyleSheet.create({
     loadingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 15,
-        borderRadius: 15,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        borderRadius: 20,
+        borderBottomLeftRadius: 8,
         justifyContent: 'flex-start',
-        backgroundColor: "#fefefe",
+        backgroundColor: "#ffffff",
+        borderWidth: 1,
+        borderColor: "#e5e7eb",
     },
 
     dotsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        marginBottom: 40,
-        marginLeft: 40,
+        marginBottom: 8,
+        paddingHorizontal: 8,
         width: "100%",
     },
     dot: {

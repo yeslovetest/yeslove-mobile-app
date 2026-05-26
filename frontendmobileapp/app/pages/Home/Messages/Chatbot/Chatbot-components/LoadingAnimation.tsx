@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { View, Animated } from 'react-native';
 import styles from '../SharedChatbotStyles';
-import ChatbotProfile from './Chatbot-profile/ChatbotProfile';
 
 export default function LoadingAnimation() {
     const dots = [useRef(new Animated.Value(0.8)).current,
@@ -31,7 +30,6 @@ export default function LoadingAnimation() {
 
     return (
         <View style={styles.dotsContainer}>
-            <ChatbotProfile></ChatbotProfile>
 <View style={styles.loadingContainer}>
             {dots.map((anim, i) => (
                 <Animated.View

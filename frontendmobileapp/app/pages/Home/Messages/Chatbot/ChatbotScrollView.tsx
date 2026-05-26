@@ -8,7 +8,7 @@ import LoadingAnimation from './Chatbot-components/LoadingAnimation'
 
 type ChatbotScrollViewProps = {
   loading: boolean
-  messages: { role: 'user' | 'bot'; text: string }[]
+  messages: { role: 'user' | 'bot'; text: string; createdAt: Date }[]
 }
 
 
@@ -38,13 +38,18 @@ useEffect(() => {
                 <GreetingContainer />
               ) : (
                 <>
-                  {messages.map((m, idx ) =>
+                  {messages.map((m, idx ) => {
+                    const safeTime = m.createdAt instanceof Date ? m.createdAt : new Date();
+                    const safeText = typeof m.text === 'string' ? m.text : String(m.text ?? '');
+
+                    return (
                     m.role === 'user' ? (
-                      <ChatPrompt   key={idx} prompt={m.text} time={m.createdAt} />
+                      <ChatPrompt   key={idx} prompt={safeText} time={safeTime} />
                     ) : (
-                      <ChatResponse key={idx} text={m.text} time={m.createdAt} />
+                      <ChatResponse key={idx} text={safeText} time={safeTime} />
                     )
-                  )}
+                  );
+                  })}
       
                   {loading && <LoadingAnimation />}  {/* dots after last message */}
                 </>

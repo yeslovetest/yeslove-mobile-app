@@ -1,9 +1,12 @@
 import React from 'react';
 import { Text, View, Image } from 'react-native';
 import styles from '../SharedChatbotStyles';
-import profileImg from "../../../../../../assets/images/profileImg1.jpg"
+import { useAppSelector } from '@/app/store/hooks';
+import { getImageSource } from '@/constants/imageFallbacks';
 
 export default function ChatPrompt({ prompt, time }: { prompt: string; time: Date }) {
+  const userId = useAppSelector((state) => state.user.id ?? '');
+  const profilePic = useAppSelector((state) => state.profile.profiles[userId]?.profile_pic ?? '');
 
   const hhmm = time
     .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -20,7 +23,7 @@ export default function ChatPrompt({ prompt, time }: { prompt: string; time: Dat
     </View>
     
 
-    <Image style={styles.profileImg} source={profileImg} />
+    <Image style={styles.profileImg} source={getImageSource(profilePic, 'profile', { treatBareAsMediaId: true })} />
   </View>
 
 
