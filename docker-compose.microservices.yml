@@ -30,6 +30,7 @@ services:
       - VECTOR_DATABASE_URL=postgresql://chatbot_user:chatbot_pass@vector-db:5432/chatbot_vectors
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PORT=8000
+      - KEYCLOAK_URL=http://keycloak_server:8080
     depends_on:
       - vector-db
     volumes:
