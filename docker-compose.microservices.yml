@@ -4,6 +4,9 @@ services:
   # Main YesLove Application
   main-app:
     build: ./backend
+    restart: unless-stopped
+    env_file:
+      - backend/.env
     ports:
       - "5000:5000"
     environment:
@@ -15,11 +18,12 @@ services:
       - chatbot-service
     volumes:
       - ./backend:/app
-    command: python run.py
+    command: gunicorn --workers 4 --bind 0.0.0.0:5000 --timeout 120 "app:create_app()"
 
   # Independent Chatbot Microservice
   chatbot-service:
     build: ./chatbot-service
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -30,11 +34,12 @@ services:
       - vector-db
     volumes:
       - ./chatbot-service:/app
-    command: python main.py
+    command: gunicorn --workers 2 --bind 0.0.0.0:8000 --timeout 120 "main:create_app()"
 
   # Main Application Database
   main-db:
     image: postgres:15
+    restart: unless-stopped
     environment:
       - POSTGRES_DB=yeslove_main
       - POSTGRES_USER=main_user
@@ -47,6 +52,7 @@ services:
   # Independent Vector Database for Chatbot
   vector-db:
     image: pgvector/pgvector:pg15
+    restart: unless-stopped
     environment:
       - POSTGRES_DB=chatbot_vectors
       - POSTGRES_USER=chatbot_user
@@ -59,12 +65,16 @@ services:
   # Redis for Celery tasks
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     ports:
       - "6379:6379"
 
   # Celery Worker for async tasks
   celery-worker:
     build: ./backend
+    restart: unless-stopped
+    env_file:
+      - backend/.env
     command: celery -A app.tasks.chatbot_sync worker --loglevel=info
     environment:
       - REDIS_URL=redis://redis:6379/0
@@ -76,6 +86,31 @@ services:
     volumes:
       - ./backend:/app
 
+# Message Broker for async task queuing
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=testpassword
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+# Graph Database - Memgraph (Neo4j compatible)
+  memgraph:
+    image: memgraph/memgraph-platform
+    restart: unless-stopped
+    ports:
+      - "7687:7687"
+      - "3000:3000"
+    volumes:
+      - memgraph_data:/var/lib/memgraph
+
 volumes:
   main_db_data:
   vector_db_data:
+  rabbitmq_data:
+  memgraph_data:

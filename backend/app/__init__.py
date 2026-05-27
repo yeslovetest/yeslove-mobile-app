@@ -37,7 +37,15 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
 
-def create_app(config_class=DevelopmentConfig):
+def create_app(config_class=None):
+    if config_class is None:
+        env = os.getenv('FLASK_ENV', 'development')
+        if env == 'production':
+            from app.config import ProductionConfig
+            config_class = ProductionConfig
+        else:
+            from app.config import DevelopmentConfig
+            config_class = DevelopmentConfig
     app = Flask(__name__)
 
     # Initialising of monitoring stack 

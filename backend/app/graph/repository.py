@@ -18,8 +18,8 @@ class GraphRepository:
 
     def ensure_constraints(self) -> None:
         try:
-            run_write(self.driver, "CREATE CONSTRAINT IF NOT EXISTS FOR (u:User) REQUIRE u.user_id IS UNIQUE")
-            run_write(self.driver, "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Post) REQUIRE p.post_id IS UNIQUE")
+            run_write(self.driver, "CREATE CONSTRAINT ON (u:User) ASSERT u.user_id IS UNIQUE")
+            run_write(self.driver, "CREATE CONSTRAINT ON (p:Post) ASSERT p.post_id IS UNIQUE")
         except Exception:
             logger.exception("Failed to ensure Neo4j constraints")
 

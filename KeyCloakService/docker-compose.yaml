@@ -3,6 +3,7 @@
 services:
   postgres:
     image: postgres:14
+    restart: unless-stopped
     container_name: postgres_keycloak
     environment:
       POSTGRES_USER: ${POSTGRESQL_USER}
@@ -10,10 +11,10 @@ services:
       POSTGRES_DB: ${POSTGRESQL_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
 
   keycloak:
     image: keycloak/keycloak:latest
+    restart: unless-stopped
     container_name: keycloak_server
     ports:
       - "${PORT_KEYCLOAK}:8080"
@@ -32,7 +33,6 @@ services:
     command: start-dev --import-realm --hostname-strict=false
     depends_on:
       - postgres
-    restart: unless-stopped
 
 volumes:
   postgres_data:
