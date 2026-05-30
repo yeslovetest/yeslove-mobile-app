@@ -25,9 +25,16 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRESQL_DB}
       KC_DB_USERNAME: ${POSTGRESQL_USER}
       KC_DB_PASSWORD: ${POSTGRESQL_PASS}
-      KC_HTTP_ENABLED: true
+      KC_HTTP_ENABLED: "true"
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASS}
+      KC_HOSTNAME: auth.yeslove.co.uk
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY: edge
+      KC_HOSTNAME_URL: https://auth.yeslove.co.uk
+      KC_HOSTNAME_ADMIN_URL: https://auth.yeslove.co.uk
+      KC_PROXY_HEADERS: xforwarded
+
     env_file:
       - .env
     command: start-dev --import-realm --hostname-strict=false
