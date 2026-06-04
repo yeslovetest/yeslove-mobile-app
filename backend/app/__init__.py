@@ -28,6 +28,7 @@ from app.api.notifications.notification_routes import api as notifications_api
 from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
+from app.api.admin.moderation_routes import api as admin_moderation_api
 
 
 # Load environment variables
@@ -106,6 +107,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(media_api, path="/api/media")
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
+    api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
     
     # Register health check endpoints
     from app.monitoring.health import health_bp

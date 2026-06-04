@@ -184,21 +184,7 @@ class EventInfo(Resource):
 
         logger.info("Creating Event")
         
-        # Handle image upload to object storage if provided
-        image_url = None
-        if 'image' in request.files:
-            from app.services.media.media_service import MediaService
-            try:
-                upload_result = MediaService.upload_file(
-                    file=request.files['image'],
-                    user_id=creator.id,
-                    folder='events'
-                )
-                image_url = upload_result.get('s3_url') if upload_result else None
-                logger.info(f"Event image uploaded to object storage: {image_url}")
-            except Exception as e:
-                logger.error(f"Image upload failed: {e}")
-                # Continue without image rather than failing
+        image_url = data.get("image_url")
         
         event = Event(
             name=data.get("name"),
@@ -208,7 +194,7 @@ class EventInfo(Resource):
             creator_id=creator.id,
             address=event_address,
             address_id=event_address.id if event_address else None,
-            image_url=image_url  # Object storage URL stored in PostgreSQL
+            image_url=image_url
         )
 
         logger.info("Adding event to database")
@@ -240,7 +226,10 @@ class EventInfo(Resource):
             except Exception as e:
                 logger.error(f"Event notification failed: {e}")
 
-        return {"message": "Event created successfully"}, 201
+        return {
+            "message": "Event created successfully",
+            "event_id": event.id
+        }, 201
 
 
 @api.route("/events_list")

@@ -3,11 +3,51 @@ from flask_restx import Namespace, Resource
 from app.logging_setup import setup_logger
 from app.utils import require_auth
 from datetime import datetime
+from io import BytesIO
+import os
+import xml.etree.ElementTree as ET
+import zipfile
 # Removed: from app.notifications import send_push_notification_to_all_users
 
 api = Namespace("blog", description="API Endpoints")
 
 logger = setup_logger() 
+
+def _is_admin() -> bool:
+    keycloak_roles = request.user.get("realm_access", {}).get("roles", [])
+    return "admin" in keycloak_roles
+
+def _extract_text_file(file_bytes):
+    return file_bytes.decode("utf-8-sig").strip()
+
+def _extract_docx_file(file_bytes):
+    with zipfile.ZipFile(BytesIO(file_bytes)) as docx:
+        document_xml = docx.read("word/document.xml")
+
+    root = ET.fromstring(document_xml)
+    namespace = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    paragraphs = []
+
+    for paragraph in root.findall(".//w:p", namespace):
+        text = "".join(node.text or "" for node in paragraph.findall(".//w:t", namespace)).strip()
+        if text:
+            paragraphs.append(text)
+
+    return "\n\n".join(paragraphs).strip()
+
+def _extract_pdf_file(file_bytes):
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:
+        raise RuntimeError("PDF import requires pypdf. Run `pip install -r backend/requirements.txt`.") from exc
+
+    reader = PdfReader(BytesIO(file_bytes))
+    pages = [(page.extract_text() or "").strip() for page in reader.pages]
+    return "\n\n".join(page for page in pages if page).strip()
+
+def _title_from_filename(filename):
+    base_name = os.path.splitext(filename or "")[0].replace("_", " ").replace("-", " ").strip()
+    return " ".join(base_name.split()).title()
 
 @api.route("/blog-posts")
 class BlogPosts(Resource):
@@ -169,6 +209,52 @@ class BlogPosts(Resource):
             "total": pagination.total,
             "page": page,
             "per_page": per_page
+        }, 200
+
+
+@api.route("/blog-posts/import")
+class ImportBlogPost(Resource):
+    @require_auth()
+    @api.doc(security='Bearer', description="Extract draft blog content from txt, docx, or pdf (Admin only)")
+    @api.response(200, "Content extracted successfully")
+    @api.response(400, "Unsupported file or no extractable content")
+    @api.response(403, "Access denied. Admins only")
+    def post(self):
+        """Extract content from an uploaded document for the admin blog editor."""
+        if not _is_admin():
+            return {"message": "Access denied. Admins only."}, 403
+
+        upload = request.files.get("file")
+        if not upload:
+            return {"message": "Document file is required"}, 400
+
+        filename = upload.filename or ""
+        extension = os.path.splitext(filename)[1].lower()
+        file_bytes = upload.read()
+
+        if len(file_bytes) > 10 * 1024 * 1024:
+            return {"message": "Document must be 10MB or smaller"}, 400
+
+        try:
+            if extension == ".txt":
+                content = _extract_text_file(file_bytes)
+            elif extension == ".docx":
+                content = _extract_docx_file(file_bytes)
+            elif extension == ".pdf":
+                content = _extract_pdf_file(file_bytes)
+            else:
+                return {"message": "Unsupported file type. Use .txt, .docx, or .pdf"}, 400
+        except Exception as exc:
+            logger.exception("Error importing blog document")
+            return {"message": str(exc) or "Could not extract document content"}, 400
+
+        if not content:
+            return {"message": "No extractable text found in document"}, 400
+
+        return {
+            "title": _title_from_filename(filename),
+            "content": content,
+            "filename": filename,
         }, 200
 
 
