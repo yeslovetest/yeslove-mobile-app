@@ -7,6 +7,7 @@ import theme from '@/assets/variables/Variables';
     keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad' | 'number-pad' | 'decimal-pad' | 'url' | 'numbers-and-punctuation';
     borderColor?: string;
     borderBottomColor?: string;
+    placeholderTextColor?: string;
     secureTextEntry?: boolean;
     onChangeText?: (text: string) => void;
   }
@@ -16,6 +17,7 @@ const Input = (props: Props) => {
   const keyboardType = props?.keyboardType ?? 'default';
   const borderColor = props?.borderColor ?? '#ccc';
   const borderBottomColor = props?.borderBottomColor ?? theme.colors.primaryBlue;
+  const placeholderTextColor = props?.placeholderTextColor ?? '#6b7280';
   const secureTextEntry = props?.secureTextEntry ?? false;
   const onChangeText = props?.onChangeText ?? (() => {});
 
@@ -25,6 +27,7 @@ const Input = (props: Props) => {
     <TextInput
         style={{...styles.input, borderColor: borderColor, borderBottomColor: borderBottomColor}}
         placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor}
         keyboardType= {keyboardType}
         onChangeText={onChangeText}
         secureTextEntry = {secureTextEntry}
