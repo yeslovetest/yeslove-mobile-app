@@ -1,89 +1,91 @@
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
-previewContainer: {
+  previewContainer: {
     position: "relative",
     alignSelf: "center",
     marginBottom: 6,
   },
   previewImage: {
-    borderRadius: 14,
-    backgroundColor: "#dbe3ef",
+    borderRadius: theme.radii.xl,
+    backgroundColor: theme.colors.surfaceAlt,
   },
   previewVideo: {
-    borderRadius: 14,
+    borderRadius: theme.radii.xl,
+    // Dark video backdrop — kept as a literal.
     backgroundColor: "#0f172a",
   },
   moreChip: {
     alignSelf: "flex-end",
-    marginBottom: 4,
+    marginBottom: theme.spacing.xs,
     borderWidth: 1,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radii.pill,
   },
   moreChipSent: {
+    // Translucent chip over the sent (blue) bubble — kept as literals.
     backgroundColor: "rgba(255,255,255,0.2)",
     borderColor: "rgba(255,255,255,0.35)",
   },
   moreChipReceived: {
-    backgroundColor: "#dfeaff",
+    backgroundColor: theme.colors.primarySoft,
+    // Light-blue received-bubble chip border — kept as a literal.
     borderColor: "#c9dcff",
   },
   moreChipText: {
-    fontSize: 12,
+    fontSize: theme.typography.fontSize.caption,
     fontWeight: "700",
     letterSpacing: 0.2,
   },
   moreChipTextSent: {
-    color: "#f5f9ff",
+    color: theme.colors.textOnPrimary,
   },
   moreChipTextReceived: {
+    // Navy text on the light received-bubble chip — kept as a literal.
     color: "#1f3b75",
   },
   text: {
     textAlign: "center",
-    marginTop: 4,
+    marginTop: theme.spacing.xs,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: theme.colors.overlay,
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#fff",
-    padding: 16,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
     borderRadius: 12,
     width: "90%",
     maxHeight: "80%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    ...theme.shadows.sm,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: theme.typography.fontSize.title3,
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
     textAlign: "center",
   },
   closeButton: {
-    marginTop: 16,
-    backgroundColor: "#3f7cff",
+    marginTop: theme.spacing.lg,
+    backgroundColor: theme.colors.primary,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: theme.radii.md,
   },
   closeText: {
-    color: "#fff",
+    color: theme.colors.textOnPrimary,
     textAlign: "center",
   },
   deleteWrapper: {
     position: "absolute",
     top: 4,
     right: 4,
+    // Translucent delete badge over media — kept as a literal.
     backgroundColor: "rgba(0,0,0,0.6)",
     width: 22,
     height: 22,
@@ -92,15 +94,15 @@ previewContainer: {
     alignItems: "center",
     zIndex: 10,
   },
-
   deleteIcon: {
-    color: "white",
-    fontSize: 14,
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.subhead,
     fontWeight: "bold",
     lineHeight: 14,
   },
   fullScreenContainer: {
     flex: 1,
+    // Full-screen media lightbox background — kept as a literal.
     backgroundColor: "rgba(0, 0, 0, 0.95)",
     justifyContent: "center",
   },
@@ -110,14 +112,14 @@ previewContainer: {
     right: 18,
     zIndex: 20,
     backgroundColor: "rgba(255, 255, 255, 0.18)",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radii.xxl,
   },
   fullScreenCloseText: {
-    color: "#fff",
+    color: theme.colors.textOnPrimary,
     fontWeight: "700",
-    fontSize: 13,
+    fontSize: theme.typography.fontSize.footnote,
   },
   fullScreenItem: {
     flex: 1,
@@ -137,18 +139,15 @@ previewContainer: {
     bottom: 24,
     alignSelf: "center",
     backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 12,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: 6,
-    borderRadius: 14,
+    borderRadius: theme.radii.xl,
   },
   fullScreenCounter: {
-    color: "#fff",
-    fontSize: 12,
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.caption,
     fontWeight: "600",
   },
-
 });
 
-
-
-export default styles
+export default styles;

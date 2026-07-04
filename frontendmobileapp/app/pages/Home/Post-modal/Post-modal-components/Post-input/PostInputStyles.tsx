@@ -1,23 +1,25 @@
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
   userPostBoxContainer: {
     flex: 1,
-    padding: 16,
+    padding: theme.spacing.lg,
   },
   postInput: {
     flex: 1,
-    fontSize: 16,
-    textAlignVertical: "top", 
-    borderRadius: 8,
-    marginBottom: 16,
-    outlineColor: "#fff",
+    fontSize: theme.typography.fontSize.callout,
+    textAlignVertical: "top",
+    borderRadius: theme.radii.md,
+    marginBottom: theme.spacing.lg,
+    outlineColor: theme.colors.surface,
   },
   postIcons: {
     flexDirection: "row",
     justifyContent: "flex-start",
-    paddingHorizontal: 4,
-    paddingVertical: 8,
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
     gap: 14,
   },
   mediaActionButton: {
@@ -26,14 +28,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5f7fb",
+    backgroundColor: theme.colors.surfaceAlt,
   },
   validationMessage: {
-    marginTop: 8,
-    fontSize: 13,
-    color: "#b42318",
+    marginTop: theme.spacing.sm,
+    fontSize: theme.typography.fontSize.footnote,
+    color: theme.colors.danger,
     lineHeight: 18,
   },
-})
+});
 
-export default styles
+export default styles;

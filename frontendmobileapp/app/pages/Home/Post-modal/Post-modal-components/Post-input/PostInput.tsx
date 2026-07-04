@@ -6,6 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 // the package root. Keep the legacy import until this is migrated in a later phase.
 import * as FileSystem from "expo-file-system/legacy";
 import styles from "./PostInputStyles";
+import { theme } from "@/app/theme";
 import PostFilePreview from "../File-preview/PostFilePreview";
 import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from "@/constants/mediaLimits";
 
@@ -35,7 +36,9 @@ const PostInput: React.FC<PostInputProps> = ({
   validationMessage,
   setValidationMessage,
 }) => {
-  const getAssetFileSize = async (asset: ImagePicker.ImagePickerAsset): Promise<number | undefined> => {
+  const getAssetFileSize = async (
+    asset: ImagePicker.ImagePickerAsset,
+  ): Promise<number | undefined> => {
     if (asset.fileSize) {
       return asset.fileSize;
     }
@@ -54,17 +57,14 @@ const PostInput: React.FC<PostInputProps> = ({
 
   const appendAssetIfValid = async (
     asset: ImagePicker.ImagePickerAsset,
-    fallbackType: "image" | "video"
+    fallbackType: "image" | "video",
   ) => {
     if (asset.type !== "image" && asset.type !== "video") return;
 
     const fileSize = await getAssetFileSize(asset);
-    if (
-      typeof fileSize === "number" &&
-      fileSize > MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes
-    ) {
+    if (typeof fileSize === "number" && fileSize > MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes) {
       setValidationMessage(
-        `Media must be ${formatSizeMb(MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes)} or smaller. ${asset.fileName ?? "Selected file"} is ${formatSizeMb(fileSize)}.`
+        `Media must be ${formatSizeMb(MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes)} or smaller. ${asset.fileName ?? "Selected file"} is ${formatSizeMb(fileSize)}.`,
       );
       return;
     }
@@ -73,15 +73,13 @@ const PostInput: React.FC<PostInputProps> = ({
     appendFile({
       uri: asset.uri,
       type: asset.type === "video" ? "video/mp4" : "image/jpeg",
-      name:
-        asset.fileName ??
-        `${fallbackType}.${fallbackType === "image" ? "jpg" : "mp4"}`,
+      name: asset.fileName ?? `${fallbackType}.${fallbackType === "image" ? "jpg" : "mp4"}`,
       width: asset.width,
       height: asset.height,
       fileSize,
     });
   };
-  
+
   const appendFile = (file: FileItem) => {
     setSelectedFile((prev) => [...(prev || []), file]);
   };
@@ -128,10 +126,10 @@ const PostInput: React.FC<PostInputProps> = ({
   };
 
   const deleteSelectedFile = (index: number) => {
-    setSelectedFile(prev => {
+    setSelectedFile((prev) => {
       if (!prev) return prev;
       const copy = [...prev];
-      copy.splice(index, 1);     
+      copy.splice(index, 1);
       if (copy.length === 0) {
         setValidationMessage("");
       }
@@ -152,32 +150,26 @@ const PostInput: React.FC<PostInputProps> = ({
         />
 
         {selectedFile && selectedFile.length > 0 && (
-          <PostFilePreview
-            file={selectedFile}
-            editable
-            delFunc={deleteSelectedFile}
-          />
+          <PostFilePreview file={selectedFile} editable delFunc={deleteSelectedFile} />
         )}
       </ScrollView>
 
       {/* ACTION BUTTONS */}
       <View style={styles.postIcons}>
         <TouchableOpacity style={styles.mediaActionButton} onPress={pickMedia}>
-          <FontAwesome name="picture-o" size={24} color="black" />
+          <FontAwesome name="picture-o" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.mediaActionButton} onPress={() => pickFile("video")}>
-          <Entypo name="video-camera" size={24} color="black" />
+          <Entypo name="video-camera" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.mediaActionButton} onPress={() => pickFile("image")}>
-          <Ionicons name="images-outline" size={24} color="black" />
+          <Ionicons name="images-outline" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
-      {!!validationMessage && (
-        <Text style={styles.validationMessage}>{validationMessage}</Text>
-      )}
+      {!!validationMessage && <Text style={styles.validationMessage}>{validationMessage}</Text>}
     </View>
   );
 };

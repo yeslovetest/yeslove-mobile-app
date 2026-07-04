@@ -1,23 +1,28 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Animated, View, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
-import ChatbotScrollView from './ChatbotScrollView';
-import TextInputContainer from './Chatbot-components/TextInputContainer';
-import styles from './SharedChatbotStyles';
-import Header from '@/app/Universal-components/Header/Header';
-import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
-import { sendChatbotMessage } from '@/app/store/Chat/chatSlice';
+import React, { useRef, useEffect, useState } from "react";
+import { Animated, View, Dimensions, KeyboardAvoidingView, Platform } from "react-native";
+import ChatbotScrollView from "./ChatbotScrollView";
+import TextInputContainer from "./Chatbot-components/TextInputContainer";
+import styles from "./SharedChatbotStyles";
+import Header from "@/app/Universal-components/Header/Header";
+import { useAppSelector, useAppDispatch } from "@/app/store/hooks";
+import { sendChatbotMessage } from "@/app/store/Chat/chatSlice";
 
 const Chatbot = () => {
-
   const dispatch = useAppDispatch();
-  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string; createdAt: Date }[]>([]);
+  const [messages, setMessages] = useState<
+    { role: "user" | "bot"; text: string; createdAt: Date }[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const streamSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const screenHeight = Dimensions.get('window').height;
+  const screenHeight = Dimensions.get("window").height;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const chatBotResponse = useAppSelector((state) => state.chat.chatbotResponse.response ?? "");
-  const chatBotResponseSources = useAppSelector((state) => state.chat.chatbotResponse.sources ?? "");
-  const chatBotResponseUpdatedAt = useAppSelector((state) => state.chat.chatbotResponse.updated_at ?? 0);
+  const chatBotResponseSources = useAppSelector(
+    (state) => state.chat.chatbotResponse.sources ?? "",
+  );
+  const chatBotResponseUpdatedAt = useAppSelector(
+    (state) => state.chat.chatbotResponse.updated_at ?? 0,
+  );
 
   const formatSources = (sources: unknown): string => {
     if (!sources) {
@@ -25,7 +30,10 @@ const Chatbot = () => {
     }
 
     if (Array.isArray(sources)) {
-      return sources.map((item) => String(item ?? "")).filter(Boolean).join(", ");
+      return sources
+        .map((item) => String(item ?? ""))
+        .filter(Boolean)
+        .join(", ");
     }
 
     if (typeof sources === "string") {
@@ -54,10 +62,7 @@ const Chatbot = () => {
 
     const now = new Date();
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", text: prompt, createdAt: now },
-    ]);
+    setMessages((prev) => [...prev, { role: "user", text: prompt, createdAt: now }]);
 
     dispatch(sendChatbotMessage({ prompt }));
   };
@@ -78,7 +83,7 @@ const Chatbot = () => {
 
     setMessages((prev) => {
       const lastMessage = prev[prev.length - 1];
-      if (lastMessage?.role === 'bot') {
+      if (lastMessage?.role === "bot") {
         const updated = [...prev];
         updated[updated.length - 1] = {
           ...lastMessage,
@@ -112,16 +117,11 @@ const Chatbot = () => {
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.outerView,
-        { transform: [{ translateY: slideAnim }] },
-      ]}
-    >
+    <Animated.View style={[styles.outerView, { transform: [{ translateY: slideAnim }] }]}>
       <Header />
       <KeyboardAvoidingView
         style={styles.chatBody}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={60}
       >
         <ChatbotScrollView messages={messages} loading={loading} />
