@@ -30,7 +30,13 @@ const FooterButton = (props: Props) => {
   };
 
   return (
-    <TouchableOpacity style={styles.iconContainer} onPress={handlePress}>
+    <TouchableOpacity
+      style={styles.iconContainer}
+      onPress={handlePress}
+      accessibilityRole="tab"
+      accessibilityLabel={props.title}
+      accessibilityState={{ selected: isSelected }}
+    >
       <View style={{ position: "relative" }}>
         <Ionicons
           name={isSelected ? props.selectedIcon : props.icon}

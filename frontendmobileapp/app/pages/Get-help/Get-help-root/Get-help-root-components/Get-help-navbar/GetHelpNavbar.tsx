@@ -17,6 +17,9 @@ const GetHelpNavbar = () => {
             key={tab}
             style={[styles.navItem, activeTab === tab && styles.activeNavItem]}
             onPress={() => dispatch(setActiveGetHelpTabAction(tab))}
+            accessibilityRole="tab"
+            accessibilityLabel={tab}
+            accessibilityState={{ selected: activeTab === tab }}
           >
             <Text style={[styles.navText, activeTab === tab && styles.activeNavText]}>{tab}</Text>
             {activeTab === tab && <View style={styles.activeIndicator} />}

@@ -19,6 +19,9 @@ const HomeNavbar = () => {
               activeHomeTab === FeedTabs.ALL_UPDATES && styles.activeHomeItem,
             ]}
             onPress={() => dispatch(setActiveHomeTabAction(FeedTabs.ALL_UPDATES))}
+            accessibilityRole="tab"
+            accessibilityLabel="All Updates"
+            accessibilityState={{ selected: activeHomeTab === FeedTabs.ALL_UPDATES }}
           >
             <Text
               style={[
@@ -34,6 +37,9 @@ const HomeNavbar = () => {
           <TouchableOpacity
             style={[styles.homeItem, activeHomeTab === FeedTabs.FRIENDS && styles.activeHomeItem]}
             onPress={() => dispatch(setActiveHomeTabAction(FeedTabs.FRIENDS))}
+            accessibilityRole="tab"
+            accessibilityLabel="Friends"
+            accessibilityState={{ selected: activeHomeTab === FeedTabs.FRIENDS }}
           >
             <Text
               style={[

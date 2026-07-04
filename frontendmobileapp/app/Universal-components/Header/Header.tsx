@@ -161,6 +161,8 @@ export default function Header(props: Props) {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             pressRetentionOffset={{ top: 16, bottom: 16, left: 16, right: 16 }}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <FontAwesome5 name="chevron-left" size={20} />
           </TouchableOpacity>
@@ -190,6 +192,8 @@ export default function Header(props: Props) {
             name="close"
             size={32}
             color={theme.colors.textOnPrimary}
+            accessibilityRole="button"
+            accessibilityLabel="Close assistant"
           />
         </View>
       )}
@@ -202,6 +206,8 @@ export default function Header(props: Props) {
               style={styles.homeActionButton}
               onPress={openPostModal}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Create post"
             >
               <Ionicons name="add" size={25} color={theme.colors.textPrimary} />
             </TouchableOpacity>
@@ -209,6 +215,10 @@ export default function Header(props: Props) {
               style={[styles.homeActionButton, styles.homeActionSpacing]}
               onPress={openMessages}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={
+                unreadMessageCount > 0 ? `Messages, ${unreadMessageCount} unread` : "Messages"
+              }
             >
               <SimpleLineIcons name="bubbles" size={21} color={theme.colors.textPrimary} />
               {unreadMessageCount > 0 && (
@@ -227,7 +237,11 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <TouchableOpacity onPress={openSettings}>
+          <TouchableOpacity
+            onPress={openSettings}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
             <Ionicons name="settings-outline" size={28} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -242,6 +256,8 @@ export default function Header(props: Props) {
             pressRetentionOffset={10}
             hitSlop={10}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Filter events"
           >
             <Ionicons name="filter" size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
@@ -264,6 +280,8 @@ export default function Header(props: Props) {
             style={[styles.assistantButton, styles.homeMessagesIcon]}
             onPress={openChatbot}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Open AI assistant"
           >
             <Animated.View
               style={[

@@ -31,6 +31,9 @@ const EventNavbar = () => {
             key={tab}
             style={[styles.navItem, currentTab === tab && styles.activeNavItem]}
             onPress={() => dispatch(setActiveEventsTabAction(tab))}
+            accessibilityRole="tab"
+            accessibilityLabel={tab}
+            accessibilityState={{ selected: currentTab === tab }}
           >
             <Text style={[styles.navText, currentTab === tab && styles.activeNavText]}>{tab}</Text>
             {currentTab === tab && <View style={styles.activeIndicator} />}
