@@ -1,62 +1,156 @@
 import { call, put, take, takeEvery, takeLatest, race, delay } from "redux-saga/effects";
 import { eventChannel, END } from "redux-saga";
-import { activateLoadingScreen, fetchUserDataAction, fetchUserTimelineAction, fetchUserTimelineNextPageAction, getEmailNotificationSettings, getProfileVisibilitySettings, persistUserInfoAction, setEmailNotificationSettings, setProfileImageUploading, setProfileVisibilitySettings, setUserProfileState, setUserTimelineAction, setUserTimelineFailedAction, storeUserDataAction, updateEmailNotificationSettings, updateProfile, updateProfileVisibilitySettings } from "../Profile-store/profileSlice";
-import { AuthApiFactory, FeedApiFactory, LoginRequest, PostResponse, ProfileApiFactory, 
-  TokenResponse, UserProfile, SignupRequest, SignupResponse, GetCommentResponse,
-  GetReactionsResponse, ReactToPostResponse,
-  ChangePasswordRequest, DeleteAccountRequest,
-  EmailNotificationSettings, ProfileVisibilitySettings,
-  GetFollowingResponse, ChatApiFactory,
-  GetMessagesResponse, BlogApiFactory, BlogPostList,
-  MarkChatOpenedResponse, GetFriendsResponse, 
-  EventsApiFactory, EventListResponse,
+import {
+  activateLoadingScreen,
+  fetchUserDataAction,
+  fetchUserTimelineAction,
+  fetchUserTimelineNextPageAction,
+  getEmailNotificationSettings,
+  getProfileVisibilitySettings,
+  persistUserInfoAction,
+  setEmailNotificationSettings,
+  setProfileImageUploading,
+  setProfileVisibilitySettings,
+  setUserProfileState,
+  setUserTimelineAction,
+  setUserTimelineFailedAction,
+  storeUserDataAction,
+  updateEmailNotificationSettings,
+  updateProfile,
+  updateProfileVisibilitySettings,
+} from "../Profile-store/profileSlice";
+import {
+  AuthApiFactory,
+  FeedApiFactory,
+  LoginRequest,
+  PostResponse,
+  ProfileApiFactory,
+  TokenResponse,
+  UserProfile,
+  SignupRequest,
+  SignupResponse,
+  GetCommentResponse,
+  GetReactionsResponse,
+  ReactToPostResponse,
+  ChangePasswordRequest,
+  DeleteAccountRequest,
+  EmailNotificationSettings,
+  ProfileVisibilitySettings,
+  GetFollowingResponse,
+  ChatApiFactory,
+  GetMessagesResponse,
+  BlogApiFactory,
+  BlogPostList,
+  MarkChatOpenedResponse,
+  GetFriendsResponse,
+  EventsApiFactory,
+  EventListResponse,
   ProfessionalsListResponse,
   MediaListResponse,
   MediaApiFactory,
   NotificationsApiFactory,
   NotificationListResponse,
-  Post, EventInfoResponse, BlogPostModel,
+  Post,
+  EventInfoResponse,
+  BlogPostModel,
   NotificationPreferences,
-  TimelineResponse
-  } from "@/generated-api";
+  TimelineResponse,
+} from "@/generated-api";
 import { appSelect } from "../hooks";
-import { attemptRefreshFromLocalStorageAction, logInAction, 
-  LoginState, setLoginStateAction, signupAction, 
-  setSignupMessage, setErrorMessage, setUserPassword, 
+import {
+  attemptRefreshFromLocalStorageAction,
+  logInAction,
+  LoginState,
+  setLoginStateAction,
+  signupAction,
+  setSignupMessage,
+  setErrorMessage,
+  setUserPassword,
   setMessage,
   setSignupSubmitting,
   setDeleteConfirmation,
-  logoutAction} from "../Auth-store/authSlice";
+  logoutAction,
+} from "../Auth-store/authSlice";
 import axios, { AxiosResponse } from "axios";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
-import { setUserId, setName, setPassword, setUserDBID  } from "../Profile-store/userSlice";
+import { setUserId, setName, setPassword, setUserDBID } from "../Profile-store/userSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
-import { postNewPostAction, setFeedDataAction, updatePostsForFeedAction, postComment, 
-   setComments, setReactions, retrievePostReactions, postLikePost, postReactionToPost,
-   setFollowing,
-   fetchFollowedUsers,
-   SendFollowUser, retrieveOnePost, setDetailedPost,
-   setPostReactionTab
- } from "../Home-store/feedSlice";
+import {
+  postNewPostAction,
+  setFeedDataAction,
+  updatePostsForFeedAction,
+  postComment,
+  setComments,
+  setReactions,
+  retrievePostReactions,
+  postLikePost,
+  postReactionToPost,
+  setFollowing,
+  fetchFollowedUsers,
+  SendFollowUser,
+  retrieveOnePost,
+  setDetailedPost,
+  setPostReactionTab,
+} from "../Home-store/feedSlice";
 import { changeTabAction, openTabOnTopAction, TabType } from "../Navigation/navigationSlice";
-import { setChatMessages, fetchChatMessages, sendChatMessage, markChatOpened, setFriendList, fetchFriendList,
-  sendChatbotMessage, setChatbotResponse, sendChatMessageStarted, sendChatMessageSucceeded, sendChatMessageFailed
- } from "../Chat/chatSlice";
-import { setBlogPosts, fetchBlogPosts, fetchProfessionals, setProfessionals,
-    fetchOneBlogPost, setOneBlogPost
- } from "../Get-help-store/getHelpSlice";
-import { fetchAllEvents, fetchUserEvents, setAllEvents,
-   setUserEvents, addAttendeeToEvent, removeAttendeeFromEvent,
-   fetchOneEvent, setOneEvent } from "../Events-store/eventsSlice";
-import { fetchMediaItems, setMediaItems, setUploadedMediaId, uploadBulkMedia, uploadMedia } from "../Profile-store/mediaSlice";
-import { fetchUserNotifications, markNotificationRead, setUserNotification,
-  fetchFriendRequests, setFriendRequests, respondToFriendRequest,
-   fetchNotificationPreferences, setNotificationPreferences,
-   updateNotificationPreferences, setNotificationRequestFailed
- } from "../Notification-store/notificationSlice";
-import { ChatResponse as ChatbotApiResponse, apiFactory as chatbotApiFactory } from "@/chatbot-client-api/api";
-import dataURLtoFile from '@/utils/mediaUrlConverter';
-
+import {
+  setChatMessages,
+  fetchChatMessages,
+  sendChatMessage,
+  markChatOpened,
+  setFriendList,
+  fetchFriendList,
+  sendChatbotMessage,
+  setChatbotResponse,
+  sendChatMessageStarted,
+  sendChatMessageSucceeded,
+  sendChatMessageFailed,
+} from "../Chat/chatSlice";
+import {
+  setBlogPosts,
+  fetchBlogPosts,
+  fetchProfessionals,
+  setProfessionals,
+  fetchOneBlogPost,
+  setOneBlogPost,
+} from "../Get-help-store/getHelpSlice";
+import {
+  fetchAllEvents,
+  fetchUserEvents,
+  setAllEvents,
+  setUserEvents,
+  addAttendeeToEvent,
+  removeAttendeeFromEvent,
+  fetchOneEvent,
+  setOneEvent,
+} from "../Events-store/eventsSlice";
+import {
+  fetchMediaItems,
+  setMediaItems,
+  setUploadedMediaId,
+  uploadBulkMedia,
+  uploadMedia,
+} from "../Profile-store/mediaSlice";
+import {
+  fetchUserNotifications,
+  markNotificationRead,
+  setUserNotification,
+  fetchFriendRequests,
+  setFriendRequests,
+  respondToFriendRequest,
+  fetchNotificationPreferences,
+  setNotificationPreferences,
+  updateNotificationPreferences,
+  setNotificationRequestFailed,
+} from "../Notification-store/notificationSlice";
+import {
+  ChatResponse as ChatbotApiResponse,
+  apiFactory as chatbotApiFactory,
+} from "@/chatbot-client-api/api";
+import dataURLtoFile from "@/utils/mediaUrlConverter";
+import { syncUser, UserIdentityResponse } from "../../services/authService";
+import { getFriendRequests, FriendRequestsResponse } from "../../services/feedService";
+import { updateProfileWithMedia } from "../../services/profileService";
 
 /**
  * Extract HTTP status from an unknown error value.
@@ -88,7 +182,7 @@ const isStreamAbortError = (error: unknown): boolean => {
   }
 
   if (error instanceof Error) {
-    return error.name === 'AbortError' || error.message === 'ask stream aborted';
+    return error.name === "AbortError" || error.message === "ask stream aborted";
   }
 
   return false;
@@ -99,11 +193,11 @@ const isStreamAbortError = (error: unknown): boolean => {
  */
 const clearPersistedAuthState = async (): Promise<void> => {
   TOKEN_REFRESH_SERVICE.stopRefreshingToken();
-  await TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage('');
-  await TOKEN_REFRESH_SERVICE.saveAccessToken('');
-  await TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage('');
+  await TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage("");
+  await TOKEN_REFRESH_SERVICE.saveAccessToken("");
+  await TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage("");
   await TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage(-1);
-  delete axios.defaults.headers.common['Authorization'];
+  delete axios.defaults.headers.common["Authorization"];
 };
 
 /**
@@ -115,38 +209,30 @@ const getSignupFriendlyMessage = (status?: number, apiMessage?: string): string 
   }
 
   if (status === 400) {
-    return 'Please check your details and try again.';
+    return "Please check your details and try again.";
   }
 
   if (status === 401 || status === 403) {
-    return 'You are not allowed to complete signup right now. Please try again later.';
+    return "You are not allowed to complete signup right now. Please try again later.";
   }
 
   if (status === 409) {
-    return 'An account with these details already exists.';
+    return "An account with these details already exists.";
   }
 
   if (status === 429) {
-    return 'Too many signup attempts. Please wait a moment and try again.';
+    return "Too many signup attempts. Please wait a moment and try again.";
   }
 
   if (status && status >= 500) {
-    return 'Server is busy right now. Please try again shortly.';
+    return "Server is busy right now. Please try again shortly.";
   }
 
-  return 'We could not complete signup right now. Please try again.';
+  return "We could not complete signup right now. Please try again.";
 };
 
-type UserIdentityResponse = {
-  keycloak_id?: string;
-  user_id?: number;
-  username?: string;
-  email?: string;
-};
-
-
-/** 
- * Auth Api 
+/**
+ * Auth Api
  * */
 function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   const request = action.payload;
@@ -159,9 +245,11 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   let loginResponse: LoginResponseWithIdentity;
 
   try {
-    loginResponse = ((yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<LoginResponseWithIdentity>).data as LoginResponseWithIdentity;
+    loginResponse = (
+      (yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<LoginResponseWithIdentity>
+    ).data as LoginResponseWithIdentity;
   } catch (error) {
-    console.error('Login failed:', error);
+    console.error("Login failed:", error);
 
     const status = getHttpStatus(error);
     const apiMessage = getApiMessage(error);
@@ -170,11 +258,11 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     if (!friendlyMessage) {
       // Map technical auth failures to user-facing messages.
       if (status === 400 || status === 401) {
-        friendlyMessage = 'Incorrect login details. Please check and try again.';
+        friendlyMessage = "Incorrect login details. Please check and try again.";
       } else if (status === 429) {
-        friendlyMessage = 'Too many attempts. Please wait a moment and try again.';
+        friendlyMessage = "Too many attempts. Please wait a moment and try again.";
       } else {
-        friendlyMessage = 'Unable to sign in right now. Please try again.';
+        friendlyMessage = "Unable to sign in right now. Please try again.";
       }
     }
 
@@ -190,7 +278,7 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   // A successful login response should always route the user to home.
   // Any post-login sync/storage failures are treated as best-effort warnings.
   try {
-    axios.defaults.headers.common['Authorization'] = accessToken ? `Bearer ${accessToken}` : "";
+    axios.defaults.headers.common["Authorization"] = accessToken ? `Bearer ${accessToken}` : "";
     yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveAccessToken], accessToken);
 
     if (refreshToken) {
@@ -198,78 +286,90 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     } else {
       TOKEN_REFRESH_SERVICE.stopRefreshingToken();
     }
-    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage], refreshToken);
+    yield call(
+      [TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage],
+      refreshToken,
+    );
 
     // Never fail a successful auth response because local sync/lookup is delayed.
     let resolvedKeycloakId = loginResponse.keycloak_id ?? "";
-    let resolvedUserDbId = typeof loginResponse.user_id === 'number' ? loginResponse.user_id : -1;
+    let resolvedUserDbId = typeof loginResponse.user_id === "number" ? loginResponse.user_id : -1;
 
     // Ensure local DB user exists for protected endpoints that depend on backend user rows.
     try {
-      const syncResponse = ((yield call(axios.post, '/api/auth/sync_user', {
-        username: request.username,
-      })) as AxiosResponse<UserIdentityResponse>).data as UserIdentityResponse;
+      const syncResponse = (yield call(syncUser, request.username)) as UserIdentityResponse;
 
       if (syncResponse?.keycloak_id) {
         resolvedKeycloakId = syncResponse.keycloak_id;
       }
 
-      if (typeof syncResponse?.user_id === 'number') {
+      if (typeof syncResponse?.user_id === "number") {
         resolvedUserDbId = syncResponse.user_id;
       }
     } catch (syncError) {
-      console.warn('sync_user failed, falling back to profile lookup', syncError);
+      console.warn("sync_user failed, falling back to profile lookup", syncError);
     }
 
     if (!resolvedKeycloakId) {
       try {
-        const identityResponse = ((yield call(
-          ProfileApiFactory().postGetUserKeycloakId
-        )) as AxiosResponse<UserIdentityResponse>).data as UserIdentityResponse;
+        const identityResponse = (
+          (yield call(
+            ProfileApiFactory().postGetUserKeycloakId,
+          )) as AxiosResponse<UserIdentityResponse>
+        ).data as UserIdentityResponse;
 
         if (identityResponse?.keycloak_id) {
           resolvedKeycloakId = identityResponse.keycloak_id;
         }
 
-        if (typeof identityResponse?.user_id === 'number') {
+        if (typeof identityResponse?.user_id === "number") {
           resolvedUserDbId = identityResponse.user_id;
         }
       } catch (identityError) {
-        console.warn('profile identity lookup failed after login', identityError);
+        console.warn("profile identity lookup failed after login", identityError);
       }
     }
 
     if (!resolvedKeycloakId) {
-      console.warn('login succeeded but keycloak_id is unavailable; continuing to logged-in state');
+      console.warn("login succeeded but keycloak_id is unavailable; continuing to logged-in state");
     }
 
-    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage], resolvedKeycloakId);
-    yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage], resolvedUserDbId);
+    yield call(
+      [TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveUserIdToLocalStorage],
+      resolvedKeycloakId,
+    );
+    yield call(
+      [TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveUserDBIDToLocalStorage],
+      resolvedUserDbId,
+    );
     yield put(setUserId(resolvedKeycloakId));
     yield put(setUserDBID(resolvedUserDbId));
     yield put(setName(request.username));
     yield put(setPassword(request.password));
   } catch (postLoginError) {
-    console.warn('post-login setup failed; continuing to logged-in state', postLoginError);
+    console.warn("post-login setup failed; continuing to logged-in state", postLoginError);
   }
 
-  yield put(setErrorMessage(''));
+  yield put(setErrorMessage(""));
   yield put(setLoginStateAction(LoginState.LOGGED_IN));
   yield put(activateLoadingScreen(false));
 }
 
-function* refreshFromLocalStorage(action: PayloadAction<void>){
+function* refreshFromLocalStorage(action: PayloadAction<void>) {
   try {
-    const refreshToken = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage]))) as string | null;
+    const refreshToken = (yield call([
+      TOKEN_REFRESH_SERVICE,
+      TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage,
+    ])) as string | null;
     const normalizedRefreshToken = (refreshToken || "").trim();
 
-    if(!normalizedRefreshToken) {
-      yield put(setErrorMessage(''));
+    if (!normalizedRefreshToken) {
+      yield put(setErrorMessage(""));
       yield put(setLoginStateAction(LoginState.LOGGED_OUT));
       return;
     }
 
-    try{
+    try {
       // Enforce a hard timeout so bootstrap can never keep the app in LOADING forever.
       const refreshResult: {
         refreshedResponse?: AxiosResponse<TokenResponse>;
@@ -277,8 +377,8 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       } = yield race({
         refreshedResponse: call(
           AuthApiFactory().postRefreshToken,
-          {refresh_token: normalizedRefreshToken},
-          { timeout: 10000 }
+          { refresh_token: normalizedRefreshToken },
+          { timeout: 10000 },
         ),
         timedOut: delay(12000),
       });
@@ -287,7 +387,7 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
         throw new Error("AUTH_BOOTSTRAP_TIMEOUT");
       }
 
-      const refreshResponse = (refreshResult.refreshedResponse.data as TokenResponse);
+      const refreshResponse = refreshResult.refreshedResponse.data as TokenResponse;
       const refreshedAccessToken = refreshResponse.access_token ?? "";
       const refreshedRefreshToken = refreshResponse.refresh_token ?? "";
 
@@ -296,8 +396,13 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
         throw new Error("AUTH_TOKENS_MISSING");
       }
 
-      axios.defaults.headers.common['Authorization'] = refreshedAccessToken ? `Bearer ${refreshedAccessToken}` : "";
-      yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveAccessToken], refreshedAccessToken);
+      axios.defaults.headers.common["Authorization"] = refreshedAccessToken
+        ? `Bearer ${refreshedAccessToken}`
+        : "";
+      yield call(
+        [TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveAccessToken],
+        refreshedAccessToken,
+      );
 
       if (refreshedRefreshToken) {
         TOKEN_REFRESH_SERVICE.startRefreshingToken(refreshedRefreshToken);
@@ -305,17 +410,26 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
         TOKEN_REFRESH_SERVICE.stopRefreshingToken();
       }
 
-      yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage], refreshedRefreshToken);
+      yield call(
+        [TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.saveRefreshTokenToLocalStorage],
+        refreshedRefreshToken,
+      );
 
-      const storedUserId = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage]))) as string | null;
-      const storedUserDbId = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage]))) as string | null;
+      const storedUserId = (yield call([
+        TOKEN_REFRESH_SERVICE,
+        TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage,
+      ])) as string | null;
+      const storedUserDbId = (yield call([
+        TOKEN_REFRESH_SERVICE,
+        TOKEN_REFRESH_SERVICE.loadUserDBIDFromLocalStorage,
+      ])) as string | null;
 
       if (!storedUserId) {
         yield put(setLoginStateAction(LoginState.LOGGED_OUT));
         try {
           yield call(clearPersistedAuthState);
         } catch (cleanupError) {
-          console.warn('auth cleanup failed after missing stored user id', cleanupError);
+          console.warn("auth cleanup failed after missing stored user id", cleanupError);
         }
         return;
       }
@@ -323,7 +437,7 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       yield put(setUserId(storedUserId));
       yield put(setUserDBID(storedUserDbId ? Number(storedUserDbId) : -1));
 
-      let userId: string = yield appSelect(state => state.user.id);
+      let userId: string = yield appSelect((state) => state.user.id);
 
       // Profile fetch is best-effort during bootstrap; do not block login routing if slow.
       const profileResult: {
@@ -337,31 +451,34 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       if (profileResult.profileResponse?.data) {
         const profile = profileResult.profileResponse.data as UserProfile;
         yield put(setName(profile.username));
-        yield put(storeUserDataAction({id: userId, profile: profile}));
+        yield put(storeUserDataAction({ id: userId, profile: profile }));
       }
 
-      yield put(setErrorMessage(''));
+      yield put(setErrorMessage(""));
       yield put(setLoginStateAction(LoginState.LOGGED_IN));
-    }catch (error){
-      console.log(error)
+    } catch (error) {
+      console.log(error);
 
       const status = getHttpStatus(error);
       const apiMessage = getApiMessage(error);
       const isTimeoutError = error instanceof Error && error.message === "AUTH_BOOTSTRAP_TIMEOUT";
-      const isMissingTokensError = error instanceof Error && error.message === "AUTH_TOKENS_MISSING";
+      const isMissingTokensError =
+        error instanceof Error && error.message === "AUTH_TOKENS_MISSING";
 
       if (isTimeoutError) {
-        yield put(setErrorMessage('Connection took too long. Please sign in again.'));
+        yield put(setErrorMessage("Connection took too long. Please sign in again."));
       } else if (isMissingTokensError) {
-        yield put(setErrorMessage('Session refresh failed. Please sign in again.'));
+        yield put(setErrorMessage("Session refresh failed. Please sign in again."));
       } else if (status === 400 || status === 401) {
-        yield put(setErrorMessage(apiMessage || 'Your session expired. Please sign in again.'));
+        yield put(setErrorMessage(apiMessage || "Your session expired. Please sign in again."));
       } else if (status && status >= 500) {
-        yield put(setErrorMessage('Server is busy right now. Please try again shortly.'));
+        yield put(setErrorMessage("Server is busy right now. Please try again shortly."));
       } else if (apiMessage) {
         yield put(setErrorMessage(apiMessage));
       } else {
-        yield put(setErrorMessage('We could not reconnect automatically. Please sign in to continue.'));
+        yield put(
+          setErrorMessage("We could not reconnect automatically. Please sign in to continue."),
+        );
       }
 
       // Route first, then cleanup as best-effort so UI cannot get stuck in LOADING.
@@ -369,12 +486,12 @@ function* refreshFromLocalStorage(action: PayloadAction<void>){
       try {
         yield call(clearPersistedAuthState);
       } catch (cleanupError) {
-        console.warn('auth cleanup failed after refresh error', cleanupError);
+        console.warn("auth cleanup failed after refresh error", cleanupError);
       }
     }
   } catch (storageError) {
-    console.warn('failed to load stored auth tokens', storageError);
-    yield put(setErrorMessage('We could not read your session. Please sign in again.'));
+    console.warn("failed to load stored auth tokens", storageError);
+    yield put(setErrorMessage("We could not read your session. Please sign in again."));
     yield put(setLoginStateAction(LoginState.LOGGED_OUT));
   }
 }
@@ -385,13 +502,15 @@ function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
   // Keep UI actions disabled while signup request is in progress.
   yield put(setSignupSubmitting(true));
 
-  try{
-    const signupResponse = ((yield call(AuthApiFactory().postSignup, request)) as AxiosResponse<SignupResponse>).data as SignupResponse;
+  try {
+    const signupResponse = (
+      (yield call(AuthApiFactory().postSignup, request)) as AxiosResponse<SignupResponse>
+    ).data as SignupResponse;
 
     // Keep provider response message so success screen can show meaningful text.
     yield put(setSignupMessage(signupResponse.message ?? ""));
-  }catch (error) {
-    console.error('Sign up failed', error);
+  } catch (error) {
+    console.error("Sign up failed", error);
 
     const status = getHttpStatus(error);
     const apiMessage = getApiMessage(error);
@@ -411,7 +530,7 @@ function* handleLogout(action: PayloadAction<string>) {
       yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
     }
   } catch (error) {
-    console.warn('Logout API call failed, continuing local logout cleanup', error);
+    console.warn("Logout API call failed, continuing local logout cleanup", error);
   }
 
   try {
@@ -419,16 +538,15 @@ function* handleLogout(action: PayloadAction<string>) {
     yield call(clearPersistedAuthState);
     yield put(changeTabAction({ type: TabType.HOME }));
     yield put(setLoginStateAction(LoginState.LOGGED_OUT));
-    yield put(setFeedDataAction({post: [], feedType: 'friends'}));
-    yield put(setFeedDataAction({post: [], feedType: 'all'}));
+    yield put(setFeedDataAction({ post: [], feedType: "friends" }));
+    yield put(setFeedDataAction({ post: [], feedType: "all" }));
     yield put(setEmailNotificationSettings([]));
     yield put(setProfileVisibilitySettings([]));
     yield put(setChatMessages([]));
     yield put(setFriendList([]));
     yield put(activateLoadingScreen(false));
-
   } catch (error) {
-    console.error('Logout Failed!', error);
+    console.error("Logout Failed!", error);
     yield put(activateLoadingScreen(false));
   }
 }
@@ -436,71 +554,86 @@ function* handleLogout(action: PayloadAction<string>) {
 function* handlePasswordChange(action: PayloadAction<ChangePasswordRequest>) {
   let request = action.payload;
 
-  try{
+  try {
     yield call(AuthApiFactory().postChangePassword, request);
-    yield put(setMessage('Password change successful!'));
+    yield put(setMessage("Password change successful!"));
     yield put(setPassword(request.new_password));
-    
-  }catch (error) {
-    console.error('password change failed', error);
-    
+  } catch (error) {
+    console.error("password change failed", error);
   }
 }
 
 function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
-  const refreshToken = ((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage]))) as string;
-  try{
-    yield call(AuthApiFactory().deleteDeleteAccount, action.payload);
-    yield put(logoutAction(refreshToken || ''));
-  }
-  catch (error) {
-    console.error('Delete action failed', error);
-  }
-}
-
-
-
-/** 
- * BlogPost Api 
- * */
-function* handleGetBlogPost(action: PayloadAction<{searchquery?: string, perPage?: number, currentPage?: number}>){
+  const refreshToken = (yield call([
+    TOKEN_REFRESH_SERVICE,
+    TOKEN_REFRESH_SERVICE.loadRefreshTokenFromLocalStorage,
+  ])) as string;
   try {
-    const response = ((yield call(BlogApiFactory().getBlogPosts, action.payload.searchquery ?? undefined,
-                    action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined 
-                  ))  as AxiosResponse<BlogPostList>).data as BlogPostList;
-    yield put(setBlogPosts({blogs: response}));
+    yield call(AuthApiFactory().deleteDeleteAccount, action.payload);
+    yield put(logoutAction(refreshToken || ""));
+  } catch (error) {
+    console.error("Delete action failed", error);
   }
-  catch (error) {
-    console.error('failed to fetch blog posts', error);  
-  }
-  
 }
 
-function* handleGetOneBlogPost(action: PayloadAction<{blogId: number}>){  
-  try { 
-    const blog = ((yield call(BlogApiFactory().getGetSingleBlog, action.payload.blogId))  as AxiosResponse<BlogPostModel>).data as BlogPostModel;  
-    yield put(setOneBlogPost(blog));   
-    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_BLOG, data: blog}));
-  } catch (error) { 
-    console.error('failed to fetch blog post', error);
-  } 
-}
-
-
-/** 
- * Chat Api 
+/**
+ * BlogPost Api
  * */
-function* handleGetMessages(action: PayloadAction<string>){
-  const messages = ((yield call(ChatApiFactory().getGetMessages, action.payload, {})) as AxiosResponse<GetMessagesResponse>).data as GetMessagesResponse;
+function* handleGetBlogPost(
+  action: PayloadAction<{ searchquery?: string; perPage?: number; currentPage?: number }>,
+) {
+  try {
+    const response = (
+      (yield call(
+        BlogApiFactory().getBlogPosts,
+        action.payload.searchquery ?? undefined,
+        action.payload.perPage ?? undefined,
+        action.payload.currentPage ?? undefined,
+      )) as AxiosResponse<BlogPostList>
+    ).data as BlogPostList;
+    yield put(setBlogPosts({ blogs: response }));
+  } catch (error) {
+    console.error("failed to fetch blog posts", error);
+  }
+}
+
+function* handleGetOneBlogPost(action: PayloadAction<{ blogId: number }>) {
+  try {
+    const blog = (
+      (yield call(
+        BlogApiFactory().getGetSingleBlog,
+        action.payload.blogId,
+      )) as AxiosResponse<BlogPostModel>
+    ).data as BlogPostModel;
+    yield put(setOneBlogPost(blog));
+    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_BLOG, data: blog }));
+  } catch (error) {
+    console.error("failed to fetch blog post", error);
+  }
+}
+
+/**
+ * Chat Api
+ * */
+function* handleGetMessages(action: PayloadAction<string>) {
+  const messages = (
+    (yield call(
+      ChatApiFactory().getGetMessages,
+      action.payload,
+      {},
+    )) as AxiosResponse<GetMessagesResponse>
+  ).data as GetMessagesResponse;
   yield put(setChatMessages(messages.messages ?? []));
 }
 
-function* handlePostSendMessage(action: PayloadAction<{
-  id: string,
-  message: string,
-  mediaFiles?: Array<{ uri: string; type: string; name?: string }>,
-}>) {
-  try{
+function* handlePostSendMessage(
+  action: PayloadAction<{
+    id: string;
+    message: string;
+    mediaFiles?: Array<{ uri: string; type: string; name?: string }>;
+  }>,
+) {
+  try {
     yield put(sendChatMessageStarted());
     // Keep payload aligned with backend parser: repeated "media" files.
     const normalizedMedia = (action.payload.mediaFiles ?? [])
@@ -509,7 +642,7 @@ function* handlePostSendMessage(action: PayloadAction<{
         if (file.uri.startsWith("data:")) {
           return dataURLtoFile(
             file.uri,
-            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg")
+            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"),
           ) as any;
         }
 
@@ -520,7 +653,6 @@ function* handlePostSendMessage(action: PayloadAction<{
         } as any;
       });
 
-    
     yield call(
       ChatApiFactory().postSendMessage,
       action.payload.id,
@@ -528,74 +660,88 @@ function* handlePostSendMessage(action: PayloadAction<{
       normalizedMedia.length ? (normalizedMedia as any) : undefined,
       {
         timeout: 60000, // Enforce a timeout since media uploads can fail silently on mobile networks; this ensures we can show an error and re-enable the UI.
-      }
+      },
     );
 
     yield put(fetchChatMessages(action.payload.id));
     yield put(setUploadedMediaId([]));
     yield put(sendChatMessageSucceeded());
-  }catch (error) {
-    console.error('failed to send message', error);  
+  } catch (error) {
+    console.error("failed to send message", error);
     if (axios.isAxiosError(error) && !error.response) {
-      console.error('chat send network details', {
+      console.error("chat send network details", {
         baseURL: axios.defaults.baseURL,
-        url: 'ChatApiFactory.postSendMessage',
+        url: "ChatApiFactory.postSendMessage",
         message: error.message,
       });
     }
-    yield put(sendChatMessageFailed('Unable to send your message right now. Please try again.'));
+    yield put(sendChatMessageFailed("Unable to send your message right now. Please try again."));
   }
 }
 
-function* updateChatOpened(action: PayloadAction<string>){
-  try{
-    const response = ((yield call(ChatApiFactory().putMarkChatOpened, action.payload)) as AxiosResponse<MarkChatOpenedResponse>).data as MarkChatOpenedResponse;
+function* updateChatOpened(action: PayloadAction<string>) {
+  try {
+    const response = (
+      (yield call(
+        ChatApiFactory().putMarkChatOpened,
+        action.payload,
+      )) as AxiosResponse<MarkChatOpenedResponse>
+    ).data as MarkChatOpenedResponse;
     //console.log(response.message);
   } catch (error) {
-    console.error('failed to mark chat opened', error);  
+    console.error("failed to mark chat opened", error);
   }
-  
 }
 
-function* handleGetFriendList(action: PayloadAction<string>){
-  const currentUserId = (action.payload ?? '').trim();
+function* handleGetFriendList(action: PayloadAction<string>) {
+  const currentUserId = (action.payload ?? "").trim();
   if (!currentUserId) {
     yield put(setFriendList([]));
     return;
   }
 
   try {
-    const friends = ((yield call(ChatApiFactory().getGetFriends, currentUserId, {'keycloak_id': currentUserId})) as AxiosResponse<GetFriendsResponse>).data as GetFriendsResponse;
+    const friends = (
+      (yield call(ChatApiFactory().getGetFriends, currentUserId, {
+        keycloak_id: currentUserId,
+      })) as AxiosResponse<GetFriendsResponse>
+    ).data as GetFriendsResponse;
     yield put(setFriendList(friends.friends ?? []));
   } catch (error) {
-    console.error('failed to fetch friends list', error);
+    console.error("failed to fetch friends list", error);
     yield put(setFriendList([]));
   }
 }
 
-
-/** 
- * Chatbot (Microservice) Api 
+/**
+ * Chatbot (Microservice) Api
  * */
-function* handleSendChatbotMessage(action: PayloadAction<{prompt: string}>){
-  const abortController = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
-  try{
-    const streamChannel = eventChannel<{ type: 'delta' | 'error' | 'done'; text?: string; sources?: string[]; error?: unknown }>((emit) => {
-      chatbotApiFactory.askQuestionStream(
-        { question: action.payload.prompt },
-        (partialAnswer) => {
-          emit({ type: 'delta', text: partialAnswer });
-        },
-        { signal: abortController?.signal }
-      )
-      .then((result) => {
-        emit({ type: 'done', sources: result.sources });
-        emit(END);
-      })
-      .catch((streamError) => {
-        emit({ type: 'error', error: streamError });
-        emit(END);
-      });
+function* handleSendChatbotMessage(action: PayloadAction<{ prompt: string }>) {
+  const abortController =
+    typeof AbortController !== "undefined" ? new AbortController() : undefined;
+  try {
+    const streamChannel = eventChannel<{
+      type: "delta" | "error" | "done";
+      text?: string;
+      sources?: string[];
+      error?: unknown;
+    }>((emit) => {
+      chatbotApiFactory
+        .askQuestionStream(
+          { question: action.payload.prompt },
+          (partialAnswer) => {
+            emit({ type: "delta", text: partialAnswer });
+          },
+          { signal: abortController?.signal },
+        )
+        .then((result) => {
+          emit({ type: "done", sources: result.sources });
+          emit(END);
+        })
+        .catch((streamError) => {
+          emit({ type: "error", error: streamError });
+          emit(END);
+        });
 
       return () => {
         abortController?.abort();
@@ -604,31 +750,44 @@ function* handleSendChatbotMessage(action: PayloadAction<{prompt: string}>){
 
     try {
       while (true) {
-        const streamEvent: { type: 'delta' | 'error' | 'done'; text?: string; sources?: string[]; error?: unknown } = yield take(streamChannel);
+        const streamEvent: {
+          type: "delta" | "error" | "done";
+          text?: string;
+          sources?: string[];
+          error?: unknown;
+        } = yield take(streamChannel);
 
-        if (streamEvent.type === 'delta') {
-          yield put(setChatbotResponse({
-            response: String(streamEvent.text ?? ''),
-            user_id: '',
-            session_id: '',
-            sources: '',
-          } as ChatbotApiResponse));
+        if (streamEvent.type === "delta") {
+          yield put(
+            setChatbotResponse({
+              response: String(streamEvent.text ?? ""),
+              user_id: "",
+              session_id: "",
+              sources: "",
+            } as ChatbotApiResponse),
+          );
           continue;
         }
 
-        if (streamEvent.type === 'error') {
+        if (streamEvent.type === "error") {
           throw streamEvent.error;
         }
 
-        if (streamEvent.type === 'done') {
-          const sourceText = Array.isArray(streamEvent.sources) ? streamEvent.sources.join(', ') : '';
-          const currentResponse = String((yield appSelect(state => state.chat.chatbotResponse.response)) ?? '');
-          yield put(setChatbotResponse({
-            response: currentResponse,
-            user_id: '',
-            session_id: '',
-            sources: sourceText,
-          } as ChatbotApiResponse));
+        if (streamEvent.type === "done") {
+          const sourceText = Array.isArray(streamEvent.sources)
+            ? streamEvent.sources.join(", ")
+            : "";
+          const currentResponse = String(
+            (yield appSelect((state) => state.chat.chatbotResponse.response)) ?? "",
+          );
+          yield put(
+            setChatbotResponse({
+              response: currentResponse,
+              user_id: "",
+              session_id: "",
+              sources: sourceText,
+            } as ChatbotApiResponse),
+          );
         }
 
         break;
@@ -636,147 +795,210 @@ function* handleSendChatbotMessage(action: PayloadAction<{prompt: string}>){
     } finally {
       streamChannel.close();
     }
-  }catch (error) {
+  } catch (error) {
     if (isStreamAbortError(error)) {
       return;
     }
 
-    console.error('failed to send chatbot response', error);
+    console.error("failed to send chatbot response", error);
 
     const status = getHttpStatus(error);
     const apiMessage = getApiMessage(error);
-    const fallbackMessage = status === 401
-      ? 'Your session has expired. Please sign in again to continue chatting.'
-      : (apiMessage || 'Sorry, I could not get a response right now. Please try again.');
+    const fallbackMessage =
+      status === 401
+        ? "Your session has expired. Please sign in again to continue chatting."
+        : apiMessage || "Sorry, I could not get a response right now. Please try again.";
 
-    yield put(setChatbotResponse({
-      response: fallbackMessage,
-      user_id: '',
-      session_id: '',
-      sources: '',
-    } as ChatbotApiResponse));
+    yield put(
+      setChatbotResponse({
+        response: fallbackMessage,
+        user_id: "",
+        session_id: "",
+        sources: "",
+      } as ChatbotApiResponse),
+    );
   }
 }
 
-
-/** 
- * Events Api 
+/**
+ * Events Api
  * */
-function* handleGetEventsList(action: PayloadAction<{endDate?: string, startDate?: string, perPage?: number, currentPage?: number}>){
+function* handleGetEventsList(
+  action: PayloadAction<{
+    endDate?: string;
+    startDate?: string;
+    perPage?: number;
+    currentPage?: number;
+  }>,
+) {
   try {
-    const response = ((yield call(EventsApiFactory().getEventList, action.payload.endDate ?? undefined,
-          action.payload.startDate ?? undefined, action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined 
-    ))  as AxiosResponse<EventListResponse>).data as EventListResponse;
+    const response = (
+      (yield call(
+        EventsApiFactory().getEventList,
+        action.payload.endDate ?? undefined,
+        action.payload.startDate ?? undefined,
+        action.payload.perPage ?? undefined,
+        action.payload.currentPage ?? undefined,
+      )) as AxiosResponse<EventListResponse>
+    ).data as EventListResponse;
 
-    yield put(setAllEvents({events: response}));
+    yield put(setAllEvents({ events: response }));
+  } catch (error) {
+    console.error("failed to fetch Events", error);
   }
-  catch (error) {
-    console.error('failed to fetch Events', error);  
-  } 
 }
 
-function* handleGetOneEvent(action: PayloadAction<{eventId: number}>){  
-  try { 
-    const response = ((yield call(EventsApiFactory().getEventInfo, {event_ids: [action.payload.eventId], page: 1, per_page: 10}))  as AxiosResponse<EventInfoResponse>).data as EventInfoResponse;  
+function* handleGetOneEvent(action: PayloadAction<{ eventId: number }>) {
+  try {
+    const response = (
+      (yield call(EventsApiFactory().getEventInfo, {
+        event_ids: [action.payload.eventId],
+        page: 1,
+        per_page: 10,
+      })) as AxiosResponse<EventInfoResponse>
+    ).data as EventInfoResponse;
     yield put(setOneEvent(response.event_infos?.[0] ?? undefined));
-    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_EVENT, data: response.event_infos?.[0]}));
-
-  } catch (error) { 
-    console.error('failed to fetch Event', error);
+    yield put(
+      openTabOnTopAction({ type: TabType.INDIVIDUAL_EVENT, data: response.event_infos?.[0] }),
+    );
+  } catch (error) {
+    console.error("failed to fetch Event", error);
   }
 }
 
-function* handleGetAttendingEvents(action: PayloadAction<{queryType: string , endDate?: string, startDate?: string, perPage?: number, currentPage?: number}>){
+function* handleGetAttendingEvents(
+  action: PayloadAction<{
+    queryType: string;
+    endDate?: string;
+    startDate?: string;
+    perPage?: number;
+    currentPage?: number;
+  }>,
+) {
   try {
-    const response = ((yield call(EventsApiFactory().getAttendingEvents, action.payload.endDate ?? undefined,
-          action.payload.startDate ?? undefined,
-          action.payload.perPage ?? undefined, 
-          action.payload.currentPage ?? undefined, 
-          action.payload.queryType ?? 'all' 
-    ))  as AxiosResponse<EventListResponse>).data as EventListResponse;
+    const response = (
+      (yield call(
+        EventsApiFactory().getAttendingEvents,
+        action.payload.endDate ?? undefined,
+        action.payload.startDate ?? undefined,
+        action.payload.perPage ?? undefined,
+        action.payload.currentPage ?? undefined,
+        action.payload.queryType ?? "all",
+      )) as AxiosResponse<EventListResponse>
+    ).data as EventListResponse;
 
-    yield put(setUserEvents({events: response}));
-  }
-  catch (error) {
-    console.error('failed to fetch Events', error);  
+    yield put(setUserEvents({ events: response }));
+  } catch (error) {
+    console.error("failed to fetch Events", error);
   }
 }
 
-function* handleAddAttendeeToEvent(action: PayloadAction<{eventId: number}>){ 
+function* handleAddAttendeeToEvent(action: PayloadAction<{ eventId: number }>) {
   try {
-    yield call(EventsApiFactory().postEventAttendees,{user_id: undefined, event_id: action.payload.eventId});
+    yield call(EventsApiFactory().postEventAttendees, {
+      user_id: undefined,
+      event_id: action.payload.eventId,
+    });
     yield put(fetchAllEvents({}));
-    yield put(fetchUserEvents({queryType: 'attending'}));
+    yield put(fetchUserEvents({ queryType: "attending" }));
+  } catch (error) {
+    console.error("failed to add attendee to event", error);
   }
-  catch (error) {
-    console.error('failed to add attendee to event', error);  
-  } 
 }
 
-function* handleRemoveAttendeeFromEvent(action: PayloadAction<{eventId: number}>){ 
+function* handleRemoveAttendeeFromEvent(action: PayloadAction<{ eventId: number }>) {
   try {
-    yield call(EventsApiFactory().deleteRemoveAttendee, {user_id: undefined, event_id: action.payload.eventId});
+    yield call(EventsApiFactory().deleteRemoveAttendee, {
+      user_id: undefined,
+      event_id: action.payload.eventId,
+    });
     yield put(fetchAllEvents({}));
-    yield put(fetchUserEvents({queryType: 'attending'}));
+    yield put(fetchUserEvents({ queryType: "attending" }));
+  } catch (error) {
+    console.error("failed to remove attendee from event", error);
   }
-  catch (error) {
-    console.error('failed to remove attendee from event', error);  
-  } 
-} 
+}
 
-function* handleFetchProfessionals(action: PayloadAction<{perPage?: number, currentPage?: number}>){
+function* handleFetchProfessionals(
+  action: PayloadAction<{ perPage?: number; currentPage?: number }>,
+) {
   try {
-    const response = ((yield call(EventsApiFactory().getGetProfessionals, action.payload.perPage ?? undefined, 
-    action.payload.currentPage ?? undefined ))  as AxiosResponse<ProfessionalsListResponse>).data as ProfessionalsListResponse;
+    const response = (
+      (yield call(
+        EventsApiFactory().getGetProfessionals,
+        action.payload.perPage ?? undefined,
+        action.payload.currentPage ?? undefined,
+      )) as AxiosResponse<ProfessionalsListResponse>
+    ).data as ProfessionalsListResponse;
     const pagination = (response.pagination ?? {}) as {
       total_professionals?: number;
       page?: number;
       per_page?: number;
     };
 
-    yield put(setProfessionals({
-      items: response.professionals ?? [],
-      total: pagination.total_professionals ?? 0,
-      page: pagination.page ?? 1,
-      per_page: pagination.per_page ?? 20,
-    }));
-  } 
-  catch (error) {
-       console.error('failed to fetch professionals', error);  
-  } 
+    yield put(
+      setProfessionals({
+        items: response.professionals ?? [],
+        total: pagination.total_professionals ?? 0,
+        page: pagination.page ?? 1,
+        per_page: pagination.per_page ?? 20,
+      }),
+    );
+  } catch (error) {
+    console.error("failed to fetch professionals", error);
+  }
 }
 
-
-/** 
- * Feed Api 
+/**
+ * Feed Api
  * */
-function* updateFeed(action: PayloadAction<{feedType: string, perPage: number | undefined, page: number | undefined}>){
-  const response = ((yield call(FeedApiFactory().getFeed, action.payload.perPage, action.payload.page, action.payload.feedType)) as AxiosResponse<PostResponse>).data as PostResponse;
+function* updateFeed(
+  action: PayloadAction<{
+    feedType: string;
+    perPage: number | undefined;
+    page: number | undefined;
+  }>,
+) {
+  const response = (
+    (yield call(
+      FeedApiFactory().getFeed,
+      action.payload.perPage,
+      action.payload.page,
+      action.payload.feedType,
+    )) as AxiosResponse<PostResponse>
+  ).data as PostResponse;
   //console.log(action.payload.feedType)
   //console.log(response)
-  yield put(setFeedDataAction({post: response.posts ?? [], 
-    feedType: action.payload.feedType, pagination: response.pagination}));
+  yield put(
+    setFeedDataAction({
+      post: response.posts ?? [],
+      feedType: action.payload.feedType,
+      pagination: response.pagination,
+    }),
+  );
 }
 
-function* handleGetOnePost(action: PayloadAction<{postID: number}>){
+function* handleGetOnePost(action: PayloadAction<{ postID: number }>) {
   try {
-    const post = ((yield call(FeedApiFactory().getGetPost, action.payload.postID)) as AxiosResponse<Post>).data as Post;
+    const post = (
+      (yield call(FeedApiFactory().getGetPost, action.payload.postID)) as AxiosResponse<Post>
+    ).data as Post;
     //console.log(post)
     yield put(setDetailedPost(post));
-    yield put(retrievePostReactions({postId: action.payload.postID}));
-    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: post}));
-  } 
-  catch (error) {
-    console.error('failed to get one single Post', error)
+    yield put(retrievePostReactions({ postId: action.payload.postID }));
+    yield put(openTabOnTopAction({ type: TabType.INDIVIDUAL_POST, data: post }));
+  } catch (error) {
+    console.error("failed to get one single Post", error);
   }
-  
 }
 
-function* postNewPost(action: PayloadAction<{
-  content: string,
-  anonymous: boolean,
-  mediaFiles?: Array<{ uri: string; type: string; name?: string }>
-}>){
+function* postNewPost(
+  action: PayloadAction<{
+    content: string;
+    anonymous: boolean;
+    mediaFiles?: Array<{ uri: string; type: string; name?: string }>;
+  }>,
+) {
   try {
     const content = action.payload.content?.trim() ?? "";
     if (!content) {
@@ -791,7 +1013,7 @@ function* postNewPost(action: PayloadAction<{
         if (file.uri.startsWith("data:")) {
           return dataURLtoFile(
             file.uri,
-            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg")
+            file.name ?? (file.type.startsWith("video") ? "video.mp4" : "photo.jpg"),
           ) as any;
         }
 
@@ -806,163 +1028,215 @@ function* postNewPost(action: PayloadAction<{
       FeedApiFactory().postCreatePost,
       content,
       action.payload.anonymous ? "true" : "false",
-      normalizedMedia.length ? normalizedMedia : undefined
+      normalizedMedia.length ? normalizedMedia : undefined,
     );
-    
-    yield put(updatePostsForFeedAction({feedType: 'all'}));
-    yield put(updatePostsForFeedAction({feedType: 'friends'}));
+
+    yield put(updatePostsForFeedAction({ feedType: "all" }));
+    yield put(updatePostsForFeedAction({ feedType: "friends" }));
+  } catch (error) {
+    console.error("❌ Error creating post:", error);
   }
-  catch (error) {
-    console.error("❌ Error creating post:", error);  
-  }
-  
 }
 
-function* postNewComment(action: PayloadAction<{postId: number, content: string}>){
-  yield call(FeedApiFactory().postAddComment, action.payload.postId,  {content: action.payload.content});
-  yield put(retrievePostReactions({postId: action.payload.postId}));
-  yield put(updatePostsForFeedAction({feedType: 'all'}));
-  yield put(updatePostsForFeedAction({feedType: 'friends'}));
+function* postNewComment(action: PayloadAction<{ postId: number; content: string }>) {
+  yield call(FeedApiFactory().postAddComment, action.payload.postId, {
+    content: action.payload.content,
+  });
+  yield put(retrievePostReactions({ postId: action.payload.postId }));
+  yield put(updatePostsForFeedAction({ feedType: "all" }));
+  yield put(updatePostsForFeedAction({ feedType: "friends" }));
 }
 
-function* handleGetFollowing(action: PayloadAction<void>){
-  let userId = (((yield call([TOKEN_REFRESH_SERVICE, TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage]))) as string);
-  const users = ((yield call(FeedApiFactory().getGetFollowing, userId, {})) as AxiosResponse<GetFollowingResponse>).data as GetFollowingResponse;
+function* handleGetFollowing(action: PayloadAction<void>) {
+  let userId = (yield call([
+    TOKEN_REFRESH_SERVICE,
+    TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage,
+  ])) as string;
+  const users = (
+    (yield call(
+      FeedApiFactory().getGetFollowing,
+      userId,
+      {},
+    )) as AxiosResponse<GetFollowingResponse>
+  ).data as GetFollowingResponse;
   yield put(setFollowing(users.following ?? []));
 }
 
-function* handlePostFollowUser(action: PayloadAction<{keycloakId: string, action: string, type: string}>) {
-  try{
-    yield call(FeedApiFactory().postFollowUser, action.payload.keycloakId, 
-    {action: action.payload.action, follow_type: action.payload.type});
+function* handlePostFollowUser(
+  action: PayloadAction<{ keycloakId: string; action: string; type: string }>,
+) {
+  try {
+    yield call(FeedApiFactory().postFollowUser, action.payload.keycloakId, {
+      action: action.payload.action,
+      follow_type: action.payload.type,
+    });
     yield put(fetchFollowedUsers());
-  }catch (error) {
-    console.error('password change failed', error);   
+  } catch (error) {
+    console.error("password change failed", error);
   }
 }
 
-function* handleLikePost(action: PayloadAction<{postId: number}>){
-  yield call(FeedApiFactory().postLikePost, action.payload.postId,  {post_id: action.payload.postId});
+function* handleLikePost(action: PayloadAction<{ postId: number }>) {
+  yield call(FeedApiFactory().postLikePost, action.payload.postId, {
+    post_id: action.payload.postId,
+  });
 }
- 
-function* handleReactionToPost(action: PayloadAction<{postId: number, reactionType: string}>){
-  const response = ((yield call(FeedApiFactory().postReactToPost, action.payload.postId, {reaction_type: action.payload.reactionType})) as AxiosResponse<ReactToPostResponse>).data as ReactToPostResponse;
-  if (response?.message?.includes('Removed') || response?.message?.includes('Added')) {
-     yield put(postLikePost({postId: action.payload.postId})); 
+
+function* handleReactionToPost(action: PayloadAction<{ postId: number; reactionType: string }>) {
+  const response = (
+    (yield call(FeedApiFactory().postReactToPost, action.payload.postId, {
+      reaction_type: action.payload.reactionType,
+    })) as AxiosResponse<ReactToPostResponse>
+  ).data as ReactToPostResponse;
+  if (response?.message?.includes("Removed") || response?.message?.includes("Added")) {
+    yield put(postLikePost({ postId: action.payload.postId }));
   }
-  yield put(retrievePostReactions({postId: action.payload.postId}));
-  yield put(updatePostsForFeedAction({feedType: 'all'}));
-  yield put(updatePostsForFeedAction({feedType: 'friends'}));
-  
+  yield put(retrievePostReactions({ postId: action.payload.postId }));
+  yield put(updatePostsForFeedAction({ feedType: "all" }));
+  yield put(updatePostsForFeedAction({ feedType: "friends" }));
 }
 
-
-function* fetchPostReactions (action: PayloadAction<{postId: number}>){
-  const comments = ((yield call(FeedApiFactory().getGetComments, action.payload.postId)) as AxiosResponse<GetCommentResponse>).data as GetCommentResponse;
-  const reactions = ((yield call(FeedApiFactory().getGetReactions , action.payload.postId)) as AxiosResponse<GetReactionsResponse>).data as GetReactionsResponse;
+function* fetchPostReactions(action: PayloadAction<{ postId: number }>) {
+  const comments = (
+    (yield call(
+      FeedApiFactory().getGetComments,
+      action.payload.postId,
+    )) as AxiosResponse<GetCommentResponse>
+  ).data as GetCommentResponse;
+  const reactions = (
+    (yield call(
+      FeedApiFactory().getGetReactions,
+      action.payload.postId,
+    )) as AxiosResponse<GetReactionsResponse>
+  ).data as GetReactionsResponse;
   yield put(setComments(comments.comments ?? []));
   yield put(setReactions(reactions.reactions ?? []));
 }
 
-/** 
- * Media Api 
+/**
+ * Media Api
  * */
-function* handleGetUserMediaItems(action: PayloadAction<number>){ 
-  const MediaItems = ((yield call(MediaApiFactory().getGetUserMedia, action.payload)) as AxiosResponse<MediaListResponse>).data as MediaListResponse;
+function* handleGetUserMediaItems(action: PayloadAction<number>) {
+  const MediaItems = (
+    (yield call(
+      MediaApiFactory().getGetUserMedia,
+      action.payload,
+    )) as AxiosResponse<MediaListResponse>
+  ).data as MediaListResponse;
   yield put(setMediaItems(MediaItems.media ?? []));
-}  
+}
 
-function* handleUploadMedia(action: PayloadAction<{requestBody: FormData, resolve?: (ids: string[]) => void, reject?: (error: unknown) => void}>){ 
+function* handleUploadMedia(
+  action: PayloadAction<{
+    requestBody: FormData;
+    resolve?: (ids: string[]) => void;
+    reject?: (error: unknown) => void;
+  }>,
+) {
   try {
-    const response = (yield call(MediaApiFactory().postUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{media_id: string}>;
+    const response = (yield call(MediaApiFactory().postUploadMedia, {
+      data: action.payload.requestBody,
+    })) as AxiosResponse<{ media_id: string }>;
     yield put(setUploadedMediaId([response.data.media_id]));
-    yield put({ type: "uploadMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
+    yield put({ type: "uploadMediaSuccess" }); // Notify Successful completion (required for creating new Post action)
 
     // Resolve promise - required for posting message when it contains media
     if (action.payload?.resolve) {
       action.payload.resolve([response.data.media_id]);
     }
-  }
-  catch (error) {
-    console.error('failed to upload media', error);
+  } catch (error) {
+    console.error("failed to upload media", error);
     yield put({ type: "uploadMediaFailure" });
     if (action.payload?.reject) {
       action.payload.reject(error);
     }
   }
-   
-} 
+}
 
-function* handleUploadBulkMedia(action: PayloadAction<{requestBody: FormData, resolve?: (ids: string[]) => void, reject?: (error: unknown) => void}>){
+function* handleUploadBulkMedia(
+  action: PayloadAction<{
+    requestBody: FormData;
+    resolve?: (ids: string[]) => void;
+    reject?: (error: unknown) => void;
+  }>,
+) {
   try {
-    const response = (yield call(MediaApiFactory().postBulkUploadMedia, {data: action.payload.requestBody} )) as AxiosResponse<{ids: string[]}>;
+    const response = (yield call(MediaApiFactory().postBulkUploadMedia, {
+      data: action.payload.requestBody,
+    })) as AxiosResponse<{ ids: string[] }>;
     yield put(setUploadedMediaId(response.data.ids));
-    yield put({ type: "uploadBulkMediaSuccess" });  // Notify Successful completion (required for creating new Post action)
+    yield put({ type: "uploadBulkMediaSuccess" }); // Notify Successful completion (required for creating new Post action)
 
     // Resolve promise - required for posting message when it contains media
-     if (action.payload?.resolve) {
+    if (action.payload?.resolve) {
       action.payload.resolve(response.data.ids);
     }
-  }
-  catch (error) {
-    console.error('failed to upload bulk media', error);
+  } catch (error) {
+    console.error("failed to upload bulk media", error);
     yield put({ type: "uploadBulkMediaFailure" });
     if (action.payload?.reject) {
       action.payload.reject(error);
     }
   }
-}  
+}
 
-/** 
- * Notification Api 
+/**
+ * Notification Api
  * */
-function* handleGetUserNotifications(action: PayloadAction<{perPage?: number, currentPage?: number}>){ 
+function* handleGetUserNotifications(
+  action: PayloadAction<{ perPage?: number; currentPage?: number }>,
+) {
   try {
-    const response = ((yield call(NotificationsApiFactory().getNotificationList, action.payload.perPage ?? undefined, action.payload.currentPage ?? undefined)) as AxiosResponse<NotificationListResponse>).data as NotificationListResponse;
+    const response = (
+      (yield call(
+        NotificationsApiFactory().getNotificationList,
+        action.payload.perPage ?? undefined,
+        action.payload.currentPage ?? undefined,
+      )) as AxiosResponse<NotificationListResponse>
+    ).data as NotificationListResponse;
     yield put(setUserNotification(response));
 
     // Keep follow-state current so "Requested" can flip to "Friend" (or clear after decline)
     // as soon as notifications are refreshed.
     yield put(fetchFollowedUsers());
-  }
-  catch (error){
-    console.error('failed to retrieve notification', (error))
+  } catch (error) {
+    console.error("failed to retrieve notification", error);
     yield put(setNotificationRequestFailed());
-  } 
-} 
+  }
+}
 
-function* updateNotificationOpened(action: PayloadAction<number>){
-  try{
+function* updateNotificationOpened(action: PayloadAction<number>) {
+  try {
     yield call(NotificationsApiFactory().postMarkNotificationRead, action.payload);
     yield put(fetchUserNotifications({}));
-    
   } catch (error) {
-    console.error('failed to update notification', error);  
+    console.error("failed to update notification", error);
   }
-  
 }
 
 function* handleGetFriendRequests(action: PayloadAction<void>) {
   try {
-    const response = (yield call(axios.get, '/api/feed/friend-requests')) as AxiosResponse<{requests: Array<{keycloak_id: string, username: string, image?: string}>}>;
-    yield put(setFriendRequests(response.data?.requests ?? []));
+    const response = (yield call(getFriendRequests)) as FriendRequestsResponse;
+    yield put(setFriendRequests(response.requests ?? []));
   } catch (error) {
-    console.error('failed to retrieve friend requests', error);
+    console.error("failed to retrieve friend requests", error);
     yield put(setFriendRequests([]));
   }
 }
 
-function* handleRespondFriendRequest(action: PayloadAction<{keycloakId: string, decision: 'accept' | 'decline'}>) {
+function* handleRespondFriendRequest(
+  action: PayloadAction<{ keycloakId: string; decision: "accept" | "decline" }>,
+) {
   try {
-    if (action.payload.decision === 'accept') {
+    if (action.payload.decision === "accept") {
       yield call(FeedApiFactory().postFollowUser, action.payload.keycloakId, {
-        action: 'follow',
-        follow_type: 'friend',
+        action: "follow",
+        follow_type: "friend",
       });
     } else {
-      yield call(axios.post, `/api/feed/follow/${action.payload.keycloakId}`, {
-        action: 'decline',
-        follow_type: 'friend',
+      yield call(FeedApiFactory().postFollowUser, action.payload.keycloakId, {
+        action: "decline",
+        follow_type: "friend",
       });
     }
 
@@ -970,67 +1244,81 @@ function* handleRespondFriendRequest(action: PayloadAction<{keycloakId: string, 
     yield put(fetchFriendRequests());
     yield put(fetchUserNotifications({ currentPage: 1, perPage: currentPerPage }));
     yield put(fetchFollowedUsers());
-    yield put(fetchFriendList((yield appSelect(state => state.user.id)) as string));
+    yield put(fetchFriendList((yield appSelect((state) => state.user.id)) as string));
   } catch (error) {
-    console.error('failed to respond to friend request', error);
+    console.error("failed to respond to friend request", error);
   }
 }
 
-function* handleGetNotificationPreferences(action: PayloadAction<void>){
-  try { 
-    const response = ((yield call(NotificationsApiFactory().getNotificationPreferencesResource)) as AxiosResponse<NotificationPreferences>);
-    yield put(setNotificationPreferences({
-      posts: !!response.data.posts,
-      likes: !!response.data.likes,
-      comments: !!response.data.comments,
-      events: !!response.data.events,
-      blogs: !!response.data.blogs,
-    }));
-  }
-  catch (error) {
-    console.error('failed to fetch notification preferences', error);  
+function* handleGetNotificationPreferences(action: PayloadAction<void>) {
+  try {
+    const response = (yield call(
+      NotificationsApiFactory().getNotificationPreferencesResource,
+    )) as AxiosResponse<NotificationPreferences>;
+    yield put(
+      setNotificationPreferences({
+        posts: !!response.data.posts,
+        likes: !!response.data.likes,
+        comments: !!response.data.comments,
+        events: !!response.data.events,
+        blogs: !!response.data.blogs,
+      }),
+    );
+  } catch (error) {
+    console.error("failed to fetch notification preferences", error);
   }
 }
 
-function* handleUpdateNotificationPreferences(action: PayloadAction<{preferences: NotificationPreferences}>) {
-  try{
-    yield call(NotificationsApiFactory().putNotificationPreferencesResource, action.payload.preferences);
-    yield put(setMessage('Notification Preferences Saved!'));
-  }catch (error) {
-    console.error('notification preferences setting failed', error);
+function* handleUpdateNotificationPreferences(
+  action: PayloadAction<{ preferences: NotificationPreferences }>,
+) {
+  try {
+    yield call(
+      NotificationsApiFactory().putNotificationPreferencesResource,
+      action.payload.preferences,
+    );
+    yield put(setMessage("Notification Preferences Saved!"));
+  } catch (error) {
+    console.error("notification preferences setting failed", error);
   }
-} 
+}
 
-/** 
- * Profile Api 
+/**
+ * Profile Api
  * */
 // worker Saga: will be fired on USER_FETCH_REQUESTED actions
 function* saveProfileInfoEffect(action: any) {
-  let userId: string = yield appSelect((state: { user: { id: any; }; }) => state.user.id);
-  let info: UserProfile = yield appSelect(state => state.profile.profiles[userId]);
+  let userId: string = yield appSelect((state: { user: { id: any } }) => state.user.id);
+  let info: UserProfile = yield appSelect((state) => state.profile.profiles[userId]);
   ProfileApiFactory()
     .putUpdateProfile(info)
     .catch((reason) => console.log("Failed to update user profile: " + reason));
 }
 
-function* fetchUserProfileData(action: PayloadAction<{id: string, isCurrentUser: boolean}> ){
-  let info: UserProfile = yield appSelect(state => state.profile.profiles[action.payload.id]);
+function* fetchUserProfileData(action: PayloadAction<{ id: string; isCurrentUser: boolean }>) {
+  let info: UserProfile = yield appSelect((state) => state.profile.profiles[action.payload.id]);
   yield put(setUserProfileState(action.payload.isCurrentUser));
-  if(!info){
-    const profile = ((yield call(ProfileApiFactory().getUserProfile, action.payload.id)) as AxiosResponse<UserProfile>).data as UserProfile;
-    yield put(storeUserDataAction({id: action.payload.id, profile: profile}))
+  if (!info) {
+    const profile = (
+      (yield call(
+        ProfileApiFactory().getUserProfile,
+        action.payload.id,
+      )) as AxiosResponse<UserProfile>
+    ).data as UserProfile;
+    yield put(storeUserDataAction({ id: action.payload.id, profile: profile }));
   }
-
 }
 
-function* fetchProfileTimeline(action: PayloadAction<{id: string, perPage?: number, page?: number, reset?: boolean}>){
-  const keycloakId = (action.payload.id ?? '').trim();
+function* fetchProfileTimeline(
+  action: PayloadAction<{ id: string; perPage?: number; page?: number; reset?: boolean }>,
+) {
+  const keycloakId = (action.payload.id ?? "").trim();
   if (!keycloakId) {
-    yield put(setUserTimelineFailedAction({ message: 'Timeline user id is missing.' }));
+    yield put(setUserTimelineFailedAction({ message: "Timeline user id is missing." }));
     return;
   }
 
-  const currentTimeline = (yield appSelect(state => state.profile.timeline)) as {
+  const currentTimeline = (yield appSelect((state) => state.profile.timeline)) as {
     keycloakId: string;
     currentPage: number;
     perPage: number;
@@ -1055,22 +1343,31 @@ function* fetchProfileTimeline(action: PayloadAction<{id: string, perPage?: numb
   const page = action.payload.page ?? fallbackPage;
 
   try {
-    const response = ((yield call(ProfileApiFactory().getUserTimeline, keycloakId, perPage, page)) as AxiosResponse<TimelineResponse>).data as TimelineResponse;
-    yield put(setUserTimelineAction({
-      id: keycloakId,
-      posts: response.posts ?? [],
-      total: response.total ?? 0,
-      perPage: response.per_page ?? perPage,
-      currentPage: response.current_page ?? page,
-    }));
+    const response = (
+      (yield call(
+        ProfileApiFactory().getUserTimeline,
+        keycloakId,
+        perPage,
+        page,
+      )) as AxiosResponse<TimelineResponse>
+    ).data as TimelineResponse;
+    yield put(
+      setUserTimelineAction({
+        id: keycloakId,
+        posts: response.posts ?? [],
+        total: response.total ?? 0,
+        perPage: response.per_page ?? perPage,
+        currentPage: response.current_page ?? page,
+      }),
+    );
   } catch (error) {
-    console.error('failed to fetch user timeline', error);
-    yield put(setUserTimelineFailedAction({ message: 'Unable to load timeline right now.' }));
+    console.error("failed to fetch user timeline", error);
+    yield put(setUserTimelineFailedAction({ message: "Unable to load timeline right now." }));
   }
 }
 
-function* fetchProfileTimelineNextPage(action: PayloadAction<{id: string, perPage?: number}>){
-  const timeline = (yield appSelect(state => state.profile.timeline)) as {
+function* fetchProfileTimelineNextPage(action: PayloadAction<{ id: string; perPage?: number }>) {
+  const timeline = (yield appSelect((state) => state.profile.timeline)) as {
     currentPage: number;
     perPage: number;
     hasMore: boolean;
@@ -1088,15 +1385,23 @@ function* fetchProfileTimelineNextPage(action: PayloadAction<{id: string, perPag
   }
 
   const nextPage = (timeline.currentPage || 0) + 1;
-  yield put(fetchUserTimelineAction({
-    id: action.payload.id,
-    perPage: action.payload.perPage ?? timeline.perPage,
-    page: nextPage,
-  }));
+  yield put(
+    fetchUserTimelineAction({
+      id: action.payload.id,
+      perPage: action.payload.perPage ?? timeline.perPage,
+      page: nextPage,
+    }),
+  );
 }
 
-function* updateUserProfile(action: PayloadAction<{data?: Partial<UserProfile>, 
-  file?: FormData, resolve?: () => void, reject?: (error: unknown) => void}>){
+function* updateUserProfile(
+  action: PayloadAction<{
+    data?: Partial<UserProfile>;
+    file?: FormData;
+    resolve?: () => void;
+    reject?: (error: unknown) => void;
+  }>,
+) {
   try {
     const profileApi = ProfileApiFactory();
     const profilePayload = (action.payload.data ?? {}) as UserProfile;
@@ -1105,76 +1410,74 @@ function* updateUserProfile(action: PayloadAction<{data?: Partial<UserProfile>,
       yield put(setProfileImageUploading(true));
     }
 
-    const response = action.payload.file
-      ? ((yield call(axios.put, '/api/profile/update_profile', action.payload.file, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        })) as AxiosResponse<{message: string}>)
-      : ((yield call(
-          { context: profileApi, fn: profileApi.putUpdateProfile },
-          profilePayload
-        )) as AxiosResponse<{message: string}>);
-    //console.log(response?.data.message)
-    let userId: string = yield appSelect(state => state.user.id);
-    const profile = ((yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>).data as UserProfile;
+    if (action.payload.file) {
+      yield call(updateProfileWithMedia, action.payload.file);
+    } else {
+      yield call({ context: profileApi, fn: profileApi.putUpdateProfile }, profilePayload);
+    }
+
+    let userId: string = yield appSelect((state) => state.user.id);
+    const profile = (
+      (yield call(ProfileApiFactory().getUserProfile, userId)) as AxiosResponse<UserProfile>
+    ).data as UserProfile;
     yield put(setName(profile.username));
-    yield put(storeUserDataAction({id: userId, profile: profile}));
+    yield put(storeUserDataAction({ id: userId, profile: profile }));
     yield put(fetchUserTimelineAction({ id: userId, page: 1, perPage: 10, reset: true }));
 
     if (action.payload.resolve) {
       action.payload.resolve();
     }
-  }
-  catch (error) {
-    console.error('failed to upload media', error);
+  } catch (error) {
+    console.error("failed to upload media", error);
 
     if (action.payload.reject) {
       action.payload.reject(error);
     }
-  }
-  finally {
+  } finally {
     if (action.payload.file) {
       yield put(setProfileImageUploading(false));
     }
   }
 }
 
-function* fetchEmailNotificationSettings(action: PayloadAction<void>){
-  const emailNotificationSettings = ((yield call(ProfileApiFactory().getEmailNotifications)) as AxiosResponse<EmailNotificationSettings>).data as EmailNotificationSettings;
+function* fetchEmailNotificationSettings(action: PayloadAction<void>) {
+  const emailNotificationSettings = (
+    (yield call(
+      ProfileApiFactory().getEmailNotifications,
+    )) as AxiosResponse<EmailNotificationSettings>
+  ).data as EmailNotificationSettings;
   yield put(setEmailNotificationSettings(emailNotificationSettings.settings ?? []));
 }
 
-function* updateEmailSettings(action: PayloadAction<EmailNotificationSettings>){
-  
-  try{
+function* updateEmailSettings(action: PayloadAction<EmailNotificationSettings>) {
+  try {
     yield call(ProfileApiFactory().postEmailNotifications, action.payload);
-    yield put(setMessage('Email Notification Settings Saved!'));
-  }catch (error) {
-    console.error('email notification setting failed', error);
+    yield put(setMessage("Email Notification Settings Saved!"));
+  } catch (error) {
+    console.error("email notification setting failed", error);
   }
 }
 
-function* fetchProfileVisiblitySettings(action: PayloadAction<void>){
-  const profileVisibilitySettings = ((yield call(ProfileApiFactory().getProfileVisibility)) as AxiosResponse<ProfileVisibilitySettings>).data as ProfileVisibilitySettings;
+function* fetchProfileVisiblitySettings(action: PayloadAction<void>) {
+  const profileVisibilitySettings = (
+    (yield call(
+      ProfileApiFactory().getProfileVisibility,
+    )) as AxiosResponse<ProfileVisibilitySettings>
+  ).data as ProfileVisibilitySettings;
   yield put(setProfileVisibilitySettings(profileVisibilitySettings.settings ?? []));
 }
 
-function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>){
-  
-  try{
+function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>) {
+  try {
     yield call(ProfileApiFactory().postProfileVisibility, action.payload);
-    yield put(setMessage('Profile Visibility Settings Saved!'));
-  }catch (error) {
-    console.error('profile visibility setting failed', error);
+    yield put(setMessage("Profile Visibility Settings Saved!"));
+  } catch (error) {
+    console.error("profile visibility setting failed", error);
   }
 }
 
-
-
-
 function* appSaga() {
-/**Auth Api saga */
+  /**Auth Api saga */
   yield takeEvery(logInAction.type, handleLoginRequest);
   // Keep only one bootstrap refresh in-flight to avoid overlapping loading states.
   yield takeLatest(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
@@ -1182,25 +1485,25 @@ function* appSaga() {
   yield takeEvery(setUserPassword.type, handlePasswordChange);
   yield takeEvery(setDeleteConfirmation.type, handleDeleteAccount);
   yield takeEvery(logoutAction.type, handleLogout);
-/**BlogPost APi saga */  
+  /**BlogPost APi saga */
   yield takeEvery(fetchBlogPosts.type, handleGetBlogPost);
   yield takeEvery(fetchOneBlogPost.type, handleGetOneBlogPost);
-/**Chat Api saga */
+  /**Chat Api saga */
   yield takeEvery(fetchChatMessages.type, handleGetMessages);
   yield takeEvery(sendChatMessage.type, handlePostSendMessage);
   yield takeEvery(markChatOpened.type, updateChatOpened);
   yield takeEvery(fetchFriendList.type, handleGetFriendList);
-/**Chatbot Api saga */
+  /**Chatbot Api saga */
   // Keep only one chatbot stream active; new prompt cancels prior stream.
   yield takeLatest(sendChatbotMessage.type, handleSendChatbotMessage);
-/**Events APi saga */  
+  /**Events APi saga */
   yield takeEvery(fetchAllEvents.type, handleGetEventsList);
-  yield takeEvery(fetchUserEvents.type, handleGetAttendingEvents);  
+  yield takeEvery(fetchUserEvents.type, handleGetAttendingEvents);
   yield takeEvery(addAttendeeToEvent.type, handleAddAttendeeToEvent);
   yield takeEvery(removeAttendeeFromEvent.type, handleRemoveAttendeeFromEvent);
   yield takeEvery(fetchProfessionals.type, handleFetchProfessionals);
   yield takeEvery(fetchOneEvent.type, handleGetOneEvent);
-/**Feed Api saga */
+  /**Feed Api saga */
   yield takeEvery(updatePostsForFeedAction.type, updateFeed);
   yield takeEvery(postNewPostAction.type, postNewPost);
   yield takeEvery(postComment.type, postNewComment);
@@ -1210,11 +1513,11 @@ function* appSaga() {
   yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
   yield takeEvery(SendFollowUser.type, handlePostFollowUser);
   yield takeEvery(retrieveOnePost.type, handleGetOnePost);
-/**Media Api saga */
+  /**Media Api saga */
   yield takeEvery(fetchMediaItems.type, handleGetUserMediaItems);
   yield takeEvery(uploadMedia.type, handleUploadMedia);
   yield takeEvery(uploadBulkMedia.type, handleUploadBulkMedia);
-/**Notification Api saga */
+  /**Notification Api saga */
   // Keep only one notifications list request active to avoid duplicate page appends.
   yield takeLatest(fetchUserNotifications.type, handleGetUserNotifications);
   yield takeEvery(markNotificationRead.type, updateNotificationOpened);
@@ -1222,7 +1525,7 @@ function* appSaga() {
   yield takeEvery(respondToFriendRequest.type, handleRespondFriendRequest);
   yield takeEvery(fetchNotificationPreferences.type, handleGetNotificationPreferences);
   yield takeEvery(updateNotificationPreferences.type, handleUpdateNotificationPreferences);
-/**Profile Api saga */
+  /**Profile Api saga */
   yield takeEvery(fetchUserDataAction.type, fetchUserProfileData);
   yield takeEvery(fetchUserTimelineAction.type, fetchProfileTimeline);
   yield takeEvery(fetchUserTimelineNextPageAction.type, fetchProfileTimelineNextPage);
