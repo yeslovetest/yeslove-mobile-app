@@ -1,6 +1,7 @@
 import { AuthApiFactory } from "@/generated-api";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { secureGet, secureSet } from "./secureStorage";
 
 class TokenRefreshService {
   static REFRESH_TOKEN_KEY = "refreshToken";
@@ -25,29 +26,14 @@ class TokenRefreshService {
     delete axios.defaults.headers.common["Authorization"];
   }
 
-  private async writeStorageValue(key: string, value: string): Promise<void> {
-    try {
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem(key, value);
-      }
-    } catch {
-      // Ignore localStorage errors in native contexts.
-    }
-    await AsyncStorage.setItem(key, value);
+  // Auth secrets are persisted via secureStorage: encrypted SecureStore on
+  // native, localStorage/AsyncStorage on web (with legacy migration).
+  private writeStorageValue(key: string, value: string): Promise<void> {
+    return secureSet(key, value);
   }
 
-  private async readStorageValue(key: string): Promise<string | null> {
-    try {
-      if (typeof localStorage !== "undefined") {
-        const localValue = localStorage.getItem(key);
-        if (localValue !== null) {
-          return localValue;
-        }
-      }
-    } catch {
-      // Ignore localStorage errors in native contexts.
-    }
-    return AsyncStorage.getItem(key);
+  private readStorageValue(key: string): Promise<string | null> {
+    return secureGet(key);
   }
 
   startRefreshingToken(initialRefreshToken: string): void {
