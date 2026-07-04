@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
-import theme from "@/assets/variables/Variables";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   container: {
@@ -7,62 +8,61 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
   },
   innerContainer: {
     width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderRadius: 18,
+    maxWidth: theme.layout.maxFormWidth,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.xxl,
+    borderRadius: theme.radii.xxl,
     alignItems: "center",
-    borderBottomColor: theme.colors.primaryBlue,
+    borderBottomColor: theme.colors.primary,
     borderBottomWidth: 3,
     alignSelf: "center",
- },
+  },
   title: {
-    fontSize: 24,
+    fontSize: theme.typography.fontSize.title1,
     fontWeight: "bold",
-    marginTop: 2,
+    marginTop: theme.spacing.xxs,
     marginBottom: 14,
-    color: theme.colors.blackText,
-    textAlign: 'center',
+    color: theme.colors.textPrimary,
+    textAlign: "center",
     letterSpacing: 0.4,
     display: "flex",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   label: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: 15,
+    fontSize: theme.typography.fontSize.body,
     lineHeight: 22,
     marginBottom: 18,
-    textAlign: 'center',
-    color: theme.colors.blackText,
+    textAlign: "center",
+    color: theme.colors.textPrimary,
   },
 
   baseButton: {
-    width: '100%',
-    backgroundColor: theme.colors.primaryBlue,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginTop: 12,
+    width: "100%",
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.radii.md,
+    marginTop: theme.spacing.md,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    borderColor: theme.colors.primaryBlue,
-    
+    borderColor: theme.colors.primary,
   },
   baseButtonText: {
-    color: theme.colors.mainBkgColor,
-    fontSize: 15,
-    textAlign: 'center',
-    fontWeight: 'bold',
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.body,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 
   disabledButton: {
@@ -70,26 +70,25 @@ const styles = StyleSheet.create({
   },
 
   retryIndicatorRow: {
-    marginTop: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    marginTop: theme.spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
   },
 
   retryIndicatorText: {
-    color: theme.colors.primaryBlue,
-    fontSize: 14,
-    fontWeight: '600',
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.subhead,
+    fontWeight: "600",
   },
 
   backButton: {
-    backgroundColor: theme.colors.mainBkgColor,
+    backgroundColor: theme.colors.surface,
   },
 
   backButtonText: {
-    color: theme.colors.primaryBlue,
+    color: theme.colors.primary,
   },
-
 });
 
-export default styles
+export default styles;

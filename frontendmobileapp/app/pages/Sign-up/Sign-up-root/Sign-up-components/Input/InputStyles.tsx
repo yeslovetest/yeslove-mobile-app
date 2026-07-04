@@ -1,22 +1,22 @@
 import { StyleSheet } from "react-native";
-import theme from "@/assets/variables/Variables";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   input: {
-    width: '100%',
+    width: "100%",
     height: 48,
-    borderColor: '#ccc',
-    borderBottomColor: theme.colors.primaryBlue,
+    borderColor: theme.colors.border,
+    borderBottomColor: theme.colors.primary,
     borderBottomWidth: 2,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: theme.colors.mainBkgColor,
-    color: theme.colors.blackText,
-    marginBottom: 12,
-    fontSize: 15,
+    borderRadius: theme.radii.md,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.md,
+    fontSize: theme.typography.fontSize.body,
   },
-
 });
 
 export default styles;
