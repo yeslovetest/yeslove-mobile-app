@@ -1,41 +1,44 @@
-import React from 'react'
-import { View } from 'react-native'
-import { useFocusEffect } from 'expo-router'
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { fetchUserEvents } from '@/app/store/Events-store/eventsSlice';
-import EventsList from '../Events-list/EventsList';
-import EventPaginator from '../../../../../Universal-components/Paginator/Paginator';
+import React from "react";
+import { View } from "react-native";
+import { useFocusEffect } from "expo-router";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { fetchUserEvents } from "@/app/store/Events-store/eventsSlice";
+import EventsList from "../Events-list/EventsList";
+import EventPaginator from "../../../../../Universal-components/Paginator/Paginator";
 
 interface Props {
-    dates: { startDate?: string; endDate?: string };
+  dates: { startDate?: string; endDate?: string };
 }
 
 const AttendedContent = ({ dates }: Props) => {
+  const dispatch = useAppDispatch();
+  const currentPage = useAppSelector((state) => state.events.userEvents.eventPage);
+  const totalEvents = useAppSelector((state) => state.events.userEvents.totalEvents);
+  const eventsPerPage = useAppSelector((state) => state.events.userEvents.eventsPerPage);
+  const totalPages = Math.ceil(totalEvents / eventsPerPage); // Calculate total pages
 
-    const dispatch = useAppDispatch();
-    const currentPage = useAppSelector(state => state.events.userEvents.eventPage);
-    const totalEvents = useAppSelector(state => state.events.userEvents.totalEvents);
-    const eventsPerPage = useAppSelector(state => state.events.userEvents.eventsPerPage);
-    const totalPages = Math.ceil(totalEvents / eventsPerPage); // Calculate total pages
-    
-    useFocusEffect(React.useCallback(() => {
-        dispatch(fetchUserEvents({...dates, queryType: 'attended'}));
-    }, [dates.endDate, dates.startDate]));
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(fetchUserEvents({ ...dates, queryType: "attended" }));
+    }, [dates.endDate, dates.startDate]),
+  );
 
-    const handlePageChange = (page: number) => {
-        dispatch(fetchUserEvents({...dates, queryType: 'attended', currentPage: page }));
-    }
+  const handlePageChange = (page: number) => {
+    dispatch(fetchUserEvents({ ...dates, queryType: "attended", currentPage: page }));
+  };
 
-    return (
-        <View style={{ width: '100%' }}>
-            <EventsList eventType='attended'/>
-                {totalPages > 0 && (
-                    <EventPaginator currentPage={currentPage ?? 1} totalPages={totalPages ?? 1} 
-                        onPageChange={(page) => handlePageChange(page)} 
-                    />
-                )}
-        </View>
-    )
+  return (
+    <View style={{ width: "100%" }}>
+      <EventsList eventType="attended" />
+      {totalPages > 0 && (
+        <EventPaginator
+          currentPage={currentPage ?? 1}
+          totalPages={totalPages ?? 1}
+          onPageChange={(page) => handlePageChange(page)}
+        />
+      )}
+    </View>
+  );
 };
 
 export default AttendedContent;
