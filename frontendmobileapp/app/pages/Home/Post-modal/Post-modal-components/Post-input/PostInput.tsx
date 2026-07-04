@@ -2,7 +2,9 @@ import { FontAwesome, Entypo, Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+// SDK 54 moved getInfoAsync to the legacy API; the new File/Directory API lives at
+// the package root. Keep the legacy import until this is migrated in a later phase.
+import * as FileSystem from "expo-file-system/legacy";
 import styles from "./PostInputStyles";
 import PostFilePreview from "../File-preview/PostFilePreview";
 import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from "@/constants/mediaLimits";
