@@ -12,6 +12,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     backgroundColor: theme.colors.mainBkgColor,
+    color: theme.colors.blackText,
     marginBottom: 12,
     fontSize: 15,
   },

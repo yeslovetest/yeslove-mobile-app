@@ -114,6 +114,7 @@ const LoginPage = () => {
           value={identifier}
           style={{...styles.input, ...(isCompactScreen ? styles.compactInput : undefined), borderColor: identifierBdColor[0], borderBottomColor: identifierBdColor[1]}}
           placeholder={identifierMode === 'email' ? 'Enter email' : 'Enter username'}
+          placeholderTextColor="#6b7280"
           keyboardType={identifierMode === 'email' ? 'email-address' : 'default'}
           autoCapitalize="none"
           autoCorrect={false}
@@ -130,6 +131,7 @@ const LoginPage = () => {
           value={password}
           style={{...styles.input, ...(isCompactScreen ? styles.compactInput : undefined), borderColor: passwordBdColor[0], borderBottomColor: passwordBdColor[1]}}
           placeholder="Enter password"
+          placeholderTextColor="#6b7280"
           secureTextEntry
         />
 
