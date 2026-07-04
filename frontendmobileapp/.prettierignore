@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build / caches
+.expo/
+dist/
+web-build/
+android/
+ios/
+
+# Generated code (owned by the OpenAPI generator — do not hand-format)
+generated-api/
+
+# Generated/vendored API specs
+swagger.json
+chatbot-client-api/swagger.json
+
+# Lockfiles
+package-lock.json

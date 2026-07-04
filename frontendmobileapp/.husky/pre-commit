@@ -1,0 +1,2 @@
+# Run lint-staged only for changes inside the mobile app.
+cd frontendmobileapp && npx lint-staged
