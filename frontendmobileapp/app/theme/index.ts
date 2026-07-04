@@ -1,7 +1,5 @@
 import { useColorScheme } from "react-native";
 
-import { vw } from "@/ts/viewport-units";
-
 import { darkColors, lightColors, palette, type ColorTokens } from "./colors";
 import { radii } from "./radii";
 import { shadows } from "./shadows";
@@ -51,29 +49,3 @@ export const useTheme = (): Theme => {
 
 export { palette, spacing, layout, radii, shadows, typography, MIN_TOUCH_TARGET };
 export type { ColorTokens };
-
-/**
- * Backwards-compatibility shim for the original assets/variables/Variables theme.
- * Existing screens import that module; it now re-exports this object so there is a
- * single source of truth without changing any current screen's appearance.
- * Values are kept byte-identical to the original theme.
- */
-export const legacyTheme = {
-  colors: {
-    primaryBlue: "#2d5be3",
-    bannerOrange: "#E49114",
-    iconNotActive: "#666",
-    bannerTextColor: "#fff",
-    viewEditBorderColor: "#f1f1f1",
-    mainBkgColor: "#fff",
-    footerFontColor: "rgb(100,100,100)",
-    footerBdColor: "rgb(192, 187, 187)",
-    blackText: "#111",
-    eventTextBackground: "#fefefe",
-  },
-  spacing: {
-    postWidth: vw(95),
-    standardPageContentWidth: "95%",
-    eventTextBoxPadding: 15,
-  },
-};
