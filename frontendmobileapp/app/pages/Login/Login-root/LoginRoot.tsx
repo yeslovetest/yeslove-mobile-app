@@ -1,17 +1,16 @@
 import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import styles from "./LoginRootStyles";
+import { theme } from "@/app/theme";
 
 type LoginRootProps = {
   showSlowLoadingHelp?: boolean;
 };
 
-const LoginRoot: React.FC<LoginRootProps> = ({
-  showSlowLoadingHelp = false,
-}: LoginRootProps) => {
+const LoginRoot: React.FC<LoginRootProps> = ({ showSlowLoadingHelp = false }: LoginRootProps) => {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size={"large"} color="#1976d2"></ActivityIndicator>
+      <ActivityIndicator size={"large"} color={theme.colors.primary}></ActivityIndicator>
       <Text style={styles.title}>Getting everything ready</Text>
       <Text style={styles.message}>
         {showSlowLoadingHelp
@@ -22,5 +21,4 @@ const LoginRoot: React.FC<LoginRootProps> = ({
   );
 };
 
-
-export default LoginRoot
+export default LoginRoot;
