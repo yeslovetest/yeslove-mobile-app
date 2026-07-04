@@ -1,15 +1,14 @@
-import React, { useRef, useState } from 'react'
-import { FlatList, Image, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native'
-import styles from './MediaContentStyles'
-import OneMedium, { resolveMediaUrl } from './Media-components/One-medium/OneMedium'
-import {useAppSelector} from '@/app/store/hooks'
-import { MediaFile } from '@/generated-api'
-import { Video } from '@/app/Universal-components/Video/Video'
-import { getImageSource } from '@/constants/imageFallbacks';
+import React, { useRef, useState } from "react";
+import { FlatList, Image, Modal, Pressable, Text, useWindowDimensions, View } from "react-native";
+import styles from "./MediaContentStyles";
+import OneMedium, { resolveMediaUrl } from "./Media-components/One-medium/OneMedium";
+import { useAppSelector } from "@/app/store/hooks";
+import { MediaFile } from "@/generated-api";
+import { Video } from "@/app/Universal-components/Video/Video";
+import { getImageSource } from "@/constants/imageFallbacks";
 
 const MediaContent = () => {
-
-  const mediaItems = useAppSelector(state => state.media.mediaList);
+  const mediaItems = useAppSelector((state) => state.media.mediaList);
   const { width: screenWidth } = useWindowDimensions();
   const [containerWidth, setContainerWidth] = useState(0);
   const fullScreenListRef = useRef<FlatList<MediaFile> | null>(null);
@@ -19,12 +18,10 @@ const MediaContent = () => {
   const columnGap = 8;
   const rowGap = 8;
   const columns = screenWidth >= 980 ? 4 : screenWidth >= 700 ? 3 : 2;
-  const measuredWidth = containerWidth > 0 ? containerWidth : Math.max(screenWidth - horizontalPadding * 2, 0);
+  const measuredWidth =
+    containerWidth > 0 ? containerWidth : Math.max(screenWidth - horizontalPadding * 2, 0);
   const contentWidth = Math.max(measuredWidth - horizontalPadding * 2, 0);
-  const tileWidth = Math.max(
-    120,
-    Math.floor((contentWidth - columnGap * (columns - 1)) / columns)
-  );
+  const tileWidth = Math.max(120, Math.floor((contentWidth - columnGap * (columns - 1)) / columns));
 
   const openViewer = (index: number) => {
     setCurrentIndex(index);
@@ -43,13 +40,13 @@ const MediaContent = () => {
           setContainerWidth(width);
         }
       }}
-    > 
+    >
       {mediaItems.length === 0 ? (
         <View style={styles.emptyStateContainer}>
           <Text style={styles.emptyStateText}>No media uploaded yet.</Text>
         </View>
       ) : (
-        <View style={[styles.gridContainer, { columnGap, rowGap }]}> 
+        <View style={[styles.gridContainer, { columnGap, rowGap }]}>
           {mediaItems.map((media, index) => (
             <OneMedium
               media={media}
@@ -84,7 +81,7 @@ const MediaContent = () => {
               index,
             })}
             renderItem={({ item }) => {
-              const isVideo = item?.content_type?.startsWith('video');
+              const isVideo = item?.content_type?.startsWith("video");
               const mediaUrl = resolveMediaUrl((item as any)?.media_url || item?.url);
 
               return (
@@ -97,7 +94,11 @@ const MediaContent = () => {
                       resizeMode="contain"
                     />
                   ) : (
-                    <Image source={getImageSource(mediaUrl, 'generic')} style={styles.viewerImage} resizeMode="contain" />
+                    <Image
+                      source={getImageSource(mediaUrl, "generic")}
+                      style={styles.viewerImage}
+                      resizeMode="contain"
+                    />
                   )}
                 </View>
               );
@@ -105,12 +106,14 @@ const MediaContent = () => {
           />
 
           <View style={styles.viewerFooter}>
-            <Text style={styles.viewerCount}>{currentIndex + 1} / {mediaItems.length}</Text>
+            <Text style={styles.viewerCount}>
+              {currentIndex + 1} / {mediaItems.length}
+            </Text>
           </View>
         </View>
       </Modal>
     </View>
-  )
-}
+  );
+};
 
-export default MediaContent
+export default MediaContent;

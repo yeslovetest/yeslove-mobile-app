@@ -1,30 +1,34 @@
-import React from 'react'
-import { View, Text, ScrollView } from 'react-native'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import styles from './ProfileInformationStyles'
-import Header from '@/app/Universal-components/Header/Header'
-import { useAppSelector } from '@/app/store/hooks'
+import React from "react";
+import { View, Text, ScrollView } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import styles from "./ProfileInformationStyles";
+import Header from "@/app/Universal-components/Header/Header";
+import { useAppSelector } from "@/app/store/hooks";
 
 const ProfileInformation = () => {
-  const userId = useAppSelector(state => state.navigation.tabStack.at(-1)?.data?.userId);
-  const name = useAppSelector(state => state.profile.profiles[userId].contact_info?.name ?? "");
-  const email = useAppSelector(state => state.profile.profiles[userId].contact_info?.email ?? "");
-  const phone = useAppSelector(state => state.profile.profiles[userId].contact_info?.phone ?? "");
-  const address = useAppSelector(state => state.profile.profiles[userId].contact_info?.address ?? "");
-  const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? "");
+  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
+  const name = useAppSelector((state) => state.profile.profiles[userId].contact_info?.name ?? "");
+  const email = useAppSelector((state) => state.profile.profiles[userId].contact_info?.email ?? "");
+  const phone = useAppSelector((state) => state.profile.profiles[userId].contact_info?.phone ?? "");
+  const address = useAppSelector(
+    (state) => state.profile.profiles[userId].contact_info?.address ?? "",
+  );
+  const website = useAppSelector(
+    (state) => state.profile.profiles[userId].contact_info?.website ?? "",
+  );
 
   const profileFields = [
-    { label: 'Name', value: name, icon: 'account-outline' as const },
-    { label: 'Email', value: email, icon: 'email-outline' as const },
-    { label: 'Phone', value: phone, icon: 'phone-outline' as const },
-    { label: 'Address', value: address, icon: 'map-marker-outline' as const },
-    { label: 'Website', value: website, icon: 'web' as const },
+    { label: "Name", value: name, icon: "account-outline" as const },
+    { label: "Email", value: email, icon: "email-outline" as const },
+    { label: "Phone", value: phone, icon: "phone-outline" as const },
+    { label: "Address", value: address, icon: "map-marker-outline" as const },
+    { label: "Website", value: website, icon: "web" as const },
   ];
 
   return (
     <>
-    <Header></Header>
-    <View style={styles.container}>
+      <Header></Header>
+      <View style={styles.container}>
         <ScrollView
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
@@ -45,15 +49,16 @@ const ProfileInformation = () => {
                   </View>
                   <Text style={styles.viewItemText}>{field.label}</Text>
                 </View>
-                <Text style={styles.viewItemInfo}>{(field.value ?? '').trim() || 'Not provided'}</Text>
+                <Text style={styles.viewItemInfo}>
+                  {(field.value ?? "").trim() || "Not provided"}
+                </Text>
               </View>
             ))}
           </View>
+        </ScrollView>
+      </View>
+    </>
+  );
+};
 
-        </ScrollView>  
-    </View>
-  </>
-  )
-}
-
-export default ProfileInformation
+export default ProfileInformation;

@@ -1,69 +1,62 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-   container: {
+  container: {
     width: "100%",
     justifyContent: "flex-start",
-    marginTop: 12,
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    paddingVertical: 12,
+    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.xl,
+    paddingVertical: theme.spacing.md,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    elevation: 2,
-   },
-   detailsText: {
-       marginBottom: 10,
-       fontSize: 17,
-       fontWeight: "700"
-   },
-   viewInformationText: {
-    color: theme.colors.blackText,
-    fontSize: 14,
+    borderColor: theme.colors.border,
+    ...theme.shadows.sm,
+  },
+  detailsText: {
+    marginBottom: 10,
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  viewInformationText: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.subhead,
     fontWeight: "500",
-   },
-   iconContainer: {
+  },
+  iconContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 0,
-    paddingVertical: 2,
-   },
-   icon: {
-    marginRight: 8,
+    paddingVertical: theme.spacing.xxs,
+  },
+  icon: {
+    marginRight: theme.spacing.sm,
     paddingTop: 0,
-    color: theme.colors.blackText,
-    fontSize: 20,
-   },
-   buttonContainer: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.title2,
+  },
+  buttonContainer: {
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
-   },
-   button: {
-    backgroundColor: "#1d4ed8",
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 11,
-    borderRadius: 12,
-    shadowColor: "#1e3a8a",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.16,
-    shadowRadius: 4,
-    elevation: 2,
-   },
-   buttonText: {
-    color: "#ffffff",
-    fontSize: 14,
+    borderRadius: theme.radii.xl,
+    ...theme.shadows.sm,
+  },
+  buttonText: {
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.subhead,
     fontWeight: "600",
-   }
-})
+  },
+});
 
-export default styles
+export default styles;

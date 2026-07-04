@@ -1,7 +1,6 @@
-import React from 'react'
-import { LayoutChangeEvent, Text, View,TextInput } from 'react-native';
-import styles from './TextInputFieldStyles';
-
+import React from "react";
+import { LayoutChangeEvent, Text, View, TextInput } from "react-native";
+import styles from "./TextInputFieldStyles";
 
 function TextInputField({
   label,
@@ -10,13 +9,13 @@ function TextInputField({
   onFocus,
   onLayout,
 }: {
-  label: string,
-  value: string,
-  onChange: (text: string) => void,
-  onFocus?: () => void,
-  onLayout?: (event: LayoutChangeEvent) => void,
+  label: string;
+  value: string;
+  onChange: (text: string) => void;
+  onFocus?: () => void;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }) {
-  const isMultilineField = label === 'Bio';
+  const isMultilineField = label === "Bio";
 
   return (
     <View style={styles.editItemContainer} onLayout={onLayout}>
@@ -34,4 +33,4 @@ function TextInputField({
   );
 }
 
-export default TextInputField
+export default TextInputField;

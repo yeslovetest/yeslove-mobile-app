@@ -1,5 +1,6 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const sharedStyles = StyleSheet.create({
   container: {
@@ -8,7 +9,7 @@ const sharedStyles = StyleSheet.create({
     paddingTop: 10,
     paddingHorizontal: 10,
     alignSelf: "center",
-    backgroundColor: "#f4f7fc",
+    backgroundColor: theme.colors.surfaceAlt,
   },
   contentContainer: {
     justifyContent: "flex-start",
@@ -22,28 +23,24 @@ const sharedStyles = StyleSheet.create({
   },
   detailsSection: {
     width: "100%",
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   tabSection: {
     width: "100%",
-    marginTop: 4,
+    marginTop: theme.spacing.xs,
     marginBottom: 10,
-    paddingHorizontal: 2,
+    paddingHorizontal: theme.spacing.xxs,
   },
   contentSection: {
     width: "100%",
-    borderRadius: 14,
-    backgroundColor: "#ffffff",
+    borderRadius: theme.radii.xl,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 7,
-    elevation: 2,
-    paddingTop: 4,
-    paddingBottom: 8,
+    borderColor: theme.colors.border,
+    ...theme.shadows.sm,
+    paddingTop: theme.spacing.xs,
+    paddingBottom: theme.spacing.sm,
   },
-})
+});
 
-export default sharedStyles
+export default sharedStyles;
