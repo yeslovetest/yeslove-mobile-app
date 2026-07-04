@@ -1,36 +1,10 @@
-import { vw } from "../../ts/viewport-units"
+/**
+ * Backwards-compatibility re-export. The canonical theme now lives in
+ * `app/theme`. Screens that still import this module keep working unchanged; new
+ * code should import tokens from `@/app/theme` instead.
+ */
+import { legacyTheme } from "@/app/theme";
 
-const theme = {
-    colors: {
-        /*main shade of blue used across the app including active nav headings and footer icons */
-        primaryBlue: "#2d5be3",
-        /*shade of orange used in the banners on the get help and home page */
-        bannerOrange: "#E49114",
-        /*icon not active on footer and navbar item not active on profile and home page */
-        iconNotActive: "#666",
-        /*text colour on orange banner on get help and home page */
-        bannerTextColor: "#fff",
-        /*border colour of user info on profile page */
-        viewEditBorderColor: "#f1f1f1",
+const theme = legacyTheme;
 
-        /*main background colour for login & signup screen components including text-box and buttons */
-        mainBkgColor: "#fff",
-        /*main font colour for login & signup screen container footer  */
-        footerFontColor: 'rgb(100,100,100)',
-        /*border colour for login & signup screen container footer  */
-        footerBdColor: 'rgb(192, 187, 187)',
-        /*black font-colour used for headers and texts in different pages of the app*/
-        blackText: '#111',
-        /*background colour of text boxes in individual event tabs */
-        eventTextBackground: "#fefefe"
-    },
-  
-    spacing: {
-        /*width of posts, postbox, banner, and most component parent elements*/
-        postWidth: vw(95),
-        standardPageContentWidth: "95%",
-        eventTextBoxPadding: 15,
-    }
-}
-
-export default theme
+export default theme;
