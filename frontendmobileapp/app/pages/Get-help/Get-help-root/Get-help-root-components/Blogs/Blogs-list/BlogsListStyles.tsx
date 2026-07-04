@@ -1,7 +1,6 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-  
   blogsContainer: {
     marginTop: 18,
     width: "100%",
@@ -10,7 +9,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 15,
   },
+});
 
-})
-
-export default styles
+export default styles;

@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { useAppSelector } from '@/app/store/hooks';
-import styles from './ProfessionalsListStyles';
-import PlaceholderProfessionals from './PlaceholderProfessionals';
-import { getImageSource } from '@/constants/imageFallbacks';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { useAppSelector } from "@/app/store/hooks";
+import styles from "./ProfessionalsListStyles";
+import PlaceholderProfessionals from "./PlaceholderProfessionals";
+import { getImageSource } from "@/constants/imageFallbacks";
 
 const ProfessionalsList = () => {
-  const professionals = useAppSelector(state => state.getHelp.professionals);
-  const [expanded, setExpanded] = useState(null); 
-
+  const professionals = useAppSelector((state) => state.getHelp.professionals);
+  const [expanded, setExpanded] = useState(null);
 
   const handleToggle = (index) => {
     setExpanded(expanded === index ? null : index); // Toggle the expansion
@@ -18,7 +17,10 @@ const ProfessionalsList = () => {
     <View>
       {professionals.map((professional, index) => (
         <View key={index} style={styles.professionalProfileContainer}>
-          <Image style={styles.profileImage} source={getImageSource(professional?.profile_pic, 'profile')} />
+          <Image
+            style={styles.profileImage}
+            source={getImageSource(professional?.profile_pic, "profile")}
+          />
           <Text style={styles.professionalProfileName}>{professional?.username}</Text>
           <Text style={styles.professionalDescription}>
             {expanded === index ? professional?.bio : `${professional?.bio?.substring(0, 300)}...`}
@@ -34,4 +36,4 @@ const ProfessionalsList = () => {
   );
 };
 
-export default ProfessionalsList
+export default ProfessionalsList;
