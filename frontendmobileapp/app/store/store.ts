@@ -8,33 +8,33 @@ import getHelpReducer from "./Get-help-store/getHelpSlice";
 import chatReducer from "./Chat/chatSlice";
 import mediaReducer from "./Profile-store/mediaSlice";
 import notificationReducer from "./Notification-store/notificationSlice";
-import createSagaMiddleWare from "redux-saga"
-import appSaga from "./Effects/effects";
+import createSagaMiddleWare from "redux-saga";
+import rootSaga from "./sagas/rootSaga";
 import { navigationReducer } from "./Navigation/navigationSlice";
 
 //const createSagaMiddleWare = require('redux-saga').default;
 export const sagaMiddleWare = createSagaMiddleWare();
 
 export const store = configureStore({
-    reducer: { 
-        user: userReducer,
-        profile: profileReducer,
-        feed: feedReducer,
-        navigation: navigationReducer,
-        auth: authReducer,
-        events: eventsReducer,
-        getHelp: getHelpReducer,
-        chat: chatReducer,
-        media: mediaReducer,
-        notification: notificationReducer,
-    },
-    devTools: process.env.NODE_ENV !== 'production',
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleWare)
-})
+  reducer: {
+    user: userReducer,
+    profile: profileReducer,
+    feed: feedReducer,
+    navigation: navigationReducer,
+    auth: authReducer,
+    events: eventsReducer,
+    getHelp: getHelpReducer,
+    chat: chatReducer,
+    media: mediaReducer,
+    notification: notificationReducer,
+  },
+  devTools: process.env.NODE_ENV !== "production",
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleWare),
+});
 
-sagaMiddleWare.run(appSaga)
+sagaMiddleWare.run(rootSaga);
 
-export type State = ReturnType<typeof store.getState>
+export type State = ReturnType<typeof store.getState>;
 
 export type AppDispatch = typeof store.dispatch;
 
