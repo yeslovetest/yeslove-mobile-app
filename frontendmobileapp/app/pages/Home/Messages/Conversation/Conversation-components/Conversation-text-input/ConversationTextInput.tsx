@@ -39,6 +39,8 @@ const ConversationTextInput = (props: Props) => {
         style={styles.mediaIcon}
         name="camera-outline"
         size={18}
+        accessibilityRole="button"
+        accessibilityLabel="Attach media"
       />
       <TextInput
         style={[
@@ -59,6 +61,7 @@ const ConversationTextInput = (props: Props) => {
         }}
         blurOnSubmit={false}
         multiline
+        accessibilityLabel="Type message"
       />
 
       <Ionicons
@@ -70,6 +73,9 @@ const ConversationTextInput = (props: Props) => {
         style={[styles.sendIcon, isSendDisabled && styles.sendIconDisabled]}
         name="send"
         size={18}
+        accessibilityRole="button"
+        accessibilityLabel="Send message"
+        accessibilityState={{ disabled: isSendDisabled }}
       />
     </View>
   );

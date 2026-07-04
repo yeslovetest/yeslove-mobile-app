@@ -28,6 +28,7 @@ function TextInputField({
         onChangeText={(text) => {
           onChange(text);
         }}
+        accessibilityLabel={label}
       />
     </View>
   );

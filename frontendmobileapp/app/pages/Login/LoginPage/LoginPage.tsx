@@ -111,6 +111,9 @@ const LoginPage = () => {
                   identifierMode === "username" ? styles.modeToggleButtonActive : undefined,
                 ]}
                 onPress={() => handleIdentifierModeChange("username")}
+                accessibilityRole="button"
+                accessibilityLabel="Sign in with username"
+                accessibilityState={{ selected: identifierMode === "username" }}
               >
                 <Text
                   style={[
@@ -128,6 +131,9 @@ const LoginPage = () => {
                   identifierMode === "email" ? styles.modeToggleButtonActive : undefined,
                 ]}
                 onPress={() => handleIdentifierModeChange("email")}
+                accessibilityRole="button"
+                accessibilityLabel="Sign in with email"
+                accessibilityState={{ selected: identifierMode === "email" }}
               >
                 <Text
                   style={[
@@ -157,6 +163,7 @@ const LoginPage = () => {
               keyboardType={identifierMode === "email" ? "email-address" : "default"}
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel={identifierMode === "email" ? "Email" : "Username"}
             />
             <Text
               style={[styles.helperText, isCompactScreen ? styles.compactHelperText : undefined]}
@@ -181,11 +188,14 @@ const LoginPage = () => {
               placeholder="Enter password"
               placeholderTextColor={theme.colors.textMuted}
               secureTextEntry
+              accessibilityLabel="Password"
             />
 
             <TouchableOpacity
               style={[styles.button, isCompactScreen ? styles.compactButton : undefined]}
               onPress={handleLoginPress}
+              accessibilityRole="button"
+              accessibilityLabel="Log in"
             >
               <Text
                 style={[styles.buttonText, isCompactScreen ? styles.compactButtonText : undefined]}

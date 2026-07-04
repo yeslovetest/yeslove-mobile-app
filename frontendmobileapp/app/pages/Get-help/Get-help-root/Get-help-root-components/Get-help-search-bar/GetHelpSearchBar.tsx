@@ -46,8 +46,14 @@ const GetHelpSearchBar = (props: Props) => {
           onChangeText={(val) => setSearchWord(val)}
           placeholderTextColor="gray"
           style={styles.searchBar}
+          accessibilityLabel={props.placeholder}
         ></TextInput>
-        <TouchableOpacity style={styles.searchButton} onPress={searchAction}>
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={searchAction}
+          accessibilityRole="button"
+          accessibilityLabel="Search"
+        >
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
       </View>

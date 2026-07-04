@@ -78,6 +78,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCl
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
+                  accessibilityLabel="Current password"
                 />
                 <TextInput
                   style={styles.subSectionInput}
@@ -85,6 +86,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCl
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry
+                  accessibilityLabel="New password"
                 />
                 <TextInput
                   style={styles.subSectionInput}
@@ -92,8 +94,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCl
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
+                  accessibilityLabel="Confirm new password"
                 />
-                <TouchableOpacity style={styles.saveChangesButton} onPress={changePassword}>
+                <TouchableOpacity
+                  style={styles.saveChangesButton}
+                  onPress={changePassword}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save password changes"
+                >
                   <Text style={styles.saveChangesButtonText}>Save Changes</Text>
                 </TouchableOpacity>
               </View>

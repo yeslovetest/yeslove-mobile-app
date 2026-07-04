@@ -37,6 +37,7 @@ const Input = (props: Props) => {
       keyboardType={keyboardType}
       onChangeText={onChangeText}
       secureTextEntry={secureTextEntry}
+      accessibilityLabel={placeholder}
     />
   );
 };

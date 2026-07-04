@@ -51,6 +51,7 @@ const PostCommentField = ({ id, pic }: Props) => {
           numberOfLines={3}
           maxLength={500}
           textAlignVertical="top"
+          accessibilityLabel="Write a comment"
         />
 
         <TouchableOpacity
@@ -60,6 +61,9 @@ const PostCommentField = ({ id, pic }: Props) => {
           ]}
           onPress={handleCommentButton}
           disabled={!userComment.trim() || isSubmitting}
+          accessibilityRole="button"
+          accessibilityLabel="Submit comment"
+          accessibilityState={{ disabled: !userComment.trim() || isSubmitting }}
         >
           <Text style={styles.submitCommentButtonText}>Submit</Text>
         </TouchableOpacity>

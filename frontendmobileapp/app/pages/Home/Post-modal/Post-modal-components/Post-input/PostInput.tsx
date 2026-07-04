@@ -147,6 +147,7 @@ const PostInput: React.FC<PostInputProps> = ({
           multiline
           placeholder="Share what you're thinking..."
           placeholderTextColor="gray"
+          accessibilityLabel="Post content"
         />
 
         {selectedFile && selectedFile.length > 0 && (
@@ -156,15 +157,30 @@ const PostInput: React.FC<PostInputProps> = ({
 
       {/* ACTION BUTTONS */}
       <View style={styles.postIcons}>
-        <TouchableOpacity style={styles.mediaActionButton} onPress={pickMedia}>
+        <TouchableOpacity
+          style={styles.mediaActionButton}
+          onPress={pickMedia}
+          accessibilityRole="button"
+          accessibilityLabel="Add photo or video"
+        >
           <FontAwesome name="picture-o" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mediaActionButton} onPress={() => pickFile("video")}>
+        <TouchableOpacity
+          style={styles.mediaActionButton}
+          onPress={() => pickFile("video")}
+          accessibilityRole="button"
+          accessibilityLabel="Add video"
+        >
           <Entypo name="video-camera" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mediaActionButton} onPress={() => pickFile("image")}>
+        <TouchableOpacity
+          style={styles.mediaActionButton}
+          onPress={() => pickFile("image")}
+          accessibilityRole="button"
+          accessibilityLabel="Add image"
+        >
           <Ionicons name="images-outline" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       </View>

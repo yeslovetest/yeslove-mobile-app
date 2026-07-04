@@ -187,7 +187,12 @@ const OnePost = (props: Props) => {
             source={getImageSource(resolveMediaUrl(props.post.author_pic), "profile")}
           />
           <View style={styles.profileInfoContainer}>
-            <TouchableOpacity style={styles.profileName} onPress={openProfile}>
+            <TouchableOpacity
+              style={styles.profileName}
+              onPress={openProfile}
+              accessibilityRole="button"
+              accessibilityLabel={`View ${props.post.author}'s profile`}
+            >
               <Text style={styles.profileNameText}>{props.post.author}</Text>
             </TouchableOpacity>
             <Text style={styles.timePosted}>
@@ -199,7 +204,11 @@ const OnePost = (props: Props) => {
         </View>
         {props.post.author_id && props.post.author_id !== currentUserId && (
           <View style={{ justifyContent: "center", alignItems: "flex-end", maxWidth: "42%" }}>
-            <TouchableOpacity onPress={() => setFollowMenuVisible(true)}>
+            <TouchableOpacity
+              onPress={() => setFollowMenuVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={isFollowing ? `${followButtonLabel} ${props.post.author}, open follow options` : `Follow ${props.post.author}`}
+            >
               {isFollowing ? (
                 <View style={styles.viewProfile}>
                   <Text style={styles.buttonText}>{followButtonLabel}</Text>
@@ -236,6 +245,9 @@ const OnePost = (props: Props) => {
               style={[styles.likeIcon, { marginRight: 8 }]}
               onPress={() => changeReaction("reverseReaction")}
               onLongPress={displayReactions}
+              accessibilityRole="button"
+              accessibilityLabel={reactionType === "default" ? "React to post" : `Reacted ${reactionType}. Remove reaction`}
+              accessibilityHint="Long press to choose a reaction"
             >
               {reactionType === "default" && (
                 <Ionicons name="thumbs-up-outline" size={24} style={styles.likeIcon} />
@@ -258,6 +270,8 @@ const OnePost = (props: Props) => {
               name="comment-dots"
               size={24}
               style={styles.likeIcon}
+              accessibilityRole="button"
+              accessibilityLabel="View comments"
             />
             <Text style={styles.numberOfLikesAndComments}>{props.post.comments} </Text>
           </View>

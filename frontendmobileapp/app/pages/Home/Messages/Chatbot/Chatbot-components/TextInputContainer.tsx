@@ -42,8 +42,16 @@ const TextInputContainer = ({ onSend }: { onSend: (text: string) => void }) => {
         returnKeyType="send"
         blurOnSubmit={false}
         multiline
+        accessibilityLabel="Message the assistant"
       ></TextInput>
-      <Ionicons onPress={() => send(text)} style={styles.sendIcon} name="send" size={18} />
+      <Ionicons
+        onPress={() => send(text)}
+        style={styles.sendIcon}
+        name="send"
+        size={18}
+        accessibilityRole="button"
+        accessibilityLabel="Send message"
+      />
     </View>
   );
 };

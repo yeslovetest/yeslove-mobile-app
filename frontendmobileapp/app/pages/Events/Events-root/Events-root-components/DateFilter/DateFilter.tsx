@@ -80,7 +80,13 @@ const DateFilterDropdown = ({
     <View style={Styles.filterRow}>
       {/* Dropdown toggle */}
       {showTrigger && (
-        <TouchableOpacity onPress={() => setVisibility(!isVisible)} style={Styles.dropdownToggle}>
+        <TouchableOpacity
+          onPress={() => setVisibility(!isVisible)}
+          style={Styles.dropdownToggle}
+          accessibilityRole="button"
+          accessibilityLabel="Filter by date"
+          accessibilityState={{ expanded: isVisible }}
+        >
           <Text style={Styles.dropdownToggleText}>Filter by Date ▼</Text>
         </TouchableOpacity>
       )}
@@ -105,7 +111,12 @@ const DateFilterDropdown = ({
               />
             ) : (
               // Native picker for iOS/Android
-              <TouchableOpacity onPress={() => setShowStartPicker(true)} style={Styles.input}>
+              <TouchableOpacity
+                onPress={() => setShowStartPicker(true)}
+                style={Styles.input}
+                accessibilityRole="button"
+                accessibilityLabel={startDate ? `Start date ${formatDate(startDate)}` : "Select start date"}
+              >
                 <Text>{startDate ? formatDate(startDate) : "Select Start Date"}</Text>
               </TouchableOpacity>
             )}
@@ -135,6 +146,8 @@ const DateFilterDropdown = ({
               <TouchableOpacity
                 onPress={() => setShowEndPicker(true)}
                 style={Styles.inputWithMargin}
+                accessibilityRole="button"
+                accessibilityLabel={endDate ? `End date ${formatDate(endDate)}` : "Select end date"}
               >
                 <Text>{endDate ? formatDate(endDate) : "Select End Date"}</Text>
               </TouchableOpacity>
