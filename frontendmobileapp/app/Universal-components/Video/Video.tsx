@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Image, Platform, StyleProp, View, ViewStyle } from 'react-native';
-import { VideoView, useVideoPlayer } from 'expo-video';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import * as VideoThumbnails from 'expo-video-thumbnails';
-import styles from './VideoStyles';
-import { getImageSource } from '@/constants/imageFallbacks';
+import React, { useEffect, useState } from "react";
+import { Image, Platform, StyleProp, View, ViewStyle } from "react-native";
+import { VideoView, useVideoPlayer } from "expo-video";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import * as VideoThumbnails from "expo-video-thumbnails";
+import styles from "./VideoStyles";
+import { theme } from "@/app/theme";
+import { getImageSource } from "@/constants/imageFallbacks";
 
-type ResizeMode = 'cover' | 'contain' | 'stretch' | 'none';
+type ResizeMode = "cover" | "contain" | "stretch" | "none";
 
 type VideoSource = {
   uri: string;
@@ -22,31 +23,31 @@ interface VideoProps {
   shouldPlay?: boolean;
 }
 
-const getContentFit = (resizeMode?: ResizeMode | string): 'cover' | 'contain' | 'fill' => {
-  if (resizeMode === 'cover') {
-    return 'cover';
+const getContentFit = (resizeMode?: ResizeMode | string): "cover" | "contain" | "fill" => {
+  if (resizeMode === "cover") {
+    return "cover";
   }
-  if (resizeMode === 'stretch') {
-    return 'fill';
+  if (resizeMode === "stretch") {
+    return "fill";
   }
-  return 'contain';
+  return "contain";
 };
 
-const getImageResizeMode = (resizeMode?: ResizeMode | string): 'cover' | 'contain' | 'stretch' => {
-  if (resizeMode === 'cover') {
-    return 'cover';
+const getImageResizeMode = (resizeMode?: ResizeMode | string): "cover" | "contain" | "stretch" => {
+  if (resizeMode === "cover") {
+    return "cover";
   }
-  if (resizeMode === 'stretch') {
-    return 'stretch';
+  if (resizeMode === "stretch") {
+    return "stretch";
   }
-  return 'contain';
+  return "contain";
 };
 
 export const Video: React.FC<VideoProps> = ({
   source,
   style,
   useNativeControls = false,
-  resizeMode = 'contain',
+  resizeMode = "contain",
   muted = false,
   isLooping = false,
   shouldPlay = false,
@@ -78,7 +79,7 @@ export const Video: React.FC<VideoProps> = ({
   useEffect(() => {
     setIsPlaying(player.playing);
 
-    const subscription = player.addListener('playingChange', ({ isPlaying: nextIsPlaying }) => {
+    const subscription = player.addListener("playingChange", ({ isPlaying: nextIsPlaying }) => {
       setIsPlaying(nextIsPlaying);
     });
 
@@ -125,14 +126,14 @@ export const Video: React.FC<VideoProps> = ({
         nativeControls={useNativeControls}
         contentFit={getContentFit(resizeMode)}
         // Texture rendering is more stable for inline Android playback in lists/cards.
-        surfaceType={Platform.OS === 'android' ? 'textureView' : undefined}
+        surfaceType={Platform.OS === "android" ? "textureView" : undefined}
         useExoShutter={false}
         onFirstFrameRender={() => setHasFirstFrameRendered(true)}
       />
 
       {!!thumbnailUri && !hasFirstFrameRendered && (
         <Image
-          source={getImageSource(thumbnailUri, 'generic')}
+          source={getImageSource(thumbnailUri, "generic")}
           style={styles.mediaFill}
           resizeMode={getImageResizeMode(resizeMode)}
         />
@@ -141,7 +142,12 @@ export const Video: React.FC<VideoProps> = ({
       {!isPlaying && (
         <View style={styles.playIconWrap} pointerEvents="none">
           <View style={styles.playIconBadge}>
-            <Ionicons name="play" size={12} color="#FFFFFF" style={styles.playIcon} />
+            <Ionicons
+              name="play"
+              size={12}
+              color={theme.colors.textOnPrimary}
+              style={styles.playIcon}
+            />
           </View>
         </View>
       )}
