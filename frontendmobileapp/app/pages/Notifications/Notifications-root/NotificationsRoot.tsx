@@ -4,10 +4,10 @@ import Header from '../../../Universal-components/Header/Header';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import sharedStyles from '@/app/pages/Notifications/NotificationsSharedStyles';
 import OneNotification from './Notifications-root-components/One-notification/OneNotification';
-import NotificationsPlaceholders from './Notifications-root-components/NotificationsPlaceholders';
 import styles from './NotificationsRootStyles';
 import { setScrollViewPosition, fetchUserNotifications, fetchFriendRequests } from '@/app/store/Notification-store/notificationSlice';
 import { useFocusEffect } from 'expo-router';
+import ListStateView from '@/app/Universal-components/List-state/ListStateView';
 
 type NotificationData = {
   type?: string;
@@ -131,12 +131,24 @@ const NotificationsRoot = () => {
           />
         ))}
 
+        {activeTab === 'all' && nonFriendRequestNotifications.length === 0 && (
+          <ListStateView
+            loading={isFetchingNotifications}
+            loadingText="Loading notifications..."
+            emptyText="You have no notifications yet."
+          />
+        )}
+
         {activeTab === 'friend_requests' && friendRequestList.map((request) => (
           <OneNotification
             key={request.keycloak_id}
             friendRequest={request}
           />
         ))}
+
+        {activeTab === 'friend_requests' && friendRequestList.length === 0 && (
+          <ListStateView emptyText="You have no friend requests." />
+        )}
       </ScrollView>
     </>
   );

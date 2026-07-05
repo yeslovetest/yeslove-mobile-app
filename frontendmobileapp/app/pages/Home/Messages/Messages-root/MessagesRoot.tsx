@@ -15,6 +15,8 @@ import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSl
 import AskChatbotButton from "./Messages-root-components/Ask-chatbot-button/AskChatbotButton";
 import { fetchChatMessages, setMessagesScrollViewPosition } from "@/app/store/Chat/chatSlice";
 import { useFocusEffect } from "expo-router";
+import ListStateView from "@/app/Universal-components/List-state/ListStateView";
+import { useSettleAfter } from "@/app/Universal-components/List-state/useSettleAfter";
 
 const Messages = () => {
   const dispatch = useAppDispatch();
@@ -26,6 +28,7 @@ const Messages = () => {
   const messagesScrollViewPosition = useAppSelector(
     (state) => state.chat.messagesScrollViewPosition,
   );
+  const settled = useSettleAfter();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -160,6 +163,21 @@ const Messages = () => {
                 <OneMessage message={friend}></OneMessage>
               </TouchableOpacity>
             ))}
+            {filteredFriendList.length === 0 && (
+              <ListStateView
+                loading={friendList.length === 0 && !settled}
+                loadingText="Loading conversations..."
+                emptyText={
+                  friendList.length === 0
+                    ? "No conversations yet."
+                    : filter === "unread"
+                      ? "No unread messages."
+                      : filter === "read"
+                        ? "No read messages."
+                        : "No conversations yet."
+                }
+              />
+            )}
           </View>
         </ScrollView>
       </View>
