@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Animated, View, Dimensions, KeyboardAvoidingView, Platform } from "react-native";
+import { Animated, View, Dimensions, KeyboardAvoidingView, Platform, Keyboard } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatbotScrollView from "./ChatbotScrollView";
 import TextInputContainer from "./Chatbot-components/TextInputContainer";
 import styles from "./SharedChatbotStyles";
@@ -9,10 +10,12 @@ import { sendChatbotMessage } from "@/app/store/Chat/chatSlice";
 
 const Chatbot = () => {
   const dispatch = useAppDispatch();
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<
     { role: "user" | "bot"; text: string; createdAt: Date }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const streamSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const screenHeight = Dimensions.get("window").height;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -54,6 +57,23 @@ const Chatbot = () => {
       if (streamSettleTimerRef.current) {
         clearTimeout(streamSettleTimerRef.current);
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const onShow = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates?.height ?? 0);
+    });
+    const onHide = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      onShow.remove();
+      onHide.remove();
     };
   }, []);
 
@@ -121,11 +141,18 @@ const Chatbot = () => {
       <Header />
       <KeyboardAvoidingView
         style={styles.chatBody}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={60}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
         <ChatbotScrollView messages={messages} loading={loading} />
-        <View style={styles.chatInputDock}>
+        <View
+          style={[
+            styles.chatInputDock,
+            // Lift the dock above the keyboard edge (accounts for the bottom
+            // safe-area / gesture nav inset) so the keyboard can't cover it.
+            { marginBottom: keyboardHeight > 0 ? Math.max(insets.bottom, 8) : 0 },
+          ]}
+        >
           <TextInputContainer onSend={handleSend} />
         </View>
       </KeyboardAvoidingView>
