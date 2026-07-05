@@ -207,7 +207,11 @@ const OnePost = (props: Props) => {
             <TouchableOpacity
               onPress={() => setFollowMenuVisible(true)}
               accessibilityRole="button"
-              accessibilityLabel={isFollowing ? `${followButtonLabel} ${props.post.author}, open follow options` : `Follow ${props.post.author}`}
+              accessibilityLabel={
+                isFollowing
+                  ? `${followButtonLabel} ${props.post.author}, open follow options`
+                  : `Follow ${props.post.author}`
+              }
             >
               {isFollowing ? (
                 <View style={styles.viewProfile}>
@@ -246,7 +250,11 @@ const OnePost = (props: Props) => {
               onPress={() => changeReaction("reverseReaction")}
               onLongPress={displayReactions}
               accessibilityRole="button"
-              accessibilityLabel={reactionType === "default" ? "React to post" : `Reacted ${reactionType}. Remove reaction`}
+              accessibilityLabel={
+                reactionType === "default"
+                  ? "React to post"
+                  : `Reacted ${reactionType}. Remove reaction`
+              }
               accessibilityHint="Long press to choose a reaction"
             >
               {reactionType === "default" && (

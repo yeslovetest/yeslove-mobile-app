@@ -115,7 +115,9 @@ const DateFilterDropdown = ({
                 onPress={() => setShowStartPicker(true)}
                 style={Styles.input}
                 accessibilityRole="button"
-                accessibilityLabel={startDate ? `Start date ${formatDate(startDate)}` : "Select start date"}
+                accessibilityLabel={
+                  startDate ? `Start date ${formatDate(startDate)}` : "Select start date"
+                }
               >
                 <Text>{startDate ? formatDate(startDate) : "Select Start Date"}</Text>
               </TouchableOpacity>
