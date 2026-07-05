@@ -19,7 +19,18 @@
     "hooks:setup": "cd .. && husky frontendmobileapp/.husky"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/setup.ts"
+    ],
+    "moduleNameMapper": {
+      "^@expo/vector-icons(/.*)?$": "<rootDir>/test/mocks/vectorIconsMock.tsx",
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|@reduxjs/toolkit|immer|redux|reselect|redux-thunk|react-redux))",
+      "/node_modules/react-native-reanimated/plugin/"
+    ]
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,cjs}": [
@@ -80,6 +91,7 @@
     "@babel/core": "^7.25.2",
     "@expo/ngrok": "^4.1.3",
     "@openapitools/openapi-generator-cli": "^2.18.4",
+    "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.12",
     "@types/react": "~19.1.10",
     "@types/react-test-renderer": "^19.1.0",

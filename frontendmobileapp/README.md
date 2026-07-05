@@ -125,6 +125,46 @@ Feature folders follow a consistent nesting convention:
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full picture.
 
+## Testing
+
+Tests use **Jest** (via the `jest-expo` preset) and **React Native Testing
+Library** for components and hooks.
+
+```bash
+npm test            # run the suite once
+npm run test:watch  # watch mode
+npx jest path/to/file.test.ts   # run a single file
+```
+
+All tests live under `test/`, mirroring the source layout, and import source via
+the `@/…` alias:
+
+```
+test/
+├── store/       # reducer tests for every Redux slice
+├── sagas/       # saga tests (real store + mocked generated-API client)
+├── hooks/       # hook tests (renderHook)
+├── components/  # component + store-connected integration tests
+├── utils/       # pure helper tests
+├── helpers/     # shared test utilities (sagaTestStore, renderWithStore)
+└── mocks/       # module mocks (e.g. @expo/vector-icons)
+```
+
+Conventions:
+
+- Name files `*.test.ts` / `*.test.tsx`; put shared, non-test utilities in
+  `test/helpers` or `test/mocks` (no `.test` suffix, so Jest skips them).
+- Prefer testing behavior through the public surface: reducer logic, hooks
+  (`renderHook`), saga effects (dispatch → mocked API → assert state via
+  `runSagaStore`), and component output (`render`/`renderWithStore` + `screen`).
+- Jest wiring lives in `package.json`: the `@/…` alias and an `@expo/vector-icons`
+  mock (`moduleNameMapper`), the Redux/immer/react-redux ESM packages
+  (`transformIgnorePatterns`), and an AsyncStorage mock (`test/setup.ts`).
+
+Coverage spans all 10 slice reducers, the main data-fetch sagas, shared
+components/hooks, and a store-connected list-state integration test. Extend it as
+new logic lands.
+
 ## Code quality
 
 Commits are guarded by Husky + lint-staged (ESLint + Prettier on staged files).
