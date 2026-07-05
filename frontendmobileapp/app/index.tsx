@@ -2,6 +2,7 @@ import { Provider } from "react-redux";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import store from "./store/store";
 import App from "./App";
+import ErrorBoundary from "./Universal-components/Error-boundary/ErrorBoundary";
 import { configureHttpClient, registerAuthFailureHandler } from "./config/httpClient";
 import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { LoginState, setErrorMessage, setLoginStateAction } from "./store/Auth-store/authSlice";
@@ -20,7 +21,9 @@ const Login = () => {
   return (
     <SafeAreaProvider>
       <Provider store={store}>
-        <App></App>
+        <ErrorBoundary>
+          <App></App>
+        </ErrorBoundary>
       </Provider>
     </SafeAreaProvider>
   );
