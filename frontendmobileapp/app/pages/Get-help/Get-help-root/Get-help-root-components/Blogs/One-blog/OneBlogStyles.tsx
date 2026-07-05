@@ -1,62 +1,62 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-    blogContainer: {
-        display: "flex",
-        width: "100%",
-        backgroundColor: "#fff",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-        borderRadius: 12,
-        marginBottom: 16,
-    },
-    blogImage: {
-        width: "100%",
-        minHeight: 170,
-        maxHeight: 240,
-    },
-    blogTitle: {
-        textAlign: "left",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        marginTop: 10,
-        fontSize: 20,
-        lineHeight: 28,
-        fontWeight: "600"
-    },
-    authorAndDateContainer: {
-        display: "flex",
-        width: "100%",
-        justifyContent: "flex-start",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        alignItems: "center",
-        flexDirection: "row"
-    },
+  blogContainer: {
+    display: "flex",
+    width: "100%",
+    backgroundColor: theme.colors.surface,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    borderRadius: 12,
+    marginBottom: theme.spacing.lg,
+  },
+  blogImage: {
+    width: "100%",
+    minHeight: 170,
+    maxHeight: 240,
+  },
+  blogTitle: {
+    textAlign: "left",
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    marginTop: 10,
+    fontSize: theme.typography.fontSize.title2,
+    lineHeight: 28,
+    fontWeight: "600",
+  },
+  authorAndDateContainer: {
+    display: "flex",
+    width: "100%",
+    justifyContent: "flex-start",
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  authorContainer: {
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+    marginRight: 30,
+  },
+  authorIcon: {
+    color: theme.colors.primary,
+    paddingRight: 5,
+  },
+  dateAndAuthorText: {
+    color: theme.colors.textMuted,
+    fontSize: theme.typography.fontSize.subhead,
+  },
+  blogSummary: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    marginBottom: 14,
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.fontSize.body,
+    lineHeight: 22,
+  },
+});
 
-    authorContainer: {
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "row",
-        marginRight: 30
-    },
-    authorIcon: {
-        color: theme.colors.primaryBlue,
-        paddingRight: 5,
-    },
-    dateAndAuthorText: {
-        color: "#666",
-        fontSize: 14
-    },
-    blogSummary: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        marginBottom: 14,
-        color: "#444",
-        fontSize: 15,
-        lineHeight: 22,
-    },
-})
-
-export default styles
+export default styles;

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { ActivityIndicator, Animated, Modal, View } from "react-native";
 import styles from "./LoadingScreenStyle";
+import { theme } from "@/app/theme";
 
-const LoadingOverlay = ({ visible, color = "#fff" }) => {
+const LoadingOverlay = ({ visible, color = theme.colors.textOnPrimary }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -27,7 +28,7 @@ const LoadingOverlay = ({ visible, color = "#fff" }) => {
       statusBarTranslucent
       animationType="fade"
       visible={visible}
-      pointerEvents="none"   // prevent interactions
+      pointerEvents="none" // prevent interactions
     >
       <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
         <ActivityIndicator size="large" color={color} />

@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, Text, Linking } from 'react-native';
-import styles from '../SharedChatbotStyles';
+import React from "react";
+import { View, Text, Linking } from "react-native";
+import styles from "../SharedChatbotStyles";
+import { theme } from "@/app/theme";
 
 const LINK_PATTERN = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
 const FULL_LINK_PATTERN = /^(https?:\/\/[^\s]+|www\.[^\s]+)$/i;
@@ -8,32 +9,34 @@ const TRAILING_PUNCTUATION_PATTERN = /[.,;:!?]+$/;
 const HEADER_TOKEN_PATTERN = /^\[\[H\]\](.*)\[\[\/H\]\]$/;
 
 const markdownToPlainText = (value: string): string => {
-  return value
-    .replace(/\r\n/g, '\n')
-    // Mark markdown headers so they can be rendered as bold text later.
-    .replace(/^\s{0,3}#{1,6}\s+(.+)$/gm, '[[H]]$1[[/H]]')
-    // Strip markdown bold markers.
-    .replace(/(\*\*|__)(.*?)\1/g, '$2')
-    .replace(/^\s*[-*+]\s+/gm, '- ')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return (
+    value
+      .replace(/\r\n/g, "\n")
+      // Mark markdown headers so they can be rendered as bold text later.
+      .replace(/^\s{0,3}#{1,6}\s+(.+)$/gm, "[[H]]$1[[/H]]")
+      // Strip markdown bold markers.
+      .replace(/(\*\*|__)(.*?)\1/g, "$2")
+      .replace(/^\s*[-*+]\s+/gm, "- ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 };
 
 const normalizeMarkdownText = (value: unknown): string => {
   if (value === null || value === undefined) {
-    return '';
+    return "";
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     return markdownToPlainText(value);
   }
 
-  if (typeof value === 'number' || typeof value === 'boolean') {
+  if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) => normalizeMarkdownText(item)).join(' ');
+    return value.map((item) => normalizeMarkdownText(item)).join(" ");
   }
 
   try {
@@ -69,7 +72,7 @@ const openLink = async (value: string): Promise<void> => {
 const splitTrailingPunctuation = (value: string): { linkText: string; trailingText: string } => {
   const match = value.match(TRAILING_PUNCTUATION_PATTERN);
   if (!match) {
-    return { linkText: value, trailingText: '' };
+    return { linkText: value, trailingText: "" };
   }
 
   const trailingText = match[0];
@@ -82,7 +85,7 @@ const splitTrailingPunctuation = (value: string): { linkText: string; trailingTe
 const renderTextWithLinks = (
   value: string,
   keyPrefix: string,
-  textStyle?: { fontWeight: '700' },
+  textStyle?: { fontWeight: "700" },
 ): React.ReactNode[] => {
   return value.split(LINK_PATTERN).map((part, index) => {
     const isLink = !!part && FULL_LINK_PATTERN.test(part);
@@ -100,7 +103,7 @@ const renderTextWithLinks = (
       return (
         <Text key={`${keyPrefix}-link-${index}`} style={textStyle}>
           <Text
-            style={[textStyle, { color: '#2563eb' }]}
+            style={[textStyle, { color: theme.colors.primary }]}
             onPress={() => {
               void openLink(linkText);
             }}
@@ -131,15 +134,15 @@ const ChatResponse = ({ text, time }: { text: string; time: Date }) => {
     <View style={styles.chatResponseContainer}>
       <View style={styles.chatResponse}>
         <Text>
-          {safeText.split('\n').map((line, lineIndex, lines) => {
+          {safeText.split("\n").map((line, lineIndex, lines) => {
             const headerMatch = line.match(HEADER_TOKEN_PATTERN);
             const lineText = headerMatch ? headerMatch[1] : line;
-            const lineStyle = headerMatch ? ({ fontWeight: '700' } as const) : undefined;
+            const lineStyle = headerMatch ? ({ fontWeight: "700" } as const) : undefined;
 
             return (
               <React.Fragment key={`line-${lineIndex}`}>
                 {renderTextWithLinks(lineText, `line-${lineIndex}`, lineStyle)}
-                {lineIndex < lines.length - 1 && <Text>{'\n'}</Text>}
+                {lineIndex < lines.length - 1 && <Text>{"\n"}</Text>}
               </React.Fragment>
             );
           })}
@@ -152,4 +155,3 @@ const ChatResponse = ({ text, time }: { text: string; time: Date }) => {
 };
 
 export default ChatResponse;
-

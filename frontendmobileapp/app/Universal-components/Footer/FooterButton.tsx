@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../../app/store/hooks";
 import { changeTabAction, TabData } from "../../store/Navigation/navigationSlice";
 import { fetchUserNotifications } from "@/app/store/Notification-store/notificationSlice";
 import styles from "./FooterStyles";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface Props {
   tab: TabData;
@@ -18,33 +18,36 @@ interface Props {
 
 const FooterButton = (props: Props) => {
   const dispatch = useAppDispatch();
-  const currentActiveTab = useAppSelector(
-    (state) => state.navigation.tabStack.at(0)
-  );
+  const currentActiveTab = useAppSelector((state) => state.navigation.tabStack.at(0));
   const isSelected = currentActiveTab?.type == props.tab.type;
 
   const handlePress = () => {
     dispatch(changeTabAction(props.tab));
-    if (props.title === 'Notifications') {
+    if (props.title === "Notifications") {
       dispatch(fetchUserNotifications({}));
     }
     props.clicked?.();
   };
 
   return (
-    <TouchableOpacity style={styles.iconContainer} onPress={handlePress}>
-     <View style={{ position: "relative" }}>
-    <Ionicons
-      name={isSelected ? props.selectedIcon : props.icon}
-      size={24}
-      style={[styles.icon, isSelected && styles.activeIcon]}
-    />
-    {!isSelected && props.children}
-  </View>
+    <TouchableOpacity
+      style={styles.iconContainer}
+      onPress={handlePress}
+      accessibilityRole="tab"
+      accessibilityLabel={props.title}
+      accessibilityState={{ selected: isSelected }}
+    >
+      <View style={{ position: "relative" }}>
+        <Ionicons
+          name={isSelected ? props.selectedIcon : props.icon}
+          size={24}
+          style={[styles.icon, isSelected && styles.activeIcon]}
+        />
+        {!isSelected && props.children}
+      </View>
       <Text style={[styles.footerText, isSelected && styles.activeText]}>{props.title}</Text>
     </TouchableOpacity>
   );
 };
-
 
 export default FooterButton;

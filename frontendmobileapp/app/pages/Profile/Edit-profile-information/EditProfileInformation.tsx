@@ -1,22 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard, LayoutChangeEvent } from 'react-native'
-import styles from './EditProfileInformationStyles'
-import Header from '@/app/Universal-components/Header/Header'
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
-import { setProfileInformationAction, persistUserInfoAction, setActiveAboutTabAction } from '@/app/store/Profile-store/profileSlice'
-import TextInputField from './TextInputField/TextInputField'
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  LayoutChangeEvent,
+} from "react-native";
+import styles from "./EditProfileInformationStyles";
+import Header from "@/app/Universal-components/Header/Header";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import {
+  setProfileInformationAction,
+  persistUserInfoAction,
+  setActiveAboutTabAction,
+} from "@/app/store/Profile-store/profileSlice";
+import TextInputField from "./TextInputField/TextInputField";
 import { useMsgToggle } from "@/hooks/messageToggle";
 
 const EditProfileInformation = () => {
-  const dispatch = useAppDispatch()
-  const userId = useAppSelector(state => state.navigation.tabStack.at(-1)?.data?.userId);
-  const profileData = useAppSelector(state => state.profile.profiles[userId]);
-  const name = useAppSelector(state => state.profile.profiles[userId].contact_info?.name ?? "");
-  const email = useAppSelector(state => state.profile.profiles[userId].contact_info?.email ?? "");
-  const phone = useAppSelector(state => state.profile.profiles[userId].contact_info?.phone ?? "");
-  const address = useAppSelector(state => state.profile.profiles[userId].contact_info?.address ?? "");
-  const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? "");
-  const bio = useAppSelector(state => state.profile.profiles[userId].bio ?? "");
+  const dispatch = useAppDispatch();
+  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
+  const profileData = useAppSelector((state) => state.profile.profiles[userId]);
+  const name = useAppSelector((state) => state.profile.profiles[userId].contact_info?.name ?? "");
+  const email = useAppSelector((state) => state.profile.profiles[userId].contact_info?.email ?? "");
+  const phone = useAppSelector((state) => state.profile.profiles[userId].contact_info?.phone ?? "");
+  const address = useAppSelector(
+    (state) => state.profile.profiles[userId].contact_info?.address ?? "",
+  );
+  const website = useAppSelector(
+    (state) => state.profile.profiles[userId].contact_info?.website ?? "",
+  );
+  const bio = useAppSelector((state) => state.profile.profiles[userId].bio ?? "");
   const msgToggle = useMsgToggle();
 
   const [editedName, setEditedName] = useState(name);
@@ -25,7 +42,7 @@ const EditProfileInformation = () => {
   const [editedAddress, setEditedAddress] = useState(address);
   const [editedWebsite, setEditedWebsite] = useState(website);
   const [editedBio, setEditedBio] = useState(bio);
-  const [displayMsg, setDisplayMsg] = useState('');
+  const [displayMsg, setDisplayMsg] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
   const fieldPositionRef = useRef<Record<string, number>>({});
@@ -36,7 +53,7 @@ const EditProfileInformation = () => {
     setEditedPhone(phone);
     setEditedAddress(address);
     setEditedWebsite(website);
-    setEditedBio(bio)
+    setEditedBio(bio);
   }, [name, email, phone, address, website, bio]);
 
   const handleFieldChange = (field: string, value: string) => {
@@ -74,15 +91,15 @@ const EditProfileInformation = () => {
         email: editedEmail,
         phone: editedPhone,
         address: editedAddress,
-        website: editedWebsite
+        website: editedWebsite,
       },
-      bio: editedBio
+      bio: editedBio,
     };
     dispatch(setProfileInformationAction({ id: userId, data: updatedProfile }));
     dispatch(persistUserInfoAction());
-    setDisplayMsg('Profile Update Successful!')
-    dispatch(setActiveAboutTabAction("View"))
-  }
+    setDisplayMsg("Profile Update Successful!");
+    dispatch(setActiveAboutTabAction("View"));
+  };
 
   useEffect(() => {
     // make the message appear for 3s
@@ -90,8 +107,8 @@ const EditProfileInformation = () => {
   }, [displayMsg, profileData]);
 
   useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
     const onShow = Keyboard.addListener(showEvent, (event) => {
       setKeyboardHeight(event.endCoordinates?.height ?? 0);
@@ -117,14 +134,14 @@ const EditProfileInformation = () => {
       scrollViewRef.current?.scrollTo({ y: targetY, animated: true });
     });
   };
-  
+
   return (
     <>
       <Header></Header>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 20}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 20}
       >
         <ScrollView
           ref={scrollViewRef}
@@ -140,7 +157,9 @@ const EditProfileInformation = () => {
         >
           <View style={styles.headerRow}>
             <Text style={styles.pageTitle}>Edit Profile</Text>
-            <Text style={styles.pageSubtitle}>Update your contact details and bio information.</Text>
+            <Text style={styles.pageSubtitle}>
+              Update your contact details and bio information.
+            </Text>
           </View>
 
           <TextInputField
@@ -185,19 +204,18 @@ const EditProfileInformation = () => {
             onFocus={() => handleFieldFocus("Website")}
             onLayout={(event) => handleFieldLayout("Website", event)}
           />
-          {msgToggle.msg && 
+          {msgToggle.msg && (
             <View style={styles.displayMsgBox}>
               <Text style={styles.displayMsgText}>{msgToggle.msg}</Text>
             </View>
-          }
+          )}
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
-          
         </ScrollView>
       </KeyboardAvoidingView>
     </>
-  )
-}
+  );
+};
 
-export default EditProfileInformation
+export default EditProfileInformation;

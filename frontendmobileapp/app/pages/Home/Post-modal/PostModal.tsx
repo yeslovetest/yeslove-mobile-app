@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import styles from "./PostModalStyles";
+import { theme } from "@/app/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { postNewPostAction } from "@/app/store/Home-store/feedSlice";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
@@ -24,22 +25,24 @@ interface PostModalProps {
 }
 
 const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
   const { height: screenHeight } = useWindowDimensions();
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const [isRendered, setIsRendered] = useState(visible);
   const [userPost, setUserPost] = useState("");
-  const [selectedFile, setSelectedFile] = useState<Array<{ uri: string; type: string; name?: string; fileSize?: number }> | null>(null);
+  const [selectedFile, setSelectedFile] = useState<Array<{
+    uri: string;
+    type: string;
+    name?: string;
+    fileSize?: number;
+  }> | null>(null);
   const [validationMessage, setValidationMessage] = useState("");
 
-  const userName = useAppSelector(
-    (state) => state.user.name ?? ""
-  );
+  const userName = useAppSelector((state) => state.user.name ?? "");
   const userId = useAppSelector((state) => state.user.id ?? "");
   const profilePic = useAppSelector((state) => state.profile.profiles[userId]?.profile_pic ?? "");
 
   const mediaID = useAppSelector((state) => state.media.uploadedMediaId);
-
 
   useEffect(() => {
     // Recompute hidden offset on rotation so slide animation stays fully off-screen.
@@ -70,10 +73,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
     setUserPost("");
     setSelectedFile(null);
     setValidationMessage("");
-
-   
   };
-
 
   const handlePost = async (anonymous?: boolean) => {
     if (!userPost.trim()) return;
@@ -81,7 +81,7 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
     const hasOversizedMedia = (selectedFile ?? []).some(
       (file) =>
         typeof file.fileSize === "number" &&
-        file.fileSize > MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes
+        file.fileSize > MEDIA_UPLOAD_LIMITS.postMediaFileMaxBytes,
     );
     if (hasOversizedMedia) {
       setValidationMessage("One or more selected media files exceed the 15MB limit.");
@@ -90,46 +90,40 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
 
     setValidationMessage("");
 
-    dispatch(postNewPostAction({
-      content: userPost,
-      anonymous: !!anonymous,
-      mediaFiles: selectedFile ?? undefined,
-    }));
+    dispatch(
+      postNewPostAction({
+        content: userPost,
+        anonymous: !!anonymous,
+        mediaFiles: selectedFile ?? undefined,
+      }),
+    );
 
     handleClose();
   };
 
-
-
   return (
     <Modal transparent visible={isRendered} animationType="none">
       <View style={styles.backdrop}>
-        <Animated.View
-          style={[
-            styles.modalContent,
-            { transform: [{ translateY: slideAnim }] },
-          ]}
-        >
+        <Animated.View style={[styles.modalContent, { transform: [{ translateY: slideAnim }] }]}>
           <KeyboardAvoidingView
             style={styles.modalBody}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
           >
             <View style={styles.exitHeader}>
-              <Ionicons style={styles.closeIcon}
+              <Ionicons
+                style={styles.closeIcon}
                 onPress={handleClose}
                 name="close"
                 size={30}
-                color="black"
+                color={theme.colors.textPrimary}
               />
               <Text style={styles.createPost}>Create post</Text>
               <View style={styles.actionButtonsContainer}>
                 <TouchableOpacity style={styles.actionButtons} onPress={() => handlePost(false)}>
-                  <Text style={styles.actionButtonsText}>Share
-                  </Text>
+                  <Text style={styles.actionButtonsText}>Share</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
-                  <Text style={styles.actionButtonsText}>Post Anonymously
-                  </Text>
+                  <Text style={styles.actionButtonsText}>Post Anonymously</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -140,9 +134,9 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
               showsVerticalScrollIndicator={false}
             >
               <PostingUserProfile username={userName} profilePic={profilePic} />
-              <PostInput 
-                userPost={userPost} 
-                setUserPost={setUserPost} 
+              <PostInput
+                userPost={userPost}
+                setUserPost={setUserPost}
                 selectedFile={selectedFile}
                 setSelectedFile={setSelectedFile}
                 validationMessage={validationMessage}

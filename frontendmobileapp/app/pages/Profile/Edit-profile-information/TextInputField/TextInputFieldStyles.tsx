@@ -1,53 +1,47 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   editItemContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.surface,
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: 14,
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
     width: "100%",
-    borderRadius: 14,
+    borderRadius: theme.radii.xl,
     borderWidth: 1,
-    borderColor: "#e5e9f2",
-    shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderColor: theme.colors.border,
+    ...theme.shadows.sm,
   },
-
   editItemText: {
     fontSize: 11,
     fontWeight: "700",
-    marginBottom: 8,
-    color: "#6f7b91",
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.textMuted,
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
-
   editItemInfo: {
     borderWidth: 1,
     borderStyle: "solid",
-    borderColor: "#d8deea",
-    backgroundColor: "#fbfcff",
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
     width: "100%",
     minHeight: 46,
     paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    color: "#0f172a",
-    fontSize: 15,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.lg,
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.body,
     fontWeight: "500",
   },
-
   editItemInfoMultiline: {
     minHeight: 92,
     textAlignVertical: "top",
   },
-})
+});
 
-export default styles 
+export default styles;

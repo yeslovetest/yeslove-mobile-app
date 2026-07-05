@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 import { View, TouchableOpacity, TextInput, Text, Image, Keyboard } from "react-native";
-import styles from './PostCommentFieldStyles';
-import { postComment, retrievePostReactions } from '@/app/store/Home-store/feedSlice';
-import { useAppDispatch } from '@/app/store/hooks';
-import { getImageSource } from '@/constants/imageFallbacks';
+import styles from "./PostCommentFieldStyles";
+import { theme } from "@/app/theme";
+import { postComment, retrievePostReactions } from "@/app/store/Home-store/feedSlice";
+import { useAppDispatch } from "@/app/store/hooks";
+import { getImageSource } from "@/constants/imageFallbacks";
 
 interface Props {
   id: number;
@@ -11,60 +12,64 @@ interface Props {
 }
 
 const PostCommentField = ({ id, pic }: Props) => {
-  
   const dispatch = useAppDispatch();
-  const [userComment, setUserComment] = useState('');
+  const [userComment, setUserComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
   const handleCommentButton = async () => {
-      if (!userComment.trim()) {
+    if (!userComment.trim()) {
       return;
-      }
+    }
 
-     if (isSubmitting) {
+    if (isSubmitting) {
       return;
-     }
+    }
 
-     setIsSubmitting(true);
+    setIsSubmitting(true);
 
-     try {
-      await dispatch(postComment({postId: id, content: userComment}));
+    try {
+      await dispatch(postComment({ postId: id, content: userComment }));
       setUserComment("");
       Keyboard.dismiss();
-      dispatch(retrievePostReactions({postId: id ?? 0}));
-     } finally {
+      dispatch(retrievePostReactions({ postId: id ?? 0 }));
+    } finally {
       setIsSubmitting(false);
-     }
-  }
+    }
+  };
 
-  
   return (
     <View style={styles.commentContainer}>
-                    <View style={styles.postCommentContainer}>
-                      <Image style={styles.commentProfileImage} source={getImageSource(pic, 'profile')} />
-                        <TextInput
-                          style={styles.commentBox}
-                          onChangeText={(val) => setUserComment(val)}
-                          value={userComment}
-                          placeholder="Write a comment..."
-                          placeholderTextColor="#8f8f8f"
-                          multiline
-                          numberOfLines={3}
-                          maxLength={500}
-                          textAlignVertical="top"
-                        />
-    
-                        <TouchableOpacity
-                          style={[styles.submitCommentButton, !userComment.trim() && styles.submitCommentButtonDisabled]}
-                          onPress={handleCommentButton}
-                          disabled={!userComment.trim() || isSubmitting}
-                        >
-                            <Text style={styles.submitCommentButtonText}>Submit</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-  )
-}
+      <View style={styles.postCommentContainer}>
+        <Image style={styles.commentProfileImage} source={getImageSource(pic, "profile")} />
+        <TextInput
+          style={styles.commentBox}
+          onChangeText={(val) => setUserComment(val)}
+          value={userComment}
+          placeholder="Write a comment..."
+          placeholderTextColor={theme.colors.textMuted}
+          multiline
+          numberOfLines={3}
+          maxLength={500}
+          textAlignVertical="top"
+          accessibilityLabel="Write a comment"
+        />
 
-export default PostCommentField
+        <TouchableOpacity
+          style={[
+            styles.submitCommentButton,
+            !userComment.trim() && styles.submitCommentButtonDisabled,
+          ]}
+          onPress={handleCommentButton}
+          disabled={!userComment.trim() || isSubmitting}
+          accessibilityRole="button"
+          accessibilityLabel="Submit comment"
+          accessibilityState={{ disabled: !userComment.trim() || isSubmitting }}
+        >
+          <Text style={styles.submitCommentButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+export default PostCommentField;

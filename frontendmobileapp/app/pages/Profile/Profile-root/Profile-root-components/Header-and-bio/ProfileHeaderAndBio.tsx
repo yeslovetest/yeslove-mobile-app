@@ -1,14 +1,23 @@
-import React, { useMemo, useState } from 'react'
-import { ActivityIndicator, Alert, ImageBackground, Text, View, Image, TouchableOpacity } from 'react-native';
-import styles from './ProfileHeaderAndBioStyles';
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { updateProfile } from '@/app/store/Profile-store/profileSlice';
-import axios from 'axios';
-import dataURLtoFile from '@/utils/mediaUrlConverter';
-import * as ImagePicker from 'expo-image-picker';
-import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from '@/constants/mediaLimits';
-import { getImageSource } from '@/constants/imageFallbacks';
-const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+import React, { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ImageBackground,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import styles from "./ProfileHeaderAndBioStyles";
+import { theme } from "@/app/theme";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { updateProfile } from "@/app/store/Profile-store/profileSlice";
+import axios from "axios";
+import dataURLtoFile from "@/utils/mediaUrlConverter";
+import * as ImagePicker from "expo-image-picker";
+import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from "@/constants/mediaLimits";
+import { getImageSource } from "@/constants/imageFallbacks";
+const SUPPORTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 type SelectedProfileFile = {
   uri: string;
@@ -23,26 +32,30 @@ const ProfileHeaderAndBio = () => {
   const bio = useAppSelector((state) => state.profile.profiles[userId]?.bio ?? "");
   const profileImage = useAppSelector((state) => state.profile.profiles[userId]?.profile_pic ?? "");
   const userPosts = useAppSelector((state) => state.profile.profiles[userId]?.user_posts ?? 0);
-  const userFollowers = useAppSelector((state) => state.profile.profiles[userId]?.user_followers ?? 0);
-  const userFollowing = useAppSelector((state) => state.profile.profiles[userId]?.user_following ?? 0);
+  const userFollowers = useAppSelector(
+    (state) => state.profile.profiles[userId]?.user_followers ?? 0,
+  );
+  const userFollowing = useAppSelector(
+    (state) => state.profile.profiles[userId]?.user_following ?? 0,
+  );
   const isCurrentUserProfile = useAppSelector((state) => state.profile.isCurrentUserProfile);
   const isProfileImageUploading = useAppSelector((state) => state.profile.isProfileImageUploading);
   const dispatch = useAppDispatch();
   const [selectedFile, setSelectedFile] = useState<SelectedProfileFile | null>(null);
-  const [validationMessage, setValidationMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [validationMessage, setValidationMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const hasBio = bio.trim().length > 0;
 
   const currentProfileImageUri = useMemo(() => {
     if (!profileImage) {
-      return '';
+      return "";
     }
 
     if (/^https?:\/\//i.test(profileImage)) {
       return profileImage;
     }
 
-    if (profileImage.startsWith('/')) {
+    if (profileImage.startsWith("/")) {
       return `${axios.defaults.baseURL}${profileImage}`;
     }
 
@@ -52,16 +65,16 @@ const ProfileHeaderAndBio = () => {
   const displayedProfileImageUri = selectedFile?.uri || currentProfileImageUri;
 
   const validateAndSetSelectedImage = (asset: ImagePicker.ImagePickerAsset) => {
-    const detectedType = asset.mimeType || 'image/jpeg';
+    const detectedType = asset.mimeType || "image/jpeg";
 
     if (!SUPPORTED_IMAGE_TYPES.includes(detectedType)) {
-      setValidationMessage('Please select a JPG, PNG, or WEBP image.');
+      setValidationMessage("Please select a JPG, PNG, or WEBP image.");
       return;
     }
 
     if (asset.fileSize && asset.fileSize > MEDIA_UPLOAD_LIMITS.profileImageMaxBytes) {
       setValidationMessage(
-        `Image must be ${formatSizeMb(MEDIA_UPLOAD_LIMITS.profileImageMaxBytes)} or smaller.`
+        `Image must be ${formatSizeMb(MEDIA_UPLOAD_LIMITS.profileImageMaxBytes)} or smaller.`,
       );
       return;
     }
@@ -75,12 +88,15 @@ const ProfileHeaderAndBio = () => {
   };
 
   const pickFromGallery = async () => {
-    setValidationMessage('');
-    setSuccessMessage('');
+    setValidationMessage("");
+    setSuccessMessage("");
 
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert('Permission needed', 'Please allow photo library access to choose a profile picture.');
+      Alert.alert(
+        "Permission needed",
+        "Please allow photo library access to choose a profile picture.",
+      );
       return;
     }
 
@@ -98,18 +114,18 @@ const ProfileHeaderAndBio = () => {
 
       validateAndSetSelectedImage(result.assets[0]);
     } catch (error) {
-      console.error('failed to pick profile image', error);
-      setValidationMessage('Unable to open image picker right now.');
+      console.error("failed to pick profile image", error);
+      setValidationMessage("Unable to open image picker right now.");
     }
   };
 
   const takePhoto = async () => {
-    setValidationMessage('');
-    setSuccessMessage('');
+    setValidationMessage("");
+    setSuccessMessage("");
 
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert('Permission needed', 'Please allow camera access to take a profile picture.');
+      Alert.alert("Permission needed", "Please allow camera access to take a profile picture.");
       return;
     }
 
@@ -126,8 +142,8 @@ const ProfileHeaderAndBio = () => {
 
       validateAndSetSelectedImage(result.assets[0]);
     } catch (error) {
-      console.error('failed to capture profile image', error);
-      setValidationMessage('Unable to open camera right now.');
+      console.error("failed to capture profile image", error);
+      setValidationMessage("Unable to open camera right now.");
     }
   };
 
@@ -136,10 +152,10 @@ const ProfileHeaderAndBio = () => {
       return;
     }
 
-    Alert.alert('Update Profile Picture', 'Choose how you want to add your photo.', [
-      { text: 'Take Photo', onPress: takePhoto },
-      { text: 'Choose from Library', onPress: pickFromGallery },
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Update Profile Picture", "Choose how you want to add your photo.", [
+      { text: "Take Photo", onPress: takePhoto },
+      { text: "Choose from Library", onPress: pickFromGallery },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
 
@@ -149,30 +165,30 @@ const ProfileHeaderAndBio = () => {
     }
 
     setSelectedFile(null);
-    setValidationMessage('');
-    setSuccessMessage('');
+    setValidationMessage("");
+    setSuccessMessage("");
   };
 
   const uploadProfilePic = async () => {
     if (!selectedFile) {
-      setValidationMessage('Please choose an image first.');
+      setValidationMessage("Please choose an image first.");
       return;
     }
 
-    setValidationMessage('');
-    setSuccessMessage('');
+    setValidationMessage("");
+    setSuccessMessage("");
 
     const mediaData = new FormData(); // form data for profile pic upload
-    const fieldName = 'profile_pic';
+    const fieldName = "profile_pic";
 
-    if (selectedFile.uri.startsWith('file:')) {
+    if (selectedFile.uri.startsWith("file:")) {
       mediaData.append(fieldName, {
         uri: selectedFile.uri,
         type: selectedFile.type,
-        name: selectedFile.name || 'photo.jpg',
+        name: selectedFile.name || "photo.jpg",
       } as any);
-    } else if (selectedFile.uri.startsWith('data:')) {
-      const file = dataURLtoFile(selectedFile.uri, selectedFile.name || 'photo.jpg');
+    } else if (selectedFile.uri.startsWith("data:")) {
+      const file = dataURLtoFile(selectedFile.uri, selectedFile.name || "photo.jpg");
       mediaData.append(fieldName, file as any);
     }
 
@@ -181,23 +197,29 @@ const ProfileHeaderAndBio = () => {
         dispatch(updateProfile({ file: mediaData, resolve, reject }));
       });
 
-      setSuccessMessage('Profile picture updated successfully.');
+      setSuccessMessage("Profile picture updated successfully.");
       setSelectedFile(null);
     } catch (error) {
-      console.error('failed to upload profile picture', error);
-      setValidationMessage('Upload failed. Please try again.');
+      console.error("failed to upload profile picture", error);
+      setValidationMessage("Upload failed. Please try again.");
     }
   };
 
   return (
     <View>
       <View style={styles.profileImageContainer}>
-        <ImageBackground style={styles.profileBackgroundImage} imageStyle={{ borderRadius: 15 }} source={{ uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/dummy-banner.jpg" }}>
+        <ImageBackground
+          style={styles.profileBackgroundImage}
+          imageStyle={{ borderRadius: 15 }}
+          source={{
+            uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/dummy-banner.jpg",
+          }}
+        >
           <View style={styles.overlay}></View>
           <View style={styles.profileImageWrapper}>
             <Image
               style={styles.profileImage}
-              source={getImageSource(displayedProfileImageUri, 'profile')}
+              source={getImageSource(displayedProfileImageUri, "profile")}
             />
 
             {isCurrentUserProfile && (
@@ -221,12 +243,16 @@ const ProfileHeaderAndBio = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.previewButton, styles.uploadButton, isProfileImageUploading ? styles.disabledButton : undefined]}
+                  style={[
+                    styles.previewButton,
+                    styles.uploadButton,
+                    isProfileImageUploading ? styles.disabledButton : undefined,
+                  ]}
                   onPress={uploadProfilePic}
                   disabled={isProfileImageUploading}
                 >
                   {isProfileImageUploading ? (
-                    <ActivityIndicator color="#fff" size="small" />
+                    <ActivityIndicator color={theme.colors.textOnPrimary} size="small" />
                   ) : (
                     <Text style={styles.previewButtonText}>Upload Photo</Text>
                   )}
@@ -235,18 +261,25 @@ const ProfileHeaderAndBio = () => {
             </View>
           )}
 
-          {validationMessage ? <Text style={styles.validationMessage}>{validationMessage}</Text> : null}
+          {validationMessage ? (
+            <Text style={styles.validationMessage}>{validationMessage}</Text>
+          ) : null}
           {successMessage ? <Text style={styles.successMessage}>{successMessage}</Text> : null}
 
           <Text style={styles.userName}>{userName}</Text>
           <View style={styles.userStatsContainer}>
-            <Text style={styles.userStats}>Posts: <Text style={styles.userStatsNumber}>{userPosts}</Text></Text>
-            <Text style={styles.userStats}>Followers: <Text style={styles.userStatsNumber}>{userFollowers}</Text></Text>
-            <Text style={styles.userStats}>Following: <Text style={styles.userStatsNumber}>{userFollowing}</Text></Text>
+            <Text style={styles.userStats}>
+              Posts: <Text style={styles.userStatsNumber}>{userPosts}</Text>
+            </Text>
+            <Text style={styles.userStats}>
+              Followers: <Text style={styles.userStatsNumber}>{userFollowers}</Text>
+            </Text>
+            <Text style={styles.userStats}>
+              Following: <Text style={styles.userStatsNumber}>{userFollowing}</Text>
+            </Text>
           </View>
         </ImageBackground>
       </View>
-
 
       {/* User bio */}
 
@@ -257,7 +290,8 @@ const ProfileHeaderAndBio = () => {
           <>
             <Text style={styles.emptyBioTitle}>Tell people about yourself</Text>
             <Text style={styles.emptyBioText}>
-              Add a short bio so others can get to know you. Click Edit your profile information to update it.
+              Add a short bio so others can get to know you. Click Edit your profile information to
+              update it.
             </Text>
           </>
         ) : (
@@ -265,10 +299,7 @@ const ProfileHeaderAndBio = () => {
         )}
       </View>
     </View>
+  );
+};
 
-  )
-}
-
-export default ProfileHeaderAndBio
-
-
+export default ProfileHeaderAndBio;

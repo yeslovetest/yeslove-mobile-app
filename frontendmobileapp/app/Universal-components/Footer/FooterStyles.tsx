@@ -1,54 +1,55 @@
 import { StyleSheet } from "react-native";
-import theme from "../../../assets/variables/Variables"
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   footer: {
-    width: '100%',
+    width: "100%",
     minHeight: 64,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 0,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingVertical: 6,
-    borderTopColor: '#e8e8e8',
+    borderTopColor: theme.colors.border,
     borderTopWidth: 1,
   },
   iconContainer: {
-   width: "20%",
+    width: "20%",
     minHeight: 48,
     justifyContent: "center",
-    paddingBottom: 2,
-   alignItems: "center"
+    paddingBottom: theme.spacing.xxs,
+    alignItems: "center",
   },
   activeIcon: {
-    color: theme.colors.primaryBlue,
-    fontSize: 24
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.title1,
   },
   icon: {
-    color: theme.colors.blackText,
+    color: theme.colors.textPrimary,
     fontSize: 22,
     display: "flex",
     paddingBottom: 3,
   },
   footerText: {
     fontSize: 11,
-    marginTop: 2,
-    color: theme.colors.iconNotActive,
+    marginTop: theme.spacing.xxs,
+    color: theme.colors.textMuted,
   },
-    activeText: {
-    color: theme.colors.primaryBlue,
-    fontWeight: '600',
+  activeText: {
+    color: theme.colors.primary,
+    fontWeight: "600",
   },
   newNotification: {
     position: "absolute",
-    top: -2,     
-    left: 12, 
+    top: -2,
+    left: 12,
     width: 12,
-    height: 12, 
-    borderRadius: 6,
-    backgroundColor: theme.colors.primaryBlue
-  }
-})
+    height: 12,
+    borderRadius: theme.radii.sm,
+    backgroundColor: theme.colors.primary,
+  },
+});
 
-export default styles 
+export default styles;

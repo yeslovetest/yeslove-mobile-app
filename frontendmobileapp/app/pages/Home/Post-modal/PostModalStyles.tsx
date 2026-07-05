@@ -1,75 +1,74 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: 'flex-end',
+    backgroundColor: theme.colors.overlay,
+    justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "white",
+    backgroundColor: theme.colors.surface,
     width: "100%",
     height: "92%",
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
+    borderTopLeftRadius: theme.radii.xxl,
+    borderTopRightRadius: theme.radii.xxl,
     paddingHorizontal: 14,
     paddingTop: 10,
-    paddingBottom: 8,
+    paddingBottom: theme.spacing.sm,
   },
   exitHeader: {
     width: "100%",
-    paddingHorizontal: 2,
+    paddingHorizontal: theme.spacing.xxs,
     minHeight: 52,
     flexDirection: "row",
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderColor: "#ddd",
-    gap: 8,
+    borderColor: theme.colors.border,
+    gap: theme.spacing.sm,
   },
   closeIcon: {
-    padding: 2,
+    padding: theme.spacing.xxs,
   },
   createPost: {
-    color: theme.colors.blackText,
+    color: theme.colors.textPrimary,
     fontSize: 19,
     fontWeight: "600",
     flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 8,
+    textAlign: "center",
+    marginHorizontal: theme.spacing.sm,
   },
   actionButtonsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 6,
     flexShrink: 1,
-    justifyContent: 'flex-end',
-    flexWrap: 'wrap',
+    justifyContent: "flex-end",
+    flexWrap: "wrap",
   },
   actionButtons: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: theme.spacing.sm,
     paddingHorizontal: 10,
-    backgroundColor: '#f3f6fb',
-    borderRadius: 8,
+    backgroundColor: theme.colors.surfaceAlt,
+    borderRadius: theme.radii.md,
     minHeight: 36,
-
   },
-  actionButtonsText : {
-    textAlign: 'center',
-    fontWeight: '600',
-    color: theme.colors.primaryBlue,
-    fontSize: 12
+  actionButtonsText: {
+    textAlign: "center",
+    fontWeight: "600",
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.caption,
   },
   modalBody: {
     flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: theme.spacing.xl,
   },
-  
 });
 
 export default styles;

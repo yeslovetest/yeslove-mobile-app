@@ -1,23 +1,31 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Animated, View, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
-import ChatbotScrollView from './ChatbotScrollView';
-import TextInputContainer from './Chatbot-components/TextInputContainer';
-import styles from './SharedChatbotStyles';
-import Header from '@/app/Universal-components/Header/Header';
-import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
-import { sendChatbotMessage } from '@/app/store/Chat/chatSlice';
+import React, { useRef, useEffect, useState } from "react";
+import { Animated, View, Dimensions, KeyboardAvoidingView, Platform, Keyboard } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ChatbotScrollView from "./ChatbotScrollView";
+import TextInputContainer from "./Chatbot-components/TextInputContainer";
+import styles from "./SharedChatbotStyles";
+import Header from "@/app/Universal-components/Header/Header";
+import { useAppSelector, useAppDispatch } from "@/app/store/hooks";
+import { sendChatbotMessage } from "@/app/store/Chat/chatSlice";
 
 const Chatbot = () => {
-
   const dispatch = useAppDispatch();
-  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string; createdAt: Date }[]>([]);
+  const insets = useSafeAreaInsets();
+  const [messages, setMessages] = useState<
+    { role: "user" | "bot"; text: string; createdAt: Date }[]
+  >([]);
   const [loading, setLoading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const streamSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const screenHeight = Dimensions.get('window').height;
+  const screenHeight = Dimensions.get("window").height;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   const chatBotResponse = useAppSelector((state) => state.chat.chatbotResponse.response ?? "");
-  const chatBotResponseSources = useAppSelector((state) => state.chat.chatbotResponse.sources ?? "");
-  const chatBotResponseUpdatedAt = useAppSelector((state) => state.chat.chatbotResponse.updated_at ?? 0);
+  const chatBotResponseSources = useAppSelector(
+    (state) => state.chat.chatbotResponse.sources ?? "",
+  );
+  const chatBotResponseUpdatedAt = useAppSelector(
+    (state) => state.chat.chatbotResponse.updated_at ?? 0,
+  );
 
   const formatSources = (sources: unknown): string => {
     if (!sources) {
@@ -25,7 +33,10 @@ const Chatbot = () => {
     }
 
     if (Array.isArray(sources)) {
-      return sources.map((item) => String(item ?? "")).filter(Boolean).join(", ");
+      return sources
+        .map((item) => String(item ?? ""))
+        .filter(Boolean)
+        .join(", ");
     }
 
     if (typeof sources === "string") {
@@ -49,15 +60,29 @@ const Chatbot = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const onShow = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates?.height ?? 0);
+    });
+    const onHide = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      onShow.remove();
+      onHide.remove();
+    };
+  }, []);
+
   const postPrompt = async (prompt: string) => {
     setLoading(true);
 
     const now = new Date();
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", text: prompt, createdAt: now },
-    ]);
+    setMessages((prev) => [...prev, { role: "user", text: prompt, createdAt: now }]);
 
     dispatch(sendChatbotMessage({ prompt }));
   };
@@ -78,7 +103,7 @@ const Chatbot = () => {
 
     setMessages((prev) => {
       const lastMessage = prev[prev.length - 1];
-      if (lastMessage?.role === 'bot') {
+      if (lastMessage?.role === "bot") {
         const updated = [...prev];
         updated[updated.length - 1] = {
           ...lastMessage,
@@ -112,20 +137,22 @@ const Chatbot = () => {
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.outerView,
-        { transform: [{ translateY: slideAnim }] },
-      ]}
-    >
+    <Animated.View style={[styles.outerView, { transform: [{ translateY: slideAnim }] }]}>
       <Header />
       <KeyboardAvoidingView
         style={styles.chatBody}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={60}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
         <ChatbotScrollView messages={messages} loading={loading} />
-        <View style={styles.chatInputDock}>
+        <View
+          style={[
+            styles.chatInputDock,
+            // Lift the dock above the keyboard edge (accounts for the bottom
+            // safe-area / gesture nav inset) so the keyboard can't cover it.
+            { marginBottom: keyboardHeight > 0 ? Math.max(insets.bottom, 8) : 0 },
+          ]}
+        >
           <TextInputContainer onSend={handleSend} />
         </View>
       </KeyboardAvoidingView>

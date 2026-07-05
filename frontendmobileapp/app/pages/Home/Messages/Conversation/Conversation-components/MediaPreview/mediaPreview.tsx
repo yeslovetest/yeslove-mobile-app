@@ -2,8 +2,9 @@ import React, { useMemo, useRef, useState } from "react";
 import { View, Text, FlatList, Image, Modal, Pressable, Dimensions } from "react-native";
 import { Video } from "@/app/Universal-components/Video/Video";
 import styles from "./mediaPreviewStyles";
+import { theme } from "@/app/theme";
 import { BASE_URL } from "@/app/config/baseUrl";
-import { getImageSource } from '@/constants/imageFallbacks';
+import { getImageSource } from "@/constants/imageFallbacks";
 
 interface PreviewFile {
   uri?: string;
@@ -26,7 +27,13 @@ interface FilePreviewProps {
   maxPreviewWidth?: number;
 }
 
-const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMedia, bubbleTone = "sent", maxPreviewWidth }) => {
+const MediaFilePreview: React.FC<FilePreviewProps> = ({
+  file,
+  editable,
+  deleteMedia,
+  bubbleTone = "sent",
+  maxPreviewWidth,
+}) => {
   const [fullScreenVisible, setFullScreenVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const fullScreenListRef = useRef<FlatList<NormalizedMedia> | null>(null);
@@ -37,7 +44,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
   const previewWidth = Math.min(
     Math.max(screenWidth * 0.58 * sizeMultiplier, bubbleTone === "received" ? 164 : 176),
     bubbleTone === "received" ? 226 : 244,
-    maxPreviewWidth ?? Number.POSITIVE_INFINITY
+    maxPreviewWidth ?? Number.POSITIVE_INFINITY,
   );
   const previewHeight = Math.round(previewWidth * 0.74);
 
@@ -92,7 +99,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
                   borderRadius: 14,
                   overflow: "hidden",
                   borderWidth: 1,
-                  borderColor: "#d7deea",
+                  borderColor: theme.colors.border,
                   backgroundColor: "#0f172a",
                 }}
                 onPress={() => openFullScreen(index)}
@@ -103,8 +110,12 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
 
                 {isImage ? (
                   <Image
-                    source={getImageSource(item.uri, 'generic')}
-                    style={{ width: "100%", height: "100%", backgroundColor: "#f8fafc" }}
+                    source={getImageSource(item.uri, "generic")}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: theme.colors.surfaceAlt,
+                    }}
                     resizeMode="contain"
                   />
                 ) : (
@@ -145,9 +156,13 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
               renderItem={({ item }) => {
                 const isImage = item.type.startsWith("image");
                 return (
-                  <View style={[styles.fullScreenItem, { width: screenWidth }]}> 
+                  <View style={[styles.fullScreenItem, { width: screenWidth }]}>
                     {isImage ? (
-                      <Image source={getImageSource(item.uri, 'generic')} style={styles.fullScreenImage} resizeMode="contain" />
+                      <Image
+                        source={getImageSource(item.uri, "generic")}
+                        style={styles.fullScreenImage}
+                        resizeMode="contain"
+                      />
                     ) : (
                       <Video
                         source={{ uri: item.uri }}
@@ -162,7 +177,9 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
             />
 
             <View style={styles.fullScreenFooter}>
-              <Text style={styles.fullScreenCounter}>{currentIndex + 1} / {normalizedMedia.length}</Text>
+              <Text style={styles.fullScreenCounter}>
+                {currentIndex + 1} / {normalizedMedia.length}
+              </Text>
             </View>
           </View>
         </Modal>
@@ -181,7 +198,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
 
         {isFirstImage ? (
           <Image
-            source={getImageSource(firstItem.uri, 'generic')}
+            source={getImageSource(firstItem.uri, "generic")}
             style={[styles.previewImage, { width: previewWidth, height: previewHeight }]}
             resizeMode="cover"
           />
@@ -239,9 +256,13 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
             renderItem={({ item }) => {
               const isImage = item.type.startsWith("image");
               return (
-                <View style={[styles.fullScreenItem, { width: screenWidth }]}> 
+                <View style={[styles.fullScreenItem, { width: screenWidth }]}>
                   {isImage ? (
-                    <Image source={getImageSource(item.uri, 'generic')} style={styles.fullScreenImage} resizeMode="contain" />
+                    <Image
+                      source={getImageSource(item.uri, "generic")}
+                      style={styles.fullScreenImage}
+                      resizeMode="contain"
+                    />
                   ) : (
                     <Video
                       source={{ uri: item.uri }}
@@ -256,7 +277,9 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({ file, editable, deleteMe
           />
 
           <View style={styles.fullScreenFooter}>
-            <Text style={styles.fullScreenCounter}>{currentIndex + 1} / {normalizedMedia.length}</Text>
+            <Text style={styles.fullScreenCounter}>
+              {currentIndex + 1} / {normalizedMedia.length}
+            </Text>
           </View>
         </View>
       </Modal>

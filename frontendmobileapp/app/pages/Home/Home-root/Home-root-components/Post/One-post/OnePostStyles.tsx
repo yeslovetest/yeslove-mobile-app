@@ -1,149 +1,127 @@
-import theme from "@/assets/variables/Variables";
-import { vw } from "@/ts/viewport-units";
 import { StyleSheet, Dimensions } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   postContainer: {
-    marginBottom: vw(5),
-    width: theme.spacing.postWidth,
-    backgroundColor: "#fff",
+    marginBottom: theme.spacing.xl,
+    width: theme.layout.postWidth,
+    backgroundColor: theme.colors.surface,
     justifyContent: "center",
     alignItems: "flex-start",
     padding: 10,
     borderRadius: 15,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    ...theme.shadows.md,
   },
-
   postHeaderContent: {
-    width: '100%',
-    justifyContent: 'space-between',
-    flexDirection: 'row'
+    width: "100%",
+    justifyContent: "space-between",
+    flexDirection: "row",
   },
-
   indPostContainer: {
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
   },
-
   indCommentContainer: {
     marginTop: 0,
     marginBottom: 1,
     borderRadius: 0,
   },
-
   profileName: {
     marginBottom: 7,
   },
-
   profileNameText: {
     fontWeight: "600",
-    color: theme.colors.blackText,
-    fontSize: 14,
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.subhead,
   },
-
   postContent: {
-    color: theme.colors.blackText,
+    color: theme.colors.textPrimary,
     paddingHorizontal: 3,
     marginTop: 6,
-    paddingBottom: 8,
+    paddingBottom: theme.spacing.sm,
     width: "100%",
-    fontSize: 14,
+    fontSize: theme.typography.fontSize.subhead,
     lineHeight: 20,
   },
-
   postMediaWrapper: {
-    width: '100%',
-    marginTop: 4,
-    marginBottom: 4,
+    width: "100%",
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
   },
-
   profileImage: {
     width: 35,
     height: 35,
     borderRadius: 60,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: theme.colors.border,
     marginBottom: 10,
   },
-
-  postImage: { 
-    width: Dimensions.get('window').width * 0.3, 
-    borderRadius: 10, 
+  postImage: {
+    width: Dimensions.get("window").width * 0.3,
+    borderRadius: theme.radii.lg,
     marginTop: 10,
-    marginBottom: 20,
-    resizeMode: 'contain',
+    marginBottom: theme.spacing.xl,
+    resizeMode: "contain",
     aspectRatio: 1.5,
   },
-
-  postVideo: { 
-    width: '100%', 
-    height: Dimensions.get('window').height * 0.5,
-    borderRadius: 10, 
+  postVideo: {
+    width: "100%",
+    height: Dimensions.get("window").height * 0.5,
+    borderRadius: theme.radii.lg,
     marginTop: 10,
-    marginBottom: 20,
-    resizeMode: 'cover'
+    marginBottom: theme.spacing.xl,
+    resizeMode: "cover",
   },
-
   profileImageContainer: {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
     alignSelf: "flex-start",
-    flexDirection: "row"
+    flexDirection: "row",
   },
-
   profileInfoContainer: {
     display: "flex",
     marginStart: 10,
     justifyContent: "center",
     alignItems: "flex-start",
     alignSelf: "flex-start",
-    flexDirection: "column"
+    flexDirection: "column",
   },
-
   timePosted: {
-    color: "#888",
+    color: theme.colors.textMuted,
     fontSize: 11,
   },
-
   seeLessAndLikeContainer: {
     display: "flex",
     justifyContent: "space-between",
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
-    borderTopColor: theme.colors.footerBdColor,
+    borderTopColor: theme.colors.borderStrong,
     borderTopWidth: 1,
-
   },
-
   likeButtonContainer: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
     width: "auto",
-    gap: 16,
-    marginTop: 12,
+    gap: theme.spacing.lg,
+    marginTop: theme.spacing.md,
   },
   likeIcon: {
-    color: theme.colors.blackText
+    color: theme.colors.textPrimary,
   },
-
   reactionIcon: {
-    marginRight: 8,
+    marginRight: theme.spacing.sm,
   },
   numberOfLikesAndComments: {
-    color: theme.colors.blackText,
-    fontSize: 13,
-    fontWeight: '500',
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.footnote,
+    fontWeight: "500",
     marginLeft: 5,
   },
-
   likeAndCommentContainer: {
     flexDirection: "row",
     height: "100%",
@@ -152,34 +130,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingRight: 6,
   },
-
   emoji: {
-    fontSize: 24,
+    fontSize: theme.typography.fontSize.title1,
   },
 
   /* follow user styles */
 
   followUserText: {
-    color: theme.colors.primaryBlue,
-    fontSize: 13,
-    textAlign: 'center',
-    fontWeight: '500',
-    borderColor: theme.colors.primaryBlue,
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.footnote,
+    textAlign: "center",
+    fontWeight: "500",
+    borderColor: theme.colors.primary,
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: theme.radii.sm,
   },
-
   followUser: {
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    maxWidth: '42%',
+    justifyContent: "center",
+    alignItems: "flex-end",
+    maxWidth: "42%",
   },
-
   followMenuPopUp: {
-    flexDirection: 'column',
-    alignItems: 'center',
+    flexDirection: "column",
+    alignItems: "center",
     left: -4,
     bottom: 10,
     zIndex: 1000,
@@ -188,94 +163,82 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   followMenuPopUpText: {
-    color: theme.colors.blackText,
-    textAlign: 'left',
-    fontSize: 14,
-    fontWeight: '500',
-    width: '100%',
-    paddingVertical: 12,
+    color: theme.colors.textPrimary,
+    textAlign: "left",
+    fontSize: theme.typography.fontSize.subhead,
+    fontWeight: "500",
+    width: "100%",
+    paddingVertical: theme.spacing.md,
     paddingHorizontal: 14,
   },
   followMenuOptions: {
-    width: '100%',
-    borderBottomColor: '#EBEDF1',
+    width: "100%",
+    borderBottomColor: theme.colors.border,
     borderBottomWidth: 1,
-
   },
-
 
   /* following user styles */
   viewProfile: {
-    backgroundColor: "#7296ED",
+    backgroundColor: theme.colors.primary,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 4,
-    paddingHorizontal: 4,
-    borderRadius: 5,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.xs,
+    borderRadius: theme.radii.sm,
     flexDirection: "row",
-
   },
   buttonText: {
-    color: "#ffffff",
-    fontSize: 13,
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.footnote,
   },
-
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    backgroundColor: theme.colors.overlay,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.xl,
   },
-
   reactionModalCard: {
-    width: '92%',
+    width: "92%",
     maxWidth: 380,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radii.xl,
     paddingVertical: 18,
     paddingHorizontal: 14,
   },
-
   modalTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.colors.blackText,
+    fontSize: theme.typography.fontSize.body,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
     marginBottom: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
-
   reactionModalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
-
   reactionAction: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 80,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#F7F8FA',
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radii.lg,
+    backgroundColor: theme.colors.surfaceAlt,
   },
-
   reactionActionLabel: {
     marginTop: 6,
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.blackText,
+    fontSize: theme.typography.fontSize.caption,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
   },
-
   followMenuCard: {
-    width: '86%',
+    width: "86%",
     maxWidth: 360,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
+});
 
-
-})
-
-export default styles
+export default styles;

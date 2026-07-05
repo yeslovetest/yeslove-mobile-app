@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
-import { Animated, Easing, Image, Text, TouchableOpacity, View } from 'react-native';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import styles from './HeaderStyles';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { goBackToPreviousTabAction, openTabOnTopAction, TabType } from '../../store/Navigation/navigationSlice';
-import PostModal from '@/app/pages/Home/Post-modal/PostModal';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
-import { fetchFriendList } from '@/app/store/Chat/chatSlice';
-import ChatbotProfile from '@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile';
-import theme from '@/assets/variables/Variables';
-import { BASE_URL } from '@/app/config/baseUrl';
-import { CHATBOT_HUMAN_AVATAR, getImageSource } from '@/constants/imageFallbacks';
+import React, { useState } from "react";
+import { Animated, Easing, Image, Text, TouchableOpacity, View } from "react-native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import styles from "./HeaderStyles";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  goBackToPreviousTabAction,
+  openTabOnTopAction,
+  TabType,
+} from "../../store/Navigation/navigationSlice";
+import PostModal from "@/app/pages/Home/Post-modal/PostModal";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
+import { fetchFriendList } from "@/app/store/Chat/chatSlice";
+import ChatbotProfile from "@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile";
+import { theme } from "@/app/theme";
+import { BASE_URL } from "@/app/config/baseUrl";
+import { CHATBOT_HUMAN_AVATAR, getImageSource } from "@/constants/imageFallbacks";
 
 export interface Props {
   mainTitle?: string;
@@ -20,28 +24,32 @@ export interface Props {
 }
 
 export default function Header(props: Props) {
-  const userId = useAppSelector(state => state.user.id);
-  const isCurrentUserProfile = useAppSelector(state => state.profile.isCurrentUserProfile);
-  const tabStack = useAppSelector(state => state.navigation.tabStack);
-  const hasTabToGoBackTo = useAppSelector(state => state.navigation.tabStack.length > 1);
+  const userId = useAppSelector((state) => state.user.id);
+  const isCurrentUserProfile = useAppSelector((state) => state.profile.isCurrentUserProfile);
+  const tabStack = useAppSelector((state) => state.navigation.tabStack);
+  const hasTabToGoBackTo = useAppSelector((state) => state.navigation.tabStack.length > 1);
   const dispatch = useAppDispatch();
   const currentTab = tabStack[tabStack.length - 1]?.type;
-  const conversationData = tabStack[tabStack.length - 1]?.data as { userId?: string; profile_pic?: string; username?: string } | undefined;
-  const conversationUserNameFromFriends = useAppSelector((state) =>
-    state.chat.friends.find((friend) => friend.id === conversationData?.userId)?.username
+  const conversationData = tabStack[tabStack.length - 1]?.data as
+    { userId?: string; profile_pic?: string; username?: string } | undefined;
+  const conversationUserNameFromFriends = useAppSelector(
+    (state) =>
+      state.chat.friends.find((friend) => friend.id === conversationData?.userId)?.username,
   );
   const conversationUserNameFromProfiles = useAppSelector((state) =>
-    conversationData?.userId ? state.profile.profiles[conversationData.userId]?.username : undefined
+    conversationData?.userId
+      ? state.profile.profiles[conversationData.userId]?.username
+      : undefined,
   );
   const conversationUserName =
     conversationData?.username ||
     conversationUserNameFromFriends ||
     conversationUserNameFromProfiles ||
-    'Conversation';
+    "Conversation";
   const unreadMessageCount = useAppSelector((state) =>
-    (state.chat.friends ?? []).reduce((count, friend) => count + (friend.unread ? 1 : 0), 0)
+    (state.chat.friends ?? []).reduce((count, friend) => count + (friend.unread ? 1 : 0), 0),
   );
-  const conversationPhoto = conversationData?.profile_pic || '';
+  const conversationPhoto = conversationData?.profile_pic || "";
   // Shared assistant avatar used in the Get-help header CTA.
   const assistantAvatar = CHATBOT_HUMAN_AVATAR;
   // Animation driver for the periodic wave motion.
@@ -53,13 +61,13 @@ export default function Header(props: Props) {
   const closePostModal = () => setModalVisible(false);
 
   const openSettings = () => {
-    dispatch(openTabOnTopAction({ type: TabType.SETTINGS }))
-  }
+    dispatch(openTabOnTopAction({ type: TabType.SETTINGS }));
+  };
 
   const openMessages = () => {
-    dispatch(fetchFriendList(userId || ''))
-    dispatch(openTabOnTopAction({ type: TabType.MESSAGES,  data: { userId: userId }  }))
-  }
+    dispatch(fetchFriendList(userId || ""));
+    dispatch(openTabOnTopAction({ type: TabType.MESSAGES, data: { userId: userId } }));
+  };
 
   const returnToPreviousTab = () => {
     dispatch(goBackToPreviousTabAction());
@@ -100,7 +108,7 @@ export default function Header(props: Props) {
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
 
     loop.start();
@@ -115,7 +123,7 @@ export default function Header(props: Props) {
 
   const assistantRotate = assistantMotion.interpolate({
     inputRange: [-1, 0, 1],
-    outputRange: ['-10deg', '0deg', '10deg'],
+    outputRange: ["-10deg", "0deg", "10deg"],
   });
 
   const assistantLift = assistantMotion.interpolate({
@@ -134,17 +142,17 @@ export default function Header(props: Props) {
   });
 
   const resolvedConversationPhoto =
-    conversationPhoto && conversationPhoto.startsWith('/api')
+    conversationPhoto && conversationPhoto.startsWith("/api")
       ? `${BASE_URL}${conversationPhoto}`
       : conversationPhoto;
 
   return (
     <View
-    style={[
-      styles.header,
-      currentTab === TabType.CHATBOT && { backgroundColor: theme.colors.primaryBlue }, 
-    ]}
-  >
+      style={[
+        styles.header,
+        currentTab === TabType.CHATBOT && { backgroundColor: theme.colors.primary },
+      ]}
+    >
       {hasTabToGoBackTo && currentTab !== TabType.CHATBOT && (
         <View style={styles.headerDistribution}>
           <TouchableOpacity
@@ -153,6 +161,8 @@ export default function Header(props: Props) {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             pressRetentionOffset={{ top: 16, bottom: 16, left: 16, right: 16 }}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <FontAwesome5 name="chevron-left" size={20} />
           </TouchableOpacity>
@@ -161,39 +171,60 @@ export default function Header(props: Props) {
           )}
           {hasTabToGoBackTo && currentTab === TabType.CONVERSATION && (
             <View style={styles.conversationHeaderCenter}>
-              <Image source={getImageSource(resolvedConversationPhoto, 'profile')} style={styles.conversationAvatar} />
-              <Text style={styles.conversationTitle} numberOfLines={1}>{conversationUserName}</Text>
+              <Image
+                source={getImageSource(resolvedConversationPhoto, "profile")}
+                style={styles.conversationAvatar}
+              />
+              <Text style={styles.conversationTitle} numberOfLines={1}>
+                {conversationUserName}
+              </Text>
             </View>
           )}
           <View />
         </View>
       )}
 
-       {hasTabToGoBackTo && currentTab === TabType.CHATBOT && (
+      {hasTabToGoBackTo && currentTab === TabType.CHATBOT && (
         <View style={styles.headerDistribution}>
           <ChatbotProfile></ChatbotProfile>
-          <Ionicons onPress={returnToPreviousTab} name="close" size={32} color="white" />
+          <Ionicons
+            onPress={returnToPreviousTab}
+            name="close"
+            size={32}
+            color={theme.colors.textOnPrimary}
+            accessibilityRole="button"
+            accessibilityLabel="Close assistant"
+          />
         </View>
       )}
-
 
       {!hasTabToGoBackTo && currentTab === TabType.HOME && (
         <View style={styles.homeHeaderDistribution}>
           <Text style={[styles.title, styles.homeTitle]}>{props.mainTitle}</Text>
           <View style={styles.homeActions}>
-            <TouchableOpacity style={styles.homeActionButton} onPress={openPostModal} activeOpacity={0.8}>
-              <Ionicons name="add" size={25} color="black" />
+            <TouchableOpacity
+              style={styles.homeActionButton}
+              onPress={openPostModal}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Create post"
+            >
+              <Ionicons name="add" size={25} color={theme.colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.homeActionButton, styles.homeActionSpacing]}
               onPress={openMessages}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={
+                unreadMessageCount > 0 ? `Messages, ${unreadMessageCount} unread` : "Messages"
+              }
             >
-              <SimpleLineIcons name="bubbles" size={21} color="black" />
+              <SimpleLineIcons name="bubbles" size={21} color={theme.colors.textPrimary} />
               {unreadMessageCount > 0 && (
                 <View style={styles.messagesBadge}>
                   <Text style={styles.messagesBadgeText}>
-                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                    {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
                   </Text>
                 </View>
               )}
@@ -206,8 +237,12 @@ export default function Header(props: Props) {
         <View style={styles.headerDistribution}>
           <View />
           <Text style={styles.title}>{props.mainTitle}</Text>
-          <TouchableOpacity onPress={openSettings}>
-            <Ionicons name="settings-outline" size={28} color="black" />
+          <TouchableOpacity
+            onPress={openSettings}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
+            <Ionicons name="settings-outline" size={28} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
       )}
@@ -221,8 +256,10 @@ export default function Header(props: Props) {
             pressRetentionOffset={10}
             hitSlop={10}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Filter events"
           >
-            <Ionicons name="filter" size={20} color="black" />
+            <Ionicons name="filter" size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
       )}
@@ -239,13 +276,23 @@ export default function Header(props: Props) {
         <View style={styles.homeHeaderDistribution}>
           <Text style={[styles.title, styles.homeTitle]}>{props.mainTitle}</Text>
           {/* Tapping the avatar opens the AI assistant page. */}
-          <TouchableOpacity style={[styles.assistantButton, styles.homeMessagesIcon]} onPress={openChatbot} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={[styles.assistantButton, styles.homeMessagesIcon]}
+            onPress={openChatbot}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Open AI assistant"
+          >
             <Animated.View
               style={[
                 styles.assistantBadge,
                 {
                   // Rotation, lift, and tiny scale create a calm, attention-guiding motion.
-                  transform: [{ rotate: assistantRotate }, { translateY: assistantLift }, { scale: assistantScale }],
+                  transform: [
+                    { rotate: assistantRotate },
+                    { translateY: assistantLift },
+                    { scale: assistantScale },
+                  ],
                 },
               ]}
             >

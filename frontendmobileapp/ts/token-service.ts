@@ -1,127 +1,148 @@
 import { AuthApiFactory } from "@/generated-api";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage"
 
-class TokenRefreshService{
+import { secureGet, secureSet } from "./secureStorage";
 
-    static REFRESH_TOKEN_KEY = "refreshToken";
-    static ACCESS_TOKEN_KEY = "authToken";
-    static USERID_KEY = "userId";   // Keycloak Id
-    static USER_DBID_KEY = "userDbId";  // user Database Id
-    private refreshTimeoutId: ReturnType<typeof setTimeout> | null = null;
+class TokenRefreshService {
+  static REFRESH_TOKEN_KEY = "refreshToken";
+  static ACCESS_TOKEN_KEY = "authToken";
+  static USERID_KEY = "userId"; // Keycloak Id
+  static USER_DBID_KEY = "userDbId"; // user Database Id
+  private refreshTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    private getRefreshDelayMs(expiresInSeconds?: number): number {
-        const safeExpires = typeof expiresInSeconds === "number" && Number.isFinite(expiresInSeconds)
-            ? expiresInSeconds
-            : 60;
-        return Math.max((safeExpires - 30) * 1000, 15_000);
+  private getRefreshDelayMs(expiresInSeconds?: number): number {
+    const safeExpires =
+      typeof expiresInSeconds === "number" && Number.isFinite(expiresInSeconds)
+        ? expiresInSeconds
+        : 60;
+    return Math.max((safeExpires - 30) * 1000, 15_000);
+  }
+
+  private setAuthHeader(accessToken: string): void {
+    if (accessToken) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      return;
+    }
+    delete axios.defaults.headers.common["Authorization"];
+  }
+
+  // Auth secrets are persisted via secureStorage: encrypted SecureStore on
+  // native, localStorage/AsyncStorage on web (with legacy migration).
+  private writeStorageValue(key: string, value: string): Promise<void> {
+    return secureSet(key, value);
+  }
+
+  private readStorageValue(key: string): Promise<string | null> {
+    return secureGet(key);
+  }
+
+  startRefreshingToken(initialRefreshToken: string): void {
+    if (!initialRefreshToken) {
+      return;
     }
 
-    private setAuthHeader(accessToken: string): void {
-        if (accessToken) {
-            axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-            return;
-        }
-        delete axios.defaults.headers.common["Authorization"];
+    this.stopRefreshingToken();
+
+    let currentRefreshToken: string = initialRefreshToken;
+    const scheduleNext = (expiresInSeconds?: number) => {
+      const delayMs = this.getRefreshDelayMs(expiresInSeconds);
+      this.refreshTimeoutId = setTimeout(() => {
+        AuthApiFactory()
+          .postRefreshToken({ refresh_token: currentRefreshToken })
+          .then(async (response) => {
+            const nextRefreshToken = response.data.refresh_token ?? "";
+            const accessToken = response.data.access_token ?? "";
+            currentRefreshToken = nextRefreshToken;
+
+            this.setAuthHeader(accessToken);
+            await this.saveAccessToken(accessToken);
+            await this.saveRefreshTokenToLocalStorage(nextRefreshToken);
+
+            scheduleNext(response.data.expires_in ?? undefined);
+          })
+          .catch(() => {
+            this.stopRefreshingToken();
+          });
+      }, delayMs);
+    };
+
+    scheduleNext(60);
+  }
+
+  stopRefreshingToken(): void {
+    if (this.refreshTimeoutId !== null) {
+      clearTimeout(this.refreshTimeoutId);
+      this.refreshTimeoutId = null;
+    }
+  }
+
+  /**
+   * Perform a single access-token refresh using the stored refresh token.
+   * Applies the new auth header, persists the rotated tokens, and realigns the
+   * proactive refresh loop. Returns the new access token, or null on failure.
+   * Used by the axios 401 interceptor for reactive (on-demand) refresh.
+   */
+  async refreshAccessToken(): Promise<string | null> {
+    const refreshToken = (await this.loadRefreshTokenFromLocalStorage())?.trim();
+    if (!refreshToken) {
+      return null;
     }
 
-    private async writeStorageValue(key: string, value: string): Promise<void> {
-        try {
-            if (typeof localStorage !== "undefined") {
-                localStorage.setItem(key, value);
-            }
-        } catch {
-            // Ignore localStorage errors in native contexts.
-        }
-        await AsyncStorage.setItem(key, value);
+    try {
+      const response = await AuthApiFactory().postRefreshToken({ refresh_token: refreshToken });
+      const accessToken = response.data.access_token ?? "";
+      const nextRefreshToken = response.data.refresh_token ?? "";
+
+      if (!accessToken) {
+        return null;
+      }
+
+      this.setAuthHeader(accessToken);
+      await this.saveAccessToken(accessToken);
+
+      if (nextRefreshToken) {
+        await this.saveRefreshTokenToLocalStorage(nextRefreshToken);
+        // Keep the proactive refresh loop aligned with the rotated refresh token.
+        this.startRefreshingToken(nextRefreshToken);
+      }
+
+      return accessToken;
+    } catch {
+      return null;
     }
+  }
 
-    private async readStorageValue(key: string): Promise<string | null> {
-        try {
-            if (typeof localStorage !== "undefined") {
-                const localValue = localStorage.getItem(key);
-                if (localValue !== null) {
-                    return localValue;
-                }
-            }
-        } catch {
-            // Ignore localStorage errors in native contexts.
-        }
-        return AsyncStorage.getItem(key);
-    }
+  async saveAccessToken(accessToken: string): Promise<void> {
+    await this.writeStorageValue(TokenRefreshService.ACCESS_TOKEN_KEY, accessToken);
+  }
 
+  async loadAccessToken(): Promise<string | null> {
+    return this.readStorageValue(TokenRefreshService.ACCESS_TOKEN_KEY);
+  }
 
-    startRefreshingToken(initialRefreshToken: string): void {
-        if (!initialRefreshToken) {
-            return;
-        }
+  saveRefreshTokenToLocalStorage(refreshToken: string): Promise<void> {
+    return this.writeStorageValue(TokenRefreshService.REFRESH_TOKEN_KEY, refreshToken);
+  }
 
-        this.stopRefreshingToken();
+  loadRefreshTokenFromLocalStorage(): Promise<string | null> {
+    return this.readStorageValue(TokenRefreshService.REFRESH_TOKEN_KEY);
+  }
 
-        let currentRefreshToken: string = initialRefreshToken;
-        const scheduleNext = (expiresInSeconds?: number) => {
-            const delayMs = this.getRefreshDelayMs(expiresInSeconds);
-            this.refreshTimeoutId = setTimeout(() => {
-                AuthApiFactory().postRefreshToken({refresh_token: currentRefreshToken})
-                    .then(async (response) => {
-                        const nextRefreshToken = response.data.refresh_token ?? "";
-                        const accessToken = response.data.access_token ?? "";
-                        currentRefreshToken = nextRefreshToken;
+  saveUserIdToLocalStorage(userId: string): Promise<void> {
+    return this.writeStorageValue(TokenRefreshService.USERID_KEY, userId);
+  }
 
-                        this.setAuthHeader(accessToken);
-                        await this.saveAccessToken(accessToken);
-                        await this.saveRefreshTokenToLocalStorage(nextRefreshToken);
+  loadUserIdFromLocalStorage(): Promise<string | null> {
+    return this.readStorageValue(TokenRefreshService.USERID_KEY);
+  }
 
-                        scheduleNext(response.data.expires_in ?? undefined);
-                    })
-                    .catch(() => {
-                        this.stopRefreshingToken();
-                    });
-            }, delayMs);
-        };
+  saveUserDBIDToLocalStorage(userDBID: number): Promise<void> {
+    return this.writeStorageValue(TokenRefreshService.USER_DBID_KEY, String(userDBID));
+  }
 
-        scheduleNext(60);
-    }    
-
-    stopRefreshingToken(): void {
-        if (this.refreshTimeoutId !== null) {
-            clearTimeout(this.refreshTimeoutId);
-            this.refreshTimeoutId = null;
-        }
-    }
-
-    async saveAccessToken(accessToken: string): Promise<void> {
-        await this.writeStorageValue(TokenRefreshService.ACCESS_TOKEN_KEY, accessToken);
-    }
-
-    async loadAccessToken(): Promise<string | null> {
-        return this.readStorageValue(TokenRefreshService.ACCESS_TOKEN_KEY);
-    }
-    
-
-    saveRefreshTokenToLocalStorage(refreshToken: string): Promise<void> {
-        return this.writeStorageValue(TokenRefreshService.REFRESH_TOKEN_KEY, refreshToken);
-    }
-
-    loadRefreshTokenFromLocalStorage(): Promise<string | null> {
-        return this.readStorageValue(TokenRefreshService.REFRESH_TOKEN_KEY);
-    }
-
-    saveUserIdToLocalStorage(userId: string): Promise<void> {
-        return this.writeStorageValue(TokenRefreshService.USERID_KEY, userId);
-    }
-
-    loadUserIdFromLocalStorage(): Promise<string | null> {
-        return this.readStorageValue(TokenRefreshService.USERID_KEY);
-    }
-
-    saveUserDBIDToLocalStorage(userDBID: number): Promise<void> {
-        return this.writeStorageValue(TokenRefreshService.USER_DBID_KEY, String(userDBID));
-    }
-
-    loadUserDBIDFromLocalStorage(): Promise<string | null> {
-        return this.readStorageValue(TokenRefreshService.USER_DBID_KEY)
-    }
+  loadUserDBIDFromLocalStorage(): Promise<string | null> {
+    return this.readStorageValue(TokenRefreshService.USER_DBID_KEY);
+  }
 }
 
 export const TOKEN_REFRESH_SERVICE = new TokenRefreshService();

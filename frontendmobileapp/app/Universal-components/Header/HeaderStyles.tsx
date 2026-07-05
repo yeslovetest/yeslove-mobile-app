@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
-import theme from "@/assets/variables/Variables";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   headerDistribution: {
@@ -7,18 +8,18 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 14,
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   homeHeaderDistribution: {
     flexDirection: "row",
     width: "100%",
     paddingHorizontal: 14,
     justifyContent: "flex-start",
-    alignItems: "center"
+    alignItems: "center",
   },
   backButton: {
     position: "absolute",
-    left: 20,
+    left: theme.spacing.xl,
   },
   backButtonTouchable: {
     width: 36,
@@ -29,25 +30,25 @@ const styles = StyleSheet.create({
     marginLeft: -2,
   },
   header: {
-    width: '100%',
+    width: "100%",
     minHeight: 58,
     paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     justifyContent: "center",
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 0,
   },
   title: {
-    color: theme.colors.blackText,
-    fontSize: 20,
-    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.title2,
+    fontWeight: "700",
     alignSelf: "center",
-    maxWidth: '72%',
-    textAlign: 'center',
+    maxWidth: "72%",
+    textAlign: "center",
     flexShrink: 1,
   },
   homeTitle: {
-    marginLeft: 12,
+    marginLeft: theme.spacing.md,
     alignSelf: "flex-start",
     textAlign: "left",
     maxWidth: "58%",
@@ -64,9 +65,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#f3f6fb",
+    backgroundColor: theme.colors.surfaceAlt,
     borderWidth: 1,
-    borderColor: "#e7edf8",
+    borderColor: theme.colors.border,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -80,15 +81,15 @@ const styles = StyleSheet.create({
     minWidth: 17,
     height: 17,
     borderRadius: 9,
-    paddingHorizontal: 4,
-    backgroundColor: "#ef4444",
+    paddingHorizontal: theme.spacing.xs,
+    backgroundColor: theme.colors.danger,
     borderWidth: 1,
-    borderColor: "#ffffff",
+    borderColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
   messagesBadgeText: {
-    color: "#ffffff",
+    color: theme.colors.textOnPrimary,
     fontSize: 10,
     fontWeight: "700",
     lineHeight: 11,
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "23%",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   assistantButton: {
     width: 40,
@@ -109,49 +110,46 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#eef4ff",
+    backgroundColor: theme.colors.primarySoft,
     borderWidth: 1,
-    borderColor: "#d5e4ff",
+    borderColor: theme.colors.border,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    ...theme.shadows.sm,
   },
   conversationHeaderCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     flex: 1,
     paddingHorizontal: 10,
-    gap: 8,
+    gap: theme.spacing.sm,
   },
   conversationAvatar: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#eef3ff',
+    backgroundColor: theme.colors.primarySoft,
   },
   conversationTitle: {
-    color: theme.colors.blackText,
-    fontSize: 16,
-    fontWeight: '700',
-    maxWidth: '76%',
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.callout,
+    fontWeight: "700",
+    maxWidth: "76%",
   },
   assistantGlow: {
     position: "absolute",
     width: 30,
     height: 30,
     borderRadius: 15,
+    // Soft blue assistant glow accent — kept as a literal.
     backgroundColor: "#dce8ff",
   },
   assistantImage: {
     width: 26,
     height: 26,
   },
-})
+});
 
-export default styles 
+export default styles;

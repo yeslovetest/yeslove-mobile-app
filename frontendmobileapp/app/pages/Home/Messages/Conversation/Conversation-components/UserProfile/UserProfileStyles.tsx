@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
     height: 34,
     marginRight: 2,
     borderRadius: 17,
-  }
-})
+  },
+});
 
-export default styles
+export default styles;
