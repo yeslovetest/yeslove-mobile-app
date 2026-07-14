@@ -4,6 +4,8 @@ from flask_bcrypt import Bcrypt
 import atexit
 import os
 import sys
+import click
+import requests
 from flask_restx import Api
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -40,8 +42,8 @@ bcrypt = Bcrypt()
 migrate = Migrate()
 
 
-def _running_flask_db_command():
-    return "flask" in os.path.basename(sys.argv[0]) and "db" in sys.argv
+def _running_flask_command(*command_names):
+    return "flask" in os.path.basename(sys.argv[0]) and any(command in sys.argv for command in command_names)
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -125,7 +127,7 @@ def create_app(config_class=DevelopmentConfig):
             dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
             dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
 
-    skip_optional_services = _running_flask_db_command()
+    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -140,7 +142,7 @@ def create_app(config_class=DevelopmentConfig):
         graph_pass = app.config.get("GRAPH_DB_PASS") or app.config.get("NEO4J_PASS")
 
         if skip_optional_services:
-            app.logger.info("Skipping optional graph initialization during Flask db command")
+            app.logger.info("Skipping optional graph initialization during Flask CLI command")
         elif graph_uri:
             graph_driver = create_driver(graph_uri, graph_user, graph_pass)
             graph_repository = GraphRepository(graph_driver)
@@ -175,5 +177,63 @@ def create_app(config_class=DevelopmentConfig):
     # Initalises professional user admin panel
     from .admin import init_admin
     init_admin(app)
+
+    @app.cli.command("sync-wordpress-blogs")
+    @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")
+    @click.option("--per-page", default=25, show_default=True, type=int, help="WordPress posts per request.")
+    @click.option("--all-pages/--single-page", default=True, show_default=True, help="Sync every WordPress page from the starting page.")
+    def sync_wordpress_blogs_command(page, per_page, all_pages):
+        """Refresh cached WordPress blog posts in the app DB."""
+        from app.services.wordpress_blog_service import sync_wordpress_posts_to_db
+
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
+        synced = 0
+        total = None
+
+        try:
+            while True:
+                items, total = sync_wordpress_posts_to_db(page=page, per_page=per_page)
+                synced += len(items)
+                click.echo(f"Synced page {page}: {len(items)} posts")
+
+                if not all_pages or not items or synced >= total:
+                    break
+
+                page += 1
+        except requests.RequestException as exc:
+            raise click.ClickException(f"Could not refresh blog posts from WordPress: {exc}") from exc
+
+        click.echo(f"Synced {synced} WordPress blog posts into app DB cache ({total or synced} available).")
+
+    @app.cli.command("sync-wordpress-videos")
+    @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")
+    @click.option("--per-page", default=10, show_default=True, type=int, help="WordPress posts per request.")
+    @click.option("--all-pages/--single-page", default=True, show_default=True, help="Sync every WordPress page from the starting page.")
+    @click.option("--sync-chatbot/--skip-chatbot", default=True, show_default=True, help="Sync videos to chatbot after caching.")
+    def sync_wordpress_videos_command(page, per_page, all_pages, sync_chatbot):
+        """Refresh cached WordPress video podcasts in the app DB."""
+        from app.services.wordpress_video_service import sync_wordpress_videos_to_db
+
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
+        synced = 0
+        total = None
+        total_pages = None
+
+        try:
+            while True:
+                items, total, total_pages = sync_wordpress_videos_to_db(page=page, per_page=per_page, sync_chatbot=sync_chatbot)
+                synced += len(items)
+                click.echo(f"Synced page {page}: {len(items)} videos")
+
+                if not all_pages or not items or page >= total_pages:
+                    break
+
+                page += 1
+        except requests.RequestException as exc:
+            raise click.ClickException(f"Could not refresh video podcasts from WordPress: {exc}") from exc
+
+        click.echo(f"Synced {synced} WordPress video podcasts into app DB cache ({total or synced} available).")
 
     return app

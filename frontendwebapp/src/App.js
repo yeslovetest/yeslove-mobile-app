@@ -33,15 +33,6 @@ const emptyStats = {
   total_logs: 0,
 };
 
-const initialBlogForm = {
-  title: '',
-  summary: '',
-  content: '',
-  imageUrl: '',
-  imageFile: null,
-  documentFile: null,
-};
-
 const initialEventForm = {
   name: '',
   description: '',
@@ -78,6 +69,13 @@ function formatDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value));
+}
+
+function stripHtml(value) {
+  return String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function getErrorMessage(error) {
@@ -145,7 +143,6 @@ function App() {
     severity: '',
     content_type: '',
   });
-  const [blogForm, setBlogForm] = useState(initialBlogForm);
   const [eventForm, setEventForm] = useState(initialEventForm);
   const [professionals, setProfessionals] = useState([]);
   const [professionalPagination, setProfessionalPagination] = useState({
@@ -302,7 +299,7 @@ function App() {
 
     try {
       const response = await apiClient.get('/blog/blog-posts', {
-        params: { page: 1, per_page: 5 },
+        params: { page: 1, per_page: 10 },
       });
       setRecentBlogs(response.data.items || []);
     } catch (requestError) {
@@ -480,54 +477,16 @@ function App() {
     }
   };
 
-  const submitBlog = async (event) => {
-    event.preventDefault();
-    setActionLoading('create-blog');
-    setError('');
+  const syncWordPressBlogs = async () => {
+    setActionLoading('sync-wordpress-blogs');
     setNotice('');
 
     try {
-      const imageUrl = await uploadImage(blogForm.imageFile, blogForm.imageUrl);
-      const response = await apiClient.post('/blog/blog-posts', {
-        title: blogForm.title,
-        summary: blogForm.summary,
-        content: blogForm.content,
-        image_url: imageUrl || undefined,
+      await apiClient.post('/blog/blog-posts/sync', null, {
+        params: { page: 1, per_page: 25 },
       });
-
-      setBlogForm(initialBlogForm);
-      setNotice(`${response.data.message || 'Blog post created'}${response.data.post_id ? ` (#${response.data.post_id})` : ''}`);
       await loadRecentBlogs();
-    } catch (requestError) {
-      setError(getErrorMessage(requestError));
-    } finally {
-      setActionLoading('');
-    }
-  };
-
-  const importBlogDocument = async () => {
-    if (!blogForm.documentFile) {
-      setError('Choose a TXT, DOCX, or PDF file to import');
-      return;
-    }
-
-    setActionLoading('import-blog-document');
-    setError('');
-    setNotice('');
-
-    try {
-      const formData = new FormData();
-      formData.append('file', blogForm.documentFile);
-      const response = await apiClient.post('/blog/blog-posts/import', formData);
-
-      setBlogForm((current) => ({
-        ...current,
-        title: current.title || response.data.title || '',
-        content: response.data.content || '',
-      }));
-      setNotice(`Imported ${response.data.filename || 'document'}`);
-    } catch (requestError) {
-      setError(getErrorMessage(requestError));
+      setNotice('Blog cache refreshed from WordPress');
     } finally {
       setActionLoading('');
     }
@@ -720,13 +679,10 @@ function App() {
           {activeSection === 'blogs' && (
             <BlogSection
               actionLoading={actionLoading}
-              blogForm={blogForm}
               loading={loading}
-          recentBlogs={recentBlogs}
-          setBlogForm={setBlogForm}
-          importBlogDocument={importBlogDocument}
-          submitBlog={submitBlog}
-        />
+              recentBlogs={recentBlogs}
+              syncWordPressBlogs={syncWordPressBlogs}
+            />
           )}
 
           {activeSection === 'events' && (
@@ -1017,98 +973,76 @@ function ProfessionalSection({
   );
 }
 
-function BlogSection({ actionLoading, blogForm, importBlogDocument, loading, recentBlogs, setBlogForm, submitBlog }) {
+function BlogSection({ actionLoading, loading, recentBlogs, syncWordPressBlogs }) {
   return (
-    <section className="editor-layout">
-      <div className="editor-panel">
-        <div className="panel-heading">
-          <div>
-            <h2>Create Blog Post</h2>
-            <p>Publishes to the Get Educated blog feed.</p>
-          </div>
+    <section className="main-panel wordpress-panel">
+      <div className="panel-heading">
+        <div>
+          <h2>WordPress Blog Feed</h2>
+          <p>yeslove.co.uk is the source of truth for blog content.</p>
         </div>
-        <form className="admin-form editor-form" onSubmit={submitBlog}>
-          <section className="import-strip" aria-label="Import blog document">
-            <label>
-              <span>Import Content</span>
-              <input
-                type="file"
-                accept=".txt,.docx,.pdf,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={(event) => setBlogForm((current) => ({ ...current, documentFile: event.target.files[0] || null }))}
-              />
-            </label>
-            <button
-              type="button"
-              className="ghost-button"
-              disabled={actionLoading === 'import-blog-document'}
-              onClick={importBlogDocument}
-            >
-              {actionLoading === 'import-blog-document' ? 'Importing' : 'Import'}
-            </button>
-          </section>
-          <label>
-            <span>Title</span>
-            <input
-              value={blogForm.title}
-              onChange={(event) => setBlogForm((current) => ({ ...current, title: event.target.value }))}
-              required
-            />
-          </label>
-          <label>
-            <span>Summary</span>
-            <textarea
-              value={blogForm.summary}
-              onChange={(event) => setBlogForm((current) => ({ ...current, summary: event.target.value }))}
-            />
-          </label>
-          <label>
-            <span>Content</span>
-            <textarea
-              className="large-textarea"
-              value={blogForm.content}
-              onChange={(event) => setBlogForm((current) => ({ ...current, content: event.target.value }))}
-              required
-            />
-          </label>
-          <div className="form-two-col">
-            <label>
-              <span>Upload Image</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => setBlogForm((current) => ({ ...current, imageFile: event.target.files[0] || null }))}
-              />
-            </label>
-            <label>
-              <span>Image URL</span>
-              <input
-                value={blogForm.imageUrl}
-                onChange={(event) => setBlogForm((current) => ({ ...current, imageUrl: event.target.value }))}
-                placeholder="Optional fallback URL"
-              />
-            </label>
-          </div>
-          <button type="submit" disabled={actionLoading === 'create-blog'}>
-            {actionLoading === 'create-blog' ? 'Publishing' : 'Publish Blog'}
+        <div className="header-actions">
+          <a className="secondary-link" href="https://yeslove.co.uk/wp-admin/edit.php" target="_blank" rel="noopener noreferrer">
+            WordPress Posts
+          </a>
+          <button
+            type="button"
+            className="ghost-button"
+            disabled={loading || actionLoading === 'sync-wordpress-blogs'}
+            onClick={syncWordPressBlogs}
+          >
+            {actionLoading === 'sync-wordpress-blogs' ? 'Refreshing' : 'Sync Now'}
           </button>
-        </form>
+        </div>
       </div>
 
-      <RecentPanel
-        title="Recent Blogs"
-        emptyText={loading ? 'Loading saved blogs' : 'No blog posts found'}
-        items={recentBlogs}
-        renderItem={(blog) => (
-          <article className="recent-item" key={blog.id}>
-            {blog.image_url && <img src={blog.image_url} alt="" />}
-            <div>
-              <strong>#{blog.id} {blog.title}</strong>
-              <p>{blog.summary || blog.author || 'Published blog post'}</p>
-              <span>{formatDate(blog.timestamp)}</span>
+      <div className="source-truth-banner">
+        <strong>Single source of truth</strong>
+        <p>Create and edit blog content in WordPress. The mobile app and admin console read from the WordPress REST API through the YesLove backend.</p>
+      </div>
+
+      <div className="wordpress-list">
+        {loading && <div className="empty-state">Loading WordPress posts</div>}
+
+        {!loading && !recentBlogs.length && (
+          <div className="empty-state">No WordPress blog posts found</div>
+        )}
+
+        {!loading && recentBlogs.map((blog) => (
+          <article className="wordpress-post" key={blog.id}>
+            {blog.image_url ? (
+              <img src={blog.image_url} alt="" />
+            ) : (
+              <div className="post-placeholder">WP</div>
+            )}
+            <div className="wordpress-post-main">
+              <div className="log-title-row">
+                <strong>{blog.title || 'Untitled WordPress post'}</strong>
+                <span className="pill neutral">WordPress #{blog.wp_post_id || blog.id}</span>
+                {blog.status && <span className="pill severity-low">{titleCase(blog.status)}</span>}
+              </div>
+              <p>{stripHtml(blog.summary || '').slice(0, 180) || 'No excerpt available'}</p>
+              <div className="log-meta">
+                <span>Published {formatDate(blog.timestamp)}</span>
+                {blog.modified && <span>Modified {formatDate(blog.modified)}</span>}
+                {blog.slug && <span>{blog.slug}</span>}
+              </div>
+            </div>
+            <div className="wordpress-actions">
+              {blog.link && (
+                <a className="secondary-link" href={blog.link} target="_blank" rel="noopener noreferrer">
+                  Open
+                </a>
+              )}
+              {blog.edit_url && (
+                <a className="secondary-link" href={blog.edit_url} target="_blank" rel="noopener noreferrer">
+                  Edit
+                </a>
+              )}
             </div>
           </article>
-        )}
-      />
+        ))}
+      </div>
     </section>
   );
 }

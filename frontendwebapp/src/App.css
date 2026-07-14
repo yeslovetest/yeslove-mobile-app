@@ -381,6 +381,10 @@ textarea {
   width: 100%;
 }
 
+.wordpress-panel {
+  width: 100%;
+}
+
 .panel-heading {
   display: flex;
   justify-content: space-between;
@@ -419,7 +423,8 @@ textarea {
 }
 
 .logs-list,
-.verification-list {
+.verification-list,
+.wordpress-list {
   display: grid;
   gap: 10px;
   padding: 12px;
@@ -427,7 +432,8 @@ textarea {
 }
 
 .log-row,
-.verification-row {
+.verification-row,
+.wordpress-post {
   display: grid;
   gap: 16px;
   padding: 18px;
@@ -445,10 +451,81 @@ textarea {
   grid-template-columns: minmax(0, 1fr) 240px;
 }
 
+.wordpress-post {
+  grid-template-columns: 132px minmax(0, 1fr) auto;
+  align-items: center;
+}
+
 .log-row:hover,
-.verification-row:hover {
+.verification-row:hover,
+.wordpress-post:hover {
   border-color: #cbd5e1;
   box-shadow: 0 12px 28px rgba(16, 24, 40, 0.07);
+}
+
+.source-truth-banner {
+  display: grid;
+  gap: 5px;
+  margin: 16px;
+  padding: 16px 18px;
+  color: #1f3d2f;
+  background:
+    linear-gradient(180deg, rgba(236, 253, 243, 0.95), rgba(240, 249, 255, 0.82)),
+    #ecfdf3;
+  border: 1px solid #abefc6;
+  border-radius: 8px;
+}
+
+.source-truth-banner strong {
+  color: #064e3b;
+}
+
+.source-truth-banner p {
+  margin-bottom: 0;
+  color: #475467;
+  line-height: 1.45;
+}
+
+.wordpress-post img,
+.post-placeholder {
+  width: 132px;
+  height: 88px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #eef2f6;
+}
+
+.wordpress-post img {
+  object-fit: cover;
+}
+
+.post-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--blue);
+  background: #dbeafe;
+  font-weight: 900;
+}
+
+.wordpress-post-main {
+  min-width: 0;
+}
+
+.wordpress-post-main p {
+  margin: 10px 0;
+  color: #344054;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.wordpress-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 92px;
+}
+
+.wordpress-actions .secondary-link {
+  width: 100%;
 }
 
 .verification-grid {
@@ -857,7 +934,8 @@ textarea {
   .admin-header,
   .panel-heading,
   .log-row,
-  .verification-row {
+  .verification-row,
+  .wordpress-post {
     display: grid;
     align-items: stretch;
   }
@@ -866,6 +944,7 @@ textarea {
   .import-strip,
   .log-row,
   .verification-row,
+  .wordpress-post,
   .verification-grid,
   .stats-grid,
   .side-panel,
@@ -883,6 +962,17 @@ textarea {
   .filters label,
   .review-actions button {
     width: 100%;
+  }
+
+  .wordpress-post img,
+  .post-placeholder {
+    width: 100%;
+    height: auto;
+    min-height: 160px;
+  }
+
+  .wordpress-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

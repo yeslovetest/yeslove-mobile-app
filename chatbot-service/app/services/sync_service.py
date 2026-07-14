@@ -1,5 +1,9 @@
 import json
+import os
+import re
+from html import unescape
 from sqlalchemy.orm import Session
+import requests
 from app.models.document import Document
 from app.core.database import SessionLocal
 from app.utils.embeddings import embed_text
@@ -10,6 +14,50 @@ from config.sources import SOURCE_CATEGORIES
 class SyncService:
     def __init__(self):
         pass
+
+    def sync_wordpress_blog_posts(self, page: int = 1, per_page: int = 25) -> dict:
+        """Fetch and sync blog posts from the WordPress REST API."""
+        posts = self.fetch_wordpress_blog_posts(page=page, per_page=per_page)
+        return self.sync_blog_posts(posts)
+
+    def fetch_wordpress_blog_posts(self, page: int = 1, per_page: int = 25) -> list:
+        """Fetch normalized WordPress blog posts."""
+        base_url = os.getenv("WORDPRESS_BLOG_API_URL", "https://yeslove.co.uk/wp-json/wp/v2/posts").rstrip("/")
+        response = requests.get(
+            base_url,
+            params={"page": page, "per_page": per_page, "_embed": 1},
+            timeout=15,
+        )
+        response.raise_for_status()
+        return [self._normalize_wordpress_post(post) for post in response.json()]
+
+    def _normalize_wordpress_post(self, post: dict) -> dict:
+        post_id = post.get("id")
+        embedded = post.get("_embedded", {})
+        media = embedded.get("wp:featuredmedia", [])
+        image_url = media[0].get("source_url") if media and isinstance(media, list) else None
+
+        return {
+            "id": post_id,
+            "source_id": post_id,
+            "resource_id": f"wordpress_blog:{post_id}",
+            "source": "wordpress",
+            "type": "blog",
+            "title": self._rendered(post.get("title")),
+            "summary": self._rendered(post.get("excerpt")),
+            "content": self._rendered(post.get("content")),
+            "author": "YesLove",
+            "timestamp": post.get("date_gmt") or post.get("date"),
+            "published_at": post.get("date_gmt") or post.get("date"),
+            "url": post.get("link"),
+            "image_url": image_url,
+        }
+
+    def _rendered(self, value):
+        if isinstance(value, dict):
+            value = value.get("rendered", "")
+        text = re.sub(r"<[^>]*>", " ", unescape(value or ""))
+        return re.sub(r"\s+", " ", text).strip()
 
     def sync_blog_posts(self, blog_posts: list) -> dict:
         """Sync blog posts from main app"""
@@ -47,11 +95,14 @@ class SyncService:
             ] if value
         )
         blog_id = blog_data.get('id')
+        source_id = blog_data.get("source_id", blog_id)
         author = blog_data.get('author', 'YesLove')
+        source_prefix = "wordpress_blog" if blog_data.get("source") == "wordpress" else "blog"
+        document_source = f"{source_prefix}_{source_id if source_prefix == 'wordpress_blog' else blog_id}"
         
         metadata = {
             "blog_id": blog_id,
-            "source_id": blog_data.get("source_id", blog_id),
+            "source_id": source_id,
             "resource_id": blog_data.get("resource_id", f"blog:{blog_id}"),
             "author": author,
             "type": blog_data.get("type", "blog"),
@@ -66,7 +117,7 @@ class SyncService:
         
         # Remove existing chunks
         session.query(Document).filter(
-            Document.source == f"blog_{blog_id}"
+            Document.source == document_source
         ).delete()
         
         # Add new chunks
@@ -74,7 +125,7 @@ class SyncService:
             embedding = embed_text(chunk)
             
             doc = Document(
-                source=f"blog_{blog_id}",
+                source=document_source,
                 chunk_index=idx,
                 content=chunk,
                 embedding=json.dumps(embedding),

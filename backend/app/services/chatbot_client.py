@@ -49,6 +49,19 @@ class ChatbotClient:
         except requests.RequestException as e:
             return {"error": f"Failed to sync blogs: {str(e)}"}
 
+    def sync_wordpress_blog_posts(self, page: int = 1, per_page: int = 25) -> Dict[str, Any]:
+        """Ask chatbot service to fetch and sync blog posts from WordPress."""
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/v1/sync/wordpress-blogs",
+                json={"page": page, "per_page": per_page},
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            return {"error": f"Failed to sync WordPress blogs: {str(e)}"}
+
     def sync_content_resources(self, resources: list) -> Dict[str, Any]:
         """Sync recommendable content resources to chatbot service."""
         path = os.getenv("CHATBOT_CONTENT_SYNC_PATH", "/api/v1/sync/content")
@@ -65,10 +78,14 @@ class ChatbotClient:
 
     def sync_blog_post(self, blog, url: Optional[str] = None) -> Dict[str, Any]:
         """Sync a single backend BlogPost-like object to chatbot service."""
+        source_id = getattr(blog, "wp_post_id", None) or blog.id
+        source = getattr(blog, "source", None) or "local"
+        resource_prefix = "wordpress_blog" if source == "wordpress" else "blog"
         blog_data = {
             "id": blog.id,
-            "source_id": blog.id,
-            "resource_id": f"blog:{blog.id}",
+            "source_id": source_id,
+            "resource_id": f"{resource_prefix}:{source_id}",
+            "source": source,
             "type": "blog",
             "title": blog.title,
             "content": blog.content,
@@ -76,7 +93,7 @@ class ChatbotClient:
             "author": blog.author.username if getattr(blog, "author", None) else "YesLove",
             "timestamp": blog.timestamp.isoformat() if getattr(blog, "timestamp", None) else None,
             "published_at": blog.timestamp.isoformat() if getattr(blog, "timestamp", None) else None,
-            "url": url,
+            "url": url or getattr(blog, "link", None),
             "image_url": getattr(blog, "image_url", None),
         }
         return self.sync_blog_posts([blog_data])

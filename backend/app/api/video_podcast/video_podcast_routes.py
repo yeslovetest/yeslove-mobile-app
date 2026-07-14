@@ -39,6 +39,9 @@ def _serialize_tags(tags):
 
 
 def _public_video_url(video):
+    if getattr(video, "source", None) == "wordpress" and getattr(video, "link", None):
+        return video.link
+
     template = current_app.config.get("VIDEO_PODCAST_PUBLIC_URL_TEMPLATE")
     if not template:
         return video.video_url
@@ -159,6 +162,52 @@ class VideoPodcasts(Resource):
             db.session.rollback()
             logger.exception("Error creating video podcast")
             return {"message": "An error occurred while creating the video podcast."}, 500
+
+
+@api.route("/sync")
+class SyncVideoPodcasts(Resource):
+    @require_auth()
+    @api.doc(security="Bearer", description="Refresh cached video podcasts from WordPress")
+    @api.param("page", "WordPress page number (default 1)", type="integer")
+    @api.param("per_page", "Items per page (default 10, max 100)", type="integer")
+    @api.param("sync_chatbot", "Sync refreshed videos to chatbot service", type="boolean")
+    @api.response(200, "Video podcast cache refreshed")
+    @api.response(403, "Access denied. Admins only")
+    @api.response(502, "Could not refresh from WordPress")
+    def post(self):
+        import requests
+        from app.services.wordpress_video_service import sync_wordpress_videos_to_db
+
+        if not _is_admin():
+            return {"message": "Access denied. Admins only."}, 403
+
+        try:
+            page = max(int(request.args.get("page", 1)), 1)
+        except ValueError:
+            page = 1
+
+        try:
+            per_page = int(request.args.get("per_page", 10))
+        except ValueError:
+            per_page = 10
+
+        per_page = max(1, min(per_page, 100))
+        sync_chatbot = request.args.get("sync_chatbot", "true").lower() in {"1", "true", "yes"}
+
+        try:
+            items, total, total_pages = sync_wordpress_videos_to_db(page=page, per_page=per_page, sync_chatbot=sync_chatbot)
+        except requests.RequestException:
+            logger.exception("Error syncing WordPress video podcasts")
+            return {"message": "Could not refresh video podcasts from WordPress"}, 502
+
+        return {
+            "message": "Video podcast cache refreshed from WordPress",
+            "items": items,
+            "total": total,
+            "total_pages": total_pages,
+            "page": page,
+            "per_page": per_page,
+        }, 200
 
 
 @api.route("/<int:video_id>")

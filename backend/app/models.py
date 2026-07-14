@@ -289,12 +289,19 @@ class Address(db.Model):
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
     id = db.Column(db.Integer, primary_key=True)
+    wp_post_id = db.Column(db.Integer, unique=True, nullable=True, index=True)
+    source = db.Column(db.String(50), default="local", index=True)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     image_url = db.Column(db.String(500))  # Optional image
     summary = db.Column(db.String(1000))
+    status = db.Column(db.String(50))
+    slug = db.Column(db.String(255))
+    link = db.Column(db.String(1000))
+    modified_at = db.Column(db.DateTime)
+    synced_at = db.Column(db.DateTime)
     # Relationships 
     author = db.relationship("User", backref="blogs")
     
@@ -304,7 +311,17 @@ class BlogPost(db.Model):
             "title": self.title,
             "content": self.content,
             "author": self.author.username if self.author else "YesLove",
-            "timestamp": self.timestamp.isoformat() if self.timestamp else None
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "wp_post_id": self.wp_post_id,
+            "source": self.source,
+            "summary": self.summary,
+            "image_url": self.image_url,
+            "status": self.status,
+            "slug": self.slug,
+            "link": self.link,
+            "url": self.link,
+            "modified": self.modified_at.isoformat() if self.modified_at else None,
+            "synced_at": self.synced_at.isoformat() if self.synced_at else None,
         }
 
 
@@ -312,12 +329,17 @@ class VideoPodcast(db.Model):
     __tablename__ = "video_podcasts"
 
     id = db.Column(db.Integer, primary_key=True)
+    wp_post_id = db.Column(db.Integer, unique=True, nullable=True, index=True)
+    source = db.Column(db.String(50), default="local", index=True)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     transcript = db.Column(db.Text, nullable=True)
     video_url = db.Column(db.String(1000), nullable=False)
     thumbnail_url = db.Column(db.String(1000), nullable=True)
     tags = db.Column(db.Text, nullable=True)
+    slug = db.Column(db.String(255), nullable=True)
+    link = db.Column(db.String(1000), nullable=True)
+    synced_at = db.Column(db.DateTime, nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     published_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -337,17 +359,23 @@ class VideoPodcast(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "wp_post_id": self.wp_post_id,
+            "source": self.source,
             "title": self.title,
             "description": self.description,
             "transcript": self.transcript,
             "video_url": self.video_url,
             "thumbnail_url": self.thumbnail_url,
             "tags": self.tag_list(),
+            "slug": self.slug,
+            "link": self.link,
+            "url": self.link or self.video_url,
             "author_id": self.author_id,
             "author": self.author.username if self.author else None,
             "published_at": self.published_at.isoformat() if self.published_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "synced_at": self.synced_at.isoformat() if self.synced_at else None,
         }
     
 class DeviceToken(db.Model):

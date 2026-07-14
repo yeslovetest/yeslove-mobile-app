@@ -16,11 +16,18 @@ class HybridSyncService:
         # 1. Start scheduled background sync
         self.auto_sync.start_scheduler()
         
-        # 2. Sync RSS feeds immediately
+        # 2. Sync YesLove WordPress blogs immediately
+        try:
+            self.auto_sync.content_sync_service.sync_wordpress_blog_posts(page=1, per_page=25)
+        except Exception as e:
+            print(f"WordPress blog sync failed: {e}")
+
+        # 3. Sync RSS feeds immediately
         self.rss_sync.sync_all_feeds()
         
         print("✅ Production sync started:")
         print("  - Scheduled sync: Daily at 2 AM")
+        print("  - WordPress blogs: Synced from yeslove.co.uk")
         print("  - RSS feeds: Synced")
         print("  - Webhooks: Available at /api/v1/webhook/content")
         print("  - Manual trigger: /api/v1/admin/sync/trigger")
@@ -31,5 +38,5 @@ class HybridSyncService:
             "scheduled_sync": self.auto_sync.running,
             "webhook_available": True,
             "rss_feeds": len(self.rss_sync.feeds),
-            "methods": ["scheduled", "webhook", "rss", "manual"]
+            "methods": ["scheduled", "wordpress", "webhook", "rss", "manual"]
         }

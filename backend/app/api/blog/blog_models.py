@@ -12,13 +12,25 @@ CreateBlogPost = api.model("CreateBlogPost", {
 
 BlogPostModel = api.model("BlogPostModel", {
     "id" : fields.Integer(description="Post ID"),
+    "wp_post_id": fields.Integer(description="WordPress post ID"),
+    "source_id": fields.Integer(description="Source system post ID"),
+    "resource_id": fields.String(description="Stable resource ID"),
+    "type": fields.String(description="Resource type"),
     "title" : fields.String(description="Title"),
     "content" : fields.String(description="Content"),
     "summary" : fields.String(description="Summary"),
     "image_url": fields.String(description="Image URL"),
     "author_id" : fields.Integer(description="Author user ID"),
     "author" : fields.String(description="Author username"),
-    "timestamp" : fields.String(description="UTC timestamp (ISO 8601)")
+    "timestamp" : fields.String(description="UTC timestamp (ISO 8601)"),
+    "published_at": fields.String(description="Published timestamp"),
+    "modified": fields.String(description="Modified timestamp"),
+    "slug": fields.String(description="WordPress slug"),
+    "status": fields.String(description="WordPress post status"),
+    "link": fields.String(description="Public WordPress URL"),
+    "url": fields.String(description="Public content URL"),
+    "edit_url": fields.String(description="WordPress edit URL"),
+    "source": fields.String(description="Source system")
 })
 
 BlogPostList = api.model("BlogPostList", {
