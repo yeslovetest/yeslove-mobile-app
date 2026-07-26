@@ -4,8 +4,6 @@ from flask_restx import fields
 ContactInfo = api.model("ContactInfo", {
         "name": fields.String(description="User's full name"),
         "email": fields.String(description="Email address"),
-        "phone": fields.String(description="Phone number"),
-        "address": fields.String(description="User's address"),
         "website": fields.String(description="User's personal website"),
     })
 

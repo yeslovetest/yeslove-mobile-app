@@ -30,6 +30,28 @@ class ChatbotClient:
             return {"error": f"Chatbot service unavailable: {str(e)}"}
 
 
+    def get_history(self, session_id: str, token: str = None):
+        """Fetch stored conversation history for a session from the chatbot
+        service. Returns (body, status_code) so we can forward the chatbot
+        service's real status - notably its 403 when the session isn't yours."""
+        try:
+            headers = {"Content-Type": "application/json"}
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+            response = requests.get(
+                f"{self.base_url}/api/v1/chat/history/{session_id}",
+                headers=headers,
+                timeout=self.timeout
+            )
+            try:
+                body = response.json()
+            except ValueError:
+                body = {"error": "Invalid response from chatbot service"}
+            return body, response.status_code
+        except requests.RequestException as e:
+            return {"error": f"Chatbot service unavailable: {str(e)}"}, 503
+    
+    
 
     def sync_blog_posts(self, blogs: list) -> Dict[str, Any]:
         """Sync blog posts to chatbot service"""

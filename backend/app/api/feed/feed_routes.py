@@ -147,7 +147,7 @@ class CreatePost(Resource):
     post_parser.add_argument(
         'content',
         type=str,
-        required=True,
+        required=False,
         location='form',
         help='Content of the post'
     )
@@ -186,7 +186,7 @@ class CreatePost(Resource):
         logger.info("Request files keys: %s", list(request.files.keys()))
 
         args = post_parser.parse_args()
-        content = args.get("content", "")
+        content = args.get("content") or ""
         files = args.get("media") or []
         is_anonymous = str(args.get("anonymous")).lower() == "true"
 
@@ -197,8 +197,8 @@ class CreatePost(Resource):
 
         """Create a new post with automatic moderation."""
 
-        if not content:
-            return {"message": "Post content cannot be empty"}, 400
+        if not content and not files:
+            return {"message": "Post must have text or media"}, 400
           
          # ✅ Validate user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -317,6 +317,7 @@ class GetPost(Resource):
     from .feed_models import Post
     @require_auth()
     @api.response(code=200, description="Post details", model=Post)
+    
     def get(self, post_id):
         """Fetch a single post by ID."""
         from app.models import Post, Reaction, User
@@ -339,6 +340,26 @@ class GetPost(Resource):
             "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
+        
+    @require_auth()
+    @api.doc(security='Bearer')
+    @api.response(200, "Post deleted successfully")
+    @api.response(403, "Not allowed to delete this post")
+    @api.response(404, "Post not found")
+    def delete(self, post_id):
+        """Delete a post by ID. Only the post's author may delete it."""
+        from app.models import Post, Reaction, User, db
+        post = Post.query.get_or_404(post_id)
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+        if post.user_id != user.id:
+            return {"message": "You can only delete your own posts"}, 403
+        Reaction.query.filter_by(post_id=post.id).delete()
+        db.session.delete(post)
+        db.session.commit()
+        logger.info("Post %s deleted by user %s", post_id, user.id)
+        return {"message": "Post deleted successfully", "post_id": post_id}, 200
     
 # -------------------------
 # 🚀 Reaction ROUTES
