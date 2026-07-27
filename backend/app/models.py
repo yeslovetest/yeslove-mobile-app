@@ -19,8 +19,6 @@ class User(db.Model):
     keycloak_id     = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
     username        = db.Column(db.String(50), unique=True, nullable=False)
     email           = db.Column(db.String(100), unique=True, nullable=False)
-    phone_number    = db.Column(db.String(20), nullable=True)
-    address         = db.Column(db.String(255), nullable=True)
     website         = db.Column(db.String(255), nullable=True)
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time

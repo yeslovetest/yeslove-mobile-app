@@ -1,0 +1,20 @@
+# Virtual environments (huge, platform-specific, must never go in the image)
+.venv/
+venv/
+env/
+ENV/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Local SQLite dev DB (the container uses Postgres)
+dev.db
+*.sqlite
+*.sqlite3
+
+# Git and backups
+.git/
+backups/
+*.log

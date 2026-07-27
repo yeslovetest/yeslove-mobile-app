@@ -33,3 +33,13 @@ class SendChatbotMessage(Resource):
             return {"error": result["error"]}, 503
             
         return result, 200
+
+
+@api.route("/history/<string:session_id>")
+class GetChatbotHistory(Resource):
+    @require_auth()
+    def get(self, session_id):
+        """Fetch stored chatbot history for one of the user's own sessions."""
+        token = request.headers.get("Authorization", "").replace("Bearer ", "")
+        body, status = chatbot_client.get_history(session_id, token=token)
+        return body, status
