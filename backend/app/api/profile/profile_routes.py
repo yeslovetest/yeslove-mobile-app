@@ -42,8 +42,6 @@ class UserProfile(Resource):
             "contact_info": {
                 "name": user.username or "",
                 "email": user.email or "",
-                "phone": getattr(user, 'phone_number', None) or "",
-                "address": getattr(user, 'address', None) or "",
                 "website": getattr(user, 'website', None) or "",
             },
             "education_info": {
@@ -86,8 +84,6 @@ class UpdateProfile(Resource):
             # To do: 👇 updating of username and email might require KeyCloak
             #user.username = new_userinfo['name']
             #user.email = new_userinfo['email']
-            user.phone_number = new_userinfo['phone']
-            user.address = new_userinfo['address']
             user.website = new_userinfo['website']
         
         # Handle profile picture upload to object storage or local storage
@@ -132,8 +128,6 @@ class About(Resource):
             "contact": {
                 "name": f"{user.first_name} {user.last_name}",
                 "email": user.email,
-                "phone": user.phone if hasattr(user, "phone") else None,
-                "address": user.address if hasattr(user, "address") else None,
                 "website": user.website if hasattr(user, "website") else None,
             },
             "education_and_employment": {

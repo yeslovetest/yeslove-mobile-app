@@ -64,6 +64,6 @@ describe("feedSaga", () => {
     store.dispatch(deletePostAction({ postId: 1 }));
     await flushPromises();
 
-    expect(store.getState().feed.feed.posts.map((p) => p.id)).toEqual([2]);
+    expect(store.getState().feed.feed.posts.map((p: { id?: number }) => p.id)).toEqual([2]);
   });
 });
