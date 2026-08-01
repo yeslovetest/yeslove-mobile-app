@@ -60,6 +60,11 @@ const feedSlice = createSlice({
             state.postReactionTab = action.payload;
         },
         postLikePost: (state, action: PayloadAction<{postId: number}>) => {},
+        deletePostAction: (state, action: PayloadAction<{postId: number}>) => {},   // handled by saga
+        removePostFromFeed: (state, action: PayloadAction<{postId: number}>) => {
+            state.feed.posts = state.feed.posts.filter((post) => post.id !== action.payload.postId);
+            state.feed.friends = state.feed.friends.filter((post) => post.id !== action.payload.postId);
+        },
         postReactionToPost: (state, action: PayloadAction<{postId: number, reactionType: string}>) => {},
         retrievePostReactions: (state, action: PayloadAction<{postId: number}>) => {},   // retrieves both comments and reactions
         setComments:  (state, action: PayloadAction<Comment[]>) => {
@@ -90,5 +95,6 @@ export const { setActiveHomeTabAction, setFeedDataAction, updatePostsForFeedActi
     postNewPostAction, postComment, setPostReactionTab, 
     postLikePost, postReactionToPost, setComments, retrieveOnePost, setDetailedPost,
     setReactions, retrievePostReactions, setScrollViewPosition,
-    triggerScrollToTopAction, fetchFollowedUsers, setFollowing, SendFollowUser } = feedSlice.actions;
+    triggerScrollToTopAction, fetchFollowedUsers, setFollowing, SendFollowUser,
+    deletePostAction, removePostFromFeed } = feedSlice.actions;
 export default feedSlice.reducer;

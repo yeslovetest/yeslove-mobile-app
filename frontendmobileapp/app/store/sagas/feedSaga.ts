@@ -16,11 +16,13 @@ import { normalizeMediaFiles } from "./sagaHelpers";
 
 import { openTabOnTopAction, TabType } from "../Navigation/navigationSlice";
 import {
+  deletePostAction,
   fetchFollowedUsers,
   postComment,
   postLikePost,
   postNewPostAction,
   postReactionToPost,
+  removePostFromFeed,
   retrieveOnePost,
   retrievePostReactions,
   SendFollowUser,
@@ -100,6 +102,25 @@ function* postNewPost(
     yield put(updatePostsForFeedAction({ feedType: "friends" }));
   } catch (error) {
     console.error("❌ Error creating post:", error);
+  }
+}
+
+function* handleDeletePost(action: PayloadAction<{ postId: number }>) {
+  try {
+    // TODO: The delete-post endpoint does not exist on the API yet. Once the
+    // backend adds it, expose it on FeedApiFactory (e.g. `deletePost`) and
+    // uncomment the call below so the deletion is persisted server-side.
+    //
+    // yield call(FeedApiFactory().deletePost, action.payload.postId);
+
+    // Optimistically drop the post from the feed so it disappears immediately.
+    yield put(removePostFromFeed({ postId: action.payload.postId }));
+  } catch (error) {
+    console.error("❌ Error deleting post:", error);
+    // If the endpoint is wired up later and fails, refresh the feed so the
+    // optimistically-removed post reappears.
+    yield put(updatePostsForFeedAction({ feedType: "all" }));
+    yield put(updatePostsForFeedAction({ feedType: "friends" }));
   }
 }
 
@@ -188,4 +209,5 @@ export default function* feedSaga() {
   yield takeEvery(fetchFollowedUsers.type, handleGetFollowing);
   yield takeEvery(SendFollowUser.type, handlePostFollowUser);
   yield takeEvery(retrieveOnePost.type, handleGetOnePost);
+  yield takeEvery(deletePostAction.type, handleDeletePost);
 }
