@@ -102,7 +102,7 @@ export default function HomeRoot() {
 
   return (
     <>
-      <Header mainTitle="Yeslove!"></Header>
+      <Header mainTitle="YesLove!"></Header>
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={sharedStyles.contentContainer}

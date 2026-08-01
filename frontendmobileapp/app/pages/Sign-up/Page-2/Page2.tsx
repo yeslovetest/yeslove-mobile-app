@@ -35,7 +35,6 @@ const Page2 = () => {
     usernameBdColor,
     firstNameBdColor,
     lastNameBdColor,
-    phoneBdColor,
     ...signupAction
   } = useSignup();
 
@@ -56,7 +55,7 @@ const Page2 = () => {
       hideError();
     }, 5000);
     return () => clearTimeout(timer);
-  }, [firstNameBdColor, lastNameBdColor, phoneBdColor, usernameBdColor, errorMessage]);
+  }, [firstNameBdColor, lastNameBdColor, usernameBdColor, errorMessage]);
 
   return (
     <ImageBackground
@@ -117,18 +116,6 @@ const Page2 = () => {
               borderColor={lastNameBdColor[0]}
               borderBottomColor={lastNameBdColor[1]}
               onChangeText={signupAction.handleLastNameChange}
-            />
-
-            <Text
-              style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}
-            >
-              Phone Number
-            </Text>
-            <Input
-              placeholder="Enter phone number"
-              borderColor={phoneBdColor[0]}
-              borderBottomColor={phoneBdColor[1]}
-              onChangeText={signupAction.handlePhoneNumberChange}
             />
 
             <Text

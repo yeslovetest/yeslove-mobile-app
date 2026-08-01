@@ -239,6 +239,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
   },
+
+  /* post options (three-dots) menu styles */
+  postOptionsButton: {
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingLeft: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+  },
+  postMenuOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: 16,
+  },
+  postMenuDeleteText: {
+    color: theme.colors.danger,
+    fontSize: theme.typography.fontSize.subhead,
+    fontWeight: "600",
+    marginLeft: 12,
+  },
 });
 
 export default styles;

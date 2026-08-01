@@ -26,10 +26,6 @@ const EditProfileInformation = () => {
   const profileData = useAppSelector((state) => state.profile.profiles[userId]);
   const name = useAppSelector((state) => state.profile.profiles[userId].contact_info?.name ?? "");
   const email = useAppSelector((state) => state.profile.profiles[userId].contact_info?.email ?? "");
-  const phone = useAppSelector((state) => state.profile.profiles[userId].contact_info?.phone ?? "");
-  const address = useAppSelector(
-    (state) => state.profile.profiles[userId].contact_info?.address ?? "",
-  );
   const website = useAppSelector(
     (state) => state.profile.profiles[userId].contact_info?.website ?? "",
   );
@@ -38,8 +34,6 @@ const EditProfileInformation = () => {
 
   const [editedName, setEditedName] = useState(name);
   const [editedEmail, setEditedEmail] = useState(email);
-  const [editedPhone, setEditedPhone] = useState(phone);
-  const [editedAddress, setEditedAddress] = useState(address);
   const [editedWebsite, setEditedWebsite] = useState(website);
   const [editedBio, setEditedBio] = useState(bio);
   const [displayMsg, setDisplayMsg] = useState("");
@@ -50,11 +44,9 @@ const EditProfileInformation = () => {
   useEffect(() => {
     setEditedName(name);
     setEditedEmail(email);
-    setEditedPhone(phone);
-    setEditedAddress(address);
     setEditedWebsite(website);
     setEditedBio(bio);
-  }, [name, email, phone, address, website, bio]);
+  }, [name, email, website, bio]);
 
   const handleFieldChange = (field: string, value: string) => {
     switch (field) {
@@ -63,12 +55,6 @@ const EditProfileInformation = () => {
         break;
       case "Email":
         setEditedEmail(value);
-        break;
-      case "Phone":
-        setEditedPhone(value);
-        break;
-      case "Address":
-        setEditedAddress(value);
         break;
       case "Website":
         setEditedWebsite(value);
@@ -89,8 +75,6 @@ const EditProfileInformation = () => {
         ...profileData.contact_info,
         name: editedName,
         email: editedEmail,
-        phone: editedPhone,
-        address: editedAddress,
         website: editedWebsite,
       },
       bio: editedBio,
@@ -182,20 +166,6 @@ const EditProfileInformation = () => {
             onChange={(value: string) => handleFieldChange("Email", value)}
             onFocus={() => handleFieldFocus("Email")}
             onLayout={(event) => handleFieldLayout("Email", event)}
-          />
-          <TextInputField
-            label="Phone"
-            value={editedPhone}
-            onChange={(value: string) => handleFieldChange("Phone", value)}
-            onFocus={() => handleFieldFocus("Phone")}
-            onLayout={(event) => handleFieldLayout("Phone", event)}
-          />
-          <TextInputField
-            label="Address"
-            value={editedAddress}
-            onChange={(value: string) => handleFieldChange("Address", value)}
-            onFocus={() => handleFieldFocus("Address")}
-            onLayout={(event) => handleFieldLayout("Address", event)}
           />
           <TextInputField
             label="Website"
