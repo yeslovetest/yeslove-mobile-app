@@ -37,6 +37,12 @@ def require_auth(f):
     """Decorator to require authentication for chatbot endpoints"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+                # LOCAL POC ONLY
+        if os.getenv("LOCAL_DEV_AUTH", "false").lower() == "true":
+            request.user_id = "local-test-user"
+            request.user_email = "local@yeslove.test"
+            return f(*args, **kwargs)
+        
         auth_header = request.headers.get('Authorization')
         
         if not auth_header or not auth_header.startswith('Bearer '):

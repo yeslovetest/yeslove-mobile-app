@@ -27,6 +27,7 @@ from app.api.media.media_routes import api as media_api
 from app.api.notifications.notification_routes import api as notifications_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
+from app.api.chatbot.voice_routes import api as multilingual_api
 
 
 # Load environment variables
@@ -108,6 +109,7 @@ def create_app(config_class=None):
     api.add_namespace(media_api, path="/api/media")
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
+    api.add_namespace(multilingual_api,path="/api/v1/multilingual")
     
     # Register health check endpoints
     from app.monitoring.health import health_bp

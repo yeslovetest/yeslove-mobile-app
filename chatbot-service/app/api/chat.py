@@ -112,3 +112,36 @@ class ChatHistoryResource(Resource):
 
         messages = get_session_history(session_id, limit=100)
         return {'session_id': session_id, 'messages': messages}, 200
+
+@api.route('/retrieve')
+class RetrieveContext(Resource):
+
+    def post(self):
+        """
+        LOCAL POC ONLY:
+        Retrieve RAG context without calling an LLM.
+        """
+
+        data = request.json or {}
+
+        message = data.get("message", "").strip()
+
+        if not message:
+            return {
+                "error": "Message is required"
+            }, 400
+
+        try:
+            context = get_rag_engine().retrieve_context(
+                message
+            )
+
+            return {
+                "response": context,
+                "mode": "rag_only"
+            }, 200
+
+        except Exception as exc:
+            return {
+                "error": str(exc)
+            }, 500
