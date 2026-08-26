@@ -1,81 +1,75 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-   
-    settingsNavItemContainer: {
-        width: theme.spacing.standardPageContentWidth,
-        borderTopWidth: 0.5,
-        borderBlockColor: theme.colors.footerBdColor,
-        marginVertical: 5,
+  settingsNavItemContainer: {
+    width: theme.layout.contentWidth,
+    borderTopWidth: 0.5,
+    borderBlockColor: theme.colors.borderStrong,
+    marginVertical: 5,
+  },
+  settingsNavItemContent: {
+    alignItems: "center",
+    paddingVertical: 15,
+    marginVertical: theme.spacing.xxs,
+    paddingHorizontal: 50,
+    backgroundColor: theme.colors.surface,
+  },
+  sectionText: {
+    textAlign: "center",
+    fontSize: theme.typography.fontSize.body,
+    fontWeight: "500",
+    color: theme.colors.textPrimary,
+  },
+  settingsSubSection: {
+    padding: theme.spacing.xl,
+    justifyContent: "center",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBlockColor: theme.colors.textMuted,
+    backgroundColor: theme.colors.surface,
+  },
+  subSectionInput: {
+    fontSize: theme.typography.fontSize.body,
+    borderWidth: 1,
+    borderBottomColor: theme.colors.textMuted,
+    color: theme.colors.textMuted,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: 10,
+    marginVertical: 10,
+    width: "100%",
+    borderRadius: theme.radii.lg,
+  },
+  saveChangesButton: {
+    backgroundColor: theme.colors.primary,
+    padding: 10,
+    margin: theme.spacing.xl,
+    borderRadius: theme.radii.lg,
+  },
+  saveChangesButtonText: {
+    color: theme.colors.textOnPrimary,
+    textAlign: "center",
+    fontSize: theme.typography.fontSize.body,
+  },
 
-    },
-    settingsNavItemContent: {
-        alignItems: 'center',
-        paddingVertical: 15,
-        marginVertical: 2,
-        paddingHorizontal: 50,
-        backgroundColor: theme.colors.mainBkgColor,
-    },
+  /* modal */
 
-    sectionText: {
-        textAlign: 'center',
-        fontSize: 15,
-        fontWeight: '500',
-        color: theme.colors.blackText,
-    },
+  backdrop: {
+    flex: 1,
+    backgroundColor: theme.colors.overlay,
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderTopLeftRadius: theme.radii.xl,
+    borderTopRightRadius: theme.radii.xl,
+  },
+  modalText: {
+    fontSize: theme.typography.fontSize.title3,
+    textAlign: "center",
+  },
+});
 
-    settingsSubSection: {
-        padding: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBlockColor: theme.colors.footerFontColor,
-        backgroundColor: theme.colors.mainBkgColor
-    },
-
-    subSectionInput: {
-        fontSize: 15,
-        borderWidth: 1,
-        borderBottomColor: theme.colors.footerFontColor,
-        color: theme.colors.footerFontColor,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        marginVertical: 10,
-        width: '100%',
-        borderRadius: 10,
-    },
-    saveChangesButton: {
-        backgroundColor: theme.colors.primaryBlue,
-        padding: 10,
-        margin: 20,
-        borderRadius: 10,
-    },
-
-    saveChangesButtonText: {
-        color: "#eee",
-        textAlign: "center",
-        fontSize: 15
-    },
-
-    /*modal */
-
-    backdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        justifyContent: 'flex-end',
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 16,
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-    },
-
-    modalText: {
-        fontSize: 18,
-        textAlign: "center"
-    }
-})
-
-export default styles
+export default styles;

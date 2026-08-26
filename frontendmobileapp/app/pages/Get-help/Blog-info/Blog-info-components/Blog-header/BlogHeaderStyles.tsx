@@ -1,77 +1,59 @@
-import theme from "@/assets/variables/Variables";
-import { vw } from "@/ts/viewport-units";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-    indBlogContainer: {
-        flex: 1,
-        width: theme.spacing.postWidth,
-        backgroundColor: "#fff",
-        marginTop: vw(5),
-        borderRadius: 15
-    },
-    indBlogTitle: {
-        marginBottom: vw(5),
-        paddingHorizontal: vw(5),
-        fontSize: 26,
-        fontWeight: 600,
-    },
-    indAuthorAndDateContainer: {
-        display: "flex",
-        width: "100%",
-        justifyContent: "space-between",
-        paddingHorizontal: vw(5),
-        paddingVertical: vw(5),
-        alignItems: "center",
-        flexDirection: "row",
-        borderBottomColor: "#222",
-        borderBottomWidth: 1
-    },
-        blogContainer: {
-        display: "flex",
-        width: "100%",
-        backgroundColor: "#fff",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-        borderRadius: 15,
-        marginBottom: 40,
-    },
-    blogImage: {
-        width: "100%",
-        height: 250,
-    },
-    blogTitle: {
-        textAlign: "left",
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        marginTop: 15,
-        fontSize: 23,
-        fontWeight: "600"
-    },
-    authorAndDateContainer: {
-        display: "flex",
-        width: "100%",
-        justifyContent: "flex-start",
-        paddingHorizontal: 30,
-        paddingVertical: 10,
-        alignItems: "center",
-        flexDirection: "row"
-    },
+  indBlogContainer: {
+    width: "100%",
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  indBlogTitle: {
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    fontSize: theme.typography.fontSize.display,
+    lineHeight: 36,
+    color: theme.colors.textPrimary,
+    fontWeight: "700",
+  },
+  indAuthorAndDateContainer: {
+    width: "100%",
+    justifyContent: "flex-start",
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 14,
+    borderBottomColor: theme.colors.border,
+    borderBottomWidth: 1,
+  },
+  blogImage: {
+    width: "100%",
+    minHeight: 220,
+    maxHeight: 300,
+  },
+  blogImageContent: {
+    borderRadius: 0,
+    resizeMode: "cover",
+  },
+  authorContainer: {
+    alignItems: "center",
+    flexDirection: "row",
+    maxWidth: "100%",
+  },
+  authorIcon: {
+    color: theme.colors.primary,
+    paddingRight: 7,
+  },
+  dateAndAuthorText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.fontSize.subhead,
+    lineHeight: 18,
+    fontWeight: "500",
+  },
+});
 
-    authorContainer: {
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "row",
-        marginRight: 30
-    },
-    authorIcon: {
-        color: theme.colors.primaryBlue,
-        paddingRight: 5,
-    },
-    dateAndAuthorText: {
-        color: "#666",
-        fontSize: 14
-    },
-})
-
-export default styles 
+export default styles;

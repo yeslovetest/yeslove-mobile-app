@@ -1,29 +1,28 @@
-import React from 'react';
-import { View, Text, Image } from 'react-native';
-import styles from './ChatResponseStyles';
-import UserProfile from '../UserProfile/UserProfile';
-import MediaFilePreview from '../MediaPreview/mediaPreview';
+import React from "react";
+import { View, Text, Image } from "react-native";
+import styles from "./ChatResponseStyles";
+import UserProfile from "../UserProfile/UserProfile";
+import MediaFilePreview from "../MediaPreview/mediaPreview";
+import { MediaFile } from "@/generated-api";
 
 interface Props {
   text: string;
   time: string;
-  media: { uri?: string, type?: string, media_url?: string, name?: string }[];
+  profilePic: string;
+  media: { uri: string; type: string; name?: string }[] | MediaFile[];
 }
 
-const ChatResponse = ({ text, time, media }: Props) => {
-  /*const hhmm = time
-    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    .replace(/^0/, ''); */
+const ChatResponse = ({ text, time, profilePic, media }: Props) => {
+  const responseText = (text ?? "").trim();
 
   return (
     <View style={styles.chatResponseContainer}>
-      <UserProfile />
-      <View style={{ flexShrink: 1 }}>
+      <UserProfile photo={profilePic} />
+      <View style={styles.bubbleWrap}>
         <View style={styles.chatResponse}>
-          <MediaFilePreview file={media}/>
-          <Text numberOfLines={3} ellipsizeMode="tail" style={styles.responseText}>
-            {text}
-          </Text>
+          <View style={styles.tailReceived} />
+          <MediaFilePreview file={media} bubbleTone="received" maxPreviewWidth={168} />
+          {responseText.length > 0 && <Text style={styles.responseText}>{responseText}</Text>}
           <Text style={styles.timeSentResponse}>{time}</Text>
         </View>
       </View>

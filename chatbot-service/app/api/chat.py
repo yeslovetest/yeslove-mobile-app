@@ -2,6 +2,11 @@ from flask import request, jsonify
 from flask_restx import Namespace, Resource, fields
 from app.core.rag_engine import RAGEngine
 from app.utils.auth import require_auth
+from app.services.history_service import (
+    get_session_history,
+    save_message,
+    user_owns_session,
+)
 
 api = Namespace("chat", description="Chat API with Priority-Based RAG")
 

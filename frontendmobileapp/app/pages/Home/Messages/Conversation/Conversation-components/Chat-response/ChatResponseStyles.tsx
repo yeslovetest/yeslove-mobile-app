@@ -1,46 +1,68 @@
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-   chatResponseContainer: {
-        width: "90%",
-        marginRight: "auto",
-        padding: 20,
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "center",
-        flexDirection: "row",
-        marginBottom: 4
-    },
+  chatResponseContainer: {
+    width: "100%",
+    paddingLeft: 0,
+    paddingRight: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: theme.spacing.xxs,
+  },
+  bubbleWrap: {
+    flexShrink: 1,
+    maxWidth: "78%",
+  },
+  chatResponse: {
+    position: "relative",
+    width: "100%",
+    alignSelf: "flex-start",
+    borderRadius: theme.radii.xxl,
+    borderBottomLeftRadius: 10,
+    backgroundColor: theme.colors.primarySoft,
+    borderWidth: 1,
+    // Light-blue received-bubble border — kept as a literal.
+    borderColor: "#d9e6ff",
+    paddingHorizontal: 10,
+    paddingTop: theme.spacing.sm,
+    paddingBottom: 6,
+  },
+  tailReceived: {
+    position: "absolute",
+    left: -6,
+    bottom: 8,
+    width: 12,
+    height: 12,
+    borderRadius: theme.radii.md,
+    backgroundColor: theme.colors.primarySoft,
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#d9e6ff",
+    transform: [{ rotate: "28deg" }],
+  },
+  responseText: {
+    fontSize: theme.typography.fontSize.body,
+    lineHeight: 21,
+    color: theme.colors.textPrimary,
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.xxs,
+  },
+  timeSentResponseContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
+  },
+  timeSentResponse: {
+    marginTop: theme.spacing.xxs,
+    marginLeft: "auto",
+    color: theme.colors.textMuted,
+    fontSize: 11,
+  },
+});
 
-    chatResponse: {
-        fontFamily: "sans-serif",
-        width: "100%",
-        borderRadius: 15,
-        backgroundColor: "#fefefe",
-        color: "#4e4e4e",
-        padding: 10,
-        fontSize: 17
-    },
-
-    responseText: {
-        fontSize: 17,
-        fontFamily: "sans-serif",
-        color: "#1e1e1e",
-    },
-
-    timeSentResponseContainer: {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column"
-    },
-
-    timeSentResponse: {
-        marginTop: 2,
-        marginLeft: "auto",
-        color: "#7e7e7e"
-    },
-
-})
-
-export default styles
+export default styles;

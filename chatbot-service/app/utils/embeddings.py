@@ -1,5 +1,8 @@
 import os
 import openai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def setup_openai():
     """Setup OpenAI API key"""

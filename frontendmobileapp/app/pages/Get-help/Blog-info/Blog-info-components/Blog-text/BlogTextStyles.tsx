@@ -1,13 +1,30 @@
-import { vw } from "@/ts/viewport-units";
 import { StyleSheet } from "react-native";
 
-const styles = StyleSheet.create({
-       blogText: {
-        paddingHorizontal: vw(5),
-        paddingVertical: vw(5),
-        textAlign: "justify",
-        color: "#222"
-    },
-})
+import { theme } from "@/app/theme";
 
-export default styles
+const styles = StyleSheet.create({
+  contentContainer: {
+    width: "100%",
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl,
+    gap: 10,
+  },
+  blogText: {
+    fontSize: 17,
+    lineHeight: 30,
+    textAlign: "left",
+    color: theme.colors.textPrimary,
+    letterSpacing: 0.1,
+  },
+  blogHeading: {
+    marginTop: 10,
+    marginBottom: theme.spacing.xs,
+    fontSize: 21,
+    lineHeight: 30,
+    color: theme.colors.textPrimary,
+    fontWeight: "700",
+  },
+});
+
+export default styles;

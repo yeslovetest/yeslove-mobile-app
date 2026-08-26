@@ -405,6 +405,12 @@ export interface Comment {
      * @memberof Comment
      */
     'timestamp'?: string;
+    /**
+     * URL to the author\'s profile picture
+     * @type {string}
+     * @memberof Comment
+     */
+    'picture'?: string;
 }
 /**
  * 
@@ -822,6 +828,12 @@ export interface FollowedUser {
      */
     'follow_type'?: string;
     /**
+     * Relationship status: \'following\', \'requested\', or \'friend\'
+     * @type {string}
+     * @memberof FollowedUser
+     */
+    'friendship_status'?: string;
+    /**
      * URL to the followed user\'s profile picture
      * @type {string}
      * @memberof FollowedUser
@@ -1001,13 +1013,19 @@ export interface LikePostRequest {
  */
 export interface LoginRequest {
     /**
-     * User\'s Keycloak username
+     * User login identifier (username or email)
      * @type {string}
      * @memberof LoginRequest
      */
     'username': string;
     /**
-     * User\'s Keycloak password
+     * Optional email alias for Supabase login
+     * @type {string}
+     * @memberof LoginRequest
+     */
+    'email'?: string;
+    /**
+     * User password
      * @type {string}
      * @memberof LoginRequest
      */
@@ -1038,7 +1056,7 @@ export interface LoginRequest {
  */
 export interface LogoutRequest {
     /**
-     * Users refresh token
+     * User refresh token
      * @type {string}
      * @memberof LogoutRequest
      */
@@ -1076,6 +1094,12 @@ export interface MediaFile {
      */
     'url'?: string;
     /**
+     * Media URL alias for client compatibility
+     * @type {string}
+     * @memberof MediaFile
+     */
+    'media_url'?: string;
+    /**
      * Original filename
      * @type {string}
      * @memberof MediaFile
@@ -1093,6 +1117,24 @@ export interface MediaFile {
      * @memberof MediaFile
      */
     'file_size'?: number;
+    /**
+     * Media width in pixels
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'width'?: number;
+    /**
+     * Media height in pixels
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'height'?: number;
+    /**
+     * Media duration in seconds (for video/audio)
+     * @type {number}
+     * @memberof MediaFile
+     */
+    'duration'?: number;
     /**
      * Timestamp when the media was uploaded
      * @type {string}
@@ -1359,6 +1401,12 @@ export interface Post {
      */
     'comments'?: number;
     /**
+     * is this post anonymous
+     * @type {boolean}
+     * @memberof Post
+     */
+    'anonymous'?: boolean;
+    /**
      * List of media file URLs associated with the post
      * @type {Array<MediaFile>}
      * @memberof Post
@@ -1607,31 +1655,6 @@ export interface ResetPasswordRequest {
 /**
  * 
  * @export
- * @interface SendMessageRequest
- */
-export interface SendMessageRequest {
-    /**
-     * keycloak ID of the recipient user
-     * @type {string}
-     * @memberof SendMessageRequest
-     */
-    'receiver_id': string;
-    /**
-     * Message content (required if no media_id)
-     * @type {string}
-     * @memberof SendMessageRequest
-     */
-    'message'?: string;
-    /**
-     * Media ID for attachments (required if no message)
-     * @type {string}
-     * @memberof SendMessageRequest
-     */
-    'media_id'?: string;
-}
-/**
- * 
- * @export
  * @interface SetUserTypeRequest
  */
 export interface SetUserTypeRequest {
@@ -1648,12 +1671,39 @@ export interface SetUserTypeRequest {
      */
     'license'?: string;
     /**
+     * License number (for professional users only)
+     * @type {string}
+     * @memberof SetUserTypeRequest
+     */
+    'license_number'?: string;
+    /**
+     * License body (HCPC, BACP, UKCP)
+     * @type {string}
+     * @memberof SetUserTypeRequest
+     */
+    'license_body'?: SetUserTypeRequestLicenseBodyEnum;
+    /**
+     * Consent to use and display license data
+     * @type {boolean}
+     * @memberof SetUserTypeRequest
+     */
+    'consent_license_data'?: boolean;
+    /**
      * Specialization field (for professional users only)
      * @type {string}
      * @memberof SetUserTypeRequest
      */
     'specialization'?: string;
 }
+
+export const SetUserTypeRequestLicenseBodyEnum = {
+    Hcpc: 'HCPC',
+    Bacp: 'BACP',
+    Ukcp: 'UKCP'
+} as const;
+
+export type SetUserTypeRequestLicenseBodyEnum = typeof SetUserTypeRequestLicenseBodyEnum[keyof typeof SetUserTypeRequestLicenseBodyEnum];
+
 /**
  * 
  * @export
@@ -1673,13 +1723,13 @@ export interface SignupRequest {
      */
     'confirm_email': string;
     /**
-     * User password
+     * User password (minimum 6 characters)
      * @type {string}
      * @memberof SignupRequest
      */
     'password': string;
     /**
-     * Confirm your password
+     * Confirm your password (minimum 6 characters)
      * @type {string}
      * @memberof SignupRequest
      */
@@ -1713,7 +1763,7 @@ export interface SignupRequest {
      * @type {string}
      * @memberof SignupRequest
      */
-    'user_type'?: SignupRequestUserTypeEnum;
+    'user_type': SignupRequestUserTypeEnum;
     /**
      * License body (HCPC, BACP, UKCP)
      * @type {string}
@@ -1778,6 +1828,61 @@ export interface SignupResponse {
      * @memberof SignupResponse
      */
     'message'?: string;
+    /**
+     * Auth provider handling signup (supabase/keycloak)
+     * @type {string}
+     * @memberof SignupResponse
+     */
+    'provider'?: string;
+    /**
+     * Provider subject id when available
+     * @type {string}
+     * @memberof SignupResponse
+     */
+    'keycloak_id'?: string;
+    /**
+     * Local backend user id when available
+     * @type {number}
+     * @memberof SignupResponse
+     */
+    'user_id'?: number;
+    /**
+     * True when provider accepted signup but local user will be created on first authenticated sync
+     * @type {boolean}
+     * @memberof SignupResponse
+     */
+    'pending_local_sync'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface TimelineResponse
+ */
+export interface TimelineResponse {
+    /**
+     * Total number of posts
+     * @type {number}
+     * @memberof TimelineResponse
+     */
+    'total'?: number;
+    /**
+     * Number of posts per page
+     * @type {number}
+     * @memberof TimelineResponse
+     */
+    'per_page'?: number;
+    /**
+     * Current page number
+     * @type {number}
+     * @memberof TimelineResponse
+     */
+    'current_page'?: number;
+    /**
+     * List of posts
+     * @type {Array<UserPost>}
+     * @memberof TimelineResponse
+     */
+    'posts'?: Array<UserPost>;
 }
 /**
  * 
@@ -1833,6 +1938,24 @@ export interface TokenResponse {
      * @memberof TokenResponse
      */
     'scope'?: string;
+    /**
+     * Auth provider that issued the token
+     * @type {string}
+     * @memberof TokenResponse
+     */
+    'provider'?: string;
+    /**
+     * Provider subject id used by backend
+     * @type {string}
+     * @memberof TokenResponse
+     */
+    'keycloak_id'?: string;
+    /**
+     * Local backend user id
+     * @type {number}
+     * @memberof TokenResponse
+     */
+    'user_id'?: number;
 }
 /**
  * 
@@ -1874,9 +1997,125 @@ export interface UpdateEventRequest {
 /**
  * 
  * @export
+ * @interface UploadChatMediaResponse
+ */
+export interface UploadChatMediaResponse {
+    /**
+     * Unique ID of uploaded media
+     * @type {string}
+     * @memberof UploadChatMediaResponse
+     */
+    'media_id'?: string;
+    /**
+     * URL to access the uploaded media
+     * @type {string}
+     * @memberof UploadChatMediaResponse
+     */
+    'media_url'?: string;
+    /**
+     * MIME type of the uploaded file
+     * @type {string}
+     * @memberof UploadChatMediaResponse
+     */
+    'content_type'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface UserPost
+ */
+export interface UserPost {
+    /**
+     * Post ID
+     * @type {number}
+     * @memberof UserPost
+     */
+    'id'?: number;
+    /**
+     * Post author display name
+     * @type {string}
+     * @memberof UserPost
+     */
+    'author'?: string;
+    /**
+     * Post author keycloak id
+     * @type {string}
+     * @memberof UserPost
+     */
+    'author_id'?: string;
+    /**
+     * URL to author\'s profile picture
+     * @type {string}
+     * @memberof UserPost
+     */
+    'author_pic'?: string;
+    /**
+     * Text content of the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'content'?: string;
+    /**
+     * Legacy image URL field used by detailed post UI
+     * @type {string}
+     * @memberof UserPost
+     */
+    'image'?: string;
+    /**
+     * URL to image in the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'image_url'?: string;
+    /**
+     * URL to video in the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'video_url'?: string;
+    /**
+     * Timestamp of the post in ISO format
+     * @type {string}
+     * @memberof UserPost
+     */
+    'timestamp'?: string;
+    /**
+     * Number of likes
+     * @type {number}
+     * @memberof UserPost
+     */
+    'likes'?: number;
+    /**
+     * Number of comments
+     * @type {number}
+     * @memberof UserPost
+     */
+    'comments'?: number;
+    /**
+     * List of media file URLs associated with the post
+     * @type {Array<MediaFile>}
+     * @memberof UserPost
+     */
+    'media_files'?: Array<MediaFile>;
+    /**
+     * Current user reaction type on the post
+     * @type {string}
+     * @memberof UserPost
+     */
+    'current_user_reaction'?: string;
+}
+/**
+ * 
+ * @export
  * @interface UserProfile
  */
 export interface UserProfile {
+    /**
+     * User\'s database ID
+     * @type {number}
+     * @memberof UserProfile
+     */
+    'user_id'?: number;
     /**
      * User\'s username
      * @type {string}
@@ -1932,50 +2171,6 @@ export interface UserProfile {
      */
     'education_info'?: EducationInfo;
 }
-/**
- * 
- * @export
- * @interface UserQuery
- */
-export interface UserQuery {
-    /**
-     * 
-     * @type {string}
-     * @memberof UserQuery
-     */
-    'username': string;
-    /**
-     * User\'s email (Optional)
-     * @type {string}
-     * @memberof UserQuery
-     */
-    'email'?: string;
-    /**
-     * User\'s database ID (Optional)
-     * @type {number}
-     * @memberof UserQuery
-     */
-    'user_id'?: number;
-}
-/**
- * 
- * @export
- * @interface UserQueryResponse
- */
-export interface UserQueryResponse {
-    /**
-     * User\'s Keycloak ID
-     * @type {string}
-     * @memberof UserQueryResponse
-     */
-    'keycloak_id'?: string;
-    /**
-     * User\'s database ID
-     * @type {number}
-     * @memberof UserQueryResponse
-     */
-    'user_id'?: number;
-}
 
 /**
  * AuthApi - axios parameter creator
@@ -1985,7 +2180,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
     return {
         /**
          * 
-         * @summary Delete user account via Keycloak API
+         * @summary Delete user account from provider and local DB
          * @param {DeleteAccountRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2024,7 +2219,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Change user password via Keycloak API
+         * @summary Change password in the configured auth provider
          * @param {ChangePasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2063,7 +2258,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Exchange user credentials for a Keycloak access token and check user type
+         * @summary Exchange credentials for access and refresh tokens
          * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2102,7 +2297,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Logout user from Keycloak
+         * @summary Logout the current user session from the configured provider
          * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2141,7 +2336,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Refresh expired access token using Keycloak refresh token
+         * @summary Refresh access token using refresh token
          * @param {RefreshTokenRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2180,7 +2375,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Send password reset email via Keycloak API
+         * @summary Trigger password reset flow in the configured auth provider
          * @param {ResetPasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2219,7 +2414,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Set user type (professional or standard) for new users
+         * @summary Set user type (professional or standard) for the authenticated user
          * @param {SetUserTypeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2258,7 +2453,7 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Creates a new KeyCloak user via Admin API
+         * @summary Create a new user in the configured auth provider and sync local DB
          * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2295,6 +2490,39 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @summary Create or update the local user row from JWT claims
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postSyncUser: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/auth/sync_user`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -2307,7 +2535,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Delete user account via Keycloak API
+         * @summary Delete user account from provider and local DB
          * @param {DeleteAccountRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2320,7 +2548,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Change user password via Keycloak API
+         * @summary Change password in the configured auth provider
          * @param {ChangePasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2333,7 +2561,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Exchange user credentials for a Keycloak access token and check user type
+         * @summary Exchange credentials for access and refresh tokens
          * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2346,7 +2574,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Logout user from Keycloak
+         * @summary Logout the current user session from the configured provider
          * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2359,7 +2587,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Refresh expired access token using Keycloak refresh token
+         * @summary Refresh access token using refresh token
          * @param {RefreshTokenRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2372,7 +2600,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Send password reset email via Keycloak API
+         * @summary Trigger password reset flow in the configured auth provider
          * @param {ResetPasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2385,7 +2613,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Set user type (professional or standard) for new users
+         * @summary Set user type (professional or standard) for the authenticated user
          * @param {SetUserTypeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2398,7 +2626,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Creates a new KeyCloak user via Admin API
+         * @summary Create a new user in the configured auth provider and sync local DB
          * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2407,6 +2635,18 @@ export const AuthApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.postSignup(payload, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthApi.postSignup']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Create or update the local user row from JWT claims
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postSyncUser(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postSyncUser(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthApi.postSyncUser']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2421,7 +2661,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
     return {
         /**
          * 
-         * @summary Delete user account via Keycloak API
+         * @summary Delete user account from provider and local DB
          * @param {DeleteAccountRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2431,7 +2671,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Change user password via Keycloak API
+         * @summary Change password in the configured auth provider
          * @param {ChangePasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2441,7 +2681,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Exchange user credentials for a Keycloak access token and check user type
+         * @summary Exchange credentials for access and refresh tokens
          * @param {LoginRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2451,7 +2691,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Logout user from Keycloak
+         * @summary Logout the current user session from the configured provider
          * @param {LogoutRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2461,7 +2701,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Refresh expired access token using Keycloak refresh token
+         * @summary Refresh access token using refresh token
          * @param {RefreshTokenRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2471,7 +2711,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Send password reset email via Keycloak API
+         * @summary Trigger password reset flow in the configured auth provider
          * @param {ResetPasswordRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2481,7 +2721,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Set user type (professional or standard) for new users
+         * @summary Set user type (professional or standard) for the authenticated user
          * @param {SetUserTypeRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2491,13 +2731,22 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Creates a new KeyCloak user via Admin API
+         * @summary Create a new user in the configured auth provider and sync local DB
          * @param {SignupRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
             return localVarFp.postSignup(payload, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Create or update the local user row from JWT claims
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postSyncUser(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postSyncUser(options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2511,7 +2760,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
 export class AuthApi extends BaseAPI {
     /**
      * 
-     * @summary Delete user account via Keycloak API
+     * @summary Delete user account from provider and local DB
      * @param {DeleteAccountRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2523,7 +2772,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Change user password via Keycloak API
+     * @summary Change password in the configured auth provider
      * @param {ChangePasswordRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2535,7 +2784,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Exchange user credentials for a Keycloak access token and check user type
+     * @summary Exchange credentials for access and refresh tokens
      * @param {LoginRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2547,7 +2796,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Logout user from Keycloak
+     * @summary Logout the current user session from the configured provider
      * @param {LogoutRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2559,7 +2808,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Refresh expired access token using Keycloak refresh token
+     * @summary Refresh access token using refresh token
      * @param {RefreshTokenRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2571,7 +2820,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Send password reset email via Keycloak API
+     * @summary Trigger password reset flow in the configured auth provider
      * @param {ResetPasswordRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2583,7 +2832,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Set user type (professional or standard) for new users
+     * @summary Set user type (professional or standard) for the authenticated user
      * @param {SetUserTypeRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2595,7 +2844,7 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Creates a new KeyCloak user via Admin API
+     * @summary Create a new user in the configured auth provider and sync local DB
      * @param {SignupRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2603,6 +2852,17 @@ export class AuthApi extends BaseAPI {
      */
     public postSignup(payload: SignupRequest, options?: RawAxiosRequestConfig) {
         return AuthApiFp(this.configuration).postSignup(payload, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Create or update the local user row from JWT claims
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public postSyncUser(options?: RawAxiosRequestConfig) {
+        return AuthApiFp(this.configuration).postSyncUser(options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2899,8 +3159,8 @@ export class BlogApi extends BaseAPI {
 export const ChatApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-         * @summary Fetch all friends of the current user along with
+         * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all confirmed friends of the current user along with
          * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
@@ -2979,15 +3239,17 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
          * @summary Send a private message with moderation
-         * @param {SendMessageRequest} payload 
+         * @param {string} receiverId keycloak ID of the recipient user
+         * @param {string} [message] Message content (required if no media)
+         * @param {Array<File>} [media] One or more media files
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSendMessage: async (payload: SendMessageRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postSendMessage', 'payload', payload)
+        postSendMessage: async (receiverId: string, message?: string, media?: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'receiverId' is not null or undefined
+            assertParamExists('postSendMessage', 'receiverId', receiverId)
             const localVarPath = `/api/chat/send_message`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2999,18 +3261,77 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             // authentication Bearer required
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
+            if (receiverId !== undefined) { 
+                localVarFormParams.append('receiver_id', receiverId as any);
+            }
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
+            if (message !== undefined) { 
+                localVarFormParams.append('message', message as any);
+            }
+                if (media) {
+                media.forEach((element) => {
+                    localVarFormParams.append('media', element as any);
+                })
+            }
 
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Upload media file for chat message
+         * @summary Upload media file for chat
+         * @param {File} file Media file to upload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUploadChatMedia: async (file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('postUploadChatMedia', 'file', file)
+            const localVarPath = `/api/chat/upload_media`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3065,8 +3386,8 @@ export const ChatApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = ChatApiAxiosParamCreator(configuration)
     return {
         /**
-         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-         * @summary Fetch all friends of the current user along with
+         * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all confirmed friends of the current user along with
          * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3092,16 +3413,31 @@ export const ChatApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
          * @summary Send a private message with moderation
-         * @param {SendMessageRequest} payload 
+         * @param {string} receiverId keycloak ID of the recipient user
+         * @param {string} [message] Message content (required if no media)
+         * @param {Array<File>} [media] One or more media files
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postSendMessage(payload, options);
+        async postSendMessage(receiverId: string, message?: string, media?: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postSendMessage(receiverId, message, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ChatApi.postSendMessage']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Upload media file for chat message
+         * @summary Upload media file for chat
+         * @param {File} file Media file to upload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async postUploadChatMedia(file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UploadChatMediaResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postUploadChatMedia(file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ChatApi.postUploadChatMedia']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3128,8 +3464,8 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
     const localVarFp = ChatApiFp(configuration)
     return {
         /**
-         * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-         * @summary Fetch all friends of the current user along with
+         * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+         * @summary Fetch all confirmed friends of the current user along with
          * @param {string} keycloakId Keycloak ID of the current user
          * @param {GetFriendsRequest} payload 
          * @param {*} [options] Override http request option.
@@ -3149,14 +3485,26 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.getGetMessages(receiverId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Send a message with optional media attachment. Either message or media_id must be provided.
+         * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
          * @summary Send a private message with moderation
-         * @param {SendMessageRequest} payload 
+         * @param {string} receiverId keycloak ID of the recipient user
+         * @param {string} [message] Message content (required if no media)
+         * @param {Array<File>} [media] One or more media files
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postSendMessage(payload, options).then((request) => request(axios, basePath));
+        postSendMessage(receiverId: string, message?: string, media?: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postSendMessage(receiverId, message, media, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Upload media file for chat message
+         * @summary Upload media file for chat
+         * @param {File} file Media file to upload
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        postUploadChatMedia(file: File, options?: RawAxiosRequestConfig): AxiosPromise<UploadChatMediaResponse> {
+            return localVarFp.postUploadChatMedia(file, options).then((request) => request(axios, basePath));
         },
         /**
          * Mark all unread messages in a chat as opened when the current user opens the conversation. When the authenticated user opens the chat with another user, all messages sent by the other user to them that are currently unopened will be marked as opened.
@@ -3179,8 +3527,8 @@ export const ChatApiFactory = function (configuration?: Configuration, basePath?
  */
 export class ChatApi extends BaseAPI {
     /**
-     * their last message and timestamp.  This endpoint returns a list of users where the follow type is \"friend\". Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
-     * @summary Fetch all friends of the current user along with
+     * their last message and timestamp.  This endpoint returns only mutual friend relationships (friend follow exists in both directions). Each entry includes: - Friend’s username and profile picture - Last message exchanged - Timestamp of the last message
+     * @summary Fetch all confirmed friends of the current user along with
      * @param {string} keycloakId Keycloak ID of the current user
      * @param {GetFriendsRequest} payload 
      * @param {*} [options] Override http request option.
@@ -3204,15 +3552,29 @@ export class ChatApi extends BaseAPI {
     }
 
     /**
-     * Send a message with optional media attachment. Either message or media_id must be provided.
+     * Send a message with optional media files in the same request. Use multipart/form-data with receiver_id, optional message, and optional media files.
      * @summary Send a private message with moderation
-     * @param {SendMessageRequest} payload 
+     * @param {string} receiverId keycloak ID of the recipient user
+     * @param {string} [message] Message content (required if no media)
+     * @param {Array<File>} [media] One or more media files
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ChatApi
      */
-    public postSendMessage(payload: SendMessageRequest, options?: RawAxiosRequestConfig) {
-        return ChatApiFp(this.configuration).postSendMessage(payload, options).then((request) => request(this.axios, this.basePath));
+    public postSendMessage(receiverId: string, message?: string, media?: Array<File>, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).postSendMessage(receiverId, message, media, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Upload media file for chat message
+     * @summary Upload media file for chat
+     * @param {File} file Media file to upload
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ChatApi
+     */
+    public postUploadChatMedia(file: File, options?: RawAxiosRequestConfig) {
+        return ChatApiFp(this.configuration).postUploadChatMedia(file, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3238,7 +3600,7 @@ export const ChatbotApiAxiosParamCreator = function (configuration?: Configurati
     return {
         /**
          * 
-         * @summary Send a message to chatbot
+         * @summary Send a message to chatbot microservice
          * @param {MessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3287,7 +3649,7 @@ export const ChatbotApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Send a message to chatbot
+         * @summary Send a message to chatbot microservice
          * @param {MessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3310,7 +3672,7 @@ export const ChatbotApiFactory = function (configuration?: Configuration, basePa
     return {
         /**
          * 
-         * @summary Send a message to chatbot
+         * @summary Send a message to chatbot microservice
          * @param {MessageRequest} payload 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3330,7 +3692,7 @@ export const ChatbotApiFactory = function (configuration?: Configuration, basePa
 export class ChatbotApi extends BaseAPI {
     /**
      * 
-     * @summary Send a message to chatbot
+     * @summary Send a message to chatbot microservice
      * @param {MessageRequest} payload 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -4520,6 +4882,38 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriendRequests: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/feed/friend-requests`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Fetch a single post by ID
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -4639,11 +5033,12 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+         * @param {string} [anonymous] if post is to be anonymous
+         * @param {Array<File>} [media] Multiple media files (images/videos/audio)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost: async (content: string, media?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        postCreatePost: async (content: string, anonymous?: string, media?: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'content' is not null or undefined
             assertParamExists('postCreatePost', 'content', content)
             const localVarPath = `/api/feed/post`;
@@ -4667,9 +5062,15 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
                 localVarFormParams.append('content', content as any);
             }
     
-            if (media !== undefined) { 
-                localVarFormParams.append('media', media as any);
+            if (anonymous !== undefined) { 
+                localVarFormParams.append('anonymous', anonymous as any);
             }
+                if (media) {
+                media.forEach((element) => {
+                    localVarFormParams.append('media', element as any);
+                })
+            }
+
     
     
             localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -4881,6 +5282,17 @@ export const FeedApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getGetFriendRequests(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getGetFriendRequests(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FeedApi.getGetFriendRequests']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Fetch a single post by ID
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -4923,12 +5335,13 @@ export const FeedApiFp = function(configuration?: Configuration) {
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+         * @param {string} [anonymous] if post is to be anonymous
+         * @param {Array<File>} [media] Multiple media files (images/videos/audio)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, media, options);
+        async postCreatePost(content: string, anonymous?: string, media?: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postCreatePost(content, anonymous, media, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FeedApi.postCreatePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -5031,6 +5444,14 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getGetFriendRequests(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.getGetFriendRequests(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Fetch a single post by ID
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -5064,12 +5485,13 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
          * 
          * @summary Create a new post
          * @param {string} content Content of the post
-         * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+         * @param {string} [anonymous] if post is to be anonymous
+         * @param {Array<File>} [media] Multiple media files (images/videos/audio)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.postCreatePost(content, media, options).then((request) => request(axios, basePath));
+        postCreatePost(content: string, anonymous?: string, media?: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postCreatePost(content, anonymous, media, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5168,6 +5590,16 @@ export class FeedApi extends BaseAPI {
 
     /**
      * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FeedApi
+     */
+    public getGetFriendRequests(options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).getGetFriendRequests(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Fetch a single post by ID
      * @param {number} postId 
      * @param {*} [options] Override http request option.
@@ -5207,13 +5639,14 @@ export class FeedApi extends BaseAPI {
      * 
      * @summary Create a new post
      * @param {string} content Content of the post
-     * @param {File} [media] Optional image or video file (jpg, png, gif, mp4, mov, avi)
+     * @param {string} [anonymous] if post is to be anonymous
+     * @param {Array<File>} [media] Multiple media files (images/videos/audio)
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof FeedApi
      */
-    public postCreatePost(content: string, media?: File, options?: RawAxiosRequestConfig) {
-        return FeedApiFp(this.configuration).postCreatePost(content, media, options).then((request) => request(this.axios, this.basePath));
+    public postCreatePost(content: string, anonymous?: string, media?: Array<File>, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).postCreatePost(content, anonymous, media, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6243,6 +6676,53 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @summary retrieve all posts authored by a particular user to  displayed on timeline
+         * @param {string} keycloakId 
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserTimeline: async (keycloakId: string, perPage?: number, page?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'keycloakId' is not null or undefined
+            assertParamExists('getUserTimeline', 'keycloakId', keycloakId)
+            const localVarPath = `/api/profile/timeline/{keycloak_id}`
+                .replace(`{${"keycloak_id"}}`, encodeURIComponent(String(keycloakId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+            if (perPage !== undefined) {
+                localVarQueryParameter['per_page'] = perPage;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Update email notification settings
          * @param {EmailNotificationSettings} payload 
          * @param {*} [options] Override http request option.
@@ -6281,15 +6761,12 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
-         * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-         * @param {UserQuery} payload 
+         * This endpoint must NOT depend on database state.
+         * @summary Return authenticated user\'s Keycloak ID directly from JWT
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postGetUserKeycloakIdFlexible: async (payload: UserQuery, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'payload' is not null or undefined
-            assertParamExists('postGetUserKeycloakIdFlexible', 'payload', payload)
+        postGetUserKeycloakId: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/profile/user/keycloak_id`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6307,12 +6784,9 @@ export const ProfileApiAxiosParamCreator = function (configuration?: Configurati
 
 
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -6459,6 +6933,21 @@ export const ProfileApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary retrieve all posts authored by a particular user to  displayed on timeline
+         * @param {string} keycloakId 
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserTimeline(keycloakId: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TimelineResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserTimeline(keycloakId, perPage, page, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProfileApi.getUserTimeline']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Update email notification settings
          * @param {EmailNotificationSettings} payload 
          * @param {*} [options] Override http request option.
@@ -6471,16 +6960,15 @@ export const ProfileApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-         * @param {UserQuery} payload 
+         * This endpoint must NOT depend on database state.
+         * @summary Return authenticated user\'s Keycloak ID directly from JWT
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postGetUserKeycloakIdFlexible(payload: UserQuery, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserQueryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.postGetUserKeycloakIdFlexible(payload, options);
+        async postGetUserKeycloakId(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.postGetUserKeycloakId(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ProfileApi.postGetUserKeycloakIdFlexible']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ProfileApi.postGetUserKeycloakId']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6559,6 +7047,18 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @summary retrieve all posts authored by a particular user to  displayed on timeline
+         * @param {string} keycloakId 
+         * @param {number} [perPage] Number of posts per page
+         * @param {number} [page] Page number for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserTimeline(keycloakId: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig): AxiosPromise<TimelineResponse> {
+            return localVarFp.getUserTimeline(keycloakId, perPage, page, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Update email notification settings
          * @param {EmailNotificationSettings} payload 
          * @param {*} [options] Override http request option.
@@ -6568,14 +7068,13 @@ export const ProfileApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.postEmailNotifications(payload, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-         * @param {UserQuery} payload 
+         * This endpoint must NOT depend on database state.
+         * @summary Return authenticated user\'s Keycloak ID directly from JWT
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postGetUserKeycloakIdFlexible(payload: UserQuery, options?: RawAxiosRequestConfig): AxiosPromise<UserQueryResponse> {
-            return localVarFp.postGetUserKeycloakIdFlexible(payload, options).then((request) => request(axios, basePath));
+        postGetUserKeycloakId(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.postGetUserKeycloakId(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6655,6 +7154,20 @@ export class ProfileApi extends BaseAPI {
 
     /**
      * 
+     * @summary retrieve all posts authored by a particular user to  displayed on timeline
+     * @param {string} keycloakId 
+     * @param {number} [perPage] Number of posts per page
+     * @param {number} [page] Page number for pagination
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProfileApi
+     */
+    public getUserTimeline(keycloakId: string, perPage?: number, page?: number, options?: RawAxiosRequestConfig) {
+        return ProfileApiFp(this.configuration).getUserTimeline(keycloakId, perPage, page, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @summary Update email notification settings
      * @param {EmailNotificationSettings} payload 
      * @param {*} [options] Override http request option.
@@ -6666,15 +7179,14 @@ export class ProfileApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @summary Retrieve a user\'s Keycloak ID by username (required), with optional email or user ID
-     * @param {UserQuery} payload 
+     * This endpoint must NOT depend on database state.
+     * @summary Return authenticated user\'s Keycloak ID directly from JWT
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProfileApi
      */
-    public postGetUserKeycloakIdFlexible(payload: UserQuery, options?: RawAxiosRequestConfig) {
-        return ProfileApiFp(this.configuration).postGetUserKeycloakIdFlexible(payload, options).then((request) => request(this.axios, this.basePath));
+    public postGetUserKeycloakId(options?: RawAxiosRequestConfig) {
+        return ProfileApiFp(this.configuration).postGetUserKeycloakId(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

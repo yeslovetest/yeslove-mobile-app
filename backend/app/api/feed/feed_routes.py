@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-
+from sqlalchemy import true
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
 
@@ -67,8 +67,11 @@ class Feed(Resource):
                         ).all()
                         friend_ids = [u.id for u in rec_users]
                 except Exception as e:
-                    logger.warning(f"Graph recommendations failed: {e}")
-            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
+                    logger.warning(f"Neo4j recommendations failed: {e}")
+            query = Post.query.filter(
+                Post.is_anonymous != true(),
+                Post.user_id.in_(friend_ids)
+            ).order_by(Post.timestamp.desc())
             
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
@@ -92,9 +95,9 @@ class Feed(Resource):
         feed_data = {
             "posts": [{
                 "id": post.id,
-                "author": post.author.username,
-                "author_id": post.author.keycloak_id,
-                "author_pic": post.author.profile_pic_url,
+                "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+                "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+                "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
                 "content": post.content,
                 "media": [{
                     "id": pm.media_id,
@@ -105,7 +108,16 @@ class Feed(Resource):
                 "timestamp": post.timestamp.isoformat(),
                 "likes": len(post.likes),
                 "comments": len(post.comments),
-                "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type} for media in post.media_files if post.media_files],
+                "anonymous": post.is_anonymous,
+                "media_files": [
+                    {
+                        "uri": f"/api/media/{media.id}",
+                        "type": media.content_type,
+                        "width": media.width,
+                        "height": media.height
+                    }
+                    for media in (post.media_files or [])
+                ],
                 "current_user_reaction": reaction_map.get(post.id).reaction_type if reaction_map.get(post.id) else None,
             } for post in posts],
             "pagination": {
@@ -135,9 +147,16 @@ class CreatePost(Resource):
     post_parser.add_argument(
         'content',
         type=str,
-        required=True,
+        required=False,
         location='form',
         help='Content of the post'
+    )
+    post_parser.add_argument(
+        'anonymous',
+        type=str,
+        required=False,
+        location='form',
+        help='if post is to be anonymous'
     )
     post_parser.add_argument(
         'media', 
@@ -167,17 +186,19 @@ class CreatePost(Resource):
         logger.info("Request files keys: %s", list(request.files.keys()))
 
         args = post_parser.parse_args()
-        content = args.get("content", "")
+        content = args.get("content") or ""
         files = args.get("media") or []
+        is_anonymous = str(args.get("anonymous")).lower() == "true"
+
+        logger.info("is_anonymous: %s", is_anonymous)
         if not isinstance(files, list):
             files = [files] if files else []
         logger.info(f'files found: {len(files)}')
 
-       
         """Create a new post with automatic moderation."""
 
-        if not content:
-            return {"message": "Post content cannot be empty"}, 400
+        if not content and not files:
+            return {"message": "Post must have text or media"}, 400
           
          # ✅ Validate user
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
@@ -206,32 +227,34 @@ class CreatePost(Resource):
         score = moderation_result["score"]
 
         media_ids = []
-        
-        # ✅ Handle multiple file uploads
-        if files:
-            for file in files:
-                try:
-                    result = MediaService.store_file(file=file, user_id=user.id)
-                    media_ids.append(result.get("media_id"))
-                    logger.info(f'Media file uploaded: {result.get("media_id")}')
-                except Exception as e:
-                    logger.error(f"Media upload failed for {file.filename}: {e}")
 
         # ✅ Create post record
         post = Post(
             content=content,
-            user_id=user.id
+            user_id=user.id,
+            is_anonymous = is_anonymous,
         )
         db.session.add(post)
         db.session.flush()  # Get post.id
-        
+
+        # ✅ Handle multiple file uploads
+        if files:
+            for file in files:
+                try:
+                    result = MediaService.store_file(file=file, user_id=user.id, post_id=post.id)
+                    media_ids.append(result.get("media_id"))
+                    logger.info(f'Media file uploaded: {result.get("media_id")}')
+                except Exception as e:
+                    logger.error(f"Media upload failed for {file.filename}: {e}")
+        '''
+       
         # ✅ Link media to post
         if media_ids:
             from app.models import PostMedia
             for media_id in media_ids:
                 post_media = PostMedia(post_id=post.id, media_id=media_id)
                 db.session.add(post_media)
-        
+         '''
         db.session.commit()
         
         # Posts are not synced to chatbot - only blogs are synced
@@ -268,7 +291,7 @@ class CreatePost(Resource):
         follower_links = Follow.query.filter_by(followed_id=user.id).all()
         follower_user_ids = [f.follower_id for f in follower_links]
         
-        if follower_user_ids:
+        if follower_user_ids and not is_anonymous:   # don't send notification if post is anonymous
             try:
                 PushNotificationService.send_to_multiple_users(
                     user_ids=follower_user_ids,
@@ -292,7 +315,9 @@ class CreatePost(Resource):
 @api.route("/post/<int:post_id>")
 class GetPost(Resource):
     from .feed_models import Post
+    @require_auth()
     @api.response(code=200, description="Post details", model=Post)
+    
     def get(self, post_id):
         """Fetch a single post by ID."""
         from app.models import Post, Reaction, User
@@ -302,17 +327,39 @@ class GetPost(Resource):
         user_reaction = Reaction.query.filter_by(post_id=post_id, user_id=user.id).first()
         return {
             "id": post.id,
-            "author": post.author.username,
-            "author_id": post.author.keycloak_id,
-            "author_pic": post.author.profile_pic_url,
+            "author": post.author.username if not post.is_anonymous else 'Anonymous User',
+            "author_id": post.author.keycloak_id if not post.is_anonymous else None,
+            "author_pic": post.author.profile_pic_url if not post.is_anonymous else None,
             "content": post.content,
             "image": post.image_url,
             "video_url": post.video_url,
             "timestamp": post.timestamp.isoformat(),
             "likes": len(post.likes),
             "comments": len(post.comments),
+            "anonymous": post.is_anonymous,
+            "media_files": [{'uri': f"/api/media/{media.id}", 'type': media.content_type, 'width': media.width, 'height': media.height} for media in post.media_files if post.media_files],
             "current_user_reaction": user_reaction.reaction_type if user_reaction else None,
         }, 200
+        
+    @require_auth()
+    @api.doc(security='Bearer')
+    @api.response(200, "Post deleted successfully")
+    @api.response(403, "Not allowed to delete this post")
+    @api.response(404, "Post not found")
+    def delete(self, post_id):
+        """Delete a post by ID. Only the post's author may delete it."""
+        from app.models import Post, Reaction, User, db
+        post = Post.query.get_or_404(post_id)
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+        if post.user_id != user.id:
+            return {"message": "You can only delete your own posts"}, 403
+        Reaction.query.filter_by(post_id=post.id).delete()
+        db.session.delete(post)
+        db.session.commit()
+        logger.info("Post %s deleted by user %s", post_id, user.id)
+        return {"message": "Post deleted successfully", "post_id": post_id}, 200
     
 # -------------------------
 # 🚀 Reaction ROUTES
@@ -331,8 +378,8 @@ class GetReactions(Resource):
                 {
                     "id": reaction.id,
                     "type": reaction.reaction_type,
-                    "author": reaction.user.username,
-                    "picture": reaction.user.profile_pic_url,
+                    "author": reaction.user.username if not reaction.post.is_anonymous else 'Anonymous User',
+                    "picture": reaction.user.profile_pic_url if not reaction.post.is_anonymous else None,
                 }
                 for reaction in reactions
             ]
@@ -421,7 +468,7 @@ class LikePost(Resource):
         from app.models import Post
         from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
-        if post and post.user_id != user.id:
+        if post and post.user_id != user.id and not post.is_anonymous:
             NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Like",
@@ -492,7 +539,8 @@ class AddComment(Resource):
         from app.models import Post
         from app.services.notification_service import NotificationService
         post = Post.query.get(post_id)
-        if post and post.user_id != user.id:
+
+        if post and post.user_id != user.id and not post.is_anonymous:
             NotificationService.create_notification(
                 user_id=post.user_id,
                 title="New Comment",
@@ -515,12 +563,13 @@ class GetComments(Resource):
         """Fetch all comments for a post."""
         from app.models import Comment
         comments = Comment.query.filter_by(post_id=post_id).all()
+        
         return {
             "comments": [
                 {
                     "id": comment.id,
                     "content": comment.content,
-                    "author": comment.user.username,
+                    "author": comment.user.username if not comment.post.is_anonymous else 'Anonymous User',
                     "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
                 }
             for comment in comments]
@@ -681,7 +730,6 @@ class GetFollowing(Resource):
     from .feed_models import GetFollowingRequest, GetFollowingResponse
     @require_auth()
     @api.doc(security='Bearer')
-    @require_auth()
     @api.expect(GetFollowingRequest)  # ✅ Attach model
     @api.response(code=200, description="List of following users", model=GetFollowingResponse)
     def get(self, keycloak_id):

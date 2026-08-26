@@ -1,69 +1,58 @@
-import React from 'react'
-import { View, Text, Image } from 'react-native'
-import styles from './ProfileInformationStyles'
-import Header from '@/app/Universal-components/Header/Header'
-import { useAppSelector } from '@/app/store/hooks'
+import React from "react";
+import { View, Text, ScrollView } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import styles from "./ProfileInformationStyles";
+import Header from "@/app/Universal-components/Header/Header";
+import { useAppSelector } from "@/app/store/hooks";
 
 const ProfileInformation = () => {
-  const userId = useAppSelector(state => state.navigation.tabStack.at(-1)?.data?.userId);
-  const name = useAppSelector(state => state.profile.profiles[userId].contact_info?.name ?? "");
-  const email = useAppSelector(state => state.profile.profiles[userId].contact_info?.email ?? "");
-  const phone = useAppSelector(state => state.profile.profiles[userId].contact_info?.phone ?? "");
-  const address = useAppSelector(state => state.profile.profiles[userId].contact_info?.address ?? "");
-  const website = useAppSelector(state => state.profile.profiles[userId].contact_info?.website ?? "");
+  const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
+  const name = useAppSelector((state) => state.profile.profiles[userId].contact_info?.name ?? "");
+  const email = useAppSelector((state) => state.profile.profiles[userId].contact_info?.email ?? "");
+  const website = useAppSelector(
+    (state) => state.profile.profiles[userId].contact_info?.website ?? "",
+  );
+
+  const profileFields = [
+    { label: "Name", value: name, icon: "account-outline" as const },
+    { label: "Email", value: email, icon: "email-outline" as const },
+    { label: "Website", value: website, icon: "web" as const },
+  ];
 
   return (
     <>
-    <Header></Header>
-    <View style={styles.container}>
-          <View style={styles.viewItemContainer}>
-            <Text style={styles.viewItemText}>Name</Text>
-            <Text style={styles.viewItemInfo}>{name}</Text>
+      <Header></Header>
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.headerRow}>
+            <Text style={styles.pageTitle}>Profile Information</Text>
+            <Text style={styles.pageSubtitle}>Your saved contact and account details.</Text>
           </View>
 
-          <View style={styles.viewItemContainer}>
-            <Text style={styles.viewItemText}>Email</Text>
-            <Text style={styles.viewItemInfo}>{email}</Text>
-          </View>
-
-          <View style={styles.viewItemContainer}>
-            <Text style={styles.viewItemText}>Phone</Text>
-            <Text style={styles.viewItemInfo}>{phone}</Text>
-          </View>
-
-          <View style={styles.viewItemContainer}>
-            <Text style={styles.viewItemText}>Address</Text>
-            <Text style={styles.viewItemInfo}>{address}</Text>
-          </View>
-
-          <View style={styles.viewItemContainer}>
-            <Text style={styles.viewItemText}>Website</Text>
-            <Text style={styles.viewItemInfo}>{website}</Text>
-          </View>
-
-          {/* Friends section */}
-          <View style={styles.friendsContainer}>
-            <View style={styles.friends}>
-              <View style={styles.friendsItem}>
-                <Text style={styles.activeFriendsText}>
-                  My Friends
+          <View style={{ gap: 12 }}>
+            {profileFields.map((field) => (
+              <View key={field.label} style={styles.viewItemContainer}>
+                <View style={styles.fieldLabelRow}>
+                  <View style={styles.fieldIconContainer}>
+                    <MaterialCommunityIcons name={field.icon} size={16} style={styles.fieldIcon} />
+                  </View>
+                  <Text style={styles.viewItemText}>{field.label}</Text>
+                </View>
+                <Text style={styles.viewItemInfo}>
+                  {(field.value ?? "").trim() || "Not provided"}
                 </Text>
-                <View style={styles.activeIndicator} />
               </View>
-
-              {/* Friends */}
-              <View style={styles.friend}>
-                <Image
-                  source={{ uri: "https://yeslove.co.uk/wp-content/themes/cirkle/assets/img/avatar/bp-avatar.png" }}
-                  style={styles.friendImage}
-                />
-                <Text style={styles.friendName}>Friend username</Text>
-              </View>
-            </View>
+            ))}
           </View>
-        </View>
+        </ScrollView>
+      </View>
     </>
-  )
-}
+  );
+};
 
-export default ProfileInformation
+export default ProfileInformation;

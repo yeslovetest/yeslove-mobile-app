@@ -1,17 +1,21 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const sharedStyles = StyleSheet.create({
   container: {
     flex: 1,
-    width: theme.spacing.standardPageContentWidth
+    width: "100%",
+    paddingTop: theme.spacing.sm,
+    paddingHorizontal: 10,
+    alignSelf: "center",
   },
   contentContainer: {
     justifyContent: "flex-start",
     alignItems: "center",
     width: "100%",
+    paddingBottom: theme.spacing.xxl,
   },
+});
 
-})
-
-export default sharedStyles
+export default sharedStyles;

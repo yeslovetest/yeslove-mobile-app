@@ -1,38 +1,155 @@
 import { StyleSheet } from "react-native";
-import theme from "@/assets/variables/Variables";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   headerDistribution: {
     flexDirection: "row",
     width: "100%",
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+  },
+  homeHeaderDistribution: {
+    flexDirection: "row",
+    width: "100%",
+    paddingHorizontal: 14,
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   backButton: {
     position: "absolute",
-    left: 20,
+    left: theme.spacing.xl,
+  },
+  backButtonTouchable: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: -2,
   },
   header: {
-    width: '100%',
-    height: 60,
-    backgroundColor: '#fff',
+    width: "100%",
+    minHeight: 58,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.surface,
     justifyContent: "center",
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 0,
   },
   title: {
-    color: theme.colors.blackText,
-    fontSize: 24,
-    fontWeight: 'bold',
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.title2,
+    fontWeight: "700",
     alignSelf: "center",
+    maxWidth: "72%",
+    textAlign: "center",
+    flexShrink: 1,
+  },
+  homeTitle: {
+    marginLeft: theme.spacing.md,
+    alignSelf: "flex-start",
+    textAlign: "left",
+    maxWidth: "58%",
+  },
+  homeMessagesIcon: {
+    marginLeft: "auto",
+  },
+  homeActions: {
+    marginLeft: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  homeActionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  homeActionSpacing: {
+    marginLeft: 10,
+  },
+  messagesBadge: {
+    position: "absolute",
+    top: -5,
+    right: -6,
+    minWidth: 17,
+    height: 17,
+    borderRadius: 9,
+    paddingHorizontal: theme.spacing.xs,
+    backgroundColor: theme.colors.danger,
+    borderWidth: 1,
+    borderColor: theme.colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  messagesBadgeText: {
+    color: theme.colors.textOnPrimary,
+    fontSize: 10,
+    fontWeight: "700",
+    lineHeight: 11,
   },
   chatbotHeader: {
     flexDirection: "row",
     width: "23%",
     justifyContent: "space-between",
-    alignItems: "center"
-  }
-})
+    alignItems: "center",
+  },
+  assistantButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  assistantBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primarySoft,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+    ...theme.shadows.sm,
+  },
+  conversationHeaderCenter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    paddingHorizontal: 10,
+    gap: theme.spacing.sm,
+  },
+  conversationAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: theme.colors.primarySoft,
+  },
+  conversationTitle: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.callout,
+    fontWeight: "700",
+    maxWidth: "76%",
+  },
+  assistantGlow: {
+    position: "absolute",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    // Soft blue assistant glow accent — kept as a literal.
+    backgroundColor: "#dce8ff",
+  },
+  assistantImage: {
+    width: 26,
+    height: 26,
+  },
+});
 
-export default styles 
+export default styles;

@@ -10,7 +10,9 @@ FeedQuery = api.model("FeedQuery", {
 
 MediaFile = api.model("MediaFile", {
         "uri": fields.String(description="URL of the media file"),
-        "type": fields.String(description="Type of the media file: 'image', 'video', etc.")
+        "type": fields.String(description="Type of the media file: 'image', 'video', etc."),
+        "width": fields.Integer(description="Width of the media file"),
+        "height": fields.Integer(description="Height of the media file"),
 })
 
 Post = api.model('Post', {
@@ -24,6 +26,7 @@ Post = api.model('Post', {
     'timestamp': fields.String(description='Timestamp of the post in ISO format'),
     'likes': fields.Integer(description='Number of likes'),
     'comments': fields.Integer(description='Number of comments'),
+    'anonymous': fields.Boolean(description="is this post anonymous"),
     'media_files': fields.List(fields.Nested(MediaFile), description='List of media file URLs associated with the post'),
     'current_user_reaction': fields.String(description="Current user's reaction to the post, if any"),  
 })

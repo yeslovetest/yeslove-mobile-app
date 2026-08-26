@@ -9,6 +9,10 @@ dist/
 web-build/
 expo-env.d.ts
 
+# Android
+.android/
+android
+
 # Native
 *.orig.*
 *.jks
@@ -29,8 +33,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# local env files (never commit real secrets; .env.example is the tracked template)
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo

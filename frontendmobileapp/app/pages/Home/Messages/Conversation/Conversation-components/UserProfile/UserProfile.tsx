@@ -1,14 +1,25 @@
-import React from 'react'
-import { View, Image } from 'react-native'
-import profileImg from "../../../../../../../assets/images/profileImg1.jpg"
-import styles from './UserProfileStyles'
+import React from "react";
+import { View, Image } from "react-native";
+import styles from "./UserProfileStyles";
+import { BASE_URL } from "@/app/config/baseUrl";
+import { getImageSource } from "@/constants/imageFallbacks";
 
-const UserProfile = () => {
-  return (
-    <View>
-      <Image style={styles.profileImg} source={profileImg}></Image>
-    </View>
-  )
+interface Props {
+  photo: string;
 }
 
-export default UserProfile
+const UserProfile = (props: Props) => {
+  return (
+    <View>
+      <Image
+        style={styles.profileImg}
+        source={getImageSource(
+          props.photo.startsWith("/api") ? `${BASE_URL}${props.photo}` : props.photo,
+          "profile",
+        )}
+      />
+    </View>
+  );
+};
+
+export default UserProfile;

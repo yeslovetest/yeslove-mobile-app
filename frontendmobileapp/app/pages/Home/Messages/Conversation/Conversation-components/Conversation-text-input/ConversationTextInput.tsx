@@ -1,55 +1,82 @@
-import React, { useState } from 'react';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import styles from './ConversationTextInputStyles';
-import { TextInput, View } from 'react-native';
+import React, { useState } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import styles from "./ConversationTextInputStyles";
+import { theme } from "@/app/theme";
+import { TextInput, View } from "react-native";
 
 interface Props {
-    onSend?: (text: string) => void;
-    openMedia?: (type: string) => void;
-};
+  onSend?: (text: string) => void;
+  openMedia?: (type: string) => void;
+}
 
-const ConversationTextInput = ( props: Props) => {
-
-  const [text, setText] = useState('');
-  
+const ConversationTextInput = (props: Props) => {
+  const [text, setText] = useState("");
+  const MIN_INPUT_HEIGHT = 34;
+  const MAX_INPUT_HEIGHT = 120;
+  const [inputHeight, setInputHeight] = useState(MIN_INPUT_HEIGHT);
+  const isSendDisabled = text.trim().length === 0;
 
   const send = (msg: string) => {
     const trimmed = msg.trim();
     if (trimmed) {
       props.onSend?.(trimmed);
-      setText('');
+      setText("");
+      setInputHeight(MIN_INPUT_HEIGHT);
     }
   };
 
-  const selectMedia =  (type: string) => {
+  const selectMedia = (type: string) => {
     if (type === "media") {
-        // Allow both images and videos 
-        props.openMedia?.(type);
-    }    
-  }
-          
-
-  
+      // Allow both images and videos
+      props.openMedia?.(type);
+    }
+  };
 
   return (
     <View style={styles.textInputContainer}>
-    
-      <TextInput
-        style={[styles.textInput, { outlineWidth: 0, outlineColor: 'transparent' }]}
-        placeholder="Type message"
-        placeholderTextColor="#c9c9c9"
-        value={text}
-        onChangeText={(t) => {
-          if (t.endsWith('\n')) send(t.replace(/\n+$/, ''));
-          else setText(t);
-        }}
-        onKeyPress={({ nativeEvent }) => {
-          if (nativeEvent.key === 'Enter') send(text);
-        }}
-        multiline
+      <Ionicons
+        onPress={() => selectMedia("media")}
+        style={styles.mediaIcon}
+        name="camera-outline"
+        size={18}
+        accessibilityRole="button"
+        accessibilityLabel="Attach media"
       />
-      <AntDesign onPress={() => selectMedia('media')} style={styles.sendIcon} name="camera" size={18} />
-      <AntDesign onPress={() => send(text)} style={styles.sendIcon} name="arrowup" size={18} />
+      <TextInput
+        style={[
+          styles.textInput,
+          {
+            height: Math.max(MIN_INPUT_HEIGHT, Math.min(MAX_INPUT_HEIGHT, inputHeight)),
+            outlineWidth: 0,
+            outlineColor: "transparent",
+          },
+        ]}
+        placeholder="Type message"
+        placeholderTextColor={theme.colors.textMuted}
+        value={text}
+        onChangeText={setText}
+        onContentSizeChange={(event) => {
+          const nextHeight = event.nativeEvent.contentSize.height;
+          setInputHeight(Math.max(MIN_INPUT_HEIGHT, Math.min(MAX_INPUT_HEIGHT, nextHeight)));
+        }}
+        blurOnSubmit={false}
+        multiline
+        accessibilityLabel="Type message"
+      />
+
+      <Ionicons
+        onPress={() => {
+          if (!isSendDisabled) {
+            send(text);
+          }
+        }}
+        style={[styles.sendIcon, isSendDisabled && styles.sendIconDisabled]}
+        name="send"
+        size={18}
+        accessibilityRole="button"
+        accessibilityLabel="Send message"
+        accessibilityState={{ disabled: isSendDisabled }}
+      />
     </View>
   );
 };

@@ -23,14 +23,14 @@ class ChatSession(Base):
     
     id = Column(Integer, primary_key=True)
     session_id = Column(Text, unique=True, nullable=False)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Text, nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class ChatHistory(Base):
     __tablename__ = "chat_history"
     
     id = Column(Integer, primary_key=True)
-    session_id = Column(Text, nullable=False)
+    session_id = Column(Text, nullable=False, index=True)
     message = Column(Text, nullable=False)
     response = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)

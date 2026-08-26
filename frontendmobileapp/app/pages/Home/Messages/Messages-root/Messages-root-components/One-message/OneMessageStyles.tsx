@@ -1,76 +1,69 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "80%",
-        paddingHorizontal: 10,
-        height: 100,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-       
-    },
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    paddingHorizontal: theme.spacing.sm,
+    minHeight: 84,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  activeIndicator: {
+    height: "100%",
+    width: 7,
+    backgroundColor: theme.colors.primary,
+    position: "absolute",
+    left: -2,
+  },
+  activeBackgroundColor: {
+    backgroundColor: theme.colors.surface,
+  },
+  profilePicture: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginRight: theme.spacing.sm,
+    borderWidth: 1,
+  },
+  messageContainer: {
+    flex: 1,
+    paddingRight: theme.spacing.sm,
+    justifyContent: "center",
+  },
+  userUnopened: {
+    fontSize: theme.typography.fontSize.body,
+    fontWeight: "700",
+    color: theme.colors.primary,
+  },
+  userOpened: {
+    fontSize: theme.typography.fontSize.body,
+    fontWeight: "500",
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xxs,
+  },
+  messageUnopened: {
+    fontWeight: "600",
+    marginBottom: theme.spacing.xxs,
+    color: theme.colors.textPrimary,
+  },
+  messageOpened: {
+    fontWeight: "400",
+    color: theme.colors.textMuted,
+  },
+  timeContainer: {
+    width: 78,
+    alignItems: "flex-end",
+  },
+  time: {
+    color: theme.colors.textMuted,
+    fontSize: 11,
+    textAlign: "center",
+  },
+});
 
-    activeIndicator: {
-        height: "100%",
-        width: 7,
-        backgroundColor: theme.colors.primaryBlue,
-        position: "absolute",
-        left: -2,
-    },
-    activeBackgroundColor: {
-        backgroundColor: "#fff"
-    },
-    profilePicture: {
-        width: 70,
-        height: 70,
-        borderRadius: "50%",
-        marginRight: 2,
-        borderWidth: 1,
-    },
-    messageContainer: {
-        width: "70%",
-        height: "80%",
-        justifyContent: "center",
-       
-
-    },
-    userUnopened: {
-        fontSize: 18,
-        fontWeight: 600,
-        color: theme.colors.primaryBlue
-    },
-    userOpened: {
-        fontSize: 18,
-        fontWeight: 400,
-        color: theme.colors.blackText,
-        marginBottom: 3
-    },
-
-    messageUnopened: {
-        fontWeight: 600,
-        height: "50%",
-        marginBottom: 3
-    },
-
-    messageOpened: {
-        fontWeight: 400,
-        color: "#333"
-    },
-
-    timeContainer: {
-        width: "15%",
-    },
-
-    time: {
-        color: theme.colors.iconNotActive,
-        fontSize: 11,
-        textAlign: "center",
-    }
-
-})
-
-export default styles
+export default styles;

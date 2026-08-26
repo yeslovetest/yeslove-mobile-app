@@ -1,28 +1,31 @@
-import { StyleSheet, Dimensions } from "react-native"
+import { StyleSheet } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   mediumContainer: {
-    display: 'flex',
-    justifyContent: 'flex-start',
-    width: "30%",    
-    aspectRatio: 1,   
-    marginBottom: 8,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: theme.spacing.xxs,
+    borderRadius: 12,
+    overflow: "hidden",
+    // Dark backdrop behind a media thumbnail while it loads — kept as a literal.
+    backgroundColor: "#0f172a",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-
   imageMedium: {
-    borderRadius: 10,
-    width: Dimensions.get('window').width * 0.3, 
-    marginTop: 10,
-    resizeMode: 'contain',
-    aspectRatio: 1.5,
+    width: "100%",
+    height: "100%",
+    backgroundColor: theme.colors.surfaceAlt,
   },
-  videoMedium: { 
-      width: Dimensions.get('window').width * 0.3, 
-      height: Dimensions.get('window').height * 0.5,
-      borderRadius: 10, 
-      marginTop: 10,
-      resizeMode: 'contain'
+  videoMedium: {
+    width: "100%",
+    height: "100%",
+    // Near-black video backdrop — kept as a literal.
+    backgroundColor: "#020817",
   },
-})
+});
 
-export default styles
+export default styles;

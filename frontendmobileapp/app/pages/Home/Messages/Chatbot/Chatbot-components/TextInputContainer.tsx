@@ -1,44 +1,59 @@
-import styles from '../SharedChatbotStyles';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import React, { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import styles from "../SharedChatbotStyles";
+import { theme } from "@/app/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import React, { useRef, useState } from "react";
+import { TextInput, View } from "react-native";
 
-const TextInputContainer = ( { onSend }: { onSend: (text: string) => void } ) => {
-const [text, setText] = useState('');
+const TextInputContainer = ({ onSend }: { onSend: (text: string) => void }) => {
+  const [text, setText] = useState("");
+  const lastSentRef = useRef<{ text: string; at: number }>({ text: "", at: 0 });
 
-const send = (msg: string) => {
+  const send = (msg: string) => {
     const trimmed = msg.trim();
+    const now = Date.now();
+
+    // Avoid duplicate sends when Enter events fire more than once on some platforms.
+    if (trimmed === lastSentRef.current.text && now - lastSentRef.current.at < 500) {
+      return;
+    }
+
     if (trimmed) {
+      lastSentRef.current = { text: trimmed, at: now };
       onSend(trimmed);
-      setText('');
+      setText("");
     }
   };
 
   return (
     <View style={styles.textInputContainer}>
-      <TextInput style={[styles.textInput, {
-        outlineWidth: 0,
-        outlineColor: 'transparent',
-      }]} placeholder="How are you feeling today?"
-      placeholderTextColor="#c9c9c9"
-      value={text}
-      onChangeText={(t) => {
-          if (t.endsWith('\n')) {
-            send(t.replace(/\n+$/, ''));
-          } else {
-            setText(t);
-          }
-        }}
-        onKeyPress={({ nativeEvent }) => {
-          if (nativeEvent.key === 'Enter') {
-            send(text);
-          }
-        }}
-      multiline>
-      </TextInput>
-        <AntDesign onPress={() => send(text)} style={styles.sendIcon} name="arrowup" size={18} />
+      <TextInput
+        style={[
+          styles.textInput,
+          {
+            outlineWidth: 0,
+            outlineColor: "transparent",
+          },
+        ]}
+        placeholder="How are you feeling today?"
+        placeholderTextColor={theme.colors.textMuted}
+        value={text}
+        onChangeText={setText}
+        onSubmitEditing={() => send(text)}
+        returnKeyType="send"
+        blurOnSubmit={false}
+        multiline
+        accessibilityLabel="Message the assistant"
+      ></TextInput>
+      <Ionicons
+        onPress={() => send(text)}
+        style={styles.sendIcon}
+        name="send"
+        size={18}
+        accessibilityRole="button"
+        accessibilityLabel="Send message"
+      />
     </View>
-  )
-}
+  );
+};
 
-export default TextInputContainer
+export default TextInputContainer;

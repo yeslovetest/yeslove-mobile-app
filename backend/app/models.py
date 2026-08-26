@@ -19,8 +19,6 @@ class User(db.Model):
     keycloak_id     = db.Column(db.String(255), unique=True, nullable=False, index=True)  # ✅ Store Keycloak's `sub`
     username        = db.Column(db.String(50), unique=True, nullable=False)
     email           = db.Column(db.String(100), unique=True, nullable=False)
-    phone_number    = db.Column(db.String(20), nullable=True)
-    address         = db.Column(db.String(255), nullable=True)
     website         = db.Column(db.String(255), nullable=True)
     birthday        = db.Column(db.Date, nullable=True)  # Store as date
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Track user creation time
@@ -124,12 +122,13 @@ class Post(db.Model):
     video_url = db.Column(db.String(500), nullable=True) 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  # ✅ Added timestamp
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-
     status = db.Column(db.String(20), default="visible")  # visible, removed, flagged
-    
+    is_anonymous = db.Column(db.Boolean, default=False) # specify if Post is Anonymous
     # ✅ Relationships
     comments = db.relationship("Comment", backref="post", lazy=True, cascade="all, delete-orphan")
     likes = db.relationship("Like", backref="post", lazy=True, cascade="all, delete-orphan")
+    # one-to-many relationship with Media
+    media_files = db.relationship("Media", backref="post", cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -433,7 +432,7 @@ class Notification(db.Model):
 
 
 # ------------------------- Create Vector DB Model -------------------------
-
+''' Vector database has been moved to its own service for scalability and performance.
 class Document(db.Model):
     __tablename__ = "documents"
 
@@ -441,9 +440,9 @@ class Document(db.Model):
     source      = db.Column(db.Text, nullable=False)
     chunk_index = db.Column(db.Integer, nullable=False)
     content     = db.Column(db.Text, nullable=False)
-    #embedding   = db.Column(Vector(1536), nullable=False)
+    embedding   = db.Column(Vector(1536), nullable=False)
     created_at  = db.Column(db.DateTime, default=datetime.now)
-
+'''
     
 
 ##### ModerationLog model with explanations #####

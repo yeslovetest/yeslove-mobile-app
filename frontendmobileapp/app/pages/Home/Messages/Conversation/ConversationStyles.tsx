@@ -1,29 +1,35 @@
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '90%',
-   
+    width: "100%",
+    backgroundColor: theme.colors.background,
   },
   chatContainer: {
     flex: 1,
+    width: "100%",
+    paddingHorizontal: theme.spacing.xs,
+    paddingBottom: theme.spacing.sm,
   },
   contentContainer: {
     flexGrow: 1,
-    justifyContent: "flex-end",
-    paddingVertical: 40,
+    paddingVertical: 10,
   },
   mediaPreviewContainer: {
-    display: 'flex', 
-    position: 'absolute', 
-    bottom: 50, 
-    justifyContent: 'flex-end', 
-    alignSelf: 'flex-end', 
-    zIndex: 1000,
-    paddingRight: 50, 
-    marginTop: 20
-  }
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    marginBottom: theme.spacing.sm,
+  },
+  inputDock: {
+    justifyContent: "center",
+    width: "100%",
+    alignItems: "center",
+    zIndex: 20,
+  },
 });
 
 export default styles;

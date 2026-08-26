@@ -59,10 +59,43 @@ class PushNotificationService:
     
     @staticmethod
     def _send_fcm_notification(token, title, body, data=None):
-        """Send FCM notification to specific token"""
-        fcm_server_key = os.getenv('FCM_SERVER_KEY')
-        if not fcm_server_key:
-            current_app.logger.error("FCM_SERVER_KEY not configured")
+        """Send FCM notification using V1 API"""
+        import google.auth.transport.requests
+        import google.oauth2.service_account
+
+        service_account_path = os.getenv('FCM_SERVICE_ACCOUNT_PATH')
+        if not service_account_path:
+            current_app.logger.error("FCM_SERVICE_ACCOUNT_PATH not configured")
+            return False
+
+        try:
+            credentials = google.oauth2.service_account.Credentials.from_service_account_file(
+                service_account_path,
+                scopes=['https://www.googleapis.com/auth/firebase.messaging']
+            )
+            credentials.refresh(google.auth.transport.requests.Request())
+            access_token = credentials.token
+            project_id = credentials.project_id
+            url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "message": {
+                    "token": token,
+                    "notification": {
+                        "title": title,
+                        "body": body
+                    }
+                }
+            }
+            if data:
+                payload["message"]["data"] = {k: str(v) for k, v in data.items()}
+            response = requests.post(url, headers=headers, json=payload)
+            return response.status_code == 200
+        except Exception as e:
+            current_app.logger.error(f"FCM send error: {e}")
             return False
         
         url = "https://fcm.googleapis.com/fcm/send"

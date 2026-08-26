@@ -45,7 +45,18 @@ Thumbs.db
 
 # Node modules
 node_modules/
+android/
 
 # Build outputs
 build/
 dist/
+# deployment scratch files
+**/td*.json
+**/task-def*.json
+**/td_list.txt
+**/body.json
+
+
+# Binary database files
+chatbot-service/chatbot.db
+backend/yeslove-2e1f0-20c3f077a520.json

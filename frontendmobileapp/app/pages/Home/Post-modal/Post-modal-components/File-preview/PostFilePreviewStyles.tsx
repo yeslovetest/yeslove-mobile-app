@@ -1,38 +1,19 @@
 import { StyleSheet, Dimensions } from "react-native";
 
+import { theme } from "@/app/theme";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
-  /*
-  previewImage: {
-     width: Dimensions.get('window').width * 0.3, 
-     borderRadius: 10, 
-     marginTop: 10,
-     resizeMode: 'contain',
-     aspectRatio: 1.5,
-    },
-  previewVideo: { 
-    width: '100%', 
-    height: Dimensions.get('window').height ,
-    borderRadius: 10, 
-    marginTop: 10,
-    resizeMode: 'cover'
-    
-  },
-  text: { marginTop: 10, fontSize: 16 },
-*/
-previewContainer: {
+  previewContainer: {
     position: "relative",
-    marginRight: 8,
+    marginRight: theme.spacing.sm,
   },
   previewImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   previewVideo: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   overlay: {
     position: "absolute",
@@ -40,51 +21,134 @@ previewContainer: {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: theme.colors.overlay,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 10,
+    borderRadius: theme.radii.lg,
   },
   overlayText: {
-    color: "#fff",
+    color: theme.colors.textOnPrimary,
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: theme.typography.fontSize.title3,
   },
   text: {
     textAlign: "center",
-    marginTop: 4,
+    marginTop: theme.spacing.xs,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: theme.colors.overlay,
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#fff",
-    padding: 16,
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
     borderRadius: 12,
     width: "90%",
     maxHeight: "80%",
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: theme.typography.fontSize.title3,
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
     textAlign: "center",
   },
   closeButton: {
-    marginTop: 16,
-    backgroundColor: "#000",
+    marginTop: theme.spacing.lg,
+    backgroundColor: theme.colors.textPrimary,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: theme.radii.md,
   },
   closeText: {
-    color: "#fff",
+    color: theme.colors.textOnPrimary,
     textAlign: "center",
+  },
+  deleteWrapper: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    // Translucent delete badge over media — kept as a literal.
+    backgroundColor: "rgba(0,0,0,0.6)",
+    width: 28,
+    height: 28,
+    borderRadius: theme.radii.xl,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  deleteIcon: {
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.callout,
+    fontWeight: "bold",
+    lineHeight: 16,
+  },
+  fileName: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.typography.fontSize.caption,
+    color: theme.colors.textMuted,
+    width: SCREEN_WIDTH * 0.3,
+    textAlign: "center",
+  },
+  arrowWrapper: {
+    position: "absolute",
+    top: "45%",
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+  },
+  navButton: {
+    width: 36,
+    height: 36,
+    borderRadius: theme.radii.xxl,
+    // Translucent nav control over media — kept as a literal.
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navButtonDisabled: {
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
+  navButtonText: {
+    fontSize: theme.typography.fontSize.title3,
+    color: theme.colors.textOnPrimary,
+    fontWeight: "700",
+  },
+  pageIndicator: {
+    position: "absolute",
+    bottom: 8,
+    alignSelf: "center",
+    // Translucent indicator over media — kept as a literal.
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: theme.spacing.xs,
+  },
+  pageIndicatorText: {
+    color: theme.colors.textOnPrimary,
+    fontSize: theme.typography.fontSize.caption,
+    fontWeight: "600",
+  },
+  dotsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    marginBottom: theme.spacing.xxs,
+    gap: 6,
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    // Translucent inactive dot over media — kept as a literal.
+    backgroundColor: "rgba(0, 0, 0, 0.25)",
+  },
+  dotActive: {
+    width: 16,
+    backgroundColor: theme.colors.primary,
   },
 });
 
-
-
-export default styles
+export default styles;

@@ -1,104 +1,108 @@
-import Header from '@/app/Universal-components/Header/Header'
-import React from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
-import settingsSharedStyles from './SettingsSharedStyles'
-import sharedStyles from '../ProfileSharedStyles'
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Fontisto from '@expo/vector-icons/Fontisto';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useAppDispatch } from '@/app/store/hooks'
-import { openTabOnTopAction, TabType } from '@/app/store/Navigation/navigationSlice'
+import Header from "@/app/Universal-components/Header/Header";
+import React from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import settingsSharedStyles from "./SettingsSharedStyles";
+import sharedStyles from "../ProfileSharedStyles";
+import { theme } from "@/app/theme";
+import Fontisto from "@expo/vector-icons/Fontisto";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useAppDispatch } from "@/app/store/hooks";
+import { openTabOnTopAction, TabType } from "@/app/store/Navigation/navigationSlice";
 import { useFocusEffect } from "@react-navigation/native";
-import { getEmailNotificationSettings, getProfileVisibilitySettings } from '@/app/store/Profile-store/profileSlice'
-import { fetchNotificationPreferences } from '@/app/store/Notification-store/notificationSlice'
+import {
+  getEmailNotificationSettings,
+  getProfileVisibilitySettings,
+} from "@/app/store/Profile-store/profileSlice";
+import { fetchNotificationPreferences } from "@/app/store/Notification-store/notificationSlice";
 
 const SettingsPage = () => {
-    const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
-    useFocusEffect(React.useCallback(() => {
-        dispatch(getEmailNotificationSettings());
-        dispatch(getProfileVisibilitySettings());
-        dispatch(fetchNotificationPreferences());
-    }, []));
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(getEmailNotificationSettings());
+      dispatch(getProfileVisibilitySettings());
+      dispatch(fetchNotificationPreferences());
+    }, []),
+  );
 
+  const openSettingsTab = (type: TabType) => {
+    dispatch(openTabOnTopAction({ type }));
+  };
 
+  const settingsItems: Array<{
+    key: string;
+    label: string;
+    icon: React.ReactNode;
+    tab: TabType;
+  }> = [
+    {
+      key: "general",
+      label: "General",
+      icon: <MaterialIcons name="display-settings" size={22} color={theme.colors.textPrimary} />,
+      tab: TabType.GENERAL,
+    },
+    {
+      key: "email",
+      label: "Email",
+      icon: <Fontisto name="email" size={20} color={theme.colors.textPrimary} />,
+      tab: TabType.EMAIL,
+    },
+    {
+      key: "profileVisibility",
+      label: "Profile Visibility",
+      icon: <Fontisto name="low-vision" size={20} color={theme.colors.textPrimary} />,
+      tab: TabType.PROFILE_VISIBILITY,
+    },
+    {
+      key: "notifications",
+      label: "Push Notification Settings",
+      icon: <Fontisto name="bell" size={20} color={theme.colors.textPrimary} />,
+      tab: TabType.NOTIFICATION_PREFERENCES,
+    },
+    {
+      key: "export",
+      label: "Export Data",
+      icon: <Ionicons name="share-social-outline" size={20} color={theme.colors.textPrimary} />,
+      tab: TabType.EXPORT_DATA,
+    },
+  ];
 
-    const openGeneral = () => {
-    dispatch(openTabOnTopAction( { type: TabType.GENERAL} ))
-    }
+  return (
+    <>
+      <Header></Header>
+      <ScrollView
+        style={sharedStyles.container}
+        contentContainerStyle={sharedStyles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={settingsSharedStyles.pageHeaderRow}>
+          <Text style={settingsSharedStyles.pageTitle}>Settings</Text>
+          <Text style={settingsSharedStyles.pageSubtitle}>
+            Manage privacy, notifications, and account preferences.
+          </Text>
+        </View>
 
-    const openEmail = () => {
-    dispatch(openTabOnTopAction( { type: TabType.EMAIL } ))
-    }
+        {settingsItems.map((item) => (
+          <View key={item.key} style={settingsSharedStyles.settingsOptionContainer}>
+            <TouchableOpacity
+              onPress={() => openSettingsTab(item.tab)}
+              style={settingsSharedStyles.settingsOptionButton}
+            >
+              <View style={settingsSharedStyles.settingsOptionLeftRow}>
+                {item.icon}
+                <Text style={settingsSharedStyles.settingsOptionText}>{item.label}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+    </>
+  );
+};
 
-    const openProfileVisibility = () => {
-    dispatch(openTabOnTopAction( { type: TabType.PROFILE_VISIBILITY } ))
-    }
-
-    const openNotificationPreferences = () => {
-    dispatch(openTabOnTopAction( { type: TabType.NOTIFICATION_PREFERENCES} ))
-    }
-
-    const openExportData = () => {
-    dispatch(openTabOnTopAction( { type: TabType.EXPORT_DATA} ))
-    }
-
-    return (
-        <>
-            <Header></Header>
-            <View style={sharedStyles.container}>
-                <View style={settingsSharedStyles.settingsOptionContainer}>
-                    <TouchableOpacity onPress={openGeneral} style={settingsSharedStyles.settingsOptionButton}>
-                        <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <MaterialIcons name="display-settings" size={24} color="black" />
-                            <Text style={settingsSharedStyles.settingsOptionText}>General</Text>
-                        </View>
-                        <AntDesign name="right" size={24} color="black" />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={settingsSharedStyles.settingsOptionContainer}>
-                    <TouchableOpacity onPress={openEmail} style={settingsSharedStyles.settingsOptionButton}>
-                        <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <Fontisto name="email" size={24} color="black" />
-                            <Text style={settingsSharedStyles.settingsOptionText}>Email</Text>
-                        </View>
-                        <AntDesign name="right" size={24} color="black" />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={settingsSharedStyles.settingsOptionContainer}>
-                    <TouchableOpacity onPress={openProfileVisibility} style={settingsSharedStyles.settingsOptionButton}>
-                        <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <Fontisto name="low-vision" size={24} color="black" />
-                            <Text style={settingsSharedStyles.settingsOptionText}>Profile Visibility</Text>
-                        </View>
-                        <AntDesign name="right" size={24} color="black" />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={settingsSharedStyles.settingsOptionContainer}>
-                    <TouchableOpacity onPress={openNotificationPreferences} style={settingsSharedStyles.settingsOptionButton}>
-                        <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <Fontisto name="bell" size={24} color="black" />
-                            <Text style={settingsSharedStyles.settingsOptionText}>Push Notification Settings</Text>
-                        </View>
-                        <AntDesign name="right" size={24} color="black" />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={settingsSharedStyles.settingsOptionContainer}>
-                    <TouchableOpacity onPress={openExportData} style={settingsSharedStyles.settingsOptionButton}>
-                        <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
-                            <AntDesign name="export" size={24} color="black" />
-                            <Text style={settingsSharedStyles.settingsOptionText}>Export Data</Text>
-                        </View>
-                        <AntDesign name="right" size={24} color="black" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </>
-    )
-}
-
-export default SettingsPage
+export default SettingsPage;

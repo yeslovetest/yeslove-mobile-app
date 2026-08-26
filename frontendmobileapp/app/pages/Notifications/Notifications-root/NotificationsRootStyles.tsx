@@ -1,41 +1,74 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
-const styles = StyleSheet.create({
-    headerRow: {
-        width: "100%",
-        paddingHorizontal: 16,
-    },
-    title: {
-        width: "100%",
-        textAlign: "left",
-        fontSize: 25,
-        fontWeight: '700',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        color: theme.colors.blackText,
-    },
-    noOfNotifications: {
-        width: "100%",
-        textAlign: "left",
-        marginTop: 10,
-        fontSize: 13,
-        fontWeight: '400',
-        color: '#5a5a5a',
-    },
-    blueText: {
-       color: theme.colors.primaryBlue,
-       fontWeight: 700
-    },
-    todayAndThisWeekText: {
-        width: "100%",
-        marginTop: 20,
-        marginBottom: 10,
-        textAlign: "left",
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#222',
-    }
-})
+import { theme } from "@/app/theme";
 
-export default styles
+const styles = StyleSheet.create({
+  headerRow: {
+    width: "100%",
+    paddingHorizontal: theme.spacing.lg,
+  },
+  title: {
+    width: "100%",
+    textAlign: "left",
+    fontSize: theme.typography.fontSize.title1,
+    fontWeight: "700",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    color: theme.colors.textPrimary,
+  },
+  noOfNotifications: {
+    width: "100%",
+    textAlign: "left",
+    marginTop: theme.spacing.sm,
+    fontSize: theme.typography.fontSize.subhead,
+    lineHeight: 20,
+    fontWeight: "400",
+    color: theme.colors.textSecondary,
+  },
+  blueText: {
+    color: theme.colors.primary,
+    fontWeight: "700",
+  },
+  tabRow: {
+    width: "100%",
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  tabButton: {
+    borderRadius: 16,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderWidth: 1,
+  },
+  tabButtonActive: {
+    backgroundColor: theme.colors.primarySoft,
+    borderColor: theme.colors.primary,
+  },
+  tabButtonInactive: {
+    backgroundColor: theme.colors.surfaceAlt,
+    borderColor: theme.colors.border,
+  },
+  tabButtonText: {
+    fontSize: theme.typography.fontSize.footnote,
+    fontWeight: "600",
+  },
+  tabButtonTextActive: {
+    color: theme.colors.primary,
+  },
+  tabButtonTextInactive: {
+    color: theme.colors.textSecondary,
+  },
+  todayAndThisWeekText: {
+    width: "100%",
+    marginTop: theme.spacing.xl,
+    marginBottom: 10,
+    textAlign: "left",
+    fontSize: theme.typography.fontSize.callout,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
+  },
+});
+
+export default styles;

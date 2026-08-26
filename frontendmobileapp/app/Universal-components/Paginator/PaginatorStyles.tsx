@@ -1,5 +1,7 @@
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
@@ -8,21 +10,21 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   button: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.radii.sm,
     marginHorizontal: 10,
   },
   disabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: theme.colors.disabled,
   },
   buttonText: {
-    color: "#fff",
+    color: theme.colors.textOnPrimary,
     fontWeight: "600",
   },
   pageLabel: {
-    fontSize: 16,
+    fontSize: theme.typography.fontSize.callout,
     fontWeight: "500",
   },
 });

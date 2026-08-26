@@ -1,42 +1,52 @@
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
- textInputContainer: {
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        width: "93%",
-        height: 40,
-        paddingHorizontal: 3,
-        paddingVertical: 6,
-        borderRadius: 20,
-        backgroundColor: "#fff",
-        position: "absolute",
-        bottom: 10,
-        borderColor: "#c1c1c1",
-        borderWidth: 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3.84,
-        elevation: 5
-    },
-    textInput: {
-        width: "90%",
-        height: "100%",
-        fontSize: 17,
-        paddingHorizontal: 10
-    },
+  textInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    minHeight: 48,
+    maxWidth: 620,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
+    borderRadius: theme.radii.xxl,
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
+    borderWidth: 1,
+    ...theme.shadows.sm,
+  },
+  textInput: {
+    flex: 1,
+    minHeight: 34,
+    maxHeight: 120,
+    fontSize: theme.typography.fontSize.body,
+    lineHeight: 20,
+    color: theme.colors.textPrimary,
+    paddingHorizontal: 10,
+    paddingTop: 6,
+    paddingBottom: 6,
+    textAlignVertical: "top",
+    includeFontPadding: false,
+  },
+  sendIcon: {
+    padding: theme.spacing.sm,
+    color: theme.colors.textOnPrimary,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 20,
+  },
+  sendIconDisabled: {
+    color: theme.colors.textOnPrimary,
+    backgroundColor: theme.colors.disabled,
+  },
+  mediaIcon: {
+    padding: theme.spacing.sm,
+    marginRight: 6,
+    color: theme.colors.primary,
+    backgroundColor: theme.colors.primarySoft,
+    borderRadius: 20,
+  },
+});
 
-    sendIcon: {
-        marginLeft: "auto",
-        padding: 6,
-        color: "#fafafa",
-        backgroundColor: "#c9c9c9",
-        borderRadius: "50%"
-    },
-   
-
-})
-
-export default styles
+export default styles;

@@ -1,14 +1,23 @@
 import { NotificationListResponse, Notification } from "@/generated-api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface FriendRequestItem {
+    keycloak_id: string;
+    username: string;
+    image?: string;
+}
+
 const notificationSlice = createSlice({
     name: " notification",
     initialState: {
+        scrollViewPosition: 0,   //default initial value
+        isFetchingNotifications: false,
         allNotifications: [] as Notification[],
         currentPage: 1,
         perPage: 20,
         totalNotifications: 0,
         unreadNotifications: 0,
+        activeFriendRequests: [] as FriendRequestItem[],
         notificationPreferences: {
             posts: true,
             likes: true,
@@ -18,15 +27,44 @@ const notificationSlice = createSlice({
         }, // example preferences
     },
     reducers: {
-        fetchUserNotifications: (state, action: PayloadAction<{perPage?: number, currentPage?: number}>) => {},
+        setScrollViewPosition: (state, action: PayloadAction<number>) => {
+            state.scrollViewPosition = action.payload;
+        },
+        fetchUserNotifications: (state, action: PayloadAction<{perPage?: number, currentPage?: number}>) => {
+            state.isFetchingNotifications = true;
+        },
         setUserNotification: (state, action: PayloadAction<NotificationListResponse>) => {
-            state.allNotifications = action.payload.notifications || [];
-            state.currentPage = action.payload.current_page || 1;
+            const page = action.payload.current_page ?? 1;
+            const notifications = action.payload.notifications ?? [];
+
+            if (page === 1){
+                state.allNotifications = notifications;
+            }
+            else if (page > 1){
+                const existingIds = new Set(state.allNotifications.map((item) => item.id).filter((id): id is number => typeof id === 'number'));
+                const uniqueNotifications = notifications.filter((item) => {
+                    if (typeof item.id !== 'number') {
+                        return true;
+                    }
+                    return !existingIds.has(item.id);
+                });
+                state.allNotifications = state.allNotifications.concat(uniqueNotifications)
+            }
+            state.currentPage = page;
             state.perPage = action.payload.per_page || 20;
             state.totalNotifications = action.payload.total || 0;
             state.unreadNotifications = action.payload.unread || 0;
+            state.isFetchingNotifications = false;
+        },
+        setNotificationRequestFailed: (state) => {
+            state.isFetchingNotifications = false;
         },
         markNotificationRead: (state, action: PayloadAction<number>) => {},
+        fetchFriendRequests: (state) => {},
+        setFriendRequests: (state, action: PayloadAction<FriendRequestItem[]>) => {
+            state.activeFriendRequests = action.payload;
+        },
+        respondToFriendRequest: (state, action: PayloadAction<{keycloakId: string, decision: 'accept' | 'decline'}>) => {},
         fetchNotificationPreferences: (state) => {},
         setNotificationPreferences: (state, action: PayloadAction<typeof state.notificationPreferences>) => {
             state.notificationPreferences = action.payload;
@@ -41,8 +79,10 @@ const notificationSlice = createSlice({
 
 export const {
     fetchUserNotifications, setUserNotification, markNotificationRead, 
+    fetchFriendRequests, setFriendRequests, respondToFriendRequest,
     fetchNotificationPreferences, setNotificationPreferences, updateNotificationPreferences, 
-    changeNotificationPreference
+    changeNotificationPreference, setScrollViewPosition,
+    setNotificationRequestFailed
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;

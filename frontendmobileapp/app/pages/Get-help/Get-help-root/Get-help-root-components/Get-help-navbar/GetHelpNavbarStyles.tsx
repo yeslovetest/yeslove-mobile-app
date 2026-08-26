@@ -1,53 +1,50 @@
-import theme from "@/assets/variables/Variables";
-import { vw } from "@/ts/viewport-units";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const styles = StyleSheet.create({
-     navBarContainer: {
-    flex: 1,
+  navBarContainer: {
+    flex: 0,
     justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: vw(5),
-    marginBottom: vw(5),
+    marginTop: theme.spacing.sm,
+    marginBottom: 6,
+    width: "100%",
   },
   navBar: {
     flexDirection: "row",
     flexWrap: "wrap",
-    width: theme.spacing.postWidth,
+    width: "100%",
     justifyContent: "center",
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    borderRadius: 10,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: theme.colors.surface,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radii.lg,
+    ...theme.shadows.md,
   },
   navItem: {
     width: "50%",
-    paddingVertical: 10,
+    paddingVertical: 11,
     alignItems: "center",
   },
   navText: {
-    fontSize: 16,
-    color: theme.colors.iconNotActive,
+    fontSize: theme.typography.fontSize.body,
+    color: theme.colors.textMuted,
     fontWeight: "500",
   },
   activeNavItem: {
     position: "relative",
   },
   activeNavText: {
-    fontWeight: "bold",
-    color: "#000",
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
   },
   activeIndicator: {
     width: 40,
     height: 3,
-    backgroundColor: theme.colors.primaryBlue,
+    backgroundColor: theme.colors.primary,
     position: "absolute",
     bottom: -2,
   },
-})
+});
 
-export default styles
+export default styles;

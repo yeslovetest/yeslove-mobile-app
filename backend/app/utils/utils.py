@@ -19,11 +19,11 @@ def get_keycloak_config():
     realm_name = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
 
     return {
-        "server_url": server_url,
-        "realm_name": realm_name,
-        "issuer_url": f"{server_url}/realms/{'YesLove_Auth'}",
-        "certs_url": f"{server_url}/realms/{'YesLove_Auth'}/protocol/openid-connect/certs"
-    }
+    "server_url": server_url,
+    "realm_name": realm_name,
+    "issuer_url": f"{server_url}/realms/{realm_name}",
+    "certs_url": f"{server_url}/realms/{realm_name}/protocol/openid-connect/certs"
+}
 
 
 # -------------------------

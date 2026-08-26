@@ -1,69 +1,64 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
 
+import { theme } from "@/app/theme";
+
 const messagesSharedStyles = StyleSheet.create({
-    container: {
-        flex: 1,
-        width: "95%",
-    },
-    contentContainer: {
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    messagesText: {
-        width: "95%",
-        textAlign: "left",
-        fontSize: 25,
-        fontWeight: '700',
-        paddingVertical: 12,
-        color: theme.colors.blackText,
-    },
-    filterBar: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        marginLeft: 15,
-        width: "95%",
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-        
-    },
+  container: {
+    flex: 1,
+    width: "100%",
+    paddingHorizontal: 10,
+  },
+  contentContainer: {
+    justifyContent: "flex-start",
+    alignItems: "center",
+    width: "100%",
+    paddingBottom: theme.spacing.xxl,
+  },
+  messagesText: {
+    width: "100%",
+    textAlign: "left",
+    fontSize: theme.typography.fontSize.title1,
+    fontWeight: "700",
+    paddingVertical: 10,
+    color: theme.colors.textPrimary,
+  },
+  filterBar: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  filterButton: {
+    minWidth: 60,
+    paddingVertical: 6,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: 16,
+    marginRight: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  filterButtonActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  filterButtonInactive: {
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
+  },
+  filterButtonText: {
+    fontSize: theme.typography.fontSize.subhead,
+    fontWeight: "500",
+  },
+  filterButtonTextActive: {
+    color: theme.colors.textOnPrimary,
+  },
+  filterButtonTextInactive: {
+    color: theme.colors.primary,
+  },
+});
 
-    filterButton: {
-        minWidth: 60,
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        marginRight: 11,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-
-    filterButtonActive: {
-        backgroundColor: "#7296ED"
-    },
-
-    filterButtonInactive: {
-        borderWidth: 1,
-        borderColor: theme.colors.primaryBlue,
-        backgroundColor: '#fff',
-    },
-
-    filterButtonText: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
-
-    filterButtonTextActive: {
-        color: '#fff',
-    },
-
-    filterButtonTextInactive: {
-        color: theme.colors.primaryBlue,
-    },
-
-
-})
-
-export default messagesSharedStyles
+export default messagesSharedStyles;

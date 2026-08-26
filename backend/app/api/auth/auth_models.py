@@ -9,7 +9,6 @@ SignupRequest = api.model("SignupRequest", {
     "confirm_password" : fields.String(required=True, description="Confirm your password"),
     "first_name"       : fields.String(required=True, description="Users first name"),
     "last_name"        : fields.String(required=True, description="Users last name"),
-    "phone_number"     : fields.String(required=True, description="Users phone number"),
     "username"         : fields.String(required=True, description="Desired username"),
 
 

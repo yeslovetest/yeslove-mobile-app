@@ -1,32 +1,47 @@
-import theme from "@/assets/variables/Variables";
 import { StyleSheet } from "react-native";
+
+import { theme } from "@/app/theme";
 
 const styles = StyleSheet.create({
   editItemContainer: {
-  backgroundColor: "#fff",
-  justifyContent: "flex-start",
-  alignItems: "flex-start",
-  paddingHorizontal: 30,
-  paddingVertical: 15,
-  marginBottom: 20,
-  width: theme.spacing.postWidth
-},
+    backgroundColor: theme.colors.surface,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: 14,
+    marginBottom: theme.spacing.md,
+    width: "100%",
+    borderRadius: theme.radii.xl,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadows.sm,
+  },
+  editItemText: {
+    fontSize: 11,
+    fontWeight: "700",
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.textMuted,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  editItemInfo: {
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    width: "100%",
+    minHeight: 46,
+    paddingVertical: 10,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.lg,
+    color: theme.colors.textPrimary,
+    fontSize: theme.typography.fontSize.body,
+    fontWeight: "500",
+  },
+  editItemInfoMultiline: {
+    minHeight: 92,
+    textAlignVertical: "top",
+  },
+});
 
-editItemText: {
-  fontSize: 20,
-  fontWeight: 600,
-  marginBottom: 10,
-  color: "#000",
-},
-
-editItemInfo: {
-  borderWidth: 2,
-  borderStyle: "solid",
-  borderColor: theme.colors.viewEditBorderColor,
-  width: "90%",
-  paddingVertical: 5,
-  paddingLeft: 10
-},
-})
-
-export default styles 
+export default styles;

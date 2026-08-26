@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from flask import request
 from flask_restx import Namespace, Resource
 from sqlalchemy import func, or_, and_
@@ -53,7 +53,7 @@ class SendMessage(Resource):
     from .chat_models import SendMessageRequest
     @require_auth() 
     @api.doc(
-        description="Send a message with optional media attachment. Either message or media_id must be provided."
+        description="Send a message with optional media attachment (as a List of media Id). Either message or media_id must be provided."
     )
     @api.expect(SendMessageRequest)  # ✅ Attach model
     @api.response(201, 'Message sent successfully')
@@ -113,9 +113,15 @@ class SendMessage(Resource):
 
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
-        media_id = data.get("media_id")
-        new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=media_id)
-        db.session.add(new_message)
+        media_id = data.get("media_id") 
+        print(media_id)
+        if media_id:  
+            for id in media_id:
+              new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=id)
+              db.session.add(new_message)
+        else:
+            new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message)  
+            db.session.add(new_message)    
         db.session.commit()
 
         # Send realtime message + notifications
@@ -175,7 +181,7 @@ class SendMessage(Resource):
 
 @api.route("/get_messages/<string:receiver_id>")
 class GetMessages(Resource):
-    from datetime import timedelta
+    
     from .chat_models import GetMessagesRequest, GetMessagesResponse
 
     @require_auth()

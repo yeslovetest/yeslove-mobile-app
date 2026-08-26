@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 from .db import SessionLocal
-from app.models import Document 
+from app.chatbot_package.vectorstore.models import Document 
 from app.chatbot_package.vectorstore.utils import embed_texts
 
 def query_rag(query: str, top_k: int = 5) -> list[str]:

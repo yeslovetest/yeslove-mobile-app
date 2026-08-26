@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Footer from "./Universal-components/Footer/Footer";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import ProfileRoot from "./pages/Profile/Profile-root/ProfileRoot";
@@ -7,10 +8,10 @@ import HomeRoot from "./pages/Home/Home-root/HomeRoot";
 import GetHelpRoot from "./pages/Get-help/Get-help-root/GetHelpRoot";
 import LoginPage from "./pages/Login/LoginPage/LoginPage";
 import SignUpRoot from "./pages/Sign-up/Sign-up-root/SignUpRoot";
-import { useFocusEffect } from "expo-router";
 import {
   attemptRefreshFromLocalStorageAction,
   LoginState,
+  setLoginStateAction,
 } from "./store/Auth-store/authSlice";
 import LoginRoot from "./pages/Login/Login-root/LoginRoot";
 import { TabType } from "./store/Navigation/navigationSlice";
@@ -33,20 +34,59 @@ import Chatbot from "./pages/Home/Messages/Chatbot/Chatbot";
 
 const App = () => {
   const dispatch = useAppDispatch();
-  useFocusEffect(
-    React.useCallback(() => {
-      dispatch(attemptRefreshFromLocalStorageAction());
-    }, [])
-  );
+  const [showSlowLoadingHelp, setShowSlowLoadingHelp] = React.useState(false);
+
+  React.useEffect(() => {
+    dispatch(attemptRefreshFromLocalStorageAction());
+  }, [dispatch]);
+
   const currentActiveTab = useAppSelector(
     (state) => state.navigation.tabStack.at(-1)
   );
   const loginState = useAppSelector((state) => state.auth.loginState);
+
+  React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    if (loginState === LoginState.LOADING) {
+      setShowSlowLoadingHelp(false);
+      timer = setTimeout(() => {
+        setShowSlowLoadingHelp(true);
+      }, 8000);
+    } else {
+      setShowSlowLoadingHelp(false);
+    }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [loginState]);
+
+  React.useEffect(() => {
+    if (loginState !== LoginState.LOADING) {
+      return;
+    }
+
+    // Last-resort guard: never allow indefinite LOADING if bootstrap saga gets stuck.
+    const hardFallbackTimer = setTimeout(() => {
+      dispatch(setLoginStateAction(LoginState.LOGGED_OUT));
+    }, 10000);
+
+    return () => {
+      clearTimeout(hardFallbackTimer);
+    };
+  }, [dispatch, loginState]);
+
   return (
-    <>
+    // Apply safe-area insets globally so screens do not overlap status/navigation UI.
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       {loginState == LoginState.LOADING && (
         <View style={styles.container}>
-          <LoginRoot></LoginRoot>
+          <LoginRoot
+            showSlowLoadingHelp={showSlowLoadingHelp}
+          ></LoginRoot>
         </View>
       )}
       {loginState == LoginState.LOGGED_OUT && (
@@ -90,16 +130,21 @@ const App = () => {
           <Footer></Footer>
         </View>
       )}
-    </>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fafafa",
+  },
   container: {
     flex: 1,
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "stretch",
     backgroundColor: "#fafafa",
+    width: "100%",
   },
   title: {
     fontSize: 24,
