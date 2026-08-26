@@ -24,7 +24,7 @@ def readiness_check():
     checks = {
         "database": check_database(),
         "redis": check_redis(),
-        "neo4j": check_neo4j(),
+        "graph": check_graph(),
     }
     
     all_healthy = all(checks.values())
@@ -75,8 +75,8 @@ def check_redis():
         return True  # Optional service
 
 
-def check_neo4j():
-    """Check Neo4j connectivity when configured."""
+def check_graph():
+    """Check graph database connectivity when configured."""
     try:
         driver = getattr(current_app, "graph_driver", None)
         if not driver:
@@ -87,3 +87,8 @@ def check_neo4j():
         return True
     except:
         return False
+
+
+def check_neo4j():
+    """Backward-compatible alias for older imports/tests."""
+    return check_graph()

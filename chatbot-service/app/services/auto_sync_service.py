@@ -4,11 +4,13 @@ import schedule
 import time
 from threading import Thread
 from app.services.external_sync_service import ExternalSyncService
+from app.services.sync_service import SyncService
 from config.sources import ALLOWED_SOURCES
 
 class AutoSyncService:
     def __init__(self):
         self.sync_service = ExternalSyncService()
+        self.content_sync_service = SyncService()
         self.running = False
         
     def start_scheduler(self):
@@ -35,6 +37,11 @@ class AutoSyncService:
     
     def sync_all_sources(self):
         """Sync all configured external sources"""
+        try:
+            self.content_sync_service.sync_wordpress_blog_posts(page=1, per_page=25)
+        except Exception as e:
+            print(f"WordPress blog sync failed: {e}")
+
         priority_urls = [
             # Core relationship sources
             "https://www.relate.org.uk/get-help/relationship-help/",

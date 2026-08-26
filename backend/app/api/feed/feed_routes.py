@@ -67,11 +67,8 @@ class Feed(Resource):
                         ).all()
                         friend_ids = [u.id for u in rec_users]
                 except Exception as e:
-                    logger.warning(f"Neo4j recommendations failed: {e}")
-            query = Post.query.filter(
-                Post.is_anonymous != true(),
-                Post.user_id.in_(friend_ids)
-            ).order_by(Post.timestamp.desc())
+                    logger.warning(f"Graph recommendations failed: {e}")
+            query = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.timestamp.desc()) 
             
         elif feed_type == "groups":
             query = Post.query.filter_by(user_id=None)  # TODO: Replace with group logic
@@ -281,7 +278,7 @@ class CreatePost(Resource):
                     }
                 )
             except Exception as e:
-                logger.warning(f"Neo4j post creation failed: {e}")
+                logger.warning(f"Graph post creation failed: {e}")
 
         fanout_service = FanoutService()
         fanout_service.fanout_post(post.id, user.id)
@@ -441,7 +438,7 @@ class LikePost(Resource):
                     reaction_type="like"
                 )
             except Exception as e:
-                logger.warning(f"Neo4j like failed: {e}")
+                logger.warning(f"Graph like failed: {e}")
         
         # Notify post author about like
         from app.models import Post
@@ -613,7 +610,7 @@ class FollowUser(Resource):
                                 followed_id=user.keycloak_id
                             )
                     except Exception as e:
-                        logger.warning(f"Neo4j unfollow failed: {e}")
+                        logger.warning(f"Graph unfollow failed: {e}")
                 
                 return {"message": "Unfollowed successfully"}, 200
             return {"message": "You are not following this user"}, 400
@@ -649,7 +646,7 @@ class FollowUser(Resource):
                     current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "friend")
                     current_app.graph_repository.follow(target_user.keycloak_id, user.keycloak_id, "friend")
                 except Exception as e:
-                    logger.warning(f"Neo4j friend follow failed: {e}")
+                    logger.warning(f"Graph friend follow failed: {e}")
             
             return {"message": "Connected as friend"}, 201
 
@@ -679,7 +676,7 @@ class FollowUser(Resource):
             try:
                 current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "basic")
             except Exception as e:
-                logger.warning(f"Neo4j follow failed: {e}")
+                logger.warning(f"Graph follow failed: {e}")
         
         return {"message": "Followed successfully"}, 201
 

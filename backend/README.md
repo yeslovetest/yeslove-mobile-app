@@ -38,7 +38,23 @@ KEYCLOAK_SERVER_URL=http://localhost:8080
 KEYCLOAK_REALM_NAME=YesLove_Auth
 KEYCLOAK_CLIENT_ID=your-client-id
 KEYCLOAK_CLIENT_SECRET=your-client-secret
+GRAPH_DB_PROVIDER=memgraph
+GRAPH_DB_URI=bolt://localhost:7687
+# Leave these empty for the default local Memgraph container.
+GRAPH_DB_USER=
+GRAPH_DB_PASS=
+BLOG_PUBLIC_URL_TEMPLATE=http://localhost:3000/blog/{blog_id}
+VIDEO_PODCAST_PUBLIC_URL_TEMPLATE=http://localhost:3000/video-podcasts/{video_id}
+CHATBOT_SERVICE_URL=http://localhost:8000
+CHATBOT_CONTENT_SYNC_PATH=/api/v1/sync/content
 ```
+
+The backend uses the Python `neo4j` package as a Bolt driver. Memgraph speaks Bolt,
+so no separate Memgraph Python dependency is required.
+
+The chatbot message endpoint remains conversational. Blog and video podcast records
+are synced separately so the chatbot service can return optional `recommendations`
+with titles and links alongside its normal answer.
 
 ## 📂 Step 5: Initialize the Database
 ```bash
@@ -164,4 +180,3 @@ Body: {
 
 💡 **Need Help?**
 If you encounter issues, feel free to open an issue on the repository or reach out to the team!
-

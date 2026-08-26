@@ -16,7 +16,8 @@ chat_response = api.model('ChatResponse', {
     'response': fields.String(description='AI-generated response with source attribution'),
     'session_id': fields.String(description='Chat session ID'),
     'user_id': fields.String(description='Authenticated user ID'),
-    'sources': fields.String(description='Source attribution for transparency')
+    'sources': fields.String(description='Source attribution for transparency'),
+    'recommendations': fields.List(fields.Raw, description='Optional blog/video recommendations with links')
 })
 
 # Initialize RAG engine lazily
@@ -67,13 +68,14 @@ class ChatMessage(Resource):
             if session_id == 'default':
                 session_id = f"user_{user_id}_{hash(message) % 10000}"
             
-            response = get_rag_engine().generate_response(message, history)
+            result = get_rag_engine().generate_response_with_recommendations(message, history)
             
             return {
-                'response': response,
+                'response': result.get('answer'),
                 'session_id': session_id,
                 'user_id': user_id,
-                'sources': 'Multiple credible relationship advice sources'
+                'sources': 'Multiple credible relationship advice sources',
+                'recommendations': result.get('recommendations', [])
             }
         except Exception as e:
             return {'error': str(e)}, 500

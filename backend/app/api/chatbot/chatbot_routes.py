@@ -26,8 +26,13 @@ class SendChatbotMessage(Resource):
         history = data.get("history", [])
         session_id = data.get("session_id")
 
-        token = request.headers.get("Authorization", "").replace("Bearer ", "")
-        result = chatbot_client.send_message(user_message, user.id, history, session_id, token=token)
+        result = chatbot_client.send_message(
+            user_message,
+            user.id,
+            history,
+            session_id,
+            auth_token=request.headers.get("Authorization"),
+        )
         
         if "error" in result:
             return {"error": result["error"]}, 503

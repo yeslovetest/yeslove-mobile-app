@@ -41,7 +41,7 @@ class UserRecommendations(Resource):
                         ]
                     }, 200
             except Exception as e:
-                logger.warning(f"Neo4j recommendations failed: {e}")
+                logger.warning(f"Graph recommendations failed: {e}")
         
         # Recommend users with most followers.
         from app.models import Follow
@@ -109,66 +109,39 @@ class BlogRecommendations(Resource):
     @api.doc(security='Bearer')
     @api.param('limit', 'Number of blogs to return', type='integer', default=10)
     def get(self):
-        """Get recommended blogs based on user reading history"""
-        from app.models import User, BlogPost, db
-        from app.models import BlogView
-        from sqlalchemy import func, and_
+        """Get recommended blogs from the local WordPress-backed cache."""
+        import requests
+        from app.models import User
+        from app.services.wordpress_blog_service import list_cached_blog_posts, sync_wordpress_posts_to_db
         
         current_user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not current_user:
             return {"message": "User not found"}, 404
         
         limit = int(request.args.get("limit", 10))
-        
-        # Get blogs viewed by users with similar reading patterns
-        similar_users_blogs = BlogPost.query\
-            .join(BlogView, BlogPost.id == BlogView.blog_id)\
-            .join(User, BlogView.user_id == User.id)\
-            .filter(
-                and_(
-                    BlogView.user_id.in_(
-                        # Users who read similar blogs as current user
-                        db.session.query(BlogView.user_id)
-                        .join(BlogView, BlogView.blog_id.in_(
-                            db.session.query(BlogView.blog_id)
-                            .filter(BlogView.user_id == current_user.id)
-                        ))
-                        .filter(BlogView.user_id != current_user.id)
-                    ),
-                    # Exclude blogs already read by current user
-                    BlogPost.id.notin_(
-                        db.session.query(BlogView.blog_id)
-                        .filter(BlogView.user_id == current_user.id)
-                    )
-                )
-            )\
-            .group_by(BlogPost.id)\
-            .order_by(func.count(BlogView.id).desc())\
-            .limit(limit).all()
-        
-        # Fallback: popular blogs if no similar users found
-        if not similar_users_blogs:
-            similar_users_blogs = BlogPost.query\
-                .join(BlogView, BlogPost.id == BlogView.blog_id)\
-                .filter(
-                    BlogPost.id.notin_(
-                        db.session.query(BlogView.blog_id)
-                        .filter(BlogView.user_id == current_user.id)
-                    )
-                )\
-                .group_by(BlogPost.id)\
-                .order_by(func.count(BlogView.id).desc())\
-                .limit(limit).all()
-        
+        limit = max(1, min(limit, 100))
+
+        try:
+            blogs, _ = list_cached_blog_posts(page=1, per_page=limit)
+            if not blogs:
+                blogs, _ = sync_wordpress_posts_to_db(page=1, per_page=limit)
+        except requests.RequestException:
+            logger.exception("Error refreshing WordPress blog recommendations")
+            blogs, _ = list_cached_blog_posts(page=1, per_page=limit)
+
         return {
             "recommended_blogs": [
                 {
-                    "id": b.id,
-                    "title": b.title,
-                    "summary": b.summary or b.content[:200] + "...",
-                    "author": b.author.username,
-                    "timestamp": b.timestamp.isoformat(),
-                    "image_url": b.image_url
-                } for b in similar_users_blogs
+                    "id": blog["id"],
+                    "wp_post_id": blog["wp_post_id"],
+                    "title": blog["title"],
+                    "summary": blog["summary"],
+                    "author": blog["author"],
+                    "timestamp": blog["timestamp"],
+                    "image_url": blog["image_url"],
+                    "link": blog["link"],
+                    "url": blog["url"],
+                    "source": "wordpress",
+                } for blog in blogs
             ]
         }, 200

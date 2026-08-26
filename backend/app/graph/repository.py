@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Optional
 import logging
 
-from app.graph.neo4j_client import run_read, run_write
+from app.graph.neo4j_client import create_constraints, run_read, run_write
 
 logger = logging.getLogger(__name__)
 
 
 class GraphRepository:
-    """Thin repository over Neo4j for social graph operations.
+    """Thin repository over a Bolt-compatible graph database.
 
     Dev mode: no migration needed because there are no users to migrate. Nodes
     will be created on demand.
@@ -18,10 +18,9 @@ class GraphRepository:
 
     def ensure_constraints(self) -> None:
         try:
-            run_write(self.driver, "CREATE CONSTRAINT ON (u:User) ASSERT u.user_id IS UNIQUE")
-            run_write(self.driver, "CREATE CONSTRAINT ON (p:Post) ASSERT p.post_id IS UNIQUE")
+            create_constraints(self.driver)
         except Exception:
-            logger.exception("Failed to ensure Neo4j constraints")
+            logger.exception("Failed to ensure graph constraints")
 
     def create_user(self, user_id: str, props: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         props = props or {}
@@ -90,5 +89,4 @@ class GraphRepository:
         )
         rows = run_read(self.driver, cypher, {"user_id": user_id, "limit": limit})
         return [{"user_id": r.get("user_id"), "username": r.get("username"), "score": int(r.get("score", 0))} for r in rows]
-
 
