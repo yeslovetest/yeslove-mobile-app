@@ -14,6 +14,7 @@ import {
   postReactionToPost,
   setPostReactionTab,
   SendFollowUser,
+  deletePostAction,
 } from "@/app/store/Home-store/feedSlice";
 import { BASE_URL } from "@/app/config/baseUrl";
 import PostFilePreview from "@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview";
@@ -31,7 +32,9 @@ const OnePost = (props: Props) => {
   const [reactionType, setReactionType] = useState(props.post.current_user_reaction ?? "default");
   const [isReactionModalVisible, setReactionModalVisible] = useState(false);
   const [isFollowMenuVisible, setFollowMenuVisible] = useState(false);
+  const [isPostMenuVisible, setPostMenuVisible] = useState(false);
   const currentUserId = useAppSelector((state) => state.user.id);
+  const isOwnPost = !!props.post.author_id && props.post.author_id === currentUserId;
 
   const resolveMediaUrl = (url?: string) => {
     if (!url) {
@@ -76,6 +79,18 @@ const OnePost = (props: Props) => {
 
   const displayReactions = () => {
     setReactionModalVisible(true);
+  };
+
+  const confirmDeletePost = () => {
+    setPostMenuVisible(false);
+    Alert.alert("Delete post?", "This post will be permanently removed. Are you sure?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => dispatch(deletePostAction({ postId: props.post.id ?? 0 })),
+      },
+    ]);
   };
 
   const CHAR_LIMIT = 200;
@@ -202,6 +217,21 @@ const OnePost = (props: Props) => {
             </Text>
           </View>
         </View>
+        {isOwnPost && (
+          <TouchableOpacity
+            style={styles.postOptionsButton}
+            onPress={() => setPostMenuVisible(true)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Post options"
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={theme.colors.textPrimary}
+            />
+          </TouchableOpacity>
+        )}
         {props.post.author_id && props.post.author_id !== currentUserId && (
           <View style={{ justifyContent: "center", alignItems: "flex-end", maxWidth: "42%" }}>
             <TouchableOpacity
@@ -464,6 +494,27 @@ const OnePost = (props: Props) => {
                 <Text style={styles.followMenuPopUpText}>Unfollow</Text>
               </TouchableOpacity>
             )}
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={isPostMenuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPostMenuVisible(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setPostMenuVisible(false)}>
+          <Pressable style={styles.followMenuCard}>
+            <TouchableOpacity
+              style={styles.postMenuOption}
+              onPress={confirmDeletePost}
+              accessibilityRole="button"
+              accessibilityLabel="Delete post"
+            >
+              <Ionicons name="trash-outline" size={20} color={theme.colors.danger} />
+              <Text style={styles.postMenuDeleteText}>Delete post</Text>
+            </TouchableOpacity>
           </Pressable>
         </Pressable>
       </Modal>

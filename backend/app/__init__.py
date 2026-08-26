@@ -31,6 +31,7 @@ from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 from app.api.admin.moderation_routes import api as admin_moderation_api
+from app.api.chatbot.voice_routes import api as multilingual_api
 
 
 # Load environment variables
@@ -40,6 +41,10 @@ load_dotenv()
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
+
+
+def _running_flask_command(*command_names):
+    return "flask" in os.path.basename(sys.argv[0]) and any(command in sys.argv for command in command_names)
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -106,6 +111,7 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
     api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
+    api.add_namespace(multilingual_api,path="/api/v1/multilingual")
     
     # Register health check endpoints
     from app.monitoring.health import health_bp

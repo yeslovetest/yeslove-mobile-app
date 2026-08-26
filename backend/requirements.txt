@@ -36,6 +36,8 @@ python-dateutil
 
 prometheus-flask-exporter
 
+groq
+
 psutil
 gunicorn==23.0.0
 openai==1.51.0

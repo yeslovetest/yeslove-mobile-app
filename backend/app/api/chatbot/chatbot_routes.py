@@ -26,15 +26,20 @@ class SendChatbotMessage(Resource):
         history = data.get("history", [])
         session_id = data.get("session_id")
 
-        result = chatbot_client.send_message(
-            user_message,
-            user.id,
-            history,
-            session_id,
-            auth_token=request.headers.get("Authorization"),
-        )
+        token = request.headers.get("Authorization", "").replace("Bearer ", "")
+        result = chatbot_client.send_message(user_message, user.id, history, session_id, token=token)
         
         if "error" in result:
             return {"error": result["error"]}, 503
             
         return result, 200
+
+
+@api.route("/history/<string:session_id>")
+class GetChatbotHistory(Resource):
+    @require_auth()
+    def get(self, session_id):
+        """Fetch stored chatbot history for one of the user's own sessions."""
+        token = request.headers.get("Authorization", "").replace("Bearer ", "")
+        body, status = chatbot_client.get_history(session_id, token=token)
+        return body, status

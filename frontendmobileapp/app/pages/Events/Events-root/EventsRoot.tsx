@@ -78,7 +78,7 @@ export default function EventsPage() {
 
   return (
     <>
-      <Header mainTitle="Yeslove!" onEventsFilterPress={() => setIsFilterVisible(true)}></Header>
+      <Header mainTitle="YesLove!" onEventsFilterPress={() => setIsFilterVisible(true)}></Header>
       <DateFilterDropdown
         onSearch={handleFilterSearch}
         showTrigger={false}

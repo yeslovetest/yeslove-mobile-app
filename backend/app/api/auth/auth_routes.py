@@ -143,7 +143,6 @@ class Signup(Resource):
         confirm_password            = data.get("confirm_password")
         first_name                  = data.get("first_name")
         last_name                   = data.get("last_name")
-        phone_number                = data.get("phone_number")
         username                    = data.get("username")
         user_type                   = data.get("user_type")
 
@@ -170,7 +169,7 @@ class Signup(Resource):
             return {"message" : "Passwords do not match"}, 400
 
         # Sanity check to ensure all fields have inputs
-        missing = [k for k in ("email", "confirm_email", "password", "confirm_password", "first_name", "last_name", "phone_number", "username")
+        missing = [k for k in ("email", "confirm_email", "password", "confirm_password", "first_name", "last_name", "username")
                    if not data.get(k)]
         
         if missing:
@@ -220,9 +219,7 @@ class Signup(Resource):
             "firstName" : first_name,
             "lastName" : last_name,
             "enabled": True,
-            "attributes" : {
-                "phone_number" : phone_number
-            },
+            "attributes" : {},
             "credentials":[{
                 "type":"password",
                 "value":password,
@@ -291,7 +288,6 @@ class Signup(Resource):
                 if not existing_user.keycloak_id:
                     existing_user.keycloak_id = user_id
                     existing_user.email = email
-                    existing_user.phone_number = phone_number
                     existing_user.user_type = user_type.lower()
                     new_user = existing_user
                     logger.info(f"✅ Updated existing user {username} with Keycloak ID")
@@ -304,7 +300,6 @@ class Signup(Resource):
                     keycloak_id  = user_id,
                     username     = username, 
                     email        = email,
-                    phone_number = phone_number,
                     user_type = user_type.lower()
                 )
                 db.session.add(new_user)
@@ -324,7 +319,7 @@ class Signup(Resource):
 
                 db.session.commit()
             
-            except(IntegrityError):
+            except IntegrityError as e:
                 db.session.rollback
                 logger.error(f"❌ Database error when saving user {username}: {e}")
                 return {"message" : "Username already exist"}, 409

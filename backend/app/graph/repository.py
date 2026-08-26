@@ -18,7 +18,8 @@ class GraphRepository:
 
     def ensure_constraints(self) -> None:
         try:
-            create_constraints(self.driver)
+            run_write(self.driver, "CREATE CONSTRAINT ON (u:User) ASSERT u.user_id IS UNIQUE")
+            run_write(self.driver, "CREATE CONSTRAINT ON (p:Post) ASSERT p.post_id IS UNIQUE")
         except Exception:
             logger.exception("Failed to ensure graph constraints")
 

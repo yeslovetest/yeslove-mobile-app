@@ -31,6 +31,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PORT=8000
       - KEYCLOAK_URL=https://auth.yeslove.co.uk
+      - LOCAL_DEV_AUTH=${LOCAL_DEV_AUTH:-false}
     depends_on:
       - vector-db
     volumes:

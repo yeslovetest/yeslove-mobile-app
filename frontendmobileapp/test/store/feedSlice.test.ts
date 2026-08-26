@@ -6,6 +6,7 @@ import feedReducer, {
   setDetailedPost,
   setFollowing,
   setScrollViewPosition,
+  removePostFromFeed,
 } from "@/app/store/Home-store/feedSlice";
 import type { FollowedUser, Post } from "@/generated-api";
 
@@ -55,6 +56,35 @@ describe("feedSlice", () => {
       expect(state.feed.posts).toEqual([]);
       expect(state.paginationValues.hasNextPage).toBe(true);
       expect(state.paginationValues.totalPages).toBe(4);
+    });
+  });
+
+  describe("removePostFromFeed", () => {
+    it("removes the post from both the 'all' and 'friends' feeds", () => {
+      let state = feedReducer(
+        undefined,
+        setFeedDataAction({ post: posts([1, 2, 3]), feedType: "all", pagination: { page: 1 } }),
+      );
+      state = feedReducer(
+        state,
+        setFeedDataAction({ post: posts([2, 4]), feedType: "friends", pagination: { page: 1 } }),
+      );
+
+      state = feedReducer(state, removePostFromFeed({ postId: 2 }));
+
+      expect(state.feed.posts.map((p) => p.id)).toEqual([1, 3]);
+      expect(state.feed.friends.map((p) => p.id)).toEqual([4]);
+    });
+
+    it("leaves the feeds untouched when the post id is absent", () => {
+      const seeded = feedReducer(
+        undefined,
+        setFeedDataAction({ post: posts([1, 2]), feedType: "all", pagination: { page: 1 } }),
+      );
+
+      const state = feedReducer(seeded, removePostFromFeed({ postId: 99 }));
+
+      expect(state.feed.posts.map((p) => p.id)).toEqual([1, 2]);
     });
   });
 

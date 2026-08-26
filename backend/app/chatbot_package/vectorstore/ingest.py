@@ -2,7 +2,7 @@ import os, glob
 from openai import OpenAI
 
 from app.chatbot_package.vectorstore.db import SessionLocal
-from app.models import Document
+from app.chatbot_package.vectorstore.models import Document
 from app.chatbot_package.vectorstore.utils import embed_texts, chunk_text
 from dotenv import load_dotenv
 

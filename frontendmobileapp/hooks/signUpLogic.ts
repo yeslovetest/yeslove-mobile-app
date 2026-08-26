@@ -23,7 +23,6 @@ export const useSignup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
@@ -34,14 +33,12 @@ export const useSignup = () => {
   const [usernameBdColor, setUsernameBdColor] = useState(initialBdColor);
   const [firstNameBdColor, setFirstNameBdColor] = useState(initialBdColor);
   const [lastNameBdColor, setLastNameBdColor] = useState(initialBdColor);
-  const [phoneBdColor, setPhoneBdColor] = useState(initialBdColor);
 
   const handleUsernameChange = (input: string) => setUsername(input);
   const handlePasswordChange = (input: string) => setPassword(input);
   const handleConfirmPassword = (input: string) => setConfirmPassword(input);
   const handleEmailChange = (input: string) => setEmail(input);
   const handleConfirmEmailChange = (input: string) => setConfirmEmail(input);
-  const handlePhoneNumberChange = (input: string) => setPhoneNumber(input);
   const handleFirstNameChange = (input: string) => setFirstName(input);
   const handleLastNameChange = (input: string) => setLastName(input);
 
@@ -88,8 +85,7 @@ export const useSignup = () => {
       } else if (!lastName) {
         return [false, "lastName"];
       } else {
-        const phoneNumberNumberPattern = /^0\d{10}$/;
-        return [phoneNumberNumberPattern.test(phoneNumber), "phoneNumber"];
+        return [true, "lastName"];
       }
     }
   };
@@ -135,7 +131,6 @@ export const useSignup = () => {
       let confirm_password = confirmPassword;
       let first_name = firstName;
       let last_name = lastName;
-      let phone_number = phoneNumber;
       // Persist exact request body so the failure screen can retry immediately.
       const signupPayload = {
         email,
@@ -145,7 +140,8 @@ export const useSignup = () => {
         confirm_password,
         first_name,
         last_name,
-        phone_number,
+        // Phone number is no longer collected in the app; send empty to satisfy the API contract.
+        phone_number: "",
         username,
       };
 
@@ -157,26 +153,17 @@ export const useSignup = () => {
       setUsernameBdColor([theme.colors.danger, theme.colors.danger]);
       setFirstNameBdColor(initialBdColor);
       setLastNameBdColor(initialBdColor);
-      setPhoneBdColor(initialBdColor);
       dispatch(setErrorMessage("Empty Field: Please type in username."));
     } else if (field == "firstName") {
       setFirstNameBdColor([theme.colors.danger, theme.colors.danger]);
       setUsernameBdColor(initialBdColor);
       setLastNameBdColor(initialBdColor);
-      setPhoneBdColor(initialBdColor);
       dispatch(setErrorMessage("Empty Field: Please type in first name."));
     } else if (field == "lastName") {
       setLastNameBdColor([theme.colors.danger, theme.colors.danger]);
       setUsernameBdColor(initialBdColor);
       setFirstNameBdColor(initialBdColor);
-      setPhoneBdColor(initialBdColor);
       dispatch(setErrorMessage("Empty Field: Please type in last name."));
-    } else if (field == "phoneNumber") {
-      setPhoneBdColor([theme.colors.danger, theme.colors.danger]);
-      setUsernameBdColor(initialBdColor);
-      setFirstNameBdColor(initialBdColor);
-      setLastNameBdColor(initialBdColor);
-      dispatch(setErrorMessage("Invalid Field: Phone number."));
     }
   };
 
@@ -192,13 +179,11 @@ export const useSignup = () => {
     usernameBdColor,
     firstNameBdColor,
     lastNameBdColor,
-    phoneBdColor,
     handleUsernameChange,
     handlePasswordChange,
     handleConfirmPassword,
     handleEmailChange,
     handleConfirmEmailChange,
-    handlePhoneNumberChange,
     handleFirstNameChange,
     handleLastNameChange,
     handleLoginStateChange,

@@ -9,10 +9,6 @@ const ProfileInformation = () => {
   const userId = useAppSelector((state) => state.navigation.tabStack.at(-1)?.data?.userId);
   const name = useAppSelector((state) => state.profile.profiles[userId].contact_info?.name ?? "");
   const email = useAppSelector((state) => state.profile.profiles[userId].contact_info?.email ?? "");
-  const phone = useAppSelector((state) => state.profile.profiles[userId].contact_info?.phone ?? "");
-  const address = useAppSelector(
-    (state) => state.profile.profiles[userId].contact_info?.address ?? "",
-  );
   const website = useAppSelector(
     (state) => state.profile.profiles[userId].contact_info?.website ?? "",
   );
@@ -20,8 +16,6 @@ const ProfileInformation = () => {
   const profileFields = [
     { label: "Name", value: name, icon: "account-outline" as const },
     { label: "Email", value: email, icon: "email-outline" as const },
-    { label: "Phone", value: phone, icon: "phone-outline" as const },
-    { label: "Address", value: address, icon: "map-marker-outline" as const },
     { label: "Website", value: website, icon: "web" as const },
   ];
 
