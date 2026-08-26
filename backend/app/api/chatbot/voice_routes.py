@@ -7,6 +7,7 @@ import base64
 from flask import request
 from flask_restx import Namespace, Resource
 
+from app.services.multilingual_llm import generate_response
 from app.services.multilingual_stt import transcribe_audio
 from app.services.audio_utils import convert_to_wav
 from app.services.multilingual_tts import synthesize_speech
@@ -199,13 +200,29 @@ class VoiceChat(Resource):
 
             rag_data = rag_response.json()
 
-            response_text = (
+            rag_context = (
                 rag_data
                 .get(
                     "response",
-                    "No relevant information was found."
+                    ""
                 )
                 .strip()
+            )
+
+            print(
+                f"[voice] RAG context length: "
+                f"{len(rag_context)}"
+            )
+
+            response_text = generate_response(
+            user_text=user_text,
+            rag_context=rag_context,
+            language=language
+            )
+
+            print(
+                f"[voice] LLM response: "
+                f"{response_text}"
             )
 
             # --------------------------------------------------
@@ -398,13 +415,19 @@ class TextChat(Resource):
                 rag_response.json()
             )
 
-            response_text = (
+            rag_context = (
                 rag_data
                 .get(
                     "response",
-                    "No relevant information was found."
+                    ""
                 )
                 .strip()
+            )
+
+            response_text = generate_response(
+                user_text=user_text,
+                rag_context=rag_context,
+                language=language
             )
 
             # -------------------------

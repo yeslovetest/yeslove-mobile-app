@@ -73,7 +73,7 @@ def synthesize_speech(
 ):
     # RAG currently returns English text.
     # Keep English TTS for this temporary RAG-only POC.
-    tts_language = "eng"
+    tts_language = language
 
     model, tokenizer = _get_model(
         tts_language
