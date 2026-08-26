@@ -1,0 +1,6 @@
+streamlit
+google-genai
+deep-translator
+langdetect
+faster-whisper
+python-dotenv
