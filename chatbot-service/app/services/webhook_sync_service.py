@@ -24,15 +24,17 @@ def receive_content():
 
 @webhook_bp.route('/api/v1/webhook/blog', methods=['POST'])
 def receive_blog():
-    """Receive blog content from main YesLove app"""
+    """Receive blog content from WordPress or the main YesLove app."""
     data = request.get_json()
+    blog_id = data.get('wp_post_id') or data.get('id')
+    source_url = data.get('url') or data.get('link') or f"wordpress_blog_{blog_id}"
     
     # Transform blog data to standard format
     content_data = {
-        'content': f"{data.get('title', '')}\n\n{data.get('content', '')}",
+        'content': f"{data.get('title', '')}\n\n{data.get('summary', '')}\n\n{data.get('content', '')}",
         'source_name': 'YesLove',
         'category': 'yeslove.blogs',
-        'url': f"blog_{data.get('id')}"
+        'url': source_url
     }
     
     result = mcp_sync.sync_from_mcp_source('blog', content_data)

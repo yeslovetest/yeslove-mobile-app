@@ -21,7 +21,8 @@ chat_response = api.model('ChatResponse', {
     'response': fields.String(description='AI-generated response with source attribution'),
     'session_id': fields.String(description='Chat session ID'),
     'user_id': fields.String(description='Authenticated user ID'),
-    'sources': fields.String(description='Source attribution for transparency')
+    'sources': fields.String(description='Source attribution for transparency'),
+    'recommendations': fields.List(fields.Raw, description='Optional blog/video recommendations with links')
 })
 
 # Initialize RAG engine lazily
@@ -71,77 +72,15 @@ class ChatMessage(Resource):
             user_id = getattr(request, 'user_id', 'anonymous')
             if session_id == 'default':
                 session_id = f"user_{user_id}_{hash(message) % 10000}"
-
-            # Load prior conversation for this session (server is the source
-            # of truth). Falls back to client-sent history if none is stored.
-            stored_history = get_session_history(session_id)
-            if stored_history:
-                history = stored_history
-
-            response = get_rag_engine().generate_response(message, history)
-
-            # Persist this turn so the next message remembers it. This is
-            # safe: save_message never raises, so it can't break the reply.
-            save_message(session_id, user_id, message, response)
-
+            
+            result = get_rag_engine().generate_response_with_recommendations(message, history)
+            
             return {
-                'response': response,
+                'response': result.get('answer'),
                 'session_id': session_id,
                 'user_id': user_id,
-                'sources': 'Multiple credible relationship advice sources'
+                'sources': 'Multiple credible relationship advice sources',
+                'recommendations': result.get('recommendations', [])
             }
         except Exception as e:
             return {'error': str(e)}, 500
-
-
-@api.route('/history/<string:session_id>')
-class ChatHistoryResource(Resource):
-    @require_auth
-    @api.doc(responses={
-        200: 'Success',
-        401: 'Unauthorized - Authentication required',
-        403: 'Forbidden - Session belongs to another user',
-    })
-    def get(self, session_id):
-        """Return the stored conversation for one of the caller's own sessions."""
-        user_id = getattr(request, 'user_id', 'anonymous')
-
-        # Privacy: a user may only read their own conversation history.
-        if not user_owns_session(session_id, user_id):
-            return {'error': 'You do not have access to this conversation'}, 403
-
-        messages = get_session_history(session_id, limit=100)
-        return {'session_id': session_id, 'messages': messages}, 200
-
-@api.route('/retrieve')
-class RetrieveContext(Resource):
-
-    def post(self):
-        """
-        LOCAL POC ONLY:
-        Retrieve RAG context without calling an LLM.
-        """
-
-        data = request.json or {}
-
-        message = data.get("message", "").strip()
-
-        if not message:
-            return {
-                "error": "Message is required"
-            }, 400
-
-        try:
-            context = get_rag_engine().retrieve_context(
-                message
-            )
-
-            return {
-                "response": context,
-                "mode": "rag_only"
-            }, 200
-
-        except Exception as exc:
-            return {
-                "error": str(exc)
-            }, 500

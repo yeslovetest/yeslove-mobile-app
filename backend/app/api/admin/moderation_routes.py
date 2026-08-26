@@ -3,10 +3,39 @@ from flask_restx import Namespace, Resource
 from app.utils import require_auth
 from app.logging_setup import setup_logger
 from app.utils.moderation_utils import apply_user_penalties
+from datetime import date, datetime, timedelta
 
 logger = setup_logger()
 
 api = Namespace("admin/moderation", description="Admin Moderation Management")
+
+def _is_admin() -> bool:
+    roles = request.user.get("realm_access", {}).get("roles", [])
+    return "admin" in roles
+
+def _serialize_professional(details):
+    user = details.user
+    registry_urls = {
+        "HCPC": "https://www.hcpc-uk.org/check-the-register/",
+        "BACP": "https://www.bacp.co.uk/search/Register",
+        "UKCP": "https://psychotherapy.my.site.com/s/searchdirectory?id=a3VTl000001Sd97",
+    }
+
+    return {
+        "id": details.id,
+        "user_id": details.user_id,
+        "username": user.username if user else None,
+        "email": user.email if user else None,
+        "specialization": details.specialization,
+        "license_body": details.license_body,
+        "license_number": details.license_number,
+        "consent_license_data": details.consent_license_data,
+        "is_verified": details.is_verified,
+        "verified_at": details.verified_at.isoformat() if details.verified_at else None,
+        "next_reverify_date": details.next_reverify_date.isoformat() if details.next_reverify_date else None,
+        "license_expiry_date": details.license_expiry_date.isoformat() if details.license_expiry_date else None,
+        "registry_url": registry_urls.get((details.license_body or "").upper()),
+    }
 
 @api.route("/logs")
 class ModerationLogs(Resource):
@@ -20,6 +49,9 @@ class ModerationLogs(Resource):
     def get(self):
         """Get moderation logs for admin review."""
         from app.models import ModerationLog, User
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
         
         query = ModerationLog.query
         
@@ -78,6 +110,9 @@ class ReviewModerationLog(Resource):
         """Admin review and override moderation decision."""
         from app.models import ModerationLog, User, db
         from datetime import datetime
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
         
         data = request.json
         action = data.get("action")  # "approved", "rejected", "escalated"
@@ -111,6 +146,9 @@ class SuspendUser(Resource):
     def put(self, user_id):
         """Suspend or unsuspend a user."""
         from app.models import User, db
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
         
         data = request.json
         suspend = data.get("suspend", True)
@@ -136,6 +174,9 @@ class ModerationStats(Resource):
         """Get moderation statistics for dashboard."""
         from app.models import ModerationLog, User
         from sqlalchemy import func
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
         
         # Get counts by severity
         severity_stats = ModerationLog.query.with_entities(
@@ -165,3 +206,100 @@ class ModerationStats(Resource):
             "pending_reviews": pending_reviews,
             "total_logs": ModerationLog.query.count()
         }, 200
+
+@api.route("/professionals")
+class ProfessionalVerificationList(Resource):
+    @require_auth()
+    @api.doc(description="List professional verification records")
+    @api.param("status", "Filter by status: pending, verified, all", type="string", default="pending")
+    @api.param("q", "Search username, email, license number, or specialization", type="string")
+    @api.param("page", "Page number", type="integer", default=1)
+    @api.param("per_page", "Items per page", type="integer", default=20)
+    def get(self):
+        from app.models import ProfessionalDetails, User
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
+
+        status = request.args.get("status", "pending")
+        q = request.args.get("q")
+        page = max(int(request.args.get("page", 1)), 1)
+        per_page = max(1, min(int(request.args.get("per_page", 20)), 100))
+
+        query = ProfessionalDetails.query.join(User)
+
+        if status == "pending":
+            query = query.filter(ProfessionalDetails.is_verified.is_(False))
+        elif status == "verified":
+            query = query.filter(ProfessionalDetails.is_verified.is_(True))
+        elif status != "all":
+            return {"message": "Invalid status"}, 400
+
+        if q:
+            pattern = f"%{q}%"
+            query = query.filter(
+                (User.username.ilike(pattern)) |
+                (User.email.ilike(pattern)) |
+                (ProfessionalDetails.license_number.ilike(pattern)) |
+                (ProfessionalDetails.specialization.ilike(pattern))
+            )
+
+        query = query.order_by(ProfessionalDetails.is_verified.asc(), User.username.asc())
+        paginated = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        return {
+            "items": [_serialize_professional(item) for item in paginated.items],
+            "pagination": {
+                "page": paginated.page,
+                "per_page": paginated.per_page,
+                "total": paginated.total,
+                "pages": paginated.pages,
+                "has_next": paginated.has_next,
+                "has_prev": paginated.has_prev,
+            }
+        }, 200
+
+@api.route("/professionals/<int:professional_id>/verification")
+class ProfessionalVerification(Resource):
+    @require_auth()
+    @api.doc(description="Verify or unverify a professional license")
+    def put(self, professional_id):
+        from app.models import ProfessionalDetails, db
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
+
+        data = request.json or {}
+        verified = bool(data.get("is_verified", True))
+        license_expiry_date = data.get("license_expiry_date")
+        next_reverify_date = data.get("next_reverify_date")
+
+        details = ProfessionalDetails.query.get(professional_id)
+        if not details:
+            return {"message": "Professional details not found"}, 404
+
+        if verified:
+            details.is_verified = True
+            details.verified_at = datetime.utcnow()
+            details.next_reverify_date = _parse_date(next_reverify_date) if next_reverify_date else date.today() + timedelta(days=183)
+        else:
+            details.is_verified = False
+            details.verified_at = None
+            details.next_reverify_date = None
+
+        if license_expiry_date:
+            details.license_expiry_date = _parse_date(license_expiry_date)
+
+        db.session.commit()
+
+        action = "verified" if verified else "unverified"
+        return {
+            "message": f"Professional {action}",
+            "professional": _serialize_professional(details),
+        }, 200
+
+def _parse_date(value):
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None

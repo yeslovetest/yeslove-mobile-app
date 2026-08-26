@@ -64,7 +64,10 @@ class UploadMedia(Resource):
         if not user:
             return {"message": "User not found"}, 404
         result = MediaService.store_file(file, user.id, post_id)
-        return {"media_id": result.get('media_id')}, 201
+        return {
+            "media_id": result.get("media_id"),
+            "media_url": result.get("media_url")
+        }, 201
 
 
 @api.route("/user/<int:user_id>")

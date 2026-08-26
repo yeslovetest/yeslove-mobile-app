@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Backfill Neo4j from the relational backend database."""
+"""Backfill the Bolt graph database from the relational backend database."""
 
 import os
 import sys
@@ -17,7 +17,7 @@ def main():
     with app.app_context():
         graph_repository = getattr(app, "graph_repository", None)
         if not graph_repository:
-            print("Neo4j is not configured. Set NEO4J_URI, NEO4J_USER, and NEO4J_PASS first.")
+            print("Graph database is not configured. Set GRAPH_DB_URI, and GRAPH_DB_USER/GRAPH_DB_PASS if auth is enabled.")
             return 1
 
         user_count = 0

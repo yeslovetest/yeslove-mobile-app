@@ -15,12 +15,26 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')  # Absolute path to upload folder
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # Maximum file size: 16MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Allowed file types
+    FRONTEND_URI = os.getenv("FRONTEND_URI", "http://localhost:3000")
+    BLOG_PUBLIC_URL_TEMPLATE = os.getenv(
+        "BLOG_PUBLIC_URL_TEMPLATE",
+        FRONTEND_URI.rstrip("/") + "/blog/{blog_id}",
+    )
+    VIDEO_PODCAST_PUBLIC_URL_TEMPLATE = os.getenv(
+        "VIDEO_PODCAST_PUBLIC_URL_TEMPLATE",
+        FRONTEND_URI.rstrip("/") + "/video-podcasts/{video_id}",
+    )
 
     # --- Graph, Cache and Queue defaults ---
-    # Neo4j (Bolt)
-    NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
-    NEO4J_USER = os.environ.get('NEO4J_USER', 'neo4j')
-    NEO4J_PASS = os.environ.get('NEO4J_PASS', '')
+    # Memgraph/Neo4j over Bolt. GRAPH_DB_* is preferred; NEO4J_* is kept for
+    # backward compatibility with existing environments.
+    GRAPH_DB_PROVIDER = os.environ.get('GRAPH_DB_PROVIDER', 'memgraph')
+    GRAPH_DB_URI = os.environ.get('GRAPH_DB_URI') or os.environ.get('MEMGRAPH_URI') or os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
+    GRAPH_DB_USER = os.environ.get('GRAPH_DB_USER') or os.environ.get('MEMGRAPH_USER') or os.environ.get('NEO4J_USER', '')
+    GRAPH_DB_PASS = os.environ.get('GRAPH_DB_PASS') or os.environ.get('MEMGRAPH_PASS') or os.environ.get('NEO4J_PASS', '')
+    NEO4J_URI = GRAPH_DB_URI
+    NEO4J_USER = GRAPH_DB_USER
+    NEO4J_PASS = GRAPH_DB_PASS
 
     # Redis (feed cache)
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
@@ -58,9 +72,13 @@ class DevelopmentConfig(Config):
         return f"{DevelopmentConfig.keycloak_issuer()}/protocol/openid-connect/certs"
 
     # Development overrides for Graph/Cache/Queue
-    NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
-    NEO4J_USER = os.environ.get('NEO4J_USER', 'neo4j')
-    NEO4J_PASS = os.environ.get('NEO4J_PASS', 'testpassword')
+    GRAPH_DB_PROVIDER = os.environ.get('GRAPH_DB_PROVIDER', 'memgraph')
+    GRAPH_DB_URI = os.environ.get('GRAPH_DB_URI') or os.environ.get('MEMGRAPH_URI') or os.environ.get('NEO4J_URI', 'bolt://localhost:7687')
+    GRAPH_DB_USER = os.environ.get('GRAPH_DB_USER') or os.environ.get('MEMGRAPH_USER') or os.environ.get('NEO4J_USER', '')
+    GRAPH_DB_PASS = os.environ.get('GRAPH_DB_PASS') or os.environ.get('MEMGRAPH_PASS') or os.environ.get('NEO4J_PASS', '')
+    NEO4J_URI = GRAPH_DB_URI
+    NEO4J_USER = GRAPH_DB_USER
+    NEO4J_PASS = GRAPH_DB_PASS
 
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://redis:6379/0')
 

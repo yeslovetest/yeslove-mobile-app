@@ -3,6 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import atexit
 import os
+import sys
+import click
+import requests
 from flask_restx import Api
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -22,11 +25,12 @@ from app.api.events.events_routes import api as events_api
 from app.api.blog.blog_routes import api as blog_api
 # Device token API removed - handled by DeviceTokenService in auth routes
 from app.api.chatbot.chatbot_routes import api as chatbot_api
-from app.chatbot_package.chatbot import Chatbot
 from app.api.media.media_routes import api as media_api
 from app.api.notifications.notification_routes import api as notifications_api
+from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
+from app.api.admin.moderation_routes import api as admin_moderation_api
 from app.api.chatbot.voice_routes import api as multilingual_api
 
 
@@ -38,15 +42,11 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 migrate = Migrate()
 
-def create_app(config_class=None):
-    if config_class is None:
-        env = os.getenv('FLASK_ENV', 'development')
-        if env == 'production':
-            from app.config import ProductionConfig
-            config_class = ProductionConfig
-        else:
-            from app.config import DevelopmentConfig
-            config_class = DevelopmentConfig
+
+def _running_flask_command(*command_names):
+    return "flask" in os.path.basename(sys.argv[0]) and any(command in sys.argv for command in command_names)
+
+def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
 
     # Initialising of monitoring stack 
@@ -104,11 +104,13 @@ def create_app(config_class=None):
     api.add_namespace(chat_api, path="/api/chat")
     api.add_namespace(events_api, path="/api/events")
     api.add_namespace(blog_api, path="/api/blog")
+    api.add_namespace(video_podcast_api, path="/api/video-podcasts")
     # Device token API removed - handled by DeviceTokenService
     api.add_namespace(chatbot_api, path="/api/chatbot")
     api.add_namespace(media_api, path="/api/media")
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
+    api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
     api.add_namespace(multilingual_api,path="/api/v1/multilingual")
     
     # Register health check endpoints
@@ -127,27 +129,34 @@ def create_app(config_class=None):
             dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
             dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
 
+    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos")
+
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
-    with app.app_context():
-        get_keycloak_public_keys()
+    if not skip_optional_services:
+        with app.app_context():
+            get_keycloak_public_keys()
 
-    # Initialize Neo4j graph repository when configured.
+    # Initialize graph repository when configured. Memgraph and Neo4j both use Bolt.
     try:
-        neo4j_uri = app.config.get("NEO4J_URI")
-        neo4j_user = app.config.get("NEO4J_USER")
-        neo4j_pass = app.config.get("NEO4J_PASS")
+        graph_provider = app.config.get("GRAPH_DB_PROVIDER", "memgraph")
+        graph_uri = app.config.get("GRAPH_DB_URI") or app.config.get("NEO4J_URI")
+        graph_user = app.config.get("GRAPH_DB_USER") or app.config.get("NEO4J_USER")
+        graph_pass = app.config.get("GRAPH_DB_PASS") or app.config.get("NEO4J_PASS")
 
-        if neo4j_uri and neo4j_user and neo4j_pass:
-            graph_driver = create_driver(neo4j_uri, neo4j_user, neo4j_pass)
+        if skip_optional_services:
+            app.logger.info("Skipping optional graph initialization during Flask CLI command")
+        elif graph_uri:
+            graph_driver = create_driver(graph_uri, graph_user, graph_pass)
             graph_repository = GraphRepository(graph_driver)
             graph_repository.ensure_constraints()
             setattr(app, "graph_driver", graph_driver)
             setattr(app, "graph_repository", graph_repository)
-            app.logger.info("Neo4j graph repository initialized")
+            setattr(app, "graph_provider", graph_provider)
+            app.logger.info("%s graph repository initialized", graph_provider)
         else:
-            app.logger.info("Neo4j not fully configured, using SQL-only graph fallback")
+            app.logger.info("Graph database not configured, using SQL-only graph fallback")
     except Exception:
-        app.logger.exception("Failed to initialize Neo4j graph repository")
+        app.logger.exception("Failed to initialize graph repository")
 
     def shutdown_graph():
         driver = getattr(app, "graph_driver", None)
@@ -156,14 +165,77 @@ def create_app(config_class=None):
                 close_driver(driver)
                 setattr(app, "graph_driver", None)
             except Exception:
-                app.logger.exception("Error closing Neo4j driver")
+                app.logger.exception("Error closing graph driver")
 
     atexit.register(shutdown_graph)
 
-    setattr(app, 'chatbot', Chatbot()) #initializing the chatbot
+    if os.getenv("ENABLE_EMBEDDED_CHATBOT", "false").lower() == "true":
+        try:
+            from app.chatbot_package.chatbot import Chatbot
+            setattr(app, 'chatbot', Chatbot())
+        except Exception:
+            app.logger.exception("Failed to initialize embedded chatbot")
     
     # Initalises professional user admin panel
     from .admin import init_admin
     init_admin(app)
+
+    @app.cli.command("sync-wordpress-blogs")
+    @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")
+    @click.option("--per-page", default=25, show_default=True, type=int, help="WordPress posts per request.")
+    @click.option("--all-pages/--single-page", default=True, show_default=True, help="Sync every WordPress page from the starting page.")
+    def sync_wordpress_blogs_command(page, per_page, all_pages):
+        """Refresh cached WordPress blog posts in the app DB."""
+        from app.services.wordpress_blog_service import sync_wordpress_posts_to_db
+
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
+        synced = 0
+        total = None
+
+        try:
+            while True:
+                items, total = sync_wordpress_posts_to_db(page=page, per_page=per_page)
+                synced += len(items)
+                click.echo(f"Synced page {page}: {len(items)} posts")
+
+                if not all_pages or not items or synced >= total:
+                    break
+
+                page += 1
+        except requests.RequestException as exc:
+            raise click.ClickException(f"Could not refresh blog posts from WordPress: {exc}") from exc
+
+        click.echo(f"Synced {synced} WordPress blog posts into app DB cache ({total or synced} available).")
+
+    @app.cli.command("sync-wordpress-videos")
+    @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")
+    @click.option("--per-page", default=10, show_default=True, type=int, help="WordPress posts per request.")
+    @click.option("--all-pages/--single-page", default=True, show_default=True, help="Sync every WordPress page from the starting page.")
+    @click.option("--sync-chatbot/--skip-chatbot", default=True, show_default=True, help="Sync videos to chatbot after caching.")
+    def sync_wordpress_videos_command(page, per_page, all_pages, sync_chatbot):
+        """Refresh cached WordPress video podcasts in the app DB."""
+        from app.services.wordpress_video_service import sync_wordpress_videos_to_db
+
+        page = max(page, 1)
+        per_page = max(1, min(per_page, 100))
+        synced = 0
+        total = None
+        total_pages = None
+
+        try:
+            while True:
+                items, total, total_pages = sync_wordpress_videos_to_db(page=page, per_page=per_page, sync_chatbot=sync_chatbot)
+                synced += len(items)
+                click.echo(f"Synced page {page}: {len(items)} videos")
+
+                if not all_pages or not items or page >= total_pages:
+                    break
+
+                page += 1
+        except requests.RequestException as exc:
+            raise click.ClickException(f"Could not refresh video podcasts from WordPress: {exc}") from exc
+
+        click.echo(f"Synced {synced} WordPress video podcasts into app DB cache ({total or synced} available).")
 
     return app
