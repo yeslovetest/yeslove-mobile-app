@@ -31,7 +31,12 @@ from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 from app.api.admin.moderation_routes import api as admin_moderation_api
-from app.api.chatbot.voice_routes import api as multilingual_api
+try:
+    from app.api.chatbot.voice_routes import api as multilingual_api
+except (ModuleNotFoundError, ImportError) as e:
+    import logging
+    logging.getLogger(__name__).warning(f"Multilingual voice chat disabled (missing dependency): {e}")
+    multilingual_api = None
 
 
 # Load environment variables
@@ -111,7 +116,8 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
     api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
-    api.add_namespace(multilingual_api,path="/api/v1/multilingual")
+    if multilingual_api is not None:
+        api.add_namespace(multilingual_api, path="/api/v1/multilingual")
     
     # Register health check endpoints
     from app.monitoring.health import health_bp
