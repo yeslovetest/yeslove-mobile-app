@@ -133,6 +133,14 @@ function App() {
   const bottomRef =
     useRef(null);
 
+  // Keep a reference to the currently playing Web Audio source
+  // so we can stop/clean it safely when needed.
+  const playbackSourceRef =
+    useRef(null);
+
+  const playbackContextRef =
+    useRef(null);
+
 
   const currentLanguage =
     LANGUAGES.find(
@@ -166,6 +174,21 @@ function App() {
             (track) =>
               track.stop()
           );
+      }
+
+      if (playbackSourceRef.current) {
+        try {
+          playbackSourceRef.current.stop();
+        } catch {
+          // Source may already have finished.
+        }
+
+        playbackSourceRef.current = null;
+      }
+
+      if (playbackContextRef.current) {
+        playbackContextRef.current.close();
+        playbackContextRef.current = null;
       }
     };
   }, []);
@@ -748,7 +771,125 @@ function App() {
 
 
   // --------------------------------------------------
-  // PLAY MULTIPLE TTS AUDIO CHUNKS
+  // TTS AUDIO HELPERS
+  // --------------------------------------------------
+
+  const base64ToArrayBuffer = (
+    base64Value
+  ) => {
+    if (!base64Value) {
+      throw new Error(
+        "Received an empty audio chunk."
+      );
+    }
+
+    // Support both raw base64 strings and complete
+    // data URLs returned by the backend.
+    const cleanBase64 =
+      base64Value.includes(",")
+        ? base64Value.split(",").pop()
+        : base64Value;
+
+    const binaryString =
+      window.atob(cleanBase64);
+
+    const bytes =
+      new Uint8Array(
+        binaryString.length
+      );
+
+    for (
+      let index = 0;
+      index < binaryString.length;
+      index += 1
+    ) {
+      bytes[index] =
+        binaryString.charCodeAt(index);
+    }
+
+    return bytes.buffer;
+  };
+
+
+  const concatenateAudioBuffers = (
+    audioContext,
+    buffers
+  ) => {
+    if (!buffers.length) {
+      throw new Error(
+        "No decoded audio buffers were available."
+      );
+    }
+
+    const channelCount =
+      Math.max(
+        ...buffers.map(
+          (buffer) =>
+            buffer.numberOfChannels
+        )
+      );
+
+    const sampleRate =
+      audioContext.sampleRate;
+
+    // decodeAudioData normally converts all buffers to the
+    // AudioContext sample rate, so their frame lengths can be
+    // safely added together.
+    const totalLength =
+      buffers.reduce(
+        (sum, buffer) =>
+          sum + buffer.length,
+        0
+      );
+
+    const combinedBuffer =
+      audioContext.createBuffer(
+        channelCount,
+        totalLength,
+        sampleRate
+      );
+
+    let writeOffset = 0;
+
+    buffers.forEach(
+      (buffer) => {
+        for (
+          let channel = 0;
+          channel < channelCount;
+          channel += 1
+        ) {
+          const outputChannel =
+            combinedBuffer.getChannelData(
+              channel
+            );
+
+          // If a chunk has fewer channels than the combined
+          // buffer, reuse its last available channel.
+          const sourceChannelIndex =
+            Math.min(
+              channel,
+              buffer.numberOfChannels - 1
+            );
+
+          outputChannel.set(
+            buffer.getChannelData(
+              sourceChannelIndex
+            ),
+            writeOffset
+          );
+        }
+
+        writeOffset +=
+          buffer.length;
+      }
+    );
+
+    return combinedBuffer;
+  };
+
+
+  // --------------------------------------------------
+  // PLAY COMPLETE TTS RESPONSE
   // --------------------------------------------------
 
   const playAssistantAudio =
@@ -758,16 +899,18 @@ function App() {
     ) => {
 
       if (
-        !audioChunks ||
+        !Array.isArray(audioChunks) ||
         audioChunks.length === 0
       ) {
+        console.warn(
+          "No TTS audio chunks are available for this message."
+        );
+
         return;
       }
 
 
-      if (
-        playingMessageId
-      ) {
+      if (playingMessageId) {
         return;
       }
 
@@ -779,49 +922,138 @@ function App() {
 
       try {
         console.log(
-          `Playing ${audioChunks.length} audio chunks`
+          `Preparing ${audioChunks.length} TTS audio chunks`
         );
 
 
-        for (
-          let index = 0;
-          index <
-          audioChunks.length;
-          index += 1
-        ) {
-          const audio =
-            new Audio(
-              `data:audio/wav;base64,${audioChunks[index]}`
-            );
+        // Stop a previous source if one somehow still exists.
+        if (playbackSourceRef.current) {
+          try {
+            playbackSourceRef.current.stop();
+          } catch {
+            // It may already have ended.
+          }
+
+          playbackSourceRef.current =
+            null;
+        }
 
 
-          await new Promise(
-            (
-              resolve,
-              reject
-            ) => {
+        // Close an old context before creating a new one.
+        if (playbackContextRef.current) {
+          try {
+            await playbackContextRef.current.close();
+          } catch {
+            // Ignore cleanup failure.
+          }
 
-              audio.onended =
-                resolve;
-
-              audio.onerror =
-                () => {
-                  reject(
-                    new Error(
-                      `Audio chunk ${index + 1} failed to play.`
-                    )
-                  );
-                };
+          playbackContextRef.current =
+            null;
+        }
 
 
-              audio
-                .play()
-                .catch(
-                  reject
-                );
-            }
+        const AudioContextClass =
+          window.AudioContext ||
+          window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+          throw new Error(
+            "Web Audio API is not supported by this browser."
           );
         }
+
+
+        const audioContext =
+          new AudioContextClass();
+
+        playbackContextRef.current =
+          audioContext;
+
+
+        // This call is made directly from the Play button click.
+        // Keeping one AudioContext avoids browsers treating every
+        // later chunk as a separate autoplay request.
+        if (
+          audioContext.state ===
+          "suspended"
+        ) {
+          await audioContext.resume();
+        }
+
+
+        const decodedBuffers =
+          [];
+
+        for (
+          let index = 0;
+          index < audioChunks.length;
+          index += 1
+        ) {
+          console.log(
+            `Decoding TTS chunk ${index + 1}/${audioChunks.length}`
+          );
+
+          const arrayBuffer =
+            base64ToArrayBuffer(
+              audioChunks[index]
+            );
+
+          // .slice(0) gives decodeAudioData its own buffer.
+          const decodedBuffer =
+            await audioContext.decodeAudioData(
+              arrayBuffer.slice(0)
+            );
+
+          decodedBuffers.push(
+            decodedBuffer
+          );
+        }
+
+
+        console.log(
+          `Decoded ${decodedBuffers.length}/${audioChunks.length} TTS chunks`
+        );
+
+
+        const completeBuffer =
+          concatenateAudioBuffers(
+            audioContext,
+            decodedBuffers
+          );
+
+
+        console.log(
+          `Playing complete TTS response (${completeBuffer.duration.toFixed(1)} seconds)`
+        );
+
+
+        const source =
+          audioContext.createBufferSource();
+
+        source.buffer =
+          completeBuffer;
+
+        source.connect(
+          audioContext.destination
+        );
+
+        playbackSourceRef.current =
+          source;
+
+
+        await new Promise(
+          (resolve) => {
+            source.onended =
+              resolve;
+
+            source.start(0);
+          }
+        );
+
+
+        console.log(
+          "Finished playing complete TTS response"
+        );
 
       } catch (error) {
         console.error(
@@ -830,10 +1062,24 @@ function App() {
         );
 
         alert(
-          "Audio playback failed. Check the browser console for details."
+          `Audio playback failed: ${error.message}`
         );
 
       } finally {
+        playbackSourceRef.current =
+          null;
+
+        if (playbackContextRef.current) {
+          try {
+            await playbackContextRef.current.close();
+          } catch {
+            // Ignore cleanup failure.
+          }
+
+          playbackContextRef.current =
+            null;
+        }
+
         setPlayingMessageId(
           null
         );
@@ -1015,7 +1261,7 @@ function App() {
             </span>
 
             <strong>
-              RAG-only local POC
+              RAG + Groq LLM POC
             </strong>
           </div>
 
