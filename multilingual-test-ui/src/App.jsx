@@ -62,6 +62,29 @@ const LANGUAGES = [
   },
 ];
 
+const PERSONAS = [
+  {
+    code: "friend",
+    name: "Supportive Friend"
+  },
+  {
+    code: "therapist",
+    name: "Supportive Therapist"
+  },
+  {
+    code: "parent",
+    name: "Caring Parent"
+  },
+  {
+    code: "older_sibling",
+    name: "Older Sibling"
+  },
+  {
+    code: "neutral",
+    name: "YesLove Assistant"
+  }
+];
+
 
 function createSessionId() {
   if (window.crypto?.randomUUID) {
@@ -77,6 +100,11 @@ function App() {
     selectedLanguage,
     setSelectedLanguage,
   ] = useState("eng");
+
+  const [
+    selectedPersona,
+    setSelectedPersona
+  ] = useState("friend");
 
   const [
     messages,
@@ -414,6 +442,11 @@ function App() {
       );
 
       formData.append(
+        "persona",
+        selectedPersona
+      );
+
+      formData.append(
         "session_id",
         sessionId
       );
@@ -665,6 +698,9 @@ function App() {
 
                   language:
                     selectedLanguage,
+
+                  persona:
+                    selectedPersona,
 
                   session_id:
                     sessionId,
@@ -1207,6 +1243,37 @@ function App() {
               )
             )}
 
+          </select>
+
+          <select
+            className="language-select"
+
+            value={
+              selectedPersona
+            }
+
+            disabled={
+              isRecording ||
+              isProcessing
+            }
+
+            onChange={
+              (event) =>
+                setSelectedPersona(
+                  event.target.value
+                )
+            }
+          >
+            {PERSONAS.map(
+              (persona) => (
+                <option
+                  key={persona.code}
+                  value={persona.code}
+                >
+                  {persona.name}
+                </option>
+              )
+            )}
           </select>
 
 

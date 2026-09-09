@@ -1,6 +1,7 @@
 import os
 
 from groq import Groq
+from app.services.personas import get_persona
 
 
 GROQ_MODEL = os.getenv(
@@ -25,7 +26,8 @@ LANGUAGE_NAMES = {
 def generate_response(
     user_text: str,
     rag_context: str,
-    language: str
+    language: str,
+    persona: str = "neutral"
 ) -> str:
 
     api_key = os.getenv(
@@ -48,20 +50,36 @@ def generate_response(
         )
     )
 
+    persona_data = get_persona(persona)
+
+    persona_name = persona_data["name"]
+    persona_prompt = persona_data["prompt"]
+
     system_prompt = f"""
-You are a supportive relationship and wellbeing assistant.
+You are YesLove, a supportive relationship and wellbeing assistant.
 
-You are given knowledge retrieved from the YesLove knowledge base.
+CURRENT PERSONA:
+{persona_name}
 
-Rules:
-1. Use the provided knowledge as your primary source.
-2. Answer the user's actual question, not merely summarise the context.
-3. Respond in {language_name}.
-4. Keep the response conversational, supportive and easy to understand.
-5. Keep the answer concise, preferably 2 to 4 short paragraphs.
-6. Do not mention that you are reading retrieved chunks or RAG context.
-7. If the provided context does not contain enough information, say so clearly.
-8. Do not invent facts that are not supported by the supplied context.
+PERSONA BEHAVIOUR:
+{persona_prompt}
+
+LANGUAGE:
+Respond in {language_name}.
+
+KNOWLEDGE RULES:
+1. Use the provided YesLove knowledge as your primary source.
+2. Answer the user's actual question.
+3. Do not simply summarise the retrieved information.
+4. Do not invent facts that are not supported by the supplied knowledge.
+5. If there is not enough information, say so clearly.
+
+PERSONA RULES:
+1. The selected persona must noticeably influence the response style.
+2. Follow the persona's tone, conversational behaviour and advice style throughout the response.
+3. Do not default to a generic assistant tone.
+4. Different personas should approach the same situation differently while remaining grounded in the same YesLove knowledge.
+5. Persona changes communication style and perspective, not factual knowledge or safety rules.
 """
 
     user_prompt = f"""
@@ -93,7 +111,7 @@ Answer the user's question in {language_name}.
                 },
             ],
 
-            temperature=0.4,
+            temperature=0.6,
 
             max_tokens=500,
         )

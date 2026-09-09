@@ -68,6 +68,12 @@ class VoiceChat(Resource):
             ""
         ).strip()
 
+        persona = (request.form.get(
+            "persona", "neutral"
+        ).strip()
+        .lower()
+        )
+
         # For low-memory local testing we force
         # the selected language instead of loading MMS-LID.
         if not language:
@@ -217,7 +223,8 @@ class VoiceChat(Resource):
             response_text = generate_response(
             user_text=user_text,
             rag_context=rag_context,
-            language=language
+            language=language,
+            persona=persona
             )
 
             print(
@@ -379,6 +386,13 @@ class TextChat(Resource):
             .strip()
         )
 
+        persona = (
+            data
+            .get("persona", "neutral")
+            .strip()
+            .lower()
+        )
+
         session_id = data.get(
             "session_id",
             "local-test"
@@ -427,7 +441,8 @@ class TextChat(Resource):
             response_text = generate_response(
                 user_text=user_text,
                 rag_context=rag_context,
-                language=language
+                language=language,
+                persona=persona
             )
 
             # -------------------------
