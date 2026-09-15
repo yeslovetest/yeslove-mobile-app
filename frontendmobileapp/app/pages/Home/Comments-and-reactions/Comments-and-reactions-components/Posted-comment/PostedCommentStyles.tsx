@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   reactionPopUp: {
-    visibility: "hidden",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

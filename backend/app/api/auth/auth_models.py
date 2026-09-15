@@ -42,6 +42,11 @@ LoginRequest = api.model("LoginRequest", {
     })
 
 TokenResponse = api.model("TokenResponse", {
+        "keycloak_id": fields.String(description="Authenticated user's Keycloak ID (login only)"),
+        "user_id": fields.Integer(description="Local database user ID (login only)"),
+        "user_type": fields.String(description="Local account type (login only)"),
+        "set_professional_details_required": fields.Boolean(description="Whether professional onboarding is incomplete"),
+        "message": fields.String(description="Optional onboarding guidance"),
         "access_token": fields.String(description="JWT access token"),
         "expires_in": fields.Integer(description="Access token expiration time in seconds"),
         "refresh_expires_in": fields.Integer(description="Refresh token expiration time in seconds"),

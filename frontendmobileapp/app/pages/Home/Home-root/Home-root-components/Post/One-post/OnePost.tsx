@@ -48,15 +48,8 @@ const OnePost = (props: Props) => {
     return `${BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
   };
 
-  const postMedia: Array<{ uri: string; type: string; name?: string }> = (
-    props.post.media_files ?? []
-  )
-    .filter((item) => !!item?.uri && !!item?.type)
-    .map((item) => ({
-      uri: item.uri ?? "",
-      type: item.type ?? "image/jpeg",
-      name: item.name,
-    }));
+  // PostFilePreview handles both feed attachments and the generated MediaFile shape.
+  const postMedia = props.post.media_files ?? [];
 
   const changeReaction = (reaction: string) => {
     // runs when a user selects a reaction from the pop up
@@ -225,11 +218,7 @@ const OnePost = (props: Props) => {
             accessibilityRole="button"
             accessibilityLabel="Post options"
           >
-            <Ionicons
-              name="ellipsis-horizontal"
-              size={20}
-              color={theme.colors.textPrimary}
-            />
+            <Ionicons name="ellipsis-horizontal" size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         )}
         {props.post.author_id && props.post.author_id !== currentUserId && (
@@ -276,7 +265,7 @@ const OnePost = (props: Props) => {
         <View style={{ ...styles.likeButtonContainer, backgroundColor: "white" }}>
           <View style={styles.likeAndCommentContainer}>
             <TouchableOpacity
-              style={[styles.likeIcon, { marginRight: 8 }]}
+              style={{ marginRight: 8 }}
               onPress={() => changeReaction("reverseReaction")}
               onLongPress={displayReactions}
               accessibilityRole="button"

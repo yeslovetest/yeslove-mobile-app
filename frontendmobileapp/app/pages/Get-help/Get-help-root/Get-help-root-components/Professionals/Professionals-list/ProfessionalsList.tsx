@@ -10,9 +10,9 @@ const ProfessionalsList = () => {
   const professionals = useAppSelector((state) => state.getHelp.professionals);
   const searchQuery = useAppSelector((state) => state.getHelp.currentSearchQuery);
   const settled = useSettleAfter();
-  const [expanded, setExpanded] = useState(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
-  const handleToggle = (index) => {
+  const handleToggle = (index: number) => {
     setExpanded(expanded === index ? null : index); // Toggle the expansion
   };
 

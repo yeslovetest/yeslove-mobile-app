@@ -40,7 +40,7 @@ import {
 import { changeTabAction, TabType } from "../Navigation/navigationSlice";
 import { setFeedDataAction } from "../Home-store/feedSlice";
 import { setChatMessages, setFriendList } from "../Chat/chatSlice";
-import { syncUser, UserIdentityResponse } from "../../services/authService";
+import { getUserIdentity, UserIdentityResponse } from "../../services/authService";
 import { getApiMessage, getHttpStatus } from "./sagaHelpers";
 
 const clearPersistedAuthState = async (): Promise<void> => {
@@ -88,13 +88,16 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   type LoginResponseWithIdentity = TokenResponse & {
     keycloak_id?: string;
     user_id?: number;
+    message?: string;
   };
 
   let loginResponse: LoginResponseWithIdentity;
 
   try {
     loginResponse = (
-      (yield call(AuthApiFactory().postLogin, request)) as AxiosResponse<LoginResponseWithIdentity>
+      (yield call(AuthApiFactory().postLogin, request, {
+        timeout: 20000,
+      })) as AxiosResponse<LoginResponseWithIdentity>
     ).data as LoginResponseWithIdentity;
   } catch (error) {
     console.error("Login failed:", error);
@@ -123,7 +126,25 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   const accessToken = loginResponse.access_token ?? "";
   const refreshToken = loginResponse.refresh_token ?? "";
 
-  // A successful login response should always route the user to home.
+  // An HTTP 200 alone is not a session (older backends can return profile guidance).
+  if (!accessToken.trim()) {
+    try {
+      yield call(clearPersistedAuthState);
+    } catch (cleanupError) {
+      console.warn("auth cleanup failed after invalid login response", cleanupError);
+    } finally {
+      yield put(
+        setErrorMessage(
+          loginResponse.message || "Sign-in did not return a valid session. Please try again.",
+        ),
+      );
+      yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+      yield put(activateLoadingScreen(false));
+    }
+    return;
+  }
+
+  // A valid login response should route the user to home.
   // Any post-login sync/storage failures are treated as best-effort warnings.
   try {
     axios.defaults.headers.common["Authorization"] = accessToken ? `Bearer ${accessToken}` : "";
@@ -143,28 +164,9 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     let resolvedKeycloakId = loginResponse.keycloak_id ?? "";
     let resolvedUserDbId = typeof loginResponse.user_id === "number" ? loginResponse.user_id : -1;
 
-    // Ensure local DB user exists for protected endpoints that depend on backend user rows.
-    try {
-      const syncResponse = (yield call(syncUser, request.username)) as UserIdentityResponse;
-
-      if (syncResponse?.keycloak_id) {
-        resolvedKeycloakId = syncResponse.keycloak_id;
-      }
-
-      if (typeof syncResponse?.user_id === "number") {
-        resolvedUserDbId = syncResponse.user_id;
-      }
-    } catch (syncError) {
-      console.warn("sync_user failed, falling back to profile lookup", syncError);
-    }
-
-    if (!resolvedKeycloakId) {
+    if (!resolvedKeycloakId || resolvedUserDbId < 0) {
       try {
-        const identityResponse = (
-          (yield call(
-            ProfileApiFactory().postGetUserKeycloakId,
-          )) as AxiosResponse<UserIdentityResponse>
-        ).data as UserIdentityResponse;
+        const identityResponse = (yield call(getUserIdentity)) as UserIdentityResponse;
 
         if (identityResponse?.keycloak_id) {
           resolvedKeycloakId = identityResponse.keycloak_id;
