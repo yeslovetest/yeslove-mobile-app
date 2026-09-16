@@ -1,6 +1,6 @@
 import logging
 
-from flask import request
+from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 
 from app.logging_setup import setup_logger
@@ -698,17 +698,19 @@ class GetEvents(Resource):
 
 @api.route("/professionals")
 class GetProfessionals(Resource):
-    """Lists verified professionals for the event page/Get-help page"""
+    """Lists professionals from the configured directory source."""
 
     from .events_models import ProfessionalsListResponse
 
-    @api.doc(description="Get a paginated list of verified professionals for the event page/Get-help page")
+    @api.doc(description="Get a paginated professional directory; requires authentication")
+    @api.param("search", "Filter professionals by name", type="string")
     @api.param("page", "Page number (default 1)", type="integer")
     @api.param("per_page", "Professionals per page (default 20, max 100)", type="integer")
     @api.response(200, "Success", ProfessionalsListResponse)
     @api.response(500, "Internal server error")
+    @require_auth()
     def get(self):
-        """Retrieve verified professionals with pagination"""
+        """Retrieve website professionals, or explicitly configured local professionals."""
         from app.models import User, ProfessionalDetails
 
         try:
@@ -725,6 +727,17 @@ class GetProfessionals(Resource):
 
             per_page = max(1, min(per_page, 100))
 
+            from app.services.wordpress_professional_service import fetch_professionals, DirectoryError
+            source = current_app.config.get("PROFESSIONALS_SOURCE", "wordpress")
+            search = request.args.get("search", "").strip()[:200]
+            if source == "wordpress":
+                try:
+                    return fetch_professionals(page, per_page, search), 200
+                except DirectoryError as exc:
+                    return {"message": str(exc)}, exc.status
+            if source != "database":
+                return {"message": "The professional directory is not configured correctly."}, 503
+
             # Query for users with verified professional details
             query = (
                 User.query.join(ProfessionalDetails)
@@ -732,6 +745,8 @@ class GetProfessionals(Resource):
                 .order_by(User.username)
             )
 
+            if search:
+                query = query.filter(User.username.ilike(f"%{search}%"))
             paginated_professionals = query.paginate(
                 page=page, per_page=per_page, error_out=False
             )

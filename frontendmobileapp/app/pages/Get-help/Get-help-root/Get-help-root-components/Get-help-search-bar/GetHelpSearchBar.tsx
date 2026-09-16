@@ -1,7 +1,11 @@
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
 import styles from "./GetHelpSearchBarStyles";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import { fetchBlogPosts, setSearchQuery } from "@/app/store/Get-help-store/getHelpSlice";
+import {
+  fetchBlogPosts,
+  fetchProfessionals,
+  setSearchQuery,
+} from "@/app/store/Get-help-store/getHelpSlice";
 import { useEffect, useState } from "react";
 
 export interface Props {
@@ -22,7 +26,7 @@ const GetHelpSearchBar = (props: Props) => {
     const trimmedSearchWord = searchWord.trim();
 
     if (props.currentSection === "professionals") {
-      //search professional logic
+      dispatch(fetchProfessionals({ search: trimmedSearchWord, currentPage: 1 }));
       dispatch(setSearchQuery(trimmedSearchWord));
       setSearchWord(trimmedSearchWord);
 

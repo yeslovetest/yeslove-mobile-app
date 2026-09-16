@@ -1,5 +1,5 @@
 import { put, take, takeLatest } from "redux-saga/effects";
-import { eventChannel, END } from "redux-saga";
+import { eventChannel, END, SagaIterator } from "redux-saga";
 import { PayloadAction } from "@reduxjs/toolkit";
 
 import {
@@ -22,7 +22,7 @@ const isStreamAbortError = (error: unknown): boolean => {
 
   return false;
 };
-function* handleSendChatbotMessage(action: PayloadAction<{ prompt: string }>) {
+function* handleSendChatbotMessage(action: PayloadAction<{ prompt: string }>): SagaIterator {
   const abortController =
     typeof AbortController !== "undefined" ? new AbortController() : undefined;
   try {

@@ -15,6 +15,7 @@ import {
   setLastSignupPayload,
 } from "../app/store/Auth-store/authSlice";
 import { theme } from "@/app/theme";
+import { SignupRequest, SignupRequestUserTypeEnum } from "@/generated-api";
 
 export const useSignup = () => {
   const dispatch = useAppDispatch();
@@ -132,7 +133,7 @@ export const useSignup = () => {
       let first_name = firstName;
       let last_name = lastName;
       // Persist exact request body so the failure screen can retry immediately.
-      const signupPayload = {
+      const signupPayload: SignupRequest = {
         email,
         // Use the value user confirmed on Page 1; fallback keeps old state compatible.
         confirm_email: signupConfirmEmail || email,
@@ -143,6 +144,7 @@ export const useSignup = () => {
         // Phone number is no longer collected in the app; send empty to satisfy the API contract.
         phone_number: "",
         username,
+        user_type: SignupRequestUserTypeEnum.Standard,
       };
 
       dispatch(setSignupMessage(""));

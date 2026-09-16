@@ -12,4 +12,4 @@ application = create_app(config_class)
 
 if __name__ == "__main__":
     # For local development
-    application.run(host='0.0.0.0', port=5001, debug=True)
+    application.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')), debug=application.debug)

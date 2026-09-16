@@ -10,6 +10,13 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'default_secret_key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Server-only credentials; never include these in the mobile build.
+    PROFESSIONALS_SOURCE = os.getenv("PROFESSIONALS_SOURCE", "wordpress")
+    WORDPRESS_DIRECTORY_API_URL = os.getenv("WORDPRESS_DIRECTORY_API_URL", "https://yeslove.co.uk/wp-json/wp/v2")
+    WORDPRESS_DIRECTORY_USERNAME = os.getenv("WORDPRESS_DIRECTORY_USERNAME")
+    WORDPRESS_DIRECTORY_APPLICATION_PASSWORD = os.getenv("WORDPRESS_DIRECTORY_APPLICATION_PASSWORD")
+    WORDPRESS_PROFESSIONAL_ROLE = os.getenv("WORDPRESS_PROFESSIONAL_ROLE", "professional")
+
     # Upload Folder Configuration
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))  # Base directory of the project
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')  # Absolute path to upload folder
@@ -50,13 +57,13 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI", "sqlite:///dev.db")
     
     # Media Service Configuration
-    USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "false"
+    USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "false").strip().lower() == "true"
 
     # ✅ Keycloak Configuration
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "http://localhost:8080")
     KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
     KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", "yeslove")
-    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET", "fBRbYdMRY7L8V3RY0Y6RgxMihPeP7yBV")
+    KEYCLOAK_CLIENT_SECRET = os.getenv("KEYCLOAK_CLIENT_SECRET")
 
     KEYCLOAK_ADMIN_USER    = os.getenv('KEYCLOAK_ADMIN_USER')
     KEYCLOAK_ADMIN_PASS    = os.getenv('KEYCLOAK_ADMIN_PASS')
@@ -87,8 +94,9 @@ class DevelopmentConfig(Config):
     RABBITMQ_PASS = os.environ.get('RABBITMQ_PASS', 'testpassword')
 
 
-class TestingConfig(Config):
+class TestingConfig(DevelopmentConfig):
     """Testing environment configuration."""
+    DEBUG = False
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///testing.db'
 
@@ -96,10 +104,10 @@ class ProductionConfig(Config):
     """Production environment configuration."""
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://admin:password@localhost/yeslove'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or os.environ.get('DATABASE_URI') or 'postgresql://admin:password@localhost/yeslove'
     
     # Object storage
-    USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "true"
+    USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").strip().lower() == "true"
     
     # Security
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'production-secret-key-change-me'

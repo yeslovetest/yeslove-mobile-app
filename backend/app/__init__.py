@@ -12,7 +12,11 @@ from flask_migrate import Migrate
 from prometheus_flask_exporter import PrometheusMetrics
 
 from dotenv import load_dotenv
-from app.config import DevelopmentConfig
+
+# Configuration classes and route modules read environment variables at import time.
+load_dotenv()
+
+from app.config import DevelopmentConfig, ProductionConfig
 from app.utils import get_keycloak_public_keys
 from app.graph.neo4j_client import create_driver, close_driver
 from app.graph.repository import GraphRepository
@@ -39,9 +43,6 @@ except (ModuleNotFoundError, ImportError) as e:
     multilingual_api = None
 
 
-# Load environment variables
-load_dotenv()
-
 # 🔹 Initialize extensions
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -51,7 +52,9 @@ migrate = Migrate()
 def _running_flask_command(*command_names):
     return "flask" in os.path.basename(sys.argv[0]) and any(command in sys.argv for command in command_names)
 
-def create_app(config_class=DevelopmentConfig):
+def create_app(config_class=None):
+    if config_class is None:
+        config_class = ProductionConfig if os.getenv("FLASK_ENV") == "production" else DevelopmentConfig
     app = Flask(__name__)
 
     # Initialising of monitoring stack 
@@ -135,7 +138,7 @@ def create_app(config_class=DevelopmentConfig):
             dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
             dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
 
-    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos")
+    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
