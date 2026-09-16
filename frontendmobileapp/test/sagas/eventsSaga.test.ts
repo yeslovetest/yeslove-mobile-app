@@ -69,4 +69,18 @@ describe("eventsSaga", () => {
     expect(store.getState().getHelp.professionals).toHaveLength(1);
     expect(store.getState().getHelp.totalProfessionals).toBe(3);
   });
+  it("reports a failed directory request and clears loading", async () => {
+    const getGetProfessionals = jest.fn().mockRejectedValue(new Error("offline"));
+    mockedEventsApiFactory.mockReturnValue({ getGetProfessionals } as any);
+    const store = runSagaStore({ getHelp: getHelpReducer }, eventsSaga);
+    store.dispatch(fetchProfessionals({ search: "Jane", currentPage: 2 }));
+    expect(store.getState().getHelp.professionalsLoading).toBe(true);
+    await flushPromises();
+    expect(getGetProfessionals).toHaveBeenCalledWith(undefined, 2, {
+      timeout: 15000,
+      params: { search: "Jane" },
+    });
+    expect(store.getState().getHelp.professionalsLoading).toBe(false);
+    expect(store.getState().getHelp.professionalsError).toBeTruthy();
+  });
 });

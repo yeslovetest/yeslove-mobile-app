@@ -8,11 +8,12 @@ import { fetchProfessionals } from "@/app/store/Get-help-store/getHelpSlice";
 
 const ProfessionalsContent = () => {
   const dispatch = useAppDispatch();
+  const search = useAppSelector((state) => state.getHelp.currentSearchQuery);
 
   useFocusEffect(
     React.useCallback(() => {
-      dispatch(fetchProfessionals({}));
-    }, []),
+      dispatch(fetchProfessionals({ search }));
+    }, [dispatch, search]),
   );
 
   return (

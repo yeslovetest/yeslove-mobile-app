@@ -1,5 +1,5 @@
 import React from "react";
-import { act, screen } from "@testing-library/react-native";
+import { act, screen, fireEvent } from "@testing-library/react-native";
 import ProfessionalsList from "@/app/pages/Get-help/Get-help-root/Get-help-root-components/Professionals/Professionals-list/ProfessionalsList";
 import getHelpReducer from "@/app/store/Get-help-store/getHelpSlice";
 import { renderWithStore } from "../helpers/renderWithStore";
@@ -23,11 +23,11 @@ describe("ProfessionalsList (store-connected)", () => {
     expect(screen.queryByText(/No professionals/)).toBeNull();
   });
 
-  it("shows a loading placeholder before the settle window elapses", () => {
+  it("shows a loading placeholder while the request is pending", () => {
     jest.useFakeTimers();
     renderWithStore(<ProfessionalsList />, {
       reducer: { getHelp: getHelpReducer },
-      preloadedState: withProfessionals([]),
+      preloadedState: { getHelp: { ...getHelpInitial, professionalsLoading: true } },
     });
 
     expect(screen.getByText("Loading professionals...")).toBeOnTheScreen();
@@ -59,5 +59,17 @@ describe("ProfessionalsList (store-connected)", () => {
     });
 
     expect(screen.getByText('No professionals found for "therapist".')).toBeOnTheScreen();
+  });
+  it("shows failures with a working retry instead of an empty directory", () => {
+    const { store } = renderWithStore(<ProfessionalsList />, {
+      reducer: { getHelp: getHelpReducer },
+      preloadedState: {
+        getHelp: { ...getHelpInitial, professionalsError: "Unable to load professionals." },
+      },
+    });
+    expect(screen.getByText("Unable to load professionals.")).toBeOnTheScreen();
+    expect(screen.queryByText("No professionals available yet.")).toBeNull();
+    fireEvent.press(screen.getByText("Retry"));
+    expect(store.getState().getHelp.professionalsLoading).toBe(true);
   });
 });
