@@ -201,18 +201,31 @@ const LoginPage = () => {
               </Text>
             </TouchableOpacity>
 
-            <Text
-              style={[
-                styles.containerFooter,
-                isCompactScreen ? styles.compactContainerFooter : undefined,
-              ]}
-            >
-              Not Registered?
-              <Text style={styles.footerLink} onPress={() => handleLoginStateChange("sign-up")}>
-                {" "}
-                Sign up!
+            <View style={styles.footerRow}>
+              <Text
+                style={[
+                  styles.containerFooter,
+                  isCompactScreen ? styles.compactContainerFooter : undefined,
+                ]}
+              >
+                Not Registered?{" "}
               </Text>
-            </Text>
+              <TouchableOpacity
+                onPress={() => handleLoginStateChange("sign-up")}
+                accessibilityRole="button"
+                accessibilityLabel="Sign up"
+              >
+                <Text
+                  style={[
+                    styles.containerFooter,
+                    styles.footerLink,
+                    isCompactScreen ? styles.compactContainerFooter : undefined,
+                  ]}
+                >
+                  Sign up!
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

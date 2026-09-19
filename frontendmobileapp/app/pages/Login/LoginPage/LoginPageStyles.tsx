@@ -170,20 +170,24 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.subhead,
   },
 
-  containerFooter: {
-    textAlign: "center",
-    color: theme.colors.textMuted,
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
     marginTop: 18,
     paddingTop: 10,
-    fontSize: theme.typography.fontSize.subhead,
-    lineHeight: 20,
     borderTopWidth: 1,
     borderColor: theme.colors.borderStrong,
     width: "100%",
   },
+  containerFooter: {
+    textAlign: "center",
+    color: theme.colors.textMuted,
+    fontSize: theme.typography.fontSize.subhead,
+    lineHeight: 20,
+  },
   compactContainerFooter: {
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
     fontSize: theme.typography.fontSize.footnote,
     lineHeight: 18,
   },
