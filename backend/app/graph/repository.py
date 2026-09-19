@@ -83,7 +83,8 @@ class GraphRepository:
     def recommendations(self, user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
         cypher = (
             "MATCH (u:User {user_id:$user_id})-[:FOLLOWS]->(f)-[:FOLLOWS]->(rec:User)\n"
-            "WHERE NOT (u)-[:FOLLOWS]->(rec) AND rec.user_id <> $user_id\n"
+            "WHERE rec.user_id <> $user_id\n"
+            "AND NOT EXISTS((u)-[:FOLLOWS]->(rec))\n"
             "RETURN rec.user_id AS user_id, rec.username AS username, COUNT(*) AS score\n"
             "ORDER BY score DESC\n"
             "LIMIT $limit"

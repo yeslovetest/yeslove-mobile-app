@@ -31,6 +31,7 @@ def close_driver(driver):
     except Exception:
         logger.exception("Error closing graph driver")
 
+
 def run_read(driver, cypher: str, params: Optional[Dict[str, Any]] = None):
     """Run a read transaction and return a list of records."""
     params = params or {}
