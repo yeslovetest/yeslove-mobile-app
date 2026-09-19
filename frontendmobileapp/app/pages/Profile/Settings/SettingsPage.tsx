@@ -91,6 +91,8 @@ const SettingsPage = () => {
             <TouchableOpacity
               onPress={() => openSettingsTab(item.tab)}
               style={settingsSharedStyles.settingsOptionButton}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
             >
               <View style={settingsSharedStyles.settingsOptionLeftRow}>
                 {item.icon}

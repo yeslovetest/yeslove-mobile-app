@@ -29,6 +29,8 @@ const OneEvent = (props: Props) => {
       style={[styles.eventsContainer, styles.eventContainer]}
       onPress={handleEventClick}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`View event: ${props.event?.name ?? "Event"}`}
     >
       <View style={styles.dateContainer}>
         <Text style={styles.dateText}>{dayjs(props.event?.event_time).format("MMM D")}</Text>

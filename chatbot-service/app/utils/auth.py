@@ -3,7 +3,23 @@ import jwt
 import requests
 from functools import wraps
 from flask import request, jsonify
+import logging
 import os
+
+logger = logging.getLogger(__name__)
+
+
+def _local_dev_auth_enabled():
+    """LOCAL POC ONLY: an explicit opt-in that also refuses to fire when
+    ENVIRONMENT=production, so a stray LOCAL_DEV_AUTH=true in a production
+    .env can't silently disable authentication for every request."""
+    if os.getenv("LOCAL_DEV_AUTH", "false").lower() != "true":
+        return False
+    if os.getenv("ENVIRONMENT", "development").lower() == "production":
+        logger.error("LOCAL_DEV_AUTH is set but ENVIRONMENT=production — ignoring it, auth stays enforced.")
+        return False
+    return True
+
 
 def verify_jwt_token(token):
     """Verify JWT token with main app's auth system"""
@@ -11,8 +27,8 @@ def verify_jwt_token(token):
         # Get Keycloak public keys (same as main app)
         keycloak_url = os.getenv('KEYCLOAK_URL', 'http://localhost:8080')
         certs_url = f"{keycloak_url}/realms/YesLove_Auth/protocol/openid-connect/certs"
-        
-        response = requests.get(certs_url)
+
+        response = requests.get(certs_url, timeout=10)
         jwks = response.json()
         
         # Decode and verify token
@@ -37,8 +53,8 @@ def require_auth(f):
     """Decorator to require authentication for chatbot endpoints"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-                # LOCAL POC ONLY
-        if os.getenv("LOCAL_DEV_AUTH", "false").lower() == "true":
+        if _local_dev_auth_enabled():
+            logger.warning("LOCAL_DEV_AUTH bypass active — request authenticated as local-test-user, not a real token.")
             request.user_id = "local-test-user"
             request.user_email = "local@yeslove.test"
             return f(*args, **kwargs)

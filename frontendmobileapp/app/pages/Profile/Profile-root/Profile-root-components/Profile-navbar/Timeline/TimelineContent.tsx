@@ -85,6 +85,8 @@ const TimelineContent = () => {
             style={styles.postCard}
             activeOpacity={0.9}
             onPress={() => openDetailedPost(post.id)}
+            accessibilityRole="button"
+            accessibilityLabel={post.content ? `View post: ${post.content}` : "View post"}
           >
             <View style={styles.headerRow}>
               <Image

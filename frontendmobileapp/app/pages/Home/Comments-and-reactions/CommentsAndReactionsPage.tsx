@@ -28,6 +28,8 @@ import Header from "@/app/Universal-components/Header/Header";
 import { BASE_URL } from "@/app/config/baseUrl";
 import PostFilePreview from "../Post-modal/Post-modal-components/File-preview/PostFilePreview";
 import { getImageSource } from "@/constants/imageFallbacks";
+import ListStateView from "@/app/Universal-components/List-state/ListStateView";
+import { useSettleAfter } from "@/app/Universal-components/List-state/useSettleAfter";
 
 export interface Post {
   id: number;
@@ -68,6 +70,7 @@ const IndividualPost = () => {
   );
   const [isReactionModalVisible, setReactionModalVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const settled = useSettleAfter();
 
   const resolveMediaUrl = (url?: string) => {
     if (!url) {
@@ -176,7 +179,12 @@ const IndividualPost = () => {
                   source={getImageSource(resolveMediaUrl(individualPost.author_pic), "profile")}
                 />
                 <View style={styles.profileInfoContainer}>
-                  <TouchableOpacity style={styles.profileName} onPress={openProfile}>
+                  <TouchableOpacity
+                    style={styles.profileName}
+                    onPress={openProfile}
+                    accessibilityRole="button"
+                    accessibilityLabel={`View ${individualPost.author}'s profile`}
+                  >
                     <Text>{individualPost.author}</Text>
                   </TouchableOpacity>
                   <Text style={styles.timePosted}>
@@ -215,6 +223,13 @@ const IndividualPost = () => {
                     style={styles.reactionIcon}
                     onPress={() => changeReaction("reverseReaction")}
                     onLongPress={displayReactions}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      reactionType === "default"
+                        ? "React to post"
+                        : `Reacted ${reactionType}. Remove reaction`
+                    }
+                    accessibilityHint="Long press to choose a reaction"
                   >
                     {reactionType === "default" && (
                       <Ionicons
@@ -242,6 +257,9 @@ const IndividualPost = () => {
                 <TouchableOpacity
                   style={styles.homeItem}
                   onPress={() => dispatch(setPostReactionTab("reactions"))}
+                  accessibilityRole="tab"
+                  accessibilityLabel="Reactions"
+                  accessibilityState={{ selected: reactionTypeTab === "reactions" }}
                 >
                   {reactionTypeTab === "comments" && <Text style={styles.navText}>Reactions</Text>}
                   {reactionTypeTab === "reactions" && (
@@ -253,6 +271,9 @@ const IndividualPost = () => {
                 <TouchableOpacity
                   style={styles.homeItem}
                   onPress={() => dispatch(setPostReactionTab("comments"))}
+                  accessibilityRole="tab"
+                  accessibilityLabel="Comments"
+                  accessibilityState={{ selected: reactionTypeTab === "comments" }}
                 >
                   {reactionTypeTab === "reactions" && <Text style={styles.navText}>Comments</Text>}
                   {reactionTypeTab === "comments" && (
@@ -268,6 +289,13 @@ const IndividualPost = () => {
                 {reactions.toReversed().map((reaction, index) => (
                   <PostReaction key={index} reaction={reaction} />
                 ))}
+                {reactions.length === 0 && (
+                  <ListStateView
+                    loading={!settled}
+                    loadingText="Loading reactions..."
+                    emptyText="No reactions yet. Be the first to react."
+                  />
+                )}
               </View>
             )}
 
@@ -276,6 +304,13 @@ const IndividualPost = () => {
                 {comments.toReversed().map((comment, index) => (
                   <PostComment key={index} comment={comment} />
                 ))}
+                {comments.length === 0 && (
+                  <ListStateView
+                    loading={!settled}
+                    loadingText="Loading comments..."
+                    emptyText="No comments yet. Be the first to comment."
+                  />
+                )}
               </View>
             )}
           </ScrollView>
@@ -297,6 +332,8 @@ const IndividualPost = () => {
                 <TouchableOpacity
                   style={styles.reactionAction}
                   onPress={() => changeReaction("like")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Like"
                 >
                   <Ionicons name="thumbs-up-sharp" size={28} color="blue" />
                   <Text style={styles.reactionActionLabel}>Like</Text>
@@ -304,6 +341,8 @@ const IndividualPost = () => {
                 <TouchableOpacity
                   style={styles.reactionAction}
                   onPress={() => changeReaction("love")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Love"
                 >
                   <Ionicons name="heart" size={28} color={theme.colors.danger} />
                   <Text style={styles.reactionActionLabel}>Love</Text>
@@ -311,6 +350,8 @@ const IndividualPost = () => {
                 <TouchableOpacity
                   style={styles.reactionAction}
                   onPress={() => changeReaction("laugh")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Laugh"
                 >
                   <FontAwesome6 name="laugh" size={28} color={theme.colors.textPrimary} />
                   <Text style={styles.reactionActionLabel}>Laugh</Text>

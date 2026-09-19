@@ -29,6 +29,7 @@ import MediaFilePreview from "./Conversation-components/MediaPreview/mediaPrevie
 import LoadingOverlay from "@/app/Universal-components/LoadingScreen/Screen";
 import { MEDIA_UPLOAD_LIMITS, formatSizeMb } from "@/constants/mediaLimits";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ListStateView from "@/app/Universal-components/List-state/ListStateView";
 
 const Conversation = () => {
   const dispatch = useAppDispatch();
@@ -251,6 +252,14 @@ const Conversation = () => {
               flatListRef.current?.scrollToEnd({ animated: true });
             }, 90);
           }}
+          ListEmptyComponent={
+            loadingVisible ? null : (
+              <ListStateView
+                loading={false}
+                emptyText="No messages yet. Say hello!"
+              />
+            )
+          }
         />
 
         {hasSelectedMedia && (

@@ -28,8 +28,12 @@ const ProfessionalsList = () => {
           <Text style={styles.professionalDescription}>
             {expanded === index ? professional?.bio : `${professional?.bio?.substring(0, 300)}...`}
           </Text>
-          <TouchableOpacity onPress={() => handleToggle(index)}>
-            <TouchableOpacity style={styles.viewProfile}>
+          <TouchableOpacity
+            onPress={() => handleToggle(index)}
+            accessibilityRole="button"
+            accessibilityLabel={`View profile: ${professional?.username ?? "Professional"}`}
+          >
+            <TouchableOpacity style={styles.viewProfile} accessible={false}>
               <Text style={styles.buttonText}>View Profile</Text>
             </TouchableOpacity>
           </TouchableOpacity>

@@ -9,7 +9,12 @@ type Props = {
 
 const AskChatbotButton = (props: Props) => {
   return (
-    <TouchableOpacity onPress={props.onClick} style={styles.container}>
+    <TouchableOpacity
+      onPress={props.onClick}
+      style={styles.container}
+      accessibilityRole="button"
+      accessibilityLabel="Need support right now? Chat with Sera"
+    >
       <View style={styles.chatbotButton}>
         <MaterialCommunityIcons name="account-heart-outline" size={24} style={styles.icon} />
         <Text style={styles.chatbotButtonText}>Need support right now? Chat with Sera</Text>

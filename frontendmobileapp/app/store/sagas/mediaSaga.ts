@@ -13,13 +13,18 @@ import {
 } from "../Profile-store/mediaSlice";
 
 function* handleGetUserMediaItems(action: PayloadAction<number>) {
-  const MediaItems = (
-    (yield call(
-      MediaApiFactory().getGetUserMedia,
-      action.payload,
-    )) as AxiosResponse<MediaListResponse>
-  ).data as MediaListResponse;
-  yield put(setMediaItems(MediaItems.media ?? []));
+  try {
+    const MediaItems = (
+      (yield call(
+        MediaApiFactory().getGetUserMedia,
+        action.payload,
+      )) as AxiosResponse<MediaListResponse>
+    ).data as MediaListResponse;
+    yield put(setMediaItems(MediaItems.media ?? []));
+  } catch (error) {
+    console.error("failed to fetch media items", error);
+    yield put(setMediaItems([]));
+  }
 }
 
 function* handleUploadMedia(

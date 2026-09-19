@@ -3194,7 +3194,6 @@ export const ChatApiAxiosParamCreator = function (configuration?: Configuration)
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3883,7 +3882,6 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -3921,7 +3919,6 @@ export const EventsApiAxiosParamCreator = function (configuration?: Configuratio
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4830,7 +4827,6 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4873,7 +4869,6 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(payload, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4939,7 +4934,7 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
 
 
-    
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -4950,7 +4945,44 @@ export const FeedApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * 
+         *
+         * @summary Delete a post by ID
+         * @param {number} postId
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteGetPost: async (postId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('deleteGetPost', 'postId', postId)
+            const localVarPath = `/api/feed/post/{post_id}`
+                .replace(`{${"post_id"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            await setApiKeyToObject(localVarHeaderParameter, "Authorization", configuration)
+
+
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         *
          * @summary Fetch all reactions for a post
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -5305,9 +5337,22 @@ export const FeedApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         *
+         * @summary Delete a post by ID
+         * @param {number} postId
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteGetPost(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteGetPost(postId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FeedApi.deleteGetPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         *
          * @summary Fetch all reactions for a post
-         * @param {number} postId 
+         * @param {number} postId
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5461,7 +5506,17 @@ export const FeedApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.getGetPost(postId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         *
+         * @summary Delete a post by ID
+         * @param {number} postId
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteGetPost(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteGetPost(postId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         *
          * @summary Fetch all reactions for a post
          * @param {number} postId 
          * @param {*} [options] Override http request option.
@@ -5611,7 +5666,19 @@ export class FeedApi extends BaseAPI {
     }
 
     /**
-     * 
+     *
+     * @summary Delete a post by ID
+     * @param {number} postId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FeedApi
+     */
+    public deleteGetPost(postId: number, options?: RawAxiosRequestConfig) {
+        return FeedApiFp(this.configuration).deleteGetPost(postId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     *
      * @summary Fetch all reactions for a post
      * @param {number} postId 
      * @param {*} [options] Override http request option.

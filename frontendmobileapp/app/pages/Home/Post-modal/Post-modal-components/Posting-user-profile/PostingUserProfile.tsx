@@ -28,7 +28,8 @@ const PostingUserProfile: React.FC<PostingUserProfileProps> = ({ profilePic, use
           onError={() => setImageLoadFailed(true)}
         />
         <View style={styles.profileInfoContainer}>
-          <TouchableOpacity>
+          {/* No onPress: purely displays the posting user's name here. */}
+          <TouchableOpacity accessible={false}>
             <Text style={styles.profileName}>{username}</Text>
           </TouchableOpacity>
         </View>

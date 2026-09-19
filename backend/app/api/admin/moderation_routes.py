@@ -124,11 +124,15 @@ class ReviewModerationLog(Resource):
         log = ModerationLog.query.get(log_id)
         if not log:
             return {"message": "Moderation log not found"}, 404
-        
+
+        admin_user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not admin_user:
+            return {"message": "Admin user not found"}, 404
+
         # Update log with admin decision
         log.admin_override = action
         log.admin_notes = notes
-        log.reviewed_by = 1  # TODO: Get actual admin user ID
+        log.reviewed_by = admin_user.id
         log.reviewed_at = datetime.utcnow()
         
         # Apply penalties if rejected

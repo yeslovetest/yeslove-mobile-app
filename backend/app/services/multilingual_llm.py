@@ -38,7 +38,8 @@ def generate_response(
         )
 
     client = Groq(
-        api_key=api_key
+        api_key=api_key,
+        timeout=30,
     )
 
     language_name = (

@@ -82,14 +82,21 @@ class JobProcessor:
     
     @staticmethod
     def handle_email(job_data):
-        """Handle email job"""
-        try:
-            current_app.logger.info(f"Email job processed: {job_data.get('email_type')}")
-            # TODO: Implement email sending logic
-            return True
-        except Exception as e:
-            current_app.logger.error(f"Failed to handle email job: {e}")
-            return False
+        """Handle email job.
+
+        There is no email-sending integration in this codebase yet (no SMTP
+        config, no provider client) and nothing currently enqueues a
+        'send_email' job — SQSService.send_email_job() has no callers. Rather
+        than report success for work that was never done, this fails the job
+        so the worker's real retry/DLQ path (see SQSWorker.handle_failed_message)
+        surfaces it instead of it silently vanishing. Once an email provider
+        is wired up, replace this with the real send and return its result.
+        """
+        current_app.logger.error(
+            f"Email job for email_type={job_data.get('email_type')!r} was not sent: "
+            "no email provider is configured in this codebase yet."
+        )
+        return False
     
     @staticmethod
     def handle_fanout_post(job_data):
@@ -110,13 +117,24 @@ class JobProcessor:
     
     @staticmethod
     def handle_media_processing(job_data):
-        """Handle media processing job"""
-        try:
-            media_id = job_data.get('media_id')
-            processing_type = job_data.get('processing_type')
-            current_app.logger.info(f"Media processing job completed: {media_id} - {processing_type}")
-            # TODO: Implement media processing logic
-            return True
-        except Exception as e:
-            current_app.logger.error(f"Failed to handle media processing: {e}")
-            return False
+        """Handle media processing job.
+
+        Nothing currently enqueues a 'media_processing' job — SQSService
+        .send_media_processing_job() has no callers. The compression and
+        metadata extraction MediaProcessor already provides
+        (app/services/media/media_processor.py) run synchronously at upload
+        time in media_service.py, outside this queue entirely; the async
+        path here (e.g. generating resized variants via
+        MediaProcessor.resize_image) has no caller and the Media model has
+        no columns to store multiple resized variant URLs yet, so wiring
+        this up for real is a feature to design, not a bug to fix here.
+        Fails the job instead of reporting success for work that was never
+        done, so the worker's real retry/DLQ path surfaces it.
+        """
+        media_id = job_data.get('media_id')
+        processing_type = job_data.get('processing_type')
+        current_app.logger.error(
+            f"Media processing job for media_id={media_id!r} processing_type={processing_type!r} "
+            "was not processed: this job type has no implementation yet."
+        )
+        return False

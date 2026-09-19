@@ -6,10 +6,7 @@ import LoginLoadingScreen from "../../Login/Login-root/LoginRoot";
 import { signupAction } from "../../../store/Auth-store/authSlice";
 import styles from "./Page3Styles";
 import { theme } from "@/app/theme";
-
-const image = {
-  uri: "https://images.unsplash.com/vector-1741103791953-12eca7b8e3c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAwfHxibHVlJTIwYWJzdHJhY3QlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D",
-};
+import image from "@/assets/images/auth-background.png";
 
 const Page3 = () => {
   const dispatch = useAppDispatch();
@@ -75,6 +72,8 @@ const Page3 = () => {
             <TouchableOpacity
               style={styles.baseButton}
               onPress={() => signupActions.handleLoginStateChange("refresh-login")}
+              accessibilityRole="button"
+              accessibilityLabel="Login after verification"
             >
               <Text style={styles.baseButtonText}>Login after Verification</Text>
             </TouchableOpacity>
@@ -82,6 +81,8 @@ const Page3 = () => {
             <TouchableOpacity
               style={[styles.baseButton, styles.backButton]}
               onPress={signupActions.moveToPrevious}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
             >
               <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
             </TouchableOpacity>
@@ -103,6 +104,8 @@ const Page3 = () => {
             <TouchableOpacity
               style={styles.baseButton}
               onPress={() => signupActions.handleLoginStateChange("refresh-login")}
+              accessibilityRole="button"
+              accessibilityLabel="Login"
             >
               <Text style={styles.baseButtonText}>Login</Text>
             </TouchableOpacity>
@@ -110,6 +113,8 @@ const Page3 = () => {
             <TouchableOpacity
               style={[styles.baseButton, styles.backButton]}
               onPress={signupActions.moveToPrevious}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
             >
               <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
             </TouchableOpacity>
@@ -132,6 +137,9 @@ const Page3 = () => {
               style={[styles.baseButton, isSignupSubmitting ? styles.disabledButton : null]}
               onPress={retrySignupNow}
               disabled={isSignupSubmitting}
+              accessibilityRole="button"
+              accessibilityLabel={isSignupSubmitting ? "Trying again" : "Try again"}
+              accessibilityState={{ disabled: isSignupSubmitting }}
             >
               <Text style={styles.baseButtonText}>
                 {isSignupSubmitting ? "Trying Again..." : "Try Again"}
@@ -154,6 +162,9 @@ const Page3 = () => {
               ]}
               onPress={signupActions.moveToPrevious}
               disabled={isSignupSubmitting}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              accessibilityState={{ disabled: isSignupSubmitting }}
             >
               <Text style={[styles.baseButtonText, styles.backButtonText]}>Go Back</Text>
             </TouchableOpacity>

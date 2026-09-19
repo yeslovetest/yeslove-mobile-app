@@ -113,9 +113,8 @@ class SendMessage(Resource):
 
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
-        media_id = data.get("media_id") 
-        print(media_id)
-        if media_id:  
+        media_id = data.get("media_id")
+        if media_id:
             for id in media_id:
               new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=id)
               db.session.add(new_message)

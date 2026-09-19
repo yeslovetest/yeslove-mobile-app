@@ -51,7 +51,7 @@ class Login(Resource):
             "password": password
         }
 
-        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
         
 
         if response.status_code == 200:
@@ -198,7 +198,7 @@ class Signup(Resource):
             "username" : current_app.config["KEYCLOAK_ADMIN_USER"],
             "password" : current_app.config["KEYCLOAK_ADMIN_PASS"],
         }
-        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
 
         if token_response.status_code != 200:
             logger.error("❌ Keycloak admin token fetch failed")
@@ -236,7 +236,7 @@ class Signup(Resource):
         
         logger.debug("🔑 Admin token acquired successfully")
 
-        response = requests.post(create_user_url, json=user_payload, headers=headers)
+        response = requests.post(create_user_url, json=user_payload, headers=headers, timeout=10)
 
         logger.info(f"🧩 Keycloak create user response → {response.status_code}")
 
@@ -244,7 +244,7 @@ class Signup(Resource):
         if response.status_code == 201:
             # Fetches the created user's ID
             get_users_url = f"{create_user_url}?username={username}"
-            get_response = requests.get(get_users_url, headers=headers)
+            get_response = requests.get(get_users_url, headers=headers, timeout=10)
 
             if get_response.status_code != 200 or not get_response.json():
                 return {"message" : "User created, but failed to retrieve user ID"}, 500
@@ -258,7 +258,7 @@ class Signup(Resource):
             }
             logger.info(f"✅ User {username} created successfully in Keycloak")
 
-            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers)
+            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers, timeout=10)
 
             if patch_response.status_code != 204:
                 logger.warning(f"⚠️ Failed to assign VERIFY_EMAIL for user {username}")
@@ -269,7 +269,7 @@ class Signup(Resource):
             
             # Triggers email validation 
             send_email_url = f"{create_user_url}/{user_id}/send-verify-email"
-            send_email_response = requests.put(send_email_url, headers=headers)
+            send_email_response = requests.put(send_email_url, headers=headers, timeout=10)
 
             if send_email_response.status_code !=204:
                 logger.warning(f"⚠️ Failed to send verification email to {email}")
@@ -320,7 +320,7 @@ class Signup(Resource):
                 db.session.commit()
             
             except IntegrityError as e:
-                db.session.rollback
+                db.session.rollback()
                 logger.error(f"❌ Database error when saving user {username}: {e}")
                 return {"message" : "Username already exist"}, 409
 
@@ -338,7 +338,7 @@ class Signup(Resource):
         elif response.status_code == 409:
             return {"message":"User already exists"},409
         else:
-            print("DEBUG → Keycloak error:", response.status_code, response.text)
+            logger.error(f"Keycloak create user failed: {response.status_code} {response.text}")
             return {"message":"Failed to create user", "details": response.text}, response.status_code
     
 @api.route("/logout")
@@ -357,6 +357,7 @@ class Logout(Resource):
         response = requests.post(
             keycloak_logout_url,
             headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
         )
 
         logger.info("User logout attempt via refresh token")
@@ -389,7 +390,7 @@ class RefreshToken(Resource):
             "refresh_token": refresh_token
         }
 
-        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
 
         logger.info(f"Token refresh requested")
         if response.status_code == 200:
@@ -482,7 +483,7 @@ class ChangePassword(Resource):
         token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
         headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.put(keycloak_admin_url, json=payload, headers=headers)
+        response = requests.put(keycloak_admin_url, json=payload, headers=headers, timeout=10)
 
         logger.info(f"Password change requested for user {user.username}")
         
@@ -518,7 +519,7 @@ class ResetPassword(Resource):
             "email": email
         }
 
-        response = requests.post(keycloak_reset_url, json=payload)
+        response = requests.post(keycloak_reset_url, json=payload, timeout=10)
 
         logger.info(f"Password reset request for email {email}")
 
@@ -555,7 +556,7 @@ class DeleteAccount(Resource):
         token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
         headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.delete(keycloak_delete_url, headers=headers)
+        response = requests.delete(keycloak_delete_url, headers=headers, timeout=10)
 
         logger.info(f"Account deletion requested for user {user.username}")
 

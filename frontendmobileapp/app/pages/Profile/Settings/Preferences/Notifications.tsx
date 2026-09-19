@@ -79,7 +79,12 @@ const NotificationPreferences = () => {
             </View>
           )}
 
-          <TouchableOpacity style={styles.saveChangesButton} onPress={saveNotificationPreferences}>
+          <TouchableOpacity
+            style={styles.saveChangesButton}
+            onPress={saveNotificationPreferences}
+            accessibilityRole="button"
+            accessibilityLabel="Save changes"
+          >
             <Text style={styles.saveChangesButtonText}>Save Changes</Text>
           </TouchableOpacity>
         </View>

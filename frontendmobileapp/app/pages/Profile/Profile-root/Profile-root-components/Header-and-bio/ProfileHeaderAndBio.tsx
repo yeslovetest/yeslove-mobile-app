@@ -223,7 +223,12 @@ const ProfileHeaderAndBio = () => {
             />
 
             {isCurrentUserProfile && (
-              <TouchableOpacity style={styles.changePhotoBadge} onPress={openPhotoSourcePicker}>
+              <TouchableOpacity
+                style={styles.changePhotoBadge}
+                onPress={openPhotoSourcePicker}
+                accessibilityRole="button"
+                accessibilityLabel="Change profile photo"
+              >
                 <Text style={styles.changePhotoBadgeText}>Change Photo</Text>
               </TouchableOpacity>
             )}
@@ -238,6 +243,9 @@ const ProfileHeaderAndBio = () => {
                   style={[styles.previewButton, styles.cancelButton]}
                   onPress={clearSelection}
                   disabled={isProfileImageUploading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel"
+                  accessibilityState={{ disabled: isProfileImageUploading }}
                 >
                   <Text style={[styles.previewButtonText, styles.cancelButtonText]}>Cancel</Text>
                 </TouchableOpacity>
@@ -250,6 +258,9 @@ const ProfileHeaderAndBio = () => {
                   ]}
                   onPress={uploadProfilePic}
                   disabled={isProfileImageUploading}
+                  accessibilityRole="button"
+                  accessibilityLabel="Upload photo"
+                  accessibilityState={{ disabled: isProfileImageUploading, busy: isProfileImageUploading }}
                 >
                   {isProfileImageUploading ? (
                     <ActivityIndicator color={theme.colors.textOnPrimary} size="small" />

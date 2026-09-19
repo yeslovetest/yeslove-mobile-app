@@ -1,4 +1,13 @@
-
+# Production Keycloak, hostnamed to auth.yeslove.co.uk (see KC_HOSTNAME_URL
+# below) and seeded from ./imports on first boot. This is the Keycloak
+# instance that backend/.env's KEYCLOAK_SERVER_URL and
+# docker-compose.microservices.yml's chatbot-service both point at — it is
+# deployed and run independently of the app stack, not brought up by the
+# app's own CI/deploy workflow.
+#
+# For local development, use backend/docker-compose.yaml's throwaway
+# Keycloak instead (different container names, so both can coexist on one
+# Docker host without colliding).
 
 services:
   postgres:

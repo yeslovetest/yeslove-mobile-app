@@ -60,3 +60,10 @@ dist/
 # Binary database files
 chatbot-service/chatbot.db
 backend/yeslove-2e1f0-20c3f077a520.json
+backend/*.db
+
+# Local backup snapshots — git history is the backup mechanism, don't commit these
+backend/backups/
+
+# Loki runtime data (WAL/chunks/index) — this is state, not config
+monitoring/loki-data/

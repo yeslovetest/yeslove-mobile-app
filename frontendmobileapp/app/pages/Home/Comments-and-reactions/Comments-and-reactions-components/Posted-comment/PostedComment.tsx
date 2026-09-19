@@ -19,7 +19,8 @@ const PostedComment = (props: Props) => {
           source={getImageSource(props.comment.picture, "profile", { treatBareAsMediaId: true })}
         />
         <View style={styles.profileInfoContainer}>
-          <TouchableOpacity style={styles.profileName}>
+          {/* No onPress: purely displays the commenter's name here. */}
+          <TouchableOpacity style={styles.profileName} accessible={false}>
             <Text>{props.comment.author}</Text>
           </TouchableOpacity>
           <Text style={styles.timePosted}>

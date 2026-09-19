@@ -31,7 +31,12 @@ from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 from app.api.admin.moderation_routes import api as admin_moderation_api
-from app.api.chatbot.voice_routes import api as multilingual_api
+try:
+    from app.api.chatbot.voice_routes import api as multilingual_api
+except (ModuleNotFoundError, ImportError) as e:
+    import logging
+    logging.getLogger(__name__).warning(f"Multilingual voice chat disabled (missing dependency): {e}")
+    multilingual_api = None
 
 
 # Load environment variables
@@ -61,10 +66,23 @@ def create_app(config_class=DevelopmentConfig):
         pass  # Ignore if prometheus_client not available
 
     app.config.from_object(config_class)
+
+    missing_required = [
+        name for name in getattr(config_class, "REQUIRED_ENV_VARS", ())
+        if not app.config.get(name if name != "DATABASE_URL" else "SQLALCHEMY_DATABASE_URI")
+    ]
+    if missing_required:
+        raise RuntimeError(
+            "Missing required production environment variable(s): "
+            + ", ".join(missing_required)
+            + ". Refusing to start with an insecure default."
+        )
     # app.config['SQLALCHEMY_DATABASE_URI'] = config_class.SQLALCHEMY_DATABASE_URI
 
-    # 🌍 Enable CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+    # 🌍 Enable CORS — explicit origin allowlist required when credentials are allowed
+    # ("*" + supports_credentials is rejected by browsers anyway, and is a CORS
+    # misconfiguration for any origin that does send credentials).
+    CORS(app, resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", [])}}, supports_credentials=True)
 
     # 🚀 Initialize extensions
     db.init_app(app)
@@ -111,7 +129,8 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
     api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
-    api.add_namespace(multilingual_api,path="/api/v1/multilingual")
+    if multilingual_api is not None:
+        api.add_namespace(multilingual_api, path="/api/v1/multilingual")
     
     # Register health check endpoints
     from app.monitoring.health import health_bp

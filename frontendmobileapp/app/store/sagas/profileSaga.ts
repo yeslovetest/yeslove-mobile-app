@@ -37,22 +37,31 @@ import { updateProfileWithMedia } from "../../services/profileService";
 function* saveProfileInfoEffect(action: any) {
   let userId: string = yield appSelect((state: { user: { id: any } }) => state.user.id);
   let info: UserProfile = yield appSelect((state) => state.profile.profiles[userId]);
-  ProfileApiFactory()
-    .putUpdateProfile(info)
-    .catch((reason) => console.log("Failed to update user profile: " + reason));
+  try {
+    // yield call (not a bare promise) so redux-saga can track/cancel this
+    // and so a rejection is actually caught here instead of becoming an
+    // unhandled promise rejection.
+    yield call(ProfileApiFactory().putUpdateProfile, info);
+  } catch (error) {
+    console.error("Failed to update user profile:", error);
+  }
 }
 
 function* fetchUserProfileData(action: PayloadAction<{ id: string; isCurrentUser: boolean }>) {
   let info: UserProfile = yield appSelect((state) => state.profile.profiles[action.payload.id]);
   yield put(setUserProfileState(action.payload.isCurrentUser));
   if (!info) {
-    const profile = (
-      (yield call(
-        ProfileApiFactory().getUserProfile,
-        action.payload.id,
-      )) as AxiosResponse<UserProfile>
-    ).data as UserProfile;
-    yield put(storeUserDataAction({ id: action.payload.id, profile: profile }));
+    try {
+      const profile = (
+        (yield call(
+          ProfileApiFactory().getUserProfile,
+          action.payload.id,
+        )) as AxiosResponse<UserProfile>
+      ).data as UserProfile;
+      yield put(storeUserDataAction({ id: action.payload.id, profile: profile }));
+    } catch (error) {
+      console.error("Failed to fetch user profile:", error);
+    }
   }
 }
 
@@ -188,12 +197,16 @@ function* updateUserProfile(
 }
 
 function* fetchEmailNotificationSettings(action: PayloadAction<void>) {
-  const emailNotificationSettings = (
-    (yield call(
-      ProfileApiFactory().getEmailNotifications,
-    )) as AxiosResponse<EmailNotificationSettings>
-  ).data as EmailNotificationSettings;
-  yield put(setEmailNotificationSettings(emailNotificationSettings.settings ?? []));
+  try {
+    const emailNotificationSettings = (
+      (yield call(
+        ProfileApiFactory().getEmailNotifications,
+      )) as AxiosResponse<EmailNotificationSettings>
+    ).data as EmailNotificationSettings;
+    yield put(setEmailNotificationSettings(emailNotificationSettings.settings ?? []));
+  } catch (error) {
+    console.error("Failed to fetch email notification settings:", error);
+  }
 }
 
 function* updateEmailSettings(action: PayloadAction<EmailNotificationSettings>) {
@@ -206,12 +219,16 @@ function* updateEmailSettings(action: PayloadAction<EmailNotificationSettings>) 
 }
 
 function* fetchProfileVisiblitySettings(action: PayloadAction<void>) {
-  const profileVisibilitySettings = (
-    (yield call(
-      ProfileApiFactory().getProfileVisibility,
-    )) as AxiosResponse<ProfileVisibilitySettings>
-  ).data as ProfileVisibilitySettings;
-  yield put(setProfileVisibilitySettings(profileVisibilitySettings.settings ?? []));
+  try {
+    const profileVisibilitySettings = (
+      (yield call(
+        ProfileApiFactory().getProfileVisibility,
+      )) as AxiosResponse<ProfileVisibilitySettings>
+    ).data as ProfileVisibilitySettings;
+    yield put(setProfileVisibilitySettings(profileVisibilitySettings.settings ?? []));
+  } catch (error) {
+    console.error("Failed to fetch profile visibility settings:", error);
+  }
 }
 
 function* updateProfileSettings(action: PayloadAction<ProfileVisibilitySettings>) {

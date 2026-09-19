@@ -179,7 +179,12 @@ const EditProfileInformation = () => {
               <Text style={styles.displayMsgText}>{msgToggle.msg}</Text>
             </View>
           )}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel="Save"
+          >
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </ScrollView>

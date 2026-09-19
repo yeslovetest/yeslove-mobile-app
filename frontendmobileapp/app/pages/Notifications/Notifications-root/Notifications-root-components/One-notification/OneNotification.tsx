@@ -115,7 +115,14 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
     <TouchableOpacity style={[
       styles.container,
       (!isFriendRequestItem && notification && !notification.is_read) && styles.activeBackgroundColor
-    ]} onPress={handleNotificationPress}>
+    ]} onPress={handleNotificationPress}
+      accessibilityRole="button"
+      accessibilityLabel={
+        isFriendRequestItem
+          ? `Friend request from ${friendRequest?.username ?? 'User'}`
+          : notification?.body ?? 'Notification'
+      }
+    >
       
         
         <View style={(!isFriendRequestItem && notification && !notification.is_read) ? styles.activeIndicator : undefined}></View>
@@ -151,10 +158,20 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
             <Text style={styles.modalTitle}>Friend request</Text>
             <Text style={styles.modalBody}>{friendRequest?.username ?? 'User'} wants to connect as a friend.</Text>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.declineButton} onPress={() => handleRespond('decline')}>
+              <TouchableOpacity
+                style={styles.declineButton}
+                onPress={() => handleRespond('decline')}
+                accessibilityRole="button"
+                accessibilityLabel="Decline friend request"
+              >
                 <Text style={styles.declineButtonText}>Decline</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.acceptButton} onPress={() => handleRespond('accept')}>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={() => handleRespond('accept')}
+                accessibilityRole="button"
+                accessibilityLabel="Accept friend request"
+              >
                 <Text style={styles.acceptButtonText}>Accept</Text>
               </TouchableOpacity>
             </View>
@@ -179,7 +196,12 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
             <Image source={getImageSource(imagePath, 'profile', { treatBareAsMediaId: true })} style={styles.profileImage} />
             <Text style={styles.modalBody}>{followUserName} is now following your updates.</Text>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.acceptButton} onPress={() => setFollowModalVisible(false)}>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={() => setFollowModalVisible(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+              >
                 <Text style={styles.acceptButtonText}>Close</Text>
               </TouchableOpacity>
             </View>

@@ -5,11 +5,7 @@ import sharedStyles from '../SignUpSharedStyles';
 import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../../store/hooks';
 import { setErrorMessage } from '../../../store/Auth-store/authSlice';
-
-
-const image = {
-  uri: "https://images.unsplash.com/vector-1741103791953-12eca7b8e3c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAwfHxibHVlJTIwYWJzdHJhY3QlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D"
-};
+import image from '@/assets/images/auth-background.png';
 
 const Page1 = () => {
   const { height } = useWindowDimensions();
@@ -95,7 +91,12 @@ const Page1 = () => {
             secureTextEntry = {true}
             />
 
-            <TouchableOpacity style={[sharedStyles.buttonNext, isCompactScreen ? sharedStyles.compactButtonNext : undefined]} onPress={signupAction.moveToNext}>
+            <TouchableOpacity
+              style={[sharedStyles.buttonNext, isCompactScreen ? sharedStyles.compactButtonNext : undefined]}
+              onPress={signupAction.moveToNext}
+              accessibilityRole="button"
+              accessibilityLabel="Next"
+            >
               <Text style={[sharedStyles.buttonText, isCompactScreen ? sharedStyles.compactButtonText : undefined]}><Text style={[sharedStyles.greyText, isCompactScreen ? sharedStyles.compactGreyText : undefined]}>Let us get to know you more!.</Text> Next</Text>
             </TouchableOpacity> 
 

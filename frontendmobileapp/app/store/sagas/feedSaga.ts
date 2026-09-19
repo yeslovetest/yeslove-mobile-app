@@ -41,23 +41,30 @@ function* updateFeed(
     page: number | undefined;
   }>,
 ) {
-  const response = (
-    (yield call(
-      FeedApiFactory().getFeed,
-      action.payload.perPage,
-      action.payload.page,
-      action.payload.feedType,
-    )) as AxiosResponse<PostResponse>
-  ).data as PostResponse;
-  //console.log(action.payload.feedType)
-  //console.log(response)
-  yield put(
-    setFeedDataAction({
-      post: response.posts ?? [],
-      feedType: action.payload.feedType,
-      pagination: response.pagination,
-    }),
-  );
+  try {
+    const response = (
+      (yield call(
+        FeedApiFactory().getFeed,
+        action.payload.perPage,
+        action.payload.page,
+        action.payload.feedType,
+      )) as AxiosResponse<PostResponse>
+    ).data as PostResponse;
+    yield put(
+      setFeedDataAction({
+        post: response.posts ?? [],
+        feedType: action.payload.feedType,
+        pagination: response.pagination,
+      }),
+    );
+  } catch (error) {
+    // Left unhandled, this would crash the whole saga task tree (every
+    // takeEvery in feedSaga) rather than just this one feed refresh —
+    // e.g. handleDeletePost's failure fallback dispatches this same action,
+    // so a delete failing alongside a feed fetch failure must not take
+    // down comments, likes, follow, etc. with it.
+    console.error("❌ Error fetching feed:", error);
+  }
 }
 
 function* handleGetOnePost(action: PayloadAction<{ postID: number }>) {
@@ -106,46 +113,50 @@ function* postNewPost(
 }
 
 function* handleDeletePost(action: PayloadAction<{ postId: number }>) {
+  // Optimistically drop the post from the feed so it disappears immediately.
+  yield put(removePostFromFeed({ postId: action.payload.postId }));
   try {
-    // TODO: The delete-post endpoint does not exist on the API yet. Once the
-    // backend adds it, expose it on FeedApiFactory (e.g. `deletePost`) and
-    // uncomment the call below so the deletion is persisted server-side.
-    //
-    // yield call(FeedApiFactory().deletePost, action.payload.postId);
-
-    // Optimistically drop the post from the feed so it disappears immediately.
-    yield put(removePostFromFeed({ postId: action.payload.postId }));
+    yield call(FeedApiFactory().deleteGetPost, action.payload.postId);
   } catch (error) {
     console.error("❌ Error deleting post:", error);
-    // If the endpoint is wired up later and fails, refresh the feed so the
-    // optimistically-removed post reappears.
+    // The backend rejected or failed to persist the deletion — refresh the
+    // feed so the optimistically-removed post reappears rather than leaving
+    // the UI out of sync with the server.
     yield put(updatePostsForFeedAction({ feedType: "all" }));
     yield put(updatePostsForFeedAction({ feedType: "friends" }));
   }
 }
 
 function* postNewComment(action: PayloadAction<{ postId: number; content: string }>) {
-  yield call(FeedApiFactory().postAddComment, action.payload.postId, {
-    content: action.payload.content,
-  });
-  yield put(retrievePostReactions({ postId: action.payload.postId }));
-  yield put(updatePostsForFeedAction({ feedType: "all" }));
-  yield put(updatePostsForFeedAction({ feedType: "friends" }));
+  try {
+    yield call(FeedApiFactory().postAddComment, action.payload.postId, {
+      content: action.payload.content,
+    });
+    yield put(retrievePostReactions({ postId: action.payload.postId }));
+    yield put(updatePostsForFeedAction({ feedType: "all" }));
+    yield put(updatePostsForFeedAction({ feedType: "friends" }));
+  } catch (error) {
+    console.error("❌ Error posting comment:", error);
+  }
 }
 
 function* handleGetFollowing(action: PayloadAction<void>) {
-  let userId = (yield call([
-    TOKEN_REFRESH_SERVICE,
-    TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage,
-  ])) as string;
-  const users = (
-    (yield call(
-      FeedApiFactory().getGetFollowing,
-      userId,
-      {},
-    )) as AxiosResponse<GetFollowingResponse>
-  ).data as GetFollowingResponse;
-  yield put(setFollowing(users.following ?? []));
+  try {
+    let userId = (yield call([
+      TOKEN_REFRESH_SERVICE,
+      TOKEN_REFRESH_SERVICE.loadUserIdFromLocalStorage,
+    ])) as string;
+    const users = (
+      (yield call(
+        FeedApiFactory().getGetFollowing,
+        userId,
+        {},
+      )) as AxiosResponse<GetFollowingResponse>
+    ).data as GetFollowingResponse;
+    yield put(setFollowing(users.following ?? []));
+  } catch (error) {
+    console.error("❌ Error fetching following list:", error);
+  }
 }
 
 function* handlePostFollowUser(
@@ -163,40 +174,54 @@ function* handlePostFollowUser(
 }
 
 function* handleLikePost(action: PayloadAction<{ postId: number }>) {
-  yield call(FeedApiFactory().postLikePost, action.payload.postId, {
-    post_id: action.payload.postId,
-  });
+  try {
+    yield call(FeedApiFactory().postLikePost, action.payload.postId, {
+      post_id: action.payload.postId,
+    });
+  } catch (error) {
+    console.error("❌ Error liking post:", error);
+  }
 }
 
 function* handleReactionToPost(action: PayloadAction<{ postId: number; reactionType: string }>) {
-  const response = (
-    (yield call(FeedApiFactory().postReactToPost, action.payload.postId, {
-      reaction_type: action.payload.reactionType,
-    })) as AxiosResponse<ReactToPostResponse>
-  ).data as ReactToPostResponse;
-  if (response?.message?.includes("Removed") || response?.message?.includes("Added")) {
-    yield put(postLikePost({ postId: action.payload.postId }));
+  try {
+    const response = (
+      (yield call(FeedApiFactory().postReactToPost, action.payload.postId, {
+        reaction_type: action.payload.reactionType,
+      })) as AxiosResponse<ReactToPostResponse>
+    ).data as ReactToPostResponse;
+    if (response?.message?.includes("Removed") || response?.message?.includes("Added")) {
+      yield put(postLikePost({ postId: action.payload.postId }));
+    }
+    yield put(retrievePostReactions({ postId: action.payload.postId }));
+    yield put(updatePostsForFeedAction({ feedType: "all" }));
+    yield put(updatePostsForFeedAction({ feedType: "friends" }));
+  } catch (error) {
+    console.error("❌ Error reacting to post:", error);
   }
-  yield put(retrievePostReactions({ postId: action.payload.postId }));
-  yield put(updatePostsForFeedAction({ feedType: "all" }));
-  yield put(updatePostsForFeedAction({ feedType: "friends" }));
 }
 
 function* fetchPostReactions(action: PayloadAction<{ postId: number }>) {
-  const comments = (
-    (yield call(
-      FeedApiFactory().getGetComments,
-      action.payload.postId,
-    )) as AxiosResponse<GetCommentResponse>
-  ).data as GetCommentResponse;
-  const reactions = (
-    (yield call(
-      FeedApiFactory().getGetReactions,
-      action.payload.postId,
-    )) as AxiosResponse<GetReactionsResponse>
-  ).data as GetReactionsResponse;
-  yield put(setComments(comments.comments ?? []));
-  yield put(setReactions(reactions.reactions ?? []));
+  try {
+    const comments = (
+      (yield call(
+        FeedApiFactory().getGetComments,
+        action.payload.postId,
+      )) as AxiosResponse<GetCommentResponse>
+    ).data as GetCommentResponse;
+    const reactions = (
+      (yield call(
+        FeedApiFactory().getGetReactions,
+        action.payload.postId,
+      )) as AxiosResponse<GetReactionsResponse>
+    ).data as GetReactionsResponse;
+    yield put(setComments(comments.comments ?? []));
+    yield put(setReactions(reactions.reactions ?? []));
+  } catch (error) {
+    // Left unhandled, this crashes every takeEvery in feedSaga, not just
+    // this fetch — see the same fix on updateFeed above.
+    console.error("❌ Error fetching comments/reactions:", error);
+  }
 }
 
 export default function* feedSaga() {

@@ -1,4 +1,15 @@
-version: '3.8'
+# This is the file .github/workflows/deploy.yml deploys with
+# (`docker compose -f docker-compose.microservices.yml up -d --build`).
+# It brings up the app, chatbot-service, and their own data stores/queue,
+# but deliberately does NOT include Keycloak: production Keycloak is a
+# separate, persistent deployment (KeyCloakService/docker-compose.yaml,
+# hostnamed to auth.yeslove.co.uk) that this stack expects to already be
+# running at the URL configured in backend/.env — it isn't torn down and
+# rebuilt on every app deploy.
+#
+# For local development without a full app deploy, see
+# backend/docker-compose.yaml (infra only, run the app directly on your
+# machine against it).
 
 services:
   # Main YesLove Application

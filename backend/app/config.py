@@ -16,6 +16,13 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # Maximum file size: 16MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}  # Allowed file types
     FRONTEND_URI = os.getenv("FRONTEND_URI", "http://localhost:3000")
+    # Comma-separated list of allowed browser origins for CORS. Falls back to
+    # FRONTEND_URI alone so a deployment that only sets FRONTEND_URI keeps working.
+    CORS_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", FRONTEND_URI).split(",")
+        if origin.strip()
+    ]
     BLOG_PUBLIC_URL_TEMPLATE = os.getenv(
         "BLOG_PUBLIC_URL_TEMPLATE",
         FRONTEND_URI.rstrip("/") + "/blog/{blog_id}",
@@ -96,14 +103,20 @@ class ProductionConfig(Config):
     """Production environment configuration."""
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://admin:password@localhost/yeslove'
-    
+    # No insecure fallback here on purpose: a production deploy that's missing
+    # DATABASE_URL or SECRET_KEY should fail to start, not silently come up
+    # pointed at a well-known local database or a well-known secret key.
+    # create_app() checks REQUIRED_ENV_VARS below and raises before serving
+    # any request if one of these is unset.
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    REQUIRED_ENV_VARS = ('DATABASE_URL', 'SECRET_KEY')
+
     # Object storage
     USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "true").lower() == "true"
-    
+
     # Security
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'production-secret-key-change-me'
-    
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+
     # Keycloak Production URLs
     KEYCLOAK_SERVER_URL = os.getenv("KEYCLOAK_SERVER_URL", "https://auth.yeslove.com")
     KEYCLOAK_REALM_NAME = os.getenv("KEYCLOAK_REALM_NAME", "YesLove_Auth")
