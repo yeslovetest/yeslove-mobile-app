@@ -9,6 +9,7 @@ import feedSaga from "./feedSaga";
 import mediaSaga from "./mediaSaga";
 import notificationSaga from "./notificationSaga";
 import profileSaga from "./profileSaga";
+import multilingualSaga from "./multilingualSaga";
 
 /**
  * Root saga: runs every domain saga concurrently. Each domain saga registers its
@@ -25,5 +26,6 @@ export default function* rootSaga() {
     fork(mediaSaga),
     fork(notificationSaga),
     fork(profileSaga),
+    fork(multilingualSaga),
   ]);
 }

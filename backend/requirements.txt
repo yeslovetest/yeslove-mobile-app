@@ -72,3 +72,10 @@ psycopg2-binary
 celery>=5.3.0
 google-auth>=2.0.0
 beautifulsoup4
+
+# Multilingual voice chat (STT/TTS) - app/services/multilingual_stt.py,
+# app/services/multilingual_tts.py. Not previously declared here even
+# though the code has imported them since they were added.
+soundfile>=0.12.1
+torch>=2.2.0
+transformers>=4.40.0

@@ -75,6 +75,11 @@ const Messages = () => {
       <View style={messagesSharedStyles.container}>
         <Text style={messagesSharedStyles.messagesText}>Messages</Text>
         <AskChatbotButton onClick={() => dispatch(openTabOnTopAction({ type: TabType.CHATBOT }))} />
+        <AskChatbotButton
+          onClick={() => dispatch(openTabOnTopAction({ type: TabType.MULTILINGUAL_CHAT }))}
+          label="Chat in your language"
+          iconName="translate"
+        />
 
         <View style={messagesSharedStyles.filterBar}>
           <TouchableOpacity

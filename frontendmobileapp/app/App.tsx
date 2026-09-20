@@ -31,6 +31,7 @@ import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
 import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
 import NotificationPreferences from "./pages/Profile/Settings/Preferences/Notifications";
 import Chatbot from "./pages/Home/Messages/Chatbot/Chatbot";
+import MultilingualChat from "./pages/Home/Messages/Multilingual-chat/MultilingualChat";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -122,6 +123,7 @@ const App = () => {
                  MESSAGES: <MessagesRoot></MessagesRoot>,
                     CONVERSATION: <Conversation></Conversation>,
                        CHATBOT: <Chatbot></Chatbot>,
+                       MULTILINGUAL_CHAT: <MultilingualChat></MultilingualChat>,
               INDIVIDUAL_EVENT: <EventInfoPage />,
               INDIVIDUAL_BLOG: <IndividualBlog />,
               INDIVIDUAL_POST: <IndividualPost />,

@@ -7,7 +7,8 @@ import base64
 from flask import request
 from flask_restx import Namespace, Resource
 
-from app.services.multilingual_llm import generate_response
+from app.utils import require_auth
+from app.services.multilingual_llm import generate_response, PERSONAS
 from app.services.multilingual_stt import transcribe_audio
 from app.services.audio_utils import convert_to_wav
 from app.services.multilingual_tts import synthesize_speech
@@ -32,15 +33,54 @@ LANGUAGE_NAMES = {
 }
 
 
+# NOTE: chatbot-service's real chat endpoint is /api/v1/chat/message (it has
+# no /retrieve route) and requires the caller's own bearer token - both are
+# handled below via _fetch_rag_context.
 RAG_URL = os.getenv(
     "RAG_SERVICE_URL",
-    "http://127.0.0.1:8000/api/v1/chat/retrieve"
+    "http://127.0.0.1:8000/api/v1/chat/message"
 )
+
+
+def _fetch_rag_context(user_text: str, auth_header: str) -> str:
+    """Forward the caller's token so chatbot-service's own auth passes."""
+    headers = {"Content-Type": "application/json"}
+    if auth_header:
+        headers["Authorization"] = auth_header
+
+    rag_response = requests.post(
+        RAG_URL,
+        json={"message": user_text},
+        headers=headers,
+        timeout=30,
+    )
+    rag_response.raise_for_status()
+    return rag_response.json().get("response", "").strip()
+
+
+@api.route("/personas")
+class Personas(Resource):
+
+    @require_auth()
+    def get(self):
+        """List the available language personas for the picker UI."""
+        return {
+            "personas": [
+                {
+                    "language": code,
+                    "language_name": LANGUAGE_NAMES.get(code, code),
+                    "name": persona["name"],
+                    "culture_label": persona["culture_label"],
+                }
+                for code, persona in PERSONAS.items()
+            ]
+        }, 200
 
 
 @api.route("/voice")
 class VoiceChat(Resource):
 
+    @require_auth()
     def post(self):
 
         # --------------------------------------------------
@@ -188,25 +228,9 @@ class VoiceChat(Resource):
                 f"[voice] Sending text to RAG: {RAG_URL}"
             )
 
-            rag_response = requests.post(
-                RAG_URL,
-                json={
-                    "message": user_text
-                },
-                timeout=30
-            )
-
-            rag_response.raise_for_status()
-
-            rag_data = rag_response.json()
-
-            rag_context = (
-                rag_data
-                .get(
-                    "response",
-                    ""
-                )
-                .strip()
+            rag_context = _fetch_rag_context(
+                user_text,
+                request.headers.get("Authorization", ""),
             )
 
             print(
@@ -361,6 +385,7 @@ class VoiceChat(Resource):
 
 class TextChat(Resource):
 
+    @require_auth()
     def post(self):
 
         data = request.get_json(
@@ -401,27 +426,9 @@ class TextChat(Resource):
             # RAG ONLY
             # -------------------------
 
-            rag_response = requests.post(
-                RAG_URL,
-                json={
-                    "message": user_text
-                },
-                timeout=30
-            )
-
-            rag_response.raise_for_status()
-
-            rag_data = (
-                rag_response.json()
-            )
-
-            rag_context = (
-                rag_data
-                .get(
-                    "response",
-                    ""
-                )
-                .strip()
+            rag_context = _fetch_rag_context(
+                user_text,
+                request.headers.get("Authorization", ""),
             )
 
             response_text = generate_response(

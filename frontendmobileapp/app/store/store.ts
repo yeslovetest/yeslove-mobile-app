@@ -8,6 +8,7 @@ import getHelpReducer from "./Get-help-store/getHelpSlice";
 import chatReducer from "./Chat/chatSlice";
 import mediaReducer from "./Profile-store/mediaSlice";
 import notificationReducer from "./Notification-store/notificationSlice";
+import multilingualReducer from "./Multilingual/multilingualSlice";
 import createSagaMiddleWare from "redux-saga";
 import rootSaga from "./sagas/rootSaga";
 import { navigationReducer } from "./Navigation/navigationSlice";
@@ -27,6 +28,7 @@ export const store = configureStore({
     chat: chatReducer,
     media: mediaReducer,
     notification: notificationReducer,
+    multilingual: multilingualReducer,
   },
   devTools: process.env.NODE_ENV !== "production",
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(sagaMiddleWare),
