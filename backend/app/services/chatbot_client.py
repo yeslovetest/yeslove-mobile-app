@@ -7,9 +7,12 @@ class ChatbotClient:
         self.base_url = os.getenv("CHATBOT_SERVICE_URL", "http://localhost:8000")
         self.timeout = timeout or int(os.getenv("CHATBOT_SERVICE_TIMEOUT", "30"))
 
-    def send_message(self, message: str, user_id: int, history: list = None, session_id: str = None) -> Dict[str, Any]:
+    def send_message(self, message: str, user_id: int, history: list = None, session_id: str = None, token: str = None) -> Dict[str, Any]:
         """Send message to chatbot service"""
         try:
+            headers = {"Content-Type": "application/json"}
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
             response = requests.post(
                 f"{self.base_url}/api/v1/chat/message",
                 json={
