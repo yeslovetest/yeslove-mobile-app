@@ -1,5 +1,5 @@
 import { Chat, FriendInfo } from "@/generated-api";
-import { ChatResponse as chatbotApiResponse } from "@/chatbot-client-api/api";
+import { ChatRecommendation, ChatResponse as chatbotApiResponse } from "@/chatbot-client-api/api";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type ChatOutboundMediaFile = {
@@ -27,6 +27,7 @@ const chatSlice = createSlice({
             user_id: '',
             session_id: '',
             sources: '',
+            recommendations: [] as ChatRecommendation[],
             updated_at: 0,
         },
         mediaData: { mediaFormData: null as FormData | null },
@@ -73,6 +74,9 @@ const chatSlice = createSlice({
                 state.chatbotResponse.user_id = String(action.payload.user_id ?? '');
                 state.chatbotResponse.session_id = String(action.payload.session_id ?? '');
                 state.chatbotResponse.sources = String(action.payload.sources ?? '');
+                state.chatbotResponse.recommendations = Array.isArray(action.payload.recommendations)
+                    ? action.payload.recommendations
+                    : [];
                 state.chatbotResponse.updated_at = Date.now();
             } else {
                 state.chatbotResponse = {
@@ -80,6 +84,7 @@ const chatSlice = createSlice({
                     user_id: '',
                     session_id: '',
                     sources: '',
+                    recommendations: [],
                     updated_at: Date.now(),
                 };
             }

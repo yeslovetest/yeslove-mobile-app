@@ -34,11 +34,23 @@ export interface ChatRequest {
   history?: object[];
 }
 
+export interface ChatRecommendation {
+  type: "blog" | "video_podcast" | string;
+  title: string;
+  url: string;
+  summary?: string | null;
+  image_url?: string | null;
+  thumbnail_url?: string | null;
+  video_url?: string | null;
+  reason?: string | null;
+}
+
 export interface ChatResponse {
   response: string;
   session_id: string;
   user_id: string;
   sources: string;
+  recommendations?: ChatRecommendation[];
 }
 
 export interface SyncResponse {

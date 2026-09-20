@@ -7,12 +7,18 @@ import styles from "./SharedChatbotStyles";
 import Header from "@/app/Universal-components/Header/Header";
 import { useAppSelector, useAppDispatch } from "@/app/store/hooks";
 import { sendChatbotMessage } from "@/app/store/Chat/chatSlice";
+import type { ChatRecommendation } from "@/chatbot-client-api/api";
 
 const Chatbot = () => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<
-    { role: "user" | "bot"; text: string; createdAt: Date }[]
+    {
+      role: "user" | "bot";
+      text: string;
+      createdAt: Date;
+      recommendations?: ChatRecommendation[];
+    }[]
   >([]);
   const [loading, setLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -25,6 +31,9 @@ const Chatbot = () => {
   );
   const chatBotResponseUpdatedAt = useAppSelector(
     (state) => state.chat.chatbotResponse.updated_at ?? 0,
+  );
+  const chatBotResponseRecommendations = useAppSelector(
+    (state) => state.chat.chatbotResponse.recommendations ?? [],
   );
 
   const formatSources = (sources: unknown): string => {
@@ -108,6 +117,7 @@ const Chatbot = () => {
         updated[updated.length - 1] = {
           ...lastMessage,
           text: botText,
+          recommendations: chatBotResponseRecommendations,
         };
         return updated;
       }
@@ -118,6 +128,7 @@ const Chatbot = () => {
           role: "bot",
           text: botText,
           createdAt: new Date(),
+          recommendations: chatBotResponseRecommendations,
         },
       ];
     });
@@ -125,11 +136,15 @@ const Chatbot = () => {
     if (streamSettleTimerRef.current) {
       clearTimeout(streamSettleTimerRef.current);
     }
-    // Keep spinner active during rapid stream deltas; hide after stream settles.
     streamSettleTimerRef.current = setTimeout(() => {
       setLoading(false);
     }, 350);
-  }, [chatBotResponse, chatBotResponseSources, chatBotResponseUpdatedAt]);
+  }, [
+    chatBotResponse,
+    chatBotResponseSources,
+    chatBotResponseRecommendations,
+    chatBotResponseUpdatedAt,
+  ]);
 
   const handleSend = (text: string) => {
     if (!text.trim()) return;

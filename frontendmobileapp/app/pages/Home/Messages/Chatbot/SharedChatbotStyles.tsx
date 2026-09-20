@@ -259,6 +259,52 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 
+  /* chat recommendations */
+
+  recommendationsContainer: {
+    width: "100%",
+    maxWidth: "92%",
+    marginTop: theme.spacing.sm,
+  },
+  recommendationsScrollContent: {
+    paddingRight: theme.spacing.sm,
+  },
+  recommendationCard: {
+    width: 200,
+    marginRight: theme.spacing.sm,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: "hidden",
+    ...theme.shadows.sm,
+  },
+  recommendationImage: {
+    width: "100%",
+    height: 100,
+    backgroundColor: theme.colors.surfaceAlt,
+  },
+  recommendationBody: {
+    padding: theme.spacing.sm,
+  },
+  recommendationType: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: theme.colors.primary,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  recommendationTitle: {
+    fontSize: theme.typography.fontSize.footnote,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+    marginBottom: 2,
+  },
+  recommendationSummary: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+  },
+
   /* bot profile picture */
 
   botProfile: {
