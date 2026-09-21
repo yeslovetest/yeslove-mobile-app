@@ -90,6 +90,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Nothing here reads the server's disk/logs after this - the previous
+      # version of this step had no `set -e` and no output beyond a fixed
+      # "Deployment complete", so a failed `docker compose ... --build` (e.g.
+      # the server running out of disk mid-build, which is confirmed to
+      # happen: the same torch/transformers install that takes 2 minutes on
+      # GitHub's runner exhausted a dev machine's disk entirely) reported as
+      # a green deploy with the old container silently left running. This
+      # version fails loudly and prints exactly what's running.
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
@@ -97,7 +105,48 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -e
             cd ~/yeslove-mobile-app
             git pull origin main
+            echo "--- Disk space before build ---"
+            df -h /
+            # The build/start itself is the one command allowed to fail the
+            # job; everything after is diagnostic output and shouldn't mask
+            # a real build failure just because a log fetch hiccups.
             docker compose -f docker-compose.microservices.yml up -d --build
+            echo "--- Container status ---"
+            docker compose -f docker-compose.microservices.yml ps -a || true
+            echo "--- main-app logs (last 60 lines) ---"
+            docker compose -f docker-compose.microservices.yml logs --tail 60 main-app || true
+            echo "--- chatbot-service logs (last 60 lines) ---"
+            docker compose -f docker-compose.microservices.yml logs --tail 60 chatbot-service || true
+            echo "--- Disk space after build ---"
+            df -h / || true
             echo "Deployment complete"
+
+      # Runs from the GitHub runner against the public API, not over SSH -
+      # this is what actually caught the multilingual namespace being
+      # missing in production (a 404, not a 401, on an endpoint that only
+      # needs auth) when the deploy step itself reported success.
+      - name: Health check - API is up
+        run: |
+          sleep 10
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://api.yeslove.co.uk/swagger.json)
+          if [ "$status" != "200" ]; then
+            echo "::error::https://api.yeslove.co.uk/swagger.json returned $status, expected 200 - the API did not come back up after deploy"
+            exit 1
+          fi
+          echo "API is responding (swagger.json: $status)"
+
+      - name: Health check - multilingual routes registered
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://api.yeslove.co.uk/api/v1/multilingual/personas)
+          # 401 (needs auth) or 200 means the route exists and registered
+          # correctly. 404 means voice_routes.py failed to import - almost
+          # always torch/transformers/soundfile not actually installed in
+          # the running container, even though the deploy step "succeeded".
+          if [ "$status" == "404" ]; then
+            echo "::error::/api/v1/multilingual/personas returned 404 - the multilingual namespace failed to register in the deployed container (likely torch/transformers/soundfile failed to install - check the 'Deploy to server' step's disk space and container logs above)"
+            exit 1
+          fi
+          echo "multilingual namespace is registered (personas: $status)"
