@@ -16,9 +16,11 @@ import {
   selectPersona,
   clearPersona,
   sendMultilingualMessage,
+  sendMultilingualVoice,
 } from "@/app/store/Multilingual/multilingualSlice";
 import { changeTabAction, TabType } from "@/app/store/Navigation/navigationSlice";
 import AudioPlayer from "./AudioPlayer";
+import VoiceRecordButton from "./VoiceRecordButton";
 import styles from "./MultilingualChatStyles";
 
 const PersonaPicker = () => {
@@ -90,6 +92,10 @@ const MultilingualChat = () => {
     setInput("");
   };
 
+  const handleVoiceRecorded = (uri: string) => {
+    dispatch(sendMultilingualVoice({ uri }));
+  };
+
   if (!selectedLanguage) {
     return (
       <View style={styles.outer}>
@@ -159,6 +165,7 @@ const MultilingualChat = () => {
           multiline
           accessibilityLabel="Message input"
         />
+        <VoiceRecordButton onRecorded={handleVoiceRecorded} disabled={sending} />
         <TouchableOpacity
           style={styles.sendButton}
           onPress={handleSend}

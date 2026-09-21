@@ -36,7 +36,13 @@
         }
       ],
       "expo-video",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Yeslove! to access your microphone to send voice messages in the chat."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

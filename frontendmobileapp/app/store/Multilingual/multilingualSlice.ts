@@ -80,6 +80,37 @@ const multilingualSlice = createSlice({
       state.sending = false;
       state.error = action.payload;
     },
+    sendMultilingualVoice: (state, action: PayloadAction<{ uri: string }>) => {
+      state.sending = true;
+      state.error = "";
+    },
+    sendMultilingualVoiceSucceeded: (
+      state,
+      action: PayloadAction<{
+        userText: string;
+        botText: string;
+        audioBase64: string | null;
+        sessionId: string;
+      }>,
+    ) => {
+      state.sending = false;
+      state.sessionId = action.payload.sessionId;
+      state.messages.push({
+        role: "user",
+        text: action.payload.userText,
+        createdAt: Date.now(),
+      });
+      state.messages.push({
+        role: "bot",
+        text: action.payload.botText,
+        createdAt: Date.now(),
+        audioBase64: action.payload.audioBase64,
+      });
+    },
+    sendMultilingualVoiceFailed: (state, action: PayloadAction<string>) => {
+      state.sending = false;
+      state.error = action.payload;
+    },
   },
 });
 
@@ -93,6 +124,9 @@ export const {
   sendMultilingualMessage,
   sendMultilingualMessageSucceeded,
   sendMultilingualMessageFailed,
+  sendMultilingualVoice,
+  sendMultilingualVoiceSucceeded,
+  sendMultilingualVoiceFailed,
 } = multilingualSlice.actions;
 
 export default multilingualSlice.reducer;
