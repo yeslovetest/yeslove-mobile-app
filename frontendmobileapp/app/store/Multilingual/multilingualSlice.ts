@@ -48,11 +48,13 @@ const multilingualSlice = createSlice({
       state.selectedLanguage = action.payload;
       state.sessionId = null;
       state.messages = [];
+      state.error = "";
     },
     clearPersona: (state) => {
       state.selectedLanguage = null;
       state.sessionId = null;
       state.messages = [];
+      state.error = "";
     },
     sendMultilingualMessage: (state, action: PayloadAction<{ text: string }>) => {
       state.sending = true;
