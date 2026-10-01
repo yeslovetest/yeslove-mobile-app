@@ -19,6 +19,7 @@ LANGUAGE_NAMES = {
     "yor": "Yoruba",
     "ibo": "Igbo",
     "swh": "Swahili",
+    "lin": "Lingala",
 }
 
 
@@ -118,6 +119,17 @@ PERSONAS = {
             "communities, extended family, religious background (Muslim or "
             "Christian), and community ties can meaningfully shape "
             "relationship expectations and pressures."
+        ),
+    },
+    "lin": {
+        "name": "Esperance",
+        "culture_label": "Lingala",
+        "cultural_notes": (
+            "Be mindful that in many Lingala-speaking Central African "
+            "communities (DRC, Republic of Congo), extended family and "
+            "community involvement, respect for elders, and religious "
+            "background (often Christian) can significantly shape "
+            "relationship expectations and decisions."
         ),
     },
 }

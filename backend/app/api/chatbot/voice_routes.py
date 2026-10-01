@@ -30,6 +30,7 @@ LANGUAGE_NAMES = {
     "yor": "Yoruba",
     "ibo": "Igbo",
     "swh": "Swahili",
+    "lin": "Lingala",
 }
 
 
