@@ -67,3 +67,7 @@ backend/backups/
 
 # Loki runtime data (WAL/chunks/index) — this is state, not config
 monitoring/loki-data/
+
+# Local env backups can hold real secrets
+.env.save
+*.env.save
