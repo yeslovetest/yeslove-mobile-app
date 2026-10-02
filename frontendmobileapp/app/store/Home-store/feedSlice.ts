@@ -65,6 +65,10 @@ const feedSlice = createSlice({
             state.feed.posts = state.feed.posts.filter((post) => post.id !== action.payload.postId);
             state.feed.friends = state.feed.friends.filter((post) => post.id !== action.payload.postId);
         },
+        removePostsByAuthor: (state, action: PayloadAction<{authorId: string}>) => {
+            state.feed.posts = state.feed.posts.filter((post) => post.author_id !== action.payload.authorId);
+            state.feed.friends = state.feed.friends.filter((post) => post.author_id !== action.payload.authorId);
+        },
         postReactionToPost: (state, action: PayloadAction<{postId: number, reactionType: string}>) => {},
         retrievePostReactions: (state, action: PayloadAction<{postId: number}>) => {},   // retrieves both comments and reactions
         setComments:  (state, action: PayloadAction<Comment[]>) => {
@@ -96,5 +100,5 @@ export const { setActiveHomeTabAction, setFeedDataAction, updatePostsForFeedActi
     postLikePost, postReactionToPost, setComments, retrieveOnePost, setDetailedPost,
     setReactions, retrievePostReactions, setScrollViewPosition,
     triggerScrollToTopAction, fetchFollowedUsers, setFollowing, SendFollowUser,
-    deletePostAction, removePostFromFeed } = feedSlice.actions;
+    deletePostAction, removePostFromFeed, removePostsByAuthor } = feedSlice.actions;
 export default feedSlice.reducer;

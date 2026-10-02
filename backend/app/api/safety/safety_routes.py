@@ -25,7 +25,8 @@ REPORTABLE_TYPES = {"post", "comment", "message", "user"}
 
 ReportRequest = api.model("ReportRequest", {
     "content_type": fields.String(required=True, description="post, comment, message or user"),
-    "content_id": fields.Integer(required=True, description="Id of the post, comment or message; user id for a user report"),
+    "content_id": fields.Integer(required=False, description="Id of the post, comment or message; user id for a user report"),
+    "user_keycloak_id": fields.String(required=False, description="For user reports: Keycloak id instead of content_id"),
     "reason": fields.String(required=True, description="One of: " + ", ".join(sorted(REPORT_REASONS))),
     "details": fields.String(required=False, description="Optional extra context (max 500 chars)"),
 })
@@ -78,6 +79,13 @@ class ReportContent(Resource):
         data = request.get_json(silent=True) or {}
         content_type = data.get("content_type")
         content_id = data.get("content_id")
+        # User reports may identify the user by Keycloak id, which is what the app holds.
+        if content_type == "user" and data.get("user_keycloak_id"):
+            from app.models import User
+            reported = User.query.filter_by(keycloak_id=data["user_keycloak_id"]).first()
+            if not reported:
+                return {"message": "Content not found"}, 404
+            content_id = reported.id
         reason = data.get("reason")
         details = (data.get("details") or "").strip()[:500] or None
 

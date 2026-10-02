@@ -302,7 +302,7 @@ const IndividualPost = () => {
             {reactionTypeTab === "comments" && contentDisplay === "show" && (
               <View>
                 {comments.toReversed().map((comment, index) => (
-                  <PostComment key={index} comment={comment} />
+                  <PostComment key={index} comment={comment} postId={individualPost.id} />
                 ))}
                 {comments.length === 0 && (
                   <ListStateView
