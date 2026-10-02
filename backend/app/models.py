@@ -461,6 +461,42 @@ class ModerationLog(db.Model):
     reviewed_at = db.Column(db.DateTime) # 🔹 Timestamp when the admin reviewed it
     timestamp = db.Column(db.DateTime, default=datetime.utcnow) # 🔹 When the moderation log entry was created (automatically set)
     
+# -------------------------
+# 🚀 User safety: blocks and content reports
+# -------------------------
+class UserBlock(db.Model):
+    __tablename__ = "user_block"
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    blocked_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("blocker_id", "blocked_id", name="unique_user_block"),
+        db.CheckConstraint("blocker_id != blocked_id", name="check_no_self_block"),
+    )
+
+
+class ContentReport(db.Model):
+    __tablename__ = "content_report"
+    id = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    reported_user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    content_type = db.Column(db.String(20), nullable=False)  # post, comment, message, user
+    content_id = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.String(30), nullable=False)
+    details = db.Column(db.String(500), nullable=True)
+    status = db.Column(db.String(20), default="open", nullable=False)  # open, actioned, dismissed
+    admin_notes = db.Column(db.Text, nullable=True)
+    reviewed_by = db.Column(db.Integer, nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("reporter_id", "content_type", "content_id", name="unique_content_report"),
+    )
+
+
 def generate_uuid():
     return str(uuid.uuid4())
 
