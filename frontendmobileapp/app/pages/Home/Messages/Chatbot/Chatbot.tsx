@@ -8,6 +8,8 @@ import Header from "@/app/Universal-components/Header/Header";
 import { useAppSelector, useAppDispatch } from "@/app/store/hooks";
 import { sendChatbotMessage } from "@/app/store/Chat/chatSlice";
 import type { ChatRecommendation } from "@/chatbot-client-api/api";
+import WellbeingNotice from "@/app/Universal-components/Wellbeing-notice/WellbeingNotice";
+import { containsCrisisLanguage } from "@/app/Universal-components/Wellbeing-notice/crisisLanguage";
 
 const Chatbot = () => {
   const dispatch = useAppDispatch();
@@ -21,6 +23,7 @@ const Chatbot = () => {
     }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [crisisSignal, setCrisisSignal] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const streamSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const screenHeight = Dimensions.get("window").height;
@@ -88,6 +91,9 @@ const Chatbot = () => {
 
   const postPrompt = async (prompt: string) => {
     setLoading(true);
+    if (containsCrisisLanguage(prompt)) {
+      setCrisisSignal((n) => n + 1);
+    }
 
     const now = new Date();
 
@@ -154,6 +160,7 @@ const Chatbot = () => {
   return (
     <Animated.View style={[styles.outerView, { transform: [{ translateY: slideAnim }] }]}>
       <Header />
+      <WellbeingNotice assistantName="Sera" openSignal={crisisSignal} />
       <KeyboardAvoidingView
         style={styles.chatBody}
         behavior="padding"
