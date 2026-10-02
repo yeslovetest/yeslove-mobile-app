@@ -452,7 +452,7 @@ class ModerationLog(db.Model):
     content_type = db.Column(db.String(50))  # e.g., 'post', 'comment', 'message'
     content = db.Column(db.Text)   # 🔹 The actual text/content that was flagged
     score = db.Column(db.Float) # 🔹 The main moderation score (e.g., toxicity) used in the decision
-    attributes = db.Column(db.JSON) # 🔹 Full set of moderation attributes (TOXICITY, INSULT, THREAT, etc.) returned from Perspective API
+    attributes = db.Column(db.JSON) # 🔹 Full set of moderation attributes (TOXICITY, INSULT, THREAT, etc.) returned by the moderation provider (OpenAI, or Perspective as a fallback)
     severity = db.Column(db.String(20)) # 🔹 Severity level decided by the system (e.g., 'low', 'medium', 'high')
     auto_action = db.Column(db.String(20)) # 🔹 What action was automatically taken by the system (e.g., 'blocked', 'allowed', 'review')
     admin_override = db.Column(db.String(20), nullable=True) # 🔹 What the admin decided later (e.g., 'approved', 'rejected', 'escalated')
