@@ -297,8 +297,13 @@ export const apiFactory = {
   },
 
   // Chat API
+  // With a dedicated chatbot URL (local dev) talk to chatbot-service directly. In
+  // store builds only the API URL is set, and chatbot-service is not exposed
+  // publicly, so go through the backend's authenticated proxy instead.
   sendMessage: (data: ChatRequest, config?: AxiosRequestConfig) =>
-    apiClient.post<ChatResponse>("/api/v1/chat/message", data, config),
+    chatbotBaseUrl
+      ? apiClient.post<ChatResponse>("/api/v1/chat/message", data, config)
+      : apiClient.post<ChatResponse>("/api/chatbot/message", data, config),
 
   // Sync API
   syncBlogs: (data: PostSyncRequest, config?: AxiosRequestConfig) =>
