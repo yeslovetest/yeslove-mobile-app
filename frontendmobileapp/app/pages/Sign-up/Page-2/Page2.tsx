@@ -7,7 +7,10 @@ import {
   Platform,
   ScrollView,
   useWindowDimensions,
+  Linking,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { PRIVACY_POLICY_URL, TERMS_URL } from "@/constants/legal";
 import Input from "../Sign-up-root/Sign-up-components/Input/Input";
 import { useAppSelector, useAppDispatch } from "../../../store/hooks";
 import { useSignup } from "@/hooks/signUpLogic";
@@ -126,6 +129,39 @@ const Page2 = () => {
               borderBottomColor={usernameBdColor[1]}
               onChangeText={signupAction.handleUsernameChange}
             />
+
+            <TouchableOpacity
+              style={{ flexDirection: "row", alignItems: "center", marginTop: 12, minHeight: 44 }}
+              onPress={() => signupAction.setTermsAccepted(!signupAction.termsAccepted)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: signupAction.termsAccepted }}
+              accessibilityLabel="I agree to the Terms and Privacy Policy"
+            >
+              <Ionicons
+                name={signupAction.termsAccepted ? "checkbox" : "square-outline"}
+                size={26}
+                color={theme.colors.primary}
+              />
+              <Text style={{ flex: 1, marginLeft: 8, color: theme.colors.textSecondary }}>
+                I agree to the{" "}
+                <Text
+                  style={{ color: theme.colors.primary, textDecorationLine: "underline" }}
+                  onPress={() => Linking.openURL(TERMS_URL).catch(() => undefined)}
+                  accessibilityRole="link"
+                >
+                  Terms
+                </Text>{" "}
+                and{" "}
+                <Text
+                  style={{ color: theme.colors.primary, textDecorationLine: "underline" }}
+                  onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)}
+                  accessibilityRole="link"
+                >
+                  Privacy Policy
+                </Text>
+                .
+              </Text>
+            </TouchableOpacity>
 
             <View style={sharedStyles.buttonContainer}>
               <TouchableOpacity

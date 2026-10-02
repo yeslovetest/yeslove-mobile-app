@@ -1,3 +1,5 @@
+import { Linking } from "react-native";
+import { PRIVACY_POLICY_URL, TERMS_URL } from "@/constants/legal";
 import Header from "@/app/Universal-components/Header/Header";
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
@@ -99,6 +101,26 @@ const SettingsPage = () => {
                 <Text style={settingsSharedStyles.settingsOptionText}>{item.label}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        ))}
+
+        {[
+          { label: "Privacy Policy", url: PRIVACY_POLICY_URL },
+          { label: "Terms & Conditions", url: TERMS_URL },
+        ].map((link) => (
+          <View key={link.label} style={settingsSharedStyles.settingsOptionContainer}>
+            <TouchableOpacity
+              onPress={() => Linking.openURL(link.url).catch(() => undefined)}
+              style={settingsSharedStyles.settingsOptionButton}
+              accessibilityRole="link"
+              accessibilityLabel={link.label}
+            >
+              <View style={settingsSharedStyles.settingsOptionLeftRow}>
+                <Ionicons name="document-text-outline" size={22} color={theme.colors.textPrimary} />
+                <Text style={settingsSharedStyles.settingsOptionText}>{link.label}</Text>
+              </View>
+              <Ionicons name="open-outline" size={20} color={theme.colors.textMuted} />
             </TouchableOpacity>
           </View>
         ))}

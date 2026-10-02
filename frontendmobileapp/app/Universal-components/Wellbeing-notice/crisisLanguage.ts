@@ -9,7 +9,7 @@ const CRISIS_PATTERNS: RegExp[] = [
   /\bdon'?t want to (live|be here|be alive)\b/i,
   /\bbetter off (dead|without me)\b/i,
   /\b(hurt|harm|cut|cutting) (myself|me)\b/i,
-  /\bself[- ]?harm\b/i,
+  /\bself[- ]?harm(ing|ed|s)?\b/i,
   /\b(he|she|they|my (partner|husband|wife|ex)) (is |are )?(hitting|beating|abusing|threatening) me\b/i,
   /\bdomestic (abuse|violence)\b/i,
   /\bnot safe (at home|with)\b/i,
