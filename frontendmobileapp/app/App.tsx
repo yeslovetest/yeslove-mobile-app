@@ -31,6 +31,7 @@ import EmailNtfnSettings from "./pages/Profile/Settings/Email/EmailNtfnSetting";
 import ProfileVisibilitySettings from "./pages/Profile/Settings/Profile-visibility/ProfileVisibilitySettings";
 import NotificationPreferences from "./pages/Profile/Settings/Preferences/Notifications";
 import Chatbot from "./pages/Home/Messages/Chatbot/Chatbot";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import MultilingualChat from "./pages/Home/Messages/Multilingual-chat/MultilingualChat";
 
 const App = () => {
@@ -45,6 +46,8 @@ const App = () => {
     (state) => state.navigation.tabStack.at(-1)
   );
   const loginState = useAppSelector((state) => state.auth.loginState);
+  const currentUserId = useAppSelector((state) => state.user.id);
+  usePushNotifications(loginState === LoginState.LOGGED_IN, currentUserId ?? undefined);
 
   React.useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;

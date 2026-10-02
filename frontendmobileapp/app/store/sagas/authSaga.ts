@@ -42,6 +42,7 @@ import { setFeedDataAction } from "../Home-store/feedSlice";
 import { setChatMessages, setFriendList } from "../Chat/chatSlice";
 import { syncUser, UserIdentityResponse } from "../../services/authService";
 import { getApiMessage, getHttpStatus } from "./sagaHelpers";
+import { unregisterPushNotifications } from "@/app/services/pushNotifications";
 
 const clearPersistedAuthState = async (): Promise<void> => {
   TOKEN_REFRESH_SERVICE.stopRefreshingToken();
@@ -373,6 +374,9 @@ function* handleSignupRequest(action: PayloadAction<SignupRequest>) {
 }
 
 function* handleLogout(action: PayloadAction<string>) {
+  // Stop pushes to this device while the auth header is still set.
+  yield call(unregisterPushNotifications);
+
   try {
     if (action.payload) {
       yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
