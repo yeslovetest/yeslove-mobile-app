@@ -42,6 +42,12 @@
         {
           "microphonePermission": "Allow Yeslove! to access your microphone to send voice messages in the chat."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#2d5be3"
+        }
       ]
     ],
     "experiments": {

@@ -144,17 +144,19 @@ class SendMessage(Resource):
         
         try:
             # Send realtime message via WebSocket
+            # The mobile app has no realtime channel and no websocket service is attached
+            # to the app, so treat the receiver as offline and push in that case too.
+            is_online = False
             if hasattr(current_app, 'websocket_service'):
                 is_online = current_app.websocket_service.send_message_realtime(receiver.id, message_data)
-                if not is_online:
-                    # User offline, send push notification
-                    PushNotificationService.send_to_user(
-                        user_id=receiver.id,
-                        title="New Message",
-                        body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
-                        data={"type": "message", "sender_id": user.id, "chat_id": new_message.id},
-                        notification_type="messages"
-                    )
+            if not is_online:
+                PushNotificationService.send_to_user(
+                    user_id=receiver.id,
+                    title="New Message",
+                    body=f"{user.username}: {message[:50]}..." if message else f"{user.username} sent you a message",
+                    data={"type": "message", "sender_id": user.id, "sender_keycloak_id": user.keycloak_id, "chat_id": new_message.id},
+                    notification_type="messages"
+                )
             
             # Always create in-app notification
             NotificationService.create_notification(
