@@ -21,6 +21,8 @@ import {
 import { changeTabAction, TabType } from "@/app/store/Navigation/navigationSlice";
 import AudioPlayer from "./AudioPlayer";
 import VoiceRecordButton from "./VoiceRecordButton";
+import WellbeingNotice from "@/app/Universal-components/Wellbeing-notice/WellbeingNotice";
+import { containsCrisisLanguage } from "@/app/Universal-components/Wellbeing-notice/crisisLanguage";
 import styles from "./MultilingualChatStyles";
 
 const PersonaPicker = () => {
@@ -69,6 +71,7 @@ const PersonaPicker = () => {
 const MultilingualChat = () => {
   const dispatch = useAppDispatch();
   const [input, setInput] = useState("");
+  const [crisisSignal, setCrisisSignal] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
   const selectedLanguage = useAppSelector((state) => state.multilingual.selectedLanguage);
@@ -88,6 +91,9 @@ const MultilingualChat = () => {
 
   const handleSend = () => {
     if (!input.trim()) return;
+    if (containsCrisisLanguage(input)) {
+      setCrisisSignal((n) => n + 1);
+    }
     dispatch(sendMultilingualMessage({ text: input.trim() }));
     setInput("");
   };
@@ -106,6 +112,7 @@ const MultilingualChat = () => {
           <Text style={styles.headerTitle}>Chat in your language</Text>
           <View style={{ width: 26 }} />
         </View>
+        <WellbeingNotice assistantName="These assistants" />
         <PersonaPicker />
       </View>
     );
@@ -133,6 +140,8 @@ const MultilingualChat = () => {
           <Ionicons name="close" size={26} color={styles.headerTitle.color as string} />
         </TouchableOpacity>
       </View>
+
+      <WellbeingNotice assistantName={persona?.name ?? "Sera"} openSignal={crisisSignal} />
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.messagesContainer}>
         {messages.map((m, idx) =>

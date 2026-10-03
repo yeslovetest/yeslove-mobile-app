@@ -76,6 +76,11 @@ class SendMessage(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
+        if user and receiver:
+            from app.utils.safety import is_blocked_between
+            if is_blocked_between(user.id, receiver.id):
+                return {"message": "You can't message this user"}, 403
+
         if not message or not receiver_id:
             logger.error("❌ Message content or receiver ID missing")
             return {"message": "Message and receiver ID are required"}, 400
@@ -201,6 +206,10 @@ class GetMessages(Resource):
         if not user or not receiver:
             return {"message": "User not found"}, 404
 
+        from app.utils.safety import is_blocked_between
+        if is_blocked_between(user.id, receiver.id):
+            return {"message": "User not found"}, 404
+
         # Fetch all messages between users
         messages = Chat.query.filter(
             ((Chat.sender_id == user.id) & (Chat.receiver_id == receiver.id))
@@ -231,6 +240,7 @@ class GetMessages(Resource):
 
                 # Start new group
                 current_group = {
+                    "id": msg.id,
                     "sender": sender,
                     "receiver": receiver_name,
                     "content": content,
@@ -334,6 +344,9 @@ class GetFriends(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
+        from app.utils.safety import blocked_user_ids
+        hidden_ids = blocked_user_ids(user.id)
+
         # Subquery: find last message timestamp for each conversation
         last_message_subq = (
             db.session.query(
@@ -392,7 +405,8 @@ class GetFriends(Resource):
             )
             .distinct(User.id)
             .all()
-        )   
+        )
+        friends_with_last_message = [f for f in friends_with_last_message if f.friend_id not in hidden_ids]
 
         return {
             "friends": [

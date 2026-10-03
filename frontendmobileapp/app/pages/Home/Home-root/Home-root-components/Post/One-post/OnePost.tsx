@@ -15,10 +15,13 @@ import {
   setPostReactionTab,
   SendFollowUser,
   deletePostAction,
+  removePostFromFeed,
+  removePostsByAuthor,
 } from "@/app/store/Home-store/feedSlice";
 import { BASE_URL } from "@/app/config/baseUrl";
 import PostFilePreview from "@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview";
 import { getImageSource } from "@/constants/imageFallbacks";
+import ReportBlockSheet from "@/app/Universal-components/Report-block/ReportBlockSheet";
 
 export interface Props {
   post: PostData;
@@ -33,6 +36,7 @@ const OnePost = (props: Props) => {
   const [isReactionModalVisible, setReactionModalVisible] = useState(false);
   const [isFollowMenuVisible, setFollowMenuVisible] = useState(false);
   const [isPostMenuVisible, setPostMenuVisible] = useState(false);
+  const [isReportSheetVisible, setReportSheetVisible] = useState(false);
   const currentUserId = useAppSelector((state) => state.user.id);
   const isOwnPost = !!props.post.author_id && props.post.author_id === currentUserId;
 
@@ -224,6 +228,21 @@ const OnePost = (props: Props) => {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
             accessibilityLabel="Post options"
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={theme.colors.textPrimary}
+            />
+          </TouchableOpacity>
+        )}
+        {!isOwnPost && (
+          <TouchableOpacity
+            style={styles.postOptionsButton}
+            onPress={() => setReportSheetVisible(true)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Report or block"
           >
             <Ionicons
               name="ellipsis-horizontal"
@@ -536,6 +555,21 @@ const OnePost = (props: Props) => {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <ReportBlockSheet
+        visible={isReportSheetVisible}
+        onClose={() => setReportSheetVisible(false)}
+        contentType="post"
+        contentId={props.post.id as number}
+        authorId={props.post.author_id}
+        authorName={props.post.author}
+        onReported={() => dispatch(removePostFromFeed({ postId: props.post.id as number }))}
+        onBlocked={() => {
+          if (props.post.author_id) {
+            dispatch(removePostsByAuthor({ authorId: props.post.author_id }));
+          }
+        }}
+      />
     </View>
   );
 };

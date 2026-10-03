@@ -452,7 +452,7 @@ class ModerationLog(db.Model):
     content_type = db.Column(db.String(50))  # e.g., 'post', 'comment', 'message'
     content = db.Column(db.Text)   # 🔹 The actual text/content that was flagged
     score = db.Column(db.Float) # 🔹 The main moderation score (e.g., toxicity) used in the decision
-    attributes = db.Column(db.JSON) # 🔹 Full set of moderation attributes (TOXICITY, INSULT, THREAT, etc.) returned from Perspective API
+    attributes = db.Column(db.JSON) # 🔹 Full set of moderation attributes (TOXICITY, INSULT, THREAT, etc.) returned by the moderation provider (OpenAI, or Perspective as a fallback)
     severity = db.Column(db.String(20)) # 🔹 Severity level decided by the system (e.g., 'low', 'medium', 'high')
     auto_action = db.Column(db.String(20)) # 🔹 What action was automatically taken by the system (e.g., 'blocked', 'allowed', 'review')
     admin_override = db.Column(db.String(20), nullable=True) # 🔹 What the admin decided later (e.g., 'approved', 'rejected', 'escalated')
@@ -461,6 +461,42 @@ class ModerationLog(db.Model):
     reviewed_at = db.Column(db.DateTime) # 🔹 Timestamp when the admin reviewed it
     timestamp = db.Column(db.DateTime, default=datetime.utcnow) # 🔹 When the moderation log entry was created (automatically set)
     
+# -------------------------
+# 🚀 User safety: blocks and content reports
+# -------------------------
+class UserBlock(db.Model):
+    __tablename__ = "user_block"
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    blocked_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("blocker_id", "blocked_id", name="unique_user_block"),
+        db.CheckConstraint("blocker_id != blocked_id", name="check_no_self_block"),
+    )
+
+
+class ContentReport(db.Model):
+    __tablename__ = "content_report"
+    id = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    reported_user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True, index=True)
+    content_type = db.Column(db.String(20), nullable=False)  # post, comment, message, user
+    content_id = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.String(30), nullable=False)
+    details = db.Column(db.String(500), nullable=True)
+    status = db.Column(db.String(20), default="open", nullable=False)  # open, actioned, dismissed
+    admin_notes = db.Column(db.Text, nullable=True)
+    reviewed_by = db.Column(db.Integer, nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("reporter_id", "content_type", "content_id", name="unique_content_report"),
+    )
+
+
 def generate_uuid():
     return str(uuid.uuid4())
 

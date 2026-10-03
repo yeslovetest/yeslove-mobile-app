@@ -302,6 +302,90 @@ class ProfessionalVerification(Resource):
             "professional": _serialize_professional(details),
         }, 200
 
+@api.route("/reports")
+class ListContentReports(Resource):
+    @require_auth()
+    @api.doc(description="List user reports of posts, comments, messages and users")
+    @api.param("status", "open, actioned or dismissed", type='string', default="open")
+    @api.param("page", "Page number", type='integer', default=1)
+    @api.param("per_page", "Items per page", type='integer', default=20)
+    def get(self):
+        """List content reports for admin review (oldest open reports first)."""
+        from app.models import ContentReport, User
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
+
+        status = request.args.get("status", "open")
+        page = int(request.args.get("page", 1))
+        per_page = min(int(request.args.get("per_page", 20)), 100)
+
+        query = ContentReport.query.filter_by(status=status).order_by(ContentReport.created_at.asc())
+        paginated = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        user_ids = {r.reporter_id for r in paginated.items} | {r.reported_user_id for r in paginated.items if r.reported_user_id}
+        users = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()} if user_ids else {}
+
+        return {
+            "reports": [
+                {
+                    "id": r.id,
+                    "content_type": r.content_type,
+                    "content_id": r.content_id,
+                    "reason": r.reason,
+                    "details": r.details,
+                    "status": r.status,
+                    "reporter": users[r.reporter_id].username if r.reporter_id in users else None,
+                    "reported_user_id": r.reported_user_id,
+                    "reported_username": users[r.reported_user_id].username if r.reported_user_id in users else None,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in paginated.items
+            ],
+            "pagination": {
+                "page": paginated.page,
+                "per_page": paginated.per_page,
+                "total": paginated.total,
+                "has_next": paginated.has_next,
+            },
+        }, 200
+
+
+@api.route("/reports/<int:report_id>")
+class ReviewContentReport(Resource):
+    @require_auth()
+    @api.doc(description="Resolve a content report")
+    def put(self, report_id):
+        """Mark a report actioned or dismissed. Actioned reports can also remove the reported post."""
+        from app.models import ContentReport, Post, User, db
+
+        if not _is_admin():
+            return {"message": "Admin role required"}, 403
+
+        data = request.get_json(silent=True) or {}
+        action = data.get("action")
+        if action not in ("actioned", "dismissed"):
+            return {"message": "action must be 'actioned' or 'dismissed'"}, 400
+
+        report = ContentReport.query.get(report_id)
+        if not report:
+            return {"message": "Report not found"}, 404
+
+        admin_user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        report.status = action
+        report.admin_notes = data.get("notes", "")
+        report.reviewed_by = admin_user.id if admin_user else None
+        report.reviewed_at = datetime.utcnow()
+
+        if action == "actioned" and data.get("remove_content") and report.content_type == "post":
+            post = Post.query.get(report.content_id)
+            if post:
+                post.status = "removed"
+
+        db.session.commit()
+        return {"message": f"Report {action}"}, 200
+
+
 def _parse_date(value):
     try:
         return datetime.strptime(value, "%Y-%m-%d").date()

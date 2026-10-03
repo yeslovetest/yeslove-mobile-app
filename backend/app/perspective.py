@@ -28,3 +28,17 @@ def analyze_text(text, *, languages=None, attributes=None):
         logger.error("Perspective API error: %s", resp.text)
         return None
     return resp.json()
+
+
+def normalise(result: dict) -> dict:
+    """Map Perspective attribute scores onto YesLove's moderation labels (0 to 1)."""
+    scores = result.get("attributeScores", {})
+
+    def value(name):
+        return float(scores.get(name, {}).get("summaryScore", {}).get("value", 0.0) or 0.0)
+
+    return {
+        "HARASSMENT": max(value("TOXICITY"), value("INSULT")),
+        "THREAT": value("THREAT"),
+        "SEXUAL": value("SEXUALLY_EXPLICIT"),
+    }

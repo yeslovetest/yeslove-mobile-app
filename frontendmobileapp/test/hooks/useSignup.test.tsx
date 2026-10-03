@@ -18,6 +18,7 @@ const fillPage2 = (result: { current: ReturnType<typeof useSignup> }) => {
     result.current.handleUsernameChange("janedoe");
     result.current.handleFirstNameChange("Jane");
     result.current.handleLastNameChange("Doe");
+    result.current.setTermsAccepted(true);
   });
 };
 
@@ -30,6 +31,28 @@ describe("useSignup (phone number removed)", () => {
 
     const [valid] = result.current.validateInputs(2);
     expect(valid).toBe(true);
+  });
+
+  it("blocks page 2 until the terms are accepted", () => {
+    const { store, wrapper } = makeWrapper();
+    const { result } = renderHook(() => useSignup(), { wrapper });
+
+    act(() => {
+      result.current.handleUsernameChange("janedoe");
+      result.current.handleFirstNameChange("Jane");
+      result.current.handleLastNameChange("Doe");
+    });
+
+    expect(result.current.validateInputs(2)).toEqual([false, "terms"]);
+
+    act(() => {
+      result.current.handleSignup("jane@x.com", "secret1", "secret1");
+    });
+    expect(store.getState().auth.lastSignupPayload).toBeFalsy();
+    expect(store.getState().auth.errorMessage).toMatch(/Terms and Privacy Policy/);
+
+    act(() => result.current.setTermsAccepted(true));
+    expect(result.current.validateInputs(2)[0]).toBe(true);
   });
 
   it("still blocks page 2 when a required name field is missing", () => {

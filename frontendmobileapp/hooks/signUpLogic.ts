@@ -25,6 +25,8 @@ export const useSignup = () => {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  // Must be ticked before the account can be created (store and privacy requirement).
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const initialBdColor = [theme.colors.border, theme.colors.primary];
   const [passwordBdColor, setPasswordBdColor] = useState(initialBdColor);
@@ -84,6 +86,8 @@ export const useSignup = () => {
         return [false, "firstName"];
       } else if (!lastName) {
         return [false, "lastName"];
+      } else if (!termsAccepted) {
+        return [false, "terms"];
       } else {
         return [true, "lastName"];
       }
@@ -164,6 +168,8 @@ export const useSignup = () => {
       setUsernameBdColor(initialBdColor);
       setFirstNameBdColor(initialBdColor);
       dispatch(setErrorMessage("Empty Field: Please type in last name."));
+    } else if (field == "terms") {
+      dispatch(setErrorMessage("Please accept the Terms and Privacy Policy to create an account."));
     }
   };
 
@@ -186,6 +192,8 @@ export const useSignup = () => {
     handleConfirmEmailChange,
     handleFirstNameChange,
     handleLastNameChange,
+    termsAccepted,
+    setTermsAccepted,
     handleLoginStateChange,
     handleSignup,
     validateInputs,

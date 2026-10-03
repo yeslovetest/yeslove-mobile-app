@@ -1,7 +1,7 @@
 from flask import request, current_app
 from flask_restx import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-from sqlalchemy import true
+from sqlalchemy import true, or_
 from app.utils.moderation_utils import handle_content_moderation, check_user_suspension
 from app.logging_setup import setup_logger
 
@@ -79,6 +79,13 @@ class Feed(Resource):
             following = [follow.followed_id for follow in user.following]
             following.append(user.id)
             query = Post.query.filter(Post.user_id.in_(following)).order_by(Post.timestamp.desc())
+
+        from app.utils.safety import blocked_user_ids
+        hidden_ids = blocked_user_ids(user.id)
+        if hidden_ids:
+            query = query.filter(~Post.user_id.in_(hidden_ids))
+        # Posts an admin removed after a report must not appear in any feed.
+        query = query.filter(or_(Post.status.is_(None), Post.status != "removed"))
 
         paginated_posts = query.paginate(page=page, per_page=per_page, error_out=False)
         posts = paginated_posts.items
@@ -324,6 +331,10 @@ class GetPost(Resource):
         post = Post.query.get_or_404(post_id)
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
 
+        from app.utils.safety import is_blocked_between
+        if post.status == "removed" or (user and is_blocked_between(user.id, post.user_id)):
+            return {"message": "Post not found"}, 404
+
         user_reaction = Reaction.query.filter_by(post_id=post_id, user_id=user.id).first()
         return {
             "id": post.id,
@@ -558,11 +569,16 @@ class AddComment(Resource):
 @api.route("/post/<int:post_id>/comments")
 class GetComments(Resource):
     from .feed_models import GetCommentResponse
+    @require_auth()
     @api.response(code=200, description="List of comments", model=GetCommentResponse)
     def get(self, post_id):
-        """Fetch all comments for a post."""
-        from app.models import Comment
+        """Fetch all comments for a post, leaving out comments from blocked users."""
+        from app.models import Comment, User
+        from app.utils.safety import blocked_user_ids
+        viewer = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         comments = Comment.query.filter_by(post_id=post_id).all()
+        hidden_ids = blocked_user_ids(viewer.id) if viewer else set()
+        comments = [c for c in comments if c.user_id not in hidden_ids]
         
         return {
             "comments": [
@@ -570,6 +586,7 @@ class GetComments(Resource):
                     "id": comment.id,
                     "content": comment.content,
                     "author": comment.user.username if not comment.post.is_anonymous else 'Anonymous User',
+                    "author_id": comment.user.keycloak_id if not comment.post.is_anonymous else None,
                     "timestamp": comment.timestamp.isoformat() if comment.timestamp else None,
                 }
             for comment in comments]
@@ -598,6 +615,10 @@ class FollowUser(Resource):
         target_user = User.query.filter_by(keycloak_id=keycloak_id).first()
         if not target_user:
             return {"message": "Target user not found"}, 404
+
+        from app.utils.safety import is_blocked_between
+        if is_blocked_between(user.id, target_user.id):
+            return {"message": "User not found"}, 404
 
         follow_action = request.json.get("action", "follow")  # Default to "follow"
         follow_type = request.json.get("follow_type", "basic")
