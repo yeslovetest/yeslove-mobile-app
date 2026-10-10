@@ -297,6 +297,9 @@ class WordPressProfessional(db.Model):
     bio = db.Column(db.Text, nullable=True)
     avatar_url = db.Column(db.String(500), nullable=True)
     synced_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    # The professional's app account, set by an admin with `flask link-wordpress-professional`.
+    # Never guessed from a matching username: only a linked professional can be messaged.
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), unique=True, nullable=True)
 
 
 # ------------------------- Create BlogPost Model -------------------------

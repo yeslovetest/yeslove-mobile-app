@@ -66,7 +66,14 @@ class SendMessage(Resource):
         from datetime import datetime
 
 
-        data = request.json
+        # The mobile app sends multipart/form-data (receiver_id, message and repeated "media"
+        # files); other clients may send JSON with already-uploaded media ids.
+        files = []
+        if request.is_json:
+            data = request.get_json(silent=True) or {}
+        else:
+            data = request.form.to_dict()
+            files = [f for f in request.files.getlist("media") if f and f.filename]
         receiver_id = data.get("receiver_id")
         message = data.get("message")
 
@@ -81,10 +88,7 @@ class SendMessage(Resource):
             if is_blocked_between(user.id, receiver.id):
                 return {"message": "You can't message this user"}, 403
 
-        if not message or not receiver_id:
-            logger.error("❌ Message content or receiver ID missing")
-            return {"message": "Message and receiver ID are required"}, 400
-        if (not message and not data.get("media_id")) or not receiver_id:
+        if (not message and not data.get("media_id") and not files) or not receiver_id:
             logger.error("❌ Message content/media or receiver ID missing")
             return {"message": "Message or media and receiver ID are required"}, 400
 
@@ -119,6 +123,16 @@ class SendMessage(Resource):
         # ✅ Save the message (even if flagged)
         #new_message = Chat(sender_id=user.id, receiver_id=receiver_id, message=message)
         media_id = data.get("media_id")
+        if files:
+            # Stored as private media only after the text passed moderation.
+            from app.services.media.media_service import MediaService
+            try:
+                media_id = (media_id or []) + [
+                    MediaService.store_file(file=f, user_id=user.id, is_public=False).get("media_id") for f in files
+                ]
+            except Exception as e:
+                logger.error(f"Chat media upload failed: {e}")
+                return {"message": "Upload failed"}, 500
         if media_id:
             for id in media_id:
               new_message = Chat(sender_id=user.id, receiver_id=receiver.id, message=message, media_id=id)
@@ -349,6 +363,15 @@ class GetFriends(Resource):
         from app.utils.safety import blocked_user_ids
         hidden_ids = blocked_user_ids(user.id)
 
+        friend_rows = db.session.query(Follow.follower_id, Follow.followed_id).filter(
+            Follow.follow_type == "friend",
+            or_(Follow.follower_id == user.id, Follow.followed_id == user.id),
+        ).all()
+        chat_rows = db.session.query(Chat.sender_id, Chat.receiver_id).filter(
+            or_(Chat.sender_id == user.id, Chat.receiver_id == user.id)
+        ).distinct().all()
+        contact_ids = {i for row in friend_rows + chat_rows for i in row if i != user.id}
+
         # Subquery: find last message timestamp for each conversation
         last_message_subq = (
             db.session.query(
@@ -376,18 +399,10 @@ class GetFriends(Resource):
                 Chat.opened,
                 Chat.sender_id
             )
-            .join(
-                Follow,
-                or_(
-                    Follow.follower_id == User.id,
-                    Follow.followed_id == User.id
-                )
-            )
-            .filter(Follow.follow_type == "friend")
-            .filter(or_(
-                Follow.follower_id == user.id,
-                Follow.followed_id == user.id
-            )).filter(User.id != user.id)
+            # Friends, plus anyone the user has exchanged a message with: a member who messages a
+            # professional is not their friend, and the professional still needs to see the chat.
+            .filter(User.id.in_(contact_ids))
+            .filter(User.id != user.id)
             .outerjoin(
                 last_message_subq,
                 and_(

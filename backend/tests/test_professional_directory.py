@@ -156,3 +156,132 @@ def test_the_sync_command_needs_configuration(app, wordpress):
 def test_the_sync_command_reports_counts(app, wordpress):
     result = app.test_cli_runner().invoke(args=["sync-wordpress-professionals"])
     assert result.exit_code == 0 and "added: 2" in result.output
+
+
+# --- linking a website professional to an app account (so members can message them) ---
+
+def make_professional_account(username="drjane", user_type="professional", details=True):
+    from app import db
+    from app.models import ProfessionalDetails, User
+
+    user = User(keycloak_id=f"kc-{username}", username=username, email=f"{username}@example.com", user_type=user_type)
+    db.session.add(user)
+    db.session.flush()
+    if details:
+        db.session.add(ProfessionalDetails(user_id=user.id, license_body="BACP", license_number="123",
+                                           consent_license_data=True))
+    db.session.commit()
+    return user
+
+
+def test_unlinked_professionals_have_no_account_to_message(client, wordpress):
+    sync()
+    assert all(p["keycloak_id"] is None for p in fetch(client).get_json()["professionals"])
+
+
+def test_a_linked_professional_can_be_messaged(client, wordpress):
+    from app.services.wordpress_professional_service import link_professional
+
+    sync()
+    make_professional_account()
+    link_professional(9, "drjane")
+    by_name = {p["username"]: p for p in fetch(client).get_json()["professionals"]}
+    assert by_name["Jane & Doe"]["keycloak_id"] == "kc-drjane"
+    assert by_name["Alan Smith"]["keycloak_id"] is None
+
+
+def test_the_link_survives_a_resync(client, wordpress):
+    from app.services.wordpress_professional_service import link_professional
+
+    sync()
+    make_professional_account()
+    link_professional(9, "drjane")
+    wordpress.return_value = upstream_page([member(9, "Jane &amp; Doe", "New bio"), PEOPLE[1]])
+    sync()
+    by_name = {p["username"]: p for p in fetch(client).get_json()["professionals"]}
+    assert by_name["Jane & Doe"]["keycloak_id"] == "kc-drjane" and by_name["Jane & Doe"]["bio"] == "New bio"
+
+
+@pytest.mark.parametrize("setup,message", [
+    (dict(user_type="standard"), "not a professional account"),
+    (dict(details=False), "not a professional account"),
+])
+def test_only_real_professional_accounts_can_be_linked(client, wordpress, setup, message):
+    from app.services.wordpress_professional_service import LinkError, link_professional
+
+    sync()
+    make_professional_account(**setup)
+    with pytest.raises(LinkError, match=message):
+        link_professional(9, "drjane")
+
+
+def test_linking_needs_a_synced_professional_and_an_existing_account(client, wordpress):
+    from app.services.wordpress_professional_service import LinkError, link_professional
+
+    with pytest.raises(LinkError, match="Run the sync first"):
+        link_professional(9, "drjane")
+    sync()
+    with pytest.raises(LinkError, match="No app account"):
+        link_professional(9, "nobody")
+
+
+def test_one_account_cannot_be_linked_to_two_professionals(client, wordpress):
+    from app.services.wordpress_professional_service import LinkError, link_professional
+
+    sync()
+    make_professional_account()
+    link_professional(9, "drjane")
+    with pytest.raises(LinkError, match="already linked"):
+        link_professional(4, "drjane")
+
+
+def test_unlinking(client, wordpress):
+    from app.services.wordpress_professional_service import link_professional, unlink_professional
+
+    sync()
+    make_professional_account()
+    link_professional(9, "drjane")
+    unlink_professional(9)
+    assert all(p["keycloak_id"] is None for p in fetch(client).get_json()["professionals"])
+
+
+def test_deleting_the_account_unlinks_the_professional(client, wordpress):
+    from app.models import WordPressProfessional
+    from app.services.account_service import AccountService
+    from app.services.wordpress_professional_service import link_professional
+
+    sync()
+    user = make_professional_account()
+    link_professional(9, "drjane")
+    AccountService.erase_user_data(user)
+    assert WordPressProfessional.query.filter_by(wp_user_id=9).one().user_id is None
+
+
+def test_an_older_table_gets_the_new_column(app):
+    from sqlalchemy import inspect, text
+    from app import db
+    from app.services.wordpress_professional_service import ensure_professional_table
+
+    db.session.remove()
+    with db.engine.begin() as connection:
+        connection.execute(text("DROP TABLE wordpress_professionals"))
+        connection.execute(text(
+            "CREATE TABLE wordpress_professionals (id INTEGER PRIMARY KEY, wp_user_id INTEGER NOT NULL UNIQUE, "
+            "name VARCHAR(255) NOT NULL, bio TEXT, avatar_url VARCHAR(500), synced_at DATETIME NOT NULL)"))
+    ensure_professional_table(db)
+    assert "user_id" in {c["name"] for c in inspect(db.engine).get_columns("wordpress_professionals")}
+    ensure_professional_table(db)  # safe to run again
+
+
+def test_the_link_commands(app, wordpress):
+    sync()
+    make_professional_account()
+    runner = app.test_cli_runner()
+    listed = runner.invoke(args=["list-wordpress-professionals"])
+    assert "not linked" in listed.output
+    linked = runner.invoke(args=["link-wordpress-professional", "9", "drjane"])
+    assert linked.exit_code == 0 and "Linked website professional 9" in linked.output
+    assert "linked to drjane" in runner.invoke(args=["list-wordpress-professionals"]).output
+    bad = runner.invoke(args=["link-wordpress-professional", "9", "nobody"])
+    assert bad.exit_code != 0 and "No app account" in bad.output
+    assert runner.invoke(args=["link-wordpress-professional", "9", "--unlink"]).exit_code == 0
