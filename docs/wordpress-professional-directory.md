@@ -1,31 +1,40 @@
 # Website professionals in the mobile app
 
-The app previously queried only local verified User/ProfessionalDetails rows. It now reads WordPress users filtered by the configured professional role on each directory request. No scheduled import or duplicate app accounts are needed. Blog and upload behaviour is unchanged.
+The app never contacts WordPress. A sync job copies the website's professionals into our own database (`wordpress_professionals`), and `/api/events/professionals` reads that copy. The job runs every 6 hours as the `professional-sync` service in `docker-compose.microservices.yml`, and on demand with:
+
+```
+docker compose -f docker-compose.microservices.yml exec main-app flask sync-wordpress-professionals
+```
+
+It prints `added`, `updated`, `removed` and `total`. A change on the website shows in the app after the next sync (at most 6 hours).
 
 ## Backend configuration
 
-Set these on the backend service (ECS task environment/secrets), never in Expo:
+Set these in `backend/.env` on the server, never in Expo or in source control:
 
-- `PROFESSIONALS_SOURCE=wordpress` (default)
-- `WORDPRESS_DIRECTORY_API_URL=https://yeslove.co.uk/wp-json/wp/v2` (default)
+- `PROFESSIONALS_SOURCE=wordpress` (default) or `database` (the verified local professionals, no WordPress)
+- `WORDPRESS_DIRECTORY_API_URL=https://yeslove.co.uk/wp-json/wp/v2` (default; HTTPS required)
 - `WORDPRESS_PROFESSIONAL_ROLE=professional` (default; verify against the website directory)
-- `WORDPRESS_DIRECTORY_USERNAME`: dedicated integration account
-- `WORDPRESS_DIRECTORY_APPLICATION_PASSWORD`: application password for that account
+- `WORDPRESS_DIRECTORY_USERNAME`: a dedicated integration account
+- `WORDPRESS_DIRECTORY_APPLICATION_PASSWORD`: an application password for that account
 
-The account needs WordPress `list_users` capability to filter users by role and include professionals who have no published posts. Prefer a dedicated integration account with only the needed capability. Application passwords inherit the account permissions; they do not add permissions. Configure secrets through the deployment secret store, not source control or the app. HTTPS is required and redirects are rejected.
+Only the sync job uses the WordPress password. The account needs the WordPress `list_users` capability. Use a dedicated account with only that capability.
 
-Missing configuration returns 503; upstream errors return 502/504. The app shows a retry state rather than claiming the directory is empty. The endpoint now requires the app user's normal bearer token because the website directory is login-protected. Existing mobile requests already carry that token.
+## How it behaves
 
-## Required live verification before release
+- **Not configured:** the sync command fails with a clear message, and the API returns 503 ("not yet configured") while the copy is empty. It does not show an empty directory as if that were true.
+- **Configured, not yet synced:** the API returns an empty list.
+- **WordPress down, timing out, or rejecting the login:** the sync fails and the existing copy is left untouched, so the app keeps working.
+- **WordPress returns nobody while we hold a copy:** treated as a failure and the copy is kept, so an outage or a role change cannot wipe the list. (If the website really has no professionals left, clear the table by hand.)
+- Only the name, biography and photo are copied. Email addresses and other account details are never requested or stored.
 
-1. Confirm the website Get Help directory uses role `professional`. If it also filters approval/status or uses plugin-specific profile fields, adapt the service to that same rule before release. Role membership alone is not proof of professional verification.
-2. Confirm the integration account can GET `/wp-json/wp/v2/users?roles=professional&context=view`. Verify that non-author professionals are included.
-3. Compare names, count, biographies and images against the website while signed in. This adapter uses standard WordPress name, description and avatar fields; a membership plugin may store these elsewhere.
-4. Sign into the app and check the list, search, next/previous pages and retry after a simulated network failure.
-5. Add/update a website professional and confirm reopening the app directory reflects the change.
+## Before relying on it
 
-No live credentials were available during implementation. Automated tests mock WordPress; they do not establish that the live directory uses this role or these profile fields.
+1. Confirm the website directory uses the role `professional`. If it also filters on approval or status, or uses plugin-specific profile fields, change the sync to the same rule. Role membership alone is not proof that someone is verified.
+2. Confirm the integration account can GET `/wp-json/wp/v2/users?roles=professional&context=view`, including professionals with no published posts.
+3. Run the sync, then compare names, count, biographies and photos with the website.
+4. In the app, check the list, search and next/previous pages.
 
-For installations intentionally using local professional accounts, `PROFESSIONALS_SOURCE=database` retains the existing verified-database source. There is no silent fallback between sources.
+No live credentials were available while this was built. The tests mock WordPress, so they do not show that the live directory uses this role or these fields.
 
 References: https://developer.wordpress.org/rest-api/reference/users/ and https://developer.wordpress.org/advanced-administration/security/application-passwords/

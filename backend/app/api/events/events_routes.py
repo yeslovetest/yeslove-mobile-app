@@ -727,14 +727,15 @@ class GetProfessionals(Resource):
 
             per_page = max(1, min(per_page, 100))
 
-            from app.services.wordpress_professional_service import fetch_professionals, DirectoryError
+            from app.services import wordpress_professional_service as wp_directory
             source = current_app.config.get("PROFESSIONALS_SOURCE", "wordpress")
             search = request.args.get("search", "").strip()[:200]
             if source == "wordpress":
-                try:
-                    return fetch_professionals(page, per_page, search), 200
-                except DirectoryError as exc:
-                    return {"message": str(exc)}, exc.status
+                # Served from our copy; only `flask sync-wordpress-professionals` talks to WordPress.
+                result = wp_directory.list_cached_professionals(page, per_page, search)
+                if not wp_directory.directory_configured() and result["pagination"]["total_professionals"] == 0 and not search:
+                    return {"message": "The professional directory is not configured yet."}, 503
+                return result, 200
             if source != "database":
                 return {"message": "The professional directory is not configured correctly."}, 503
 
