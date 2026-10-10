@@ -26,27 +26,29 @@ const PostedComment = (props: Props) => {
 
   return (
     <View style={[styles.postContainer, styles.indCommentContainer]}>
-      <View style={styles.profileImageContainer}>
-        <Image
-          style={styles.profileImage}
-          source={getImageSource(props.comment.picture, "profile", { treatBareAsMediaId: true })}
-        />
-        <View style={styles.profileInfoContainer}>
-          {/* No onPress: purely displays the commenter's name here. */}
-          <TouchableOpacity style={styles.profileName} accessible={false}>
-            <Text>{props.comment.author}</Text>
-          </TouchableOpacity>
-          <Text style={styles.timePosted}>
-            {props.comment.timestamp
-              ? dayjs(props.comment.timestamp).format("MMM D, YYYY h:mm A")
-              : "Unknown date"}
-          </Text>
+      {/* Full-width row: author on the left, options button at the right edge. */}
+      <View style={styles.commentHeaderRow}>
+        <View style={styles.profileImageContainer}>
+          <Image
+            style={styles.profileImage}
+            source={getImageSource(props.comment.picture, "profile", { treatBareAsMediaId: true })}
+          />
+          <View style={styles.profileInfoContainer}>
+            {/* No onPress: purely displays the commenter's name here. */}
+            <TouchableOpacity style={styles.profileName} accessible={false}>
+              <Text>{props.comment.author}</Text>
+            </TouchableOpacity>
+            <Text style={styles.timePosted}>
+              {props.comment.timestamp
+                ? dayjs(props.comment.timestamp).format("MMM D, YYYY h:mm A")
+                : "Unknown date"}
+            </Text>
+          </View>
         </View>
         {canModerate && (
           <TouchableOpacity
             onPress={() => setSheetVisible(true)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            style={{ marginLeft: "auto", justifyContent: "center" }}
             accessibilityRole="button"
             accessibilityLabel="Report or block"
           >
