@@ -26,7 +26,9 @@ import requests
 
 URL = os.environ.get("KEYCLOAK_URL", "http://localhost:8099").rstrip("/")
 REALM = os.environ.get("KEYCLOAK_REALM", "YesLove_Auth")
-STAFF_ROLES = ["admin", "professional"]
+# Admins only for now. "professional" is a role members can sign up for with a licence, so
+# enforcing it would put every outside professional behind a code; they come in stage 4.
+STAFF_ROLES = ["admin"]
 ENFORCED_FLOW = "staff-mfa-direct-grant"
 ORIGINAL_FLOW = "direct grant"
 
