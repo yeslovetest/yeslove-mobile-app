@@ -163,7 +163,7 @@ def create_app(config_class=None):
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 
-    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media", "sync-wordpress-professionals")
+    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media", "sync-wordpress-professionals", "link-wordpress-professional", "list-wordpress-professionals")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -243,6 +243,39 @@ def create_app(config_class=None):
         except DirectoryError as exc:
             raise click.ClickException(str(exc))
         click.echo(", ".join(f"{name}: {value}" for name, value in counts.items()))
+
+    @app.cli.command("list-wordpress-professionals")
+    def list_wordpress_professionals_command():
+        """Show the synced website professionals and which app account each is linked to."""
+        from app.models import User, WordPressProfessional
+
+        rows = WordPressProfessional.query.order_by(WordPressProfessional.name).all()
+        if not rows:
+            click.echo("No website professionals synced yet. Run: flask sync-wordpress-professionals")
+        for row in rows:
+            user = User.query.get(row.user_id) if row.user_id else None
+            click.echo(f"{row.wp_user_id}\t{row.name}\t" + (f"linked to {user.username}" if user else "not linked"))
+
+    @app.cli.command("link-wordpress-professional")
+    @click.argument("wp_user_id", type=int)
+    @click.argument("username", required=False)
+    @click.option("--unlink", is_flag=True, help="Remove the link instead of making one.")
+    def link_wordpress_professional_command(wp_user_id, username, unlink):
+        """Link a website professional (WP_USER_ID, from list-wordpress-professionals) to an app
+        professional account (USERNAME), so members can message them in the app."""
+        from app.services.wordpress_professional_service import LinkError, link_professional, unlink_professional
+
+        try:
+            if unlink:
+                unlink_professional(wp_user_id)
+                click.echo(f"Unlinked website professional {wp_user_id}.")
+                return
+            if not username:
+                raise click.UsageError("Give the app username to link to, or use --unlink.")
+            professional, user = link_professional(wp_user_id, username)
+        except LinkError as exc:
+            raise click.ClickException(str(exc))
+        click.echo(f"Linked website professional {professional.wp_user_id} ({professional.name}) to app account {user.username}.")
 
     @app.cli.command("sync-wordpress-blogs")
     @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")

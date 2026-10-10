@@ -116,6 +116,10 @@ class AccountService:
         delete("likes", Like.query.filter_by(user_id=uid))
         delete("comments", Comment.query.filter_by(user_id=uid))
 
+        # A deleted account must not stay linked to a website professional.
+        from app.models import WordPressProfessional
+        WordPressProfessional.query.filter_by(user_id=uid).update({"user_id": None}, synchronize_session=False)
+
         # Direct messages go before media because messages reference attachments.
         delete("messages", Chat.query.filter((Chat.sender_id == uid) | (Chat.receiver_id == uid)))
         delete("follows", Follow.query.filter((Follow.follower_id == uid) | (Follow.followed_id == uid)))

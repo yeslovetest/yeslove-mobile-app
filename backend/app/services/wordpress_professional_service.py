@@ -100,10 +100,61 @@ def fetch_professionals(page, per_page, search=""):
 
 
 def ensure_professional_table(db):
-    """Create the table if it is missing (production schema is not migrated on deploy)."""
+    """Create the table if it is missing, and add columns added since it was first created
+    (production schema is not migrated on deploy)."""
+    from sqlalchemy import inspect, text
     from app.models import WordPressProfessional
 
-    WordPressProfessional.__table__.create(bind=db.engine, checkfirst=True)
+    table = WordPressProfessional.__table__
+    table.create(bind=db.engine, checkfirst=True)
+    columns = {c["name"] for c in inspect(db.engine).get_columns(table.name)}
+    if "user_id" not in columns:
+        with db.engine.begin() as connection:
+            connection.execute(text(
+                f'ALTER TABLE {table.name} ADD COLUMN user_id INTEGER REFERENCES "user"(id) ON DELETE SET NULL'))
+            connection.execute(text(
+                f"CREATE UNIQUE INDEX IF NOT EXISTS ix_{table.name}_user_id ON {table.name} (user_id)"))
+
+
+class LinkError(Exception):
+    pass
+
+
+def link_professional(wp_user_id, username):
+    """Link a synced website professional to an app account (an admin decision).
+
+    The account must be a professional account, and must not already be linked to someone else.
+    Returns (professional, user).
+    """
+    from app import db
+    from app.models import ProfessionalDetails, User, WordPressProfessional
+
+    professional = WordPressProfessional.query.filter_by(wp_user_id=wp_user_id).first()
+    if professional is None:
+        raise LinkError(f"No synced website professional has the id {wp_user_id}. Run the sync first.")
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        raise LinkError(f"No app account has the username {username!r}.")
+    if (user.user_type or "").lower() != "professional" or not ProfessionalDetails.query.filter_by(user_id=user.id).first():
+        raise LinkError(f"{username!r} is not a professional account with professional details.")
+    taken = WordPressProfessional.query.filter(WordPressProfessional.user_id == user.id,
+                                               WordPressProfessional.wp_user_id != wp_user_id).first()
+    if taken is not None:
+        raise LinkError(f"{username!r} is already linked to website professional {taken.wp_user_id}.")
+    professional.user_id = user.id
+    db.session.commit()
+    return professional, user
+
+
+def unlink_professional(wp_user_id):
+    from app import db
+    from app.models import WordPressProfessional
+
+    professional = WordPressProfessional.query.filter_by(wp_user_id=wp_user_id).first()
+    if professional is None:
+        raise LinkError(f"No synced website professional has the id {wp_user_id}.")
+    professional.user_id = None
+    db.session.commit()
 
 
 def sync_professionals(per_page=100):
@@ -157,15 +208,21 @@ def list_cached_professionals(page, per_page, search=""):
     """A page of the copy, in the same shape the app already expects."""
     from app.models import WordPressProfessional
 
-    query = WordPressProfessional.query
+    from app import db
+    from app.models import User
+
+    query = db.session.query(WordPressProfessional, User.keycloak_id).outerjoin(
+        User, User.id == WordPressProfessional.user_id)
     if search:
         query = query.filter(WordPressProfessional.name.ilike(f"%{search}%"))
     paginated = query.order_by(WordPressProfessional.name).paginate(page=page, per_page=per_page, error_out=False)
     return {"professionals": [{
-        "id": row.wp_user_id, "source": "wordpress", "keycloak_id": None,
+        # keycloak_id is set only for a professional an admin has linked to an app account;
+        # the app offers "Message" only for those.
+        "id": row.wp_user_id, "source": "wordpress", "keycloak_id": keycloak_id,
         "username": row.name, "bio": row.bio or "", "profile_pic": row.avatar_url,
         "specialization": None, "license_body": None,
-    } for row in paginated.items], "pagination": {
+    } for row, keycloak_id in paginated.items], "pagination": {
         "page": paginated.page, "per_page": paginated.per_page,
         "total_professionals": paginated.total, "total_pages": paginated.pages,
         "has_next": paginated.has_next, "has_prev": paginated.has_prev,

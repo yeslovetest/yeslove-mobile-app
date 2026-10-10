@@ -26,6 +26,23 @@ BuddyPress returns only what each member has chosen to show publicly, so a membe
 - **WordPress returns nobody while we hold a copy:** treated as a failure and the copy is kept, so an outage or a role change cannot wipe the list. (If the website really has no professionals left, clear the table by hand.)
 - Only the name, photo and a short description (the profile's Bio, or "How I can help" if there is no Bio) are copied. Email, phone, birthday, gender and other contact details can be public on the website but are never stored.
 
+## Messaging a professional
+
+Members can message a professional from the Professionals list, but only if that professional has an app account **and an admin has linked the two**. Nothing is matched automatically (a matching username proves nothing), and the website does not share email addresses.
+
+1. The professional signs up in the app as a professional and is verified as usual.
+2. Someone with server access lists the synced professionals and links one:
+
+```
+docker compose -f docker-compose.microservices.yml exec main-app flask list-wordpress-professionals
+docker compose -f docker-compose.microservices.yml exec main-app flask link-wordpress-professional <website id> <app username>
+```
+
+3. The list now shows a **Message** button for that professional (and their photo and name open the chat). Professionals who are not linked show "Messaging isn't available for this professional yet."
+4. `link-wordpress-professional <website id> --unlink` removes a link. Deleting the app account removes it too. A link survives every sync.
+
+Both people see the conversation in Messages even if they are not friends. Blocking and reporting work as for any other chat.
+
 ## Before relying on it
 
 1. Confirm the website's Get Help directory is the same set of people as the BuddyPress member type `professionals` (6 at the time of writing). If it uses a different member type or extra approval rules, change the setting or the sync.
