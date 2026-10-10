@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Animated, Modal, TouchableOpacity, View, Text, TextInput } from "react-native";
 import styles from "../GeneralStyles";
 import { useMsgToggle } from "@/hooks/messageToggle";
+import { MIN_PASSWORD_LENGTH, PASSWORD_TOO_SHORT_MESSAGE } from "@/constants/password";
 
 interface ChangePasswordModalProps {
   visible: boolean;
@@ -23,7 +24,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCl
 
   const changePassword = () => {
     if (password === currentPassword) {
-      if (newPassword && newPassword === confirmPassword) {
+      if (newPassword.length < MIN_PASSWORD_LENGTH) {
+        msgToggle.updateErrorMsg(PASSWORD_TOO_SHORT_MESSAGE);
+      } else if (newPassword === confirmPassword) {
         dispatch(setUserPassword({ new_password: newPassword }));
       } else {
         msgToggle.updateErrorMsg("new password does not match or is invalid");
@@ -60,8 +63,15 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCl
   return (
     <Modal transparent visible={isRendered} animationType="none">
       {isRendered && (
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-          <TouchableOpacity activeOpacity={1}>
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
+          {/* No onPress: only absorbs taps so they don't reach the backdrop above. */}
+          <TouchableOpacity activeOpacity={1} accessible={false}>
             <Animated.View
               style={[styles.modalContent, { transform: [{ translateY: slideAnim }] }]}
             >

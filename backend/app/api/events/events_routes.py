@@ -751,8 +751,23 @@ class GetProfessionals(Resource):
                 page=page, per_page=per_page, error_out=False
             )
 
-            professionals = [
-                {
+            from sqlalchemy import text as _sql_text
+            from app import db
+            _ids = [u.id for u in paginated_professionals.items]
+            _extra = {}
+            if _ids:
+                _rows = db.session.execute(_sql_text(
+                    "SELECT user_id, location, years_experience, how_i_can_help, "
+                    "credentials, languages, cultures, services, website, "
+                    "education, institution, cover_url, profile_url "
+                    "FROM professional_details WHERE user_id = ANY(:ids)"
+                ), {"ids": _ids}).mappings().all()
+                _extra = {r["user_id"]: dict(r) for r in _rows}
+
+            professionals = []
+            for user in paginated_professionals.items:
+                _e = _extra.get(user.id, {})
+                professionals.append({
                     "id": user.id,
                     "keycloak_id": user.keycloak_id,
                     "username": user.username,
@@ -761,9 +776,19 @@ class GetProfessionals(Resource):
                     "profile_pic": user.profile_pic_url,
                     "specialization": user.professional_details.specialization,
                     "license_body": user.professional_details.license_body,
-                }
-                for user in paginated_professionals.items
-            ]
+                    "location": _e.get("location"),
+                    "years_experience": _e.get("years_experience"),
+                    "how_i_can_help": _e.get("how_i_can_help"),
+                    "credentials": _e.get("credentials"),
+                    "languages": _e.get("languages"),
+                    "cultures": _e.get("cultures"),
+                    "services": _e.get("services"),
+                    "website": _e.get("website"),
+                    "education": _e.get("education"),
+                    "institution": _e.get("institution"),
+                    "cover_url": _e.get("cover_url"),
+                    "profile_url": _e.get("profile_url"),
+                })
 
             return {
                 "professionals": professionals,

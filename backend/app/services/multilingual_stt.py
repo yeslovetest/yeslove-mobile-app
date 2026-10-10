@@ -1,6 +1,15 @@
 import os
 import threading
 
+# Must be set before the first huggingface_hub/transformers import below.
+# HF Hub's newer "xet" chunked-transfer backend hangs indefinitely (no error,
+# no timeout) part-way through large model downloads in this environment -
+# confirmed by downloading facebook/mms-1b-all (~3.6GB): it stalled for
+# hours with the process idle at 0% CPU, leaving broken symlinks to blobs
+# that were never actually written. Forcing the classic HTTP downloader
+# fixes it and completes in well under a minute.
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+
 import numpy as np
 import soundfile as sf
 import torch

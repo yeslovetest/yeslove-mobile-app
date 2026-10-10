@@ -27,6 +27,8 @@ const General = () => {
           <TouchableOpacity
             onPress={() => setLogoutSection(true)}
             style={settingsSharedStyles.settingsOptionButton}
+            accessibilityRole="button"
+            accessibilityLabel="Log out"
           >
             <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
               <Feather name="log-out" size={24} color={theme.colors.textPrimary} />
@@ -40,6 +42,8 @@ const General = () => {
           <TouchableOpacity
             onPress={() => setChangePasswordSection(true)}
             style={settingsSharedStyles.settingsOptionButton}
+            accessibilityRole="button"
+            accessibilityLabel="Change password"
           >
             <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
               <MaterialIcons name="password" size={24} color={theme.colors.textPrimary} />
@@ -53,6 +57,8 @@ const General = () => {
           <TouchableOpacity
             onPress={() => setDeleteAccountSection(true)}
             style={settingsSharedStyles.settingsOptionButton}
+            accessibilityRole="button"
+            accessibilityLabel="Delete account"
           >
             <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
               <MaterialIcons name="delete-outline" size={24} color={theme.colors.textPrimary} />

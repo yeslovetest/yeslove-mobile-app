@@ -34,11 +34,23 @@ export interface ChatRequest {
   history?: object[];
 }
 
+export interface ChatRecommendation {
+  type: "blog" | "video_podcast" | string;
+  title: string;
+  url: string;
+  summary?: string | null;
+  image_url?: string | null;
+  thumbnail_url?: string | null;
+  video_url?: string | null;
+  reason?: string | null;
+}
+
 export interface ChatResponse {
   response: string;
   session_id: string;
   user_id: string;
   sources: string;
+  recommendations?: ChatRecommendation[];
 }
 
 export interface SyncResponse {
@@ -285,8 +297,13 @@ export const apiFactory = {
   },
 
   // Chat API
+  // With a dedicated chatbot URL (local dev) talk to chatbot-service directly. In
+  // store builds only the API URL is set, and chatbot-service is not exposed
+  // publicly, so go through the backend's authenticated proxy instead.
   sendMessage: (data: ChatRequest, config?: AxiosRequestConfig) =>
-    apiClient.post<ChatResponse>("/api/v1/chat/message", data, config),
+    chatbotBaseUrl
+      ? apiClient.post<ChatResponse>("/api/v1/chat/message", data, config)
+      : apiClient.post<ChatResponse>("/api/chatbot/message", data, config),
 
   // Sync API
   syncBlogs: (data: PostSyncRequest, config?: AxiosRequestConfig) =>

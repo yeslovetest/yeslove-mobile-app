@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MIN_PASSWORD_LENGTH, PASSWORD_TOO_SHORT_MESSAGE } from "@/constants/password";
 import { useAppDispatch, useAppSelector } from "../app/store/hooks";
 import {
   setLoginStateAction,
@@ -26,6 +27,8 @@ export const useSignup = () => {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  // Must be ticked before the account can be created (store and privacy requirement).
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const initialBdColor = [theme.colors.border, theme.colors.primary];
   const [passwordBdColor, setPasswordBdColor] = useState(initialBdColor);
@@ -60,7 +63,7 @@ export const useSignup = () => {
   const validateInputs = (page: number) => {
     if (page == 1) {
       // Validate password pair before validating email fields.
-      if (!password || password.length < 6) {
+      if (!password || password.length < MIN_PASSWORD_LENGTH) {
         return [false, "passwordLength"];
       }
 
@@ -85,6 +88,8 @@ export const useSignup = () => {
         return [false, "firstName"];
       } else if (!lastName) {
         return [false, "lastName"];
+      } else if (!termsAccepted) {
+        return [false, "terms"];
       } else {
         return [true, "lastName"];
       }
@@ -103,7 +108,7 @@ export const useSignup = () => {
       setPasswordBdColor([theme.colors.danger, theme.colors.danger]);
       setEmailBdColor(initialBdColor);
       setConfirmEmailBdColor(initialBdColor);
-      dispatch(setErrorMessage("Password must be at least 6 characters."));
+      dispatch(setErrorMessage(PASSWORD_TOO_SHORT_MESSAGE));
     } else if (field == "password") {
       setPasswordBdColor([theme.colors.danger, theme.colors.danger]);
       setEmailBdColor(initialBdColor);
@@ -166,6 +171,8 @@ export const useSignup = () => {
       setUsernameBdColor(initialBdColor);
       setFirstNameBdColor(initialBdColor);
       dispatch(setErrorMessage("Empty Field: Please type in last name."));
+    } else if (field == "terms") {
+      dispatch(setErrorMessage("Please accept the Terms and Privacy Policy to create an account."));
     }
   };
 
@@ -188,6 +195,8 @@ export const useSignup = () => {
     handleConfirmEmailChange,
     handleFirstNameChange,
     handleLastNameChange,
+    termsAccepted,
+    setTermsAccepted,
     handleLoginStateChange,
     handleSignup,
     validateInputs,

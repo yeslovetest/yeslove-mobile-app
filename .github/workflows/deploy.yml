@@ -6,13 +6,106 @@ on:
       - main
 
 jobs:
+  # There is no automated test suite yet (see the production readiness review),
+  # so this is a build/import gate rather than a test gate: it installs each
+  # service's real dependencies, byte-compiles every module, and imports the
+  # app factory with a throwaway SQLite database. That's enough to catch what
+  # has actually broken this app before: an import that crashes without its
+  # dependency installed (torch/transformers), a syntax error, or a hard
+  # crash on startup with no services reachable.
+  verify-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Byte-compile all modules
+        working-directory: backend
+        run: python -m compileall -q app run.py application.py
+
+      - name: Import the app factory (smoke test)
+        working-directory: backend
+        env:
+          DATABASE_URI: "sqlite:////tmp/ci_smoke_test.db"
+          SECRET_KEY: "ci-smoke-test-only"
+        run: |
+          python -c "
+          from app import create_app, db
+          app = create_app()
+          with app.app_context():
+              db.create_all()
+          print('backend app factory OK')
+          "
+
+  verify-chatbot-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: chatbot-service/requirements.txt
+
+      - name: Install dependencies
+        working-directory: chatbot-service
+        run: pip install -r requirements.txt
+
+      - name: Byte-compile all modules
+        working-directory: chatbot-service
+        run: python -m compileall -q app main.py
+
+      - name: Import the app factory (smoke test)
+        working-directory: chatbot-service
+        env:
+          DATABASE_URL: "sqlite:////tmp/ci_chatbot_smoke_test.db"
+        run: |
+          python -c "
+          from main import create_app
+          app = create_app()
+          print('chatbot-service app factory OK')
+          "
+
   deploy:
     runs-on: ubuntu-latest
+    needs:
+      - verify-backend
+      - verify-chatbot-service
+    # Only one deploy may touch the server at a time. A second push queues behind
+    # the running deploy instead of restarting containers underneath it (which
+    # failed the first deploy's health check when two PRs were merged together).
+    # The server runs `git pull origin main`, so the newest queued run always
+    # deploys everything merged before it; GitHub drops older queued runs.
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Nothing here reads the server's disk/logs after this - the previous
+      # version of this step had no `set -e` and no output beyond a fixed
+      # "Deployment complete", so a failed `docker compose ... --build` (e.g.
+      # the server running out of disk mid-build, which is confirmed to
+      # happen: the same torch/transformers install that takes 2 minutes on
+      # GitHub's runner exhausted a dev machine's disk entirely) reported as
+      # a green deploy with the old container silently left running. This
+      # version fails loudly and prints exactly what's running.
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
@@ -20,7 +113,48 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -e
             cd ~/yeslove-mobile-app
             git pull origin main
+            echo "--- Disk space before build ---"
+            df -h /
+            # The build/start itself is the one command allowed to fail the
+            # job; everything after is diagnostic output and shouldn't mask
+            # a real build failure just because a log fetch hiccups.
             docker compose -f docker-compose.microservices.yml up -d --build
+            echo "--- Container status ---"
+            docker compose -f docker-compose.microservices.yml ps -a || true
+            echo "--- main-app logs (last 60 lines) ---"
+            docker compose -f docker-compose.microservices.yml logs --tail 60 main-app || true
+            echo "--- chatbot-service logs (last 60 lines) ---"
+            docker compose -f docker-compose.microservices.yml logs --tail 60 chatbot-service || true
+            echo "--- Disk space after build ---"
+            df -h / || true
             echo "Deployment complete"
+
+      # Runs from the GitHub runner against the public API, not over SSH -
+      # this is what actually caught the multilingual namespace being
+      # missing in production (a 404, not a 401, on an endpoint that only
+      # needs auth) when the deploy step itself reported success.
+      - name: Health check - API is up
+        run: |
+          sleep 10
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://api.yeslove.co.uk/swagger.json)
+          if [ "$status" != "200" ]; then
+            echo "::error::https://api.yeslove.co.uk/swagger.json returned $status, expected 200 - the API did not come back up after deploy"
+            exit 1
+          fi
+          echo "API is responding (swagger.json: $status)"
+
+      - name: Health check - multilingual routes registered
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://api.yeslove.co.uk/api/v1/multilingual/personas)
+          # 401 (needs auth) or 200 means the route exists and registered
+          # correctly. 404 means voice_routes.py failed to import - almost
+          # always torch/transformers/soundfile not actually installed in
+          # the running container, even though the deploy step "succeeded".
+          if [ "$status" == "404" ]; then
+            echo "::error::/api/v1/multilingual/personas returned 404 - the multilingual namespace failed to register in the deployed container (likely torch/transformers/soundfile failed to install - check the 'Deploy to server' step's disk space and container logs above)"
+            exit 1
+          fi
+          echo "multilingual namespace is registered (personas: $status)"

@@ -27,6 +27,9 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         style={[styles.button, currentPage === 1 && styles.disabled]}
         onPress={handlePrev}
         disabled={currentPage === 1}
+        accessibilityRole="button"
+        accessibilityLabel="Previous page"
+        accessibilityState={{ disabled: currentPage === 1 }}
       >
         <Text style={styles.buttonText}>Prev</Text>
       </TouchableOpacity>
@@ -39,6 +42,9 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         style={[styles.button, currentPage === totalPages && styles.disabled]}
         onPress={handleNext}
         disabled={currentPage === totalPages}
+        accessibilityRole="button"
+        accessibilityLabel="Next page"
+        accessibilityState={{ disabled: currentPage === totalPages }}
       >
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>

@@ -35,6 +35,7 @@ from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 from app.api.admin.moderation_routes import api as admin_moderation_api
+from app.api.safety.safety_routes import api as safety_api
 try:
     from app.api.chatbot.voice_routes import api as multilingual_api
 except (ModuleNotFoundError, ImportError) as e:
@@ -69,10 +70,23 @@ def create_app(config_class=None):
         pass  # Ignore if prometheus_client not available
 
     app.config.from_object(config_class)
+
+    missing_required = [
+        name for name in getattr(config_class, "REQUIRED_ENV_VARS", ())
+        if not app.config.get(name if name != "DATABASE_URL" else "SQLALCHEMY_DATABASE_URI")
+    ]
+    if missing_required:
+        raise RuntimeError(
+            "Missing required production environment variable(s): "
+            + ", ".join(missing_required)
+            + ". Refusing to start with an insecure default."
+        )
     # app.config['SQLALCHEMY_DATABASE_URI'] = config_class.SQLALCHEMY_DATABASE_URI
 
-    # 🌍 Enable CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+    # 🌍 Enable CORS — explicit origin allowlist required when credentials are allowed
+    # ("*" + supports_credentials is rejected by browsers anyway, and is a CORS
+    # misconfiguration for any origin that does send credentials).
+    CORS(app, resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", [])}}, supports_credentials=True)
 
     # 🚀 Initialize extensions
     db.init_app(app)
@@ -119,6 +133,7 @@ def create_app(config_class=None):
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
     api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
+    api.add_namespace(safety_api, path="/api/safety")
     if multilingual_api is not None:
         api.add_namespace(multilingual_api, path="/api/v1/multilingual")
     
@@ -138,7 +153,15 @@ def create_app(config_class=None):
             dbapi_connection.create_function("least", 2, lambda a, b: min(a, b))
             dbapi_connection.create_function("greatest", 2, lambda a, b: max(a, b))
 
-    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos")
+    if not _running_flask_command("db"):
+        try:
+            from app.utils.safety import ensure_safety_tables
+            with app.app_context():
+                ensure_safety_tables(db)
+        except Exception:
+            app.logger.exception("Could not ensure safety tables")
+
+    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -188,6 +211,23 @@ def create_app(config_class=None):
     # Initalises professional user admin panel
     from .admin import init_admin
     init_admin(app)
+
+    @app.cli.command("run-retention")
+    @click.option("--dry-run", is_flag=True, help="Count what would change without changing anything.")
+    def run_retention_command(dry_run):
+        """Apply the data retention schedule (safe to run daily)."""
+        from app.services.retention_service import run_retention
+
+        for rule, count in run_retention(dry_run=dry_run).items():
+            click.echo(f"{rule}: {count}")
+
+    @app.cli.command("privatise-chat-media")
+    @click.option("--dry-run", is_flag=True, help="Count without changing anything.")
+    def privatise_chat_media_command(dry_run):
+        """Mark existing direct-message attachments as private (run once after deploy)."""
+        from app.services.retention_service import privatise_chat_media
+
+        click.echo(f"chat attachments made private: {privatise_chat_media(dry_run=dry_run)}")
 
     @app.cli.command("sync-wordpress-blogs")
     @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")

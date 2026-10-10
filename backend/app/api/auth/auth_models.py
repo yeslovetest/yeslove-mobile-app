@@ -36,6 +36,7 @@ SignupResponse = api.model("SignupResponse", {
 LoginRequest = api.model("LoginRequest", {
         "username": fields.String(required=True, description="User's Keycloak username"),
         "password": fields.String(required=True, description="User's Keycloak password"),
+        "otp": fields.String(required=False, description="Authenticator app code, for accounts that use one"),
         "device_token": fields.String(required=False, description="Device token for push notifications"),
         "platform": fields.String(required=False, description="Device platform (ios/android)"),
         "device_id": fields.String(required=False, description="Unique device identifier"),

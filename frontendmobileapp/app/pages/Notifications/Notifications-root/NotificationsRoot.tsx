@@ -122,6 +122,9 @@ const NotificationsRoot = () => {
                 styles.tabButton,
                 activeTab === "all" ? styles.tabButtonActive : styles.tabButtonInactive,
               ]}
+              accessibilityRole="tab"
+              accessibilityLabel="All"
+              accessibilityState={{ selected: activeTab === "all" }}
             >
               <Text
                 style={[
@@ -138,6 +141,9 @@ const NotificationsRoot = () => {
                 styles.tabButton,
                 activeTab === "friend_requests" ? styles.tabButtonActive : styles.tabButtonInactive,
               ]}
+              accessibilityRole="tab"
+              accessibilityLabel={`Friend requests, ${friendRequestList.length}`}
+              accessibilityState={{ selected: activeTab === "friend_requests" }}
             >
               <Text
                 style={[

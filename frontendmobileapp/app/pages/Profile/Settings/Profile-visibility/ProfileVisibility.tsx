@@ -99,6 +99,8 @@ const ProfileVisibility = (props: Props) => {
           <TouchableOpacity
             style={styles.saveChangesButton}
             onPress={saveProfileVisibilitySettings}
+            accessibilityRole="button"
+            accessibilityLabel="Save changes"
           >
             <Text style={styles.saveChangesButtonText}>Save Changes</Text>
           </TouchableOpacity>

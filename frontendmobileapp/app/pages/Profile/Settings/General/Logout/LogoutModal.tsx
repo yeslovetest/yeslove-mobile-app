@@ -49,14 +49,26 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose }) => {
 
   return (
     <Modal transparent visible={isRendered} animationType="none">
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity activeOpacity={1}>
+      <TouchableOpacity
+        style={styles.backdrop}
+        activeOpacity={1}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
+      >
+        {/* No onPress: only absorbs taps so they don't reach the backdrop above. */}
+        <TouchableOpacity activeOpacity={1} accessible={false}>
           <Animated.View style={[styles.modalContent, { transform: [{ translateY: slideAnim }] }]}>
             <View style={styles.settingsSubSection}>
               <Text style={styles.modalText}>
                 Are you sure you want to log out of this account?{" "}
               </Text>
-              <TouchableOpacity style={styles.saveChangesButton} onPress={logOut}>
+              <TouchableOpacity
+                style={styles.saveChangesButton}
+                onPress={logOut}
+                accessibilityRole="button"
+                accessibilityLabel="Log out"
+              >
                 <Text style={styles.saveChangesButtonText}>Log out</Text>
               </TouchableOpacity>
             </View>

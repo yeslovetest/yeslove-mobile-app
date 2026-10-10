@@ -116,13 +116,25 @@ const PostModal: React.FC<PostModalProps> = ({ visible, onClose }) => {
                 name="close"
                 size={30}
                 color={theme.colors.textPrimary}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
               />
               <Text style={styles.createPost}>Create post</Text>
               <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity style={styles.actionButtons} onPress={() => handlePost(false)}>
+                <TouchableOpacity
+                  style={styles.actionButtons}
+                  onPress={() => handlePost(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Share post"
+                >
                   <Text style={styles.actionButtonsText}>Share</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handlePost(true)} style={styles.actionButtons}>
+                <TouchableOpacity
+                  onPress={() => handlePost(true)}
+                  style={styles.actionButtons}
+                  accessibilityRole="button"
+                  accessibilityLabel="Post anonymously"
+                >
                   <Text style={styles.actionButtonsText}>Post Anonymously</Text>
                 </TouchableOpacity>
               </View>

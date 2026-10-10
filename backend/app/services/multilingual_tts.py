@@ -1,5 +1,12 @@
 import io
+import os
 from collections import OrderedDict
+
+# See the matching comment in multilingual_stt.py: HF Hub's "xet" transfer
+# backend can hang indefinitely on larger model downloads in this
+# environment. Set independently of stt's import order in case this module
+# is ever imported on its own.
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
 
 import numpy as np
 import soundfile as sf

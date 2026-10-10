@@ -24,7 +24,13 @@ const CheckBox = (props: Props) => {
   return (
     <View style={styles.container} key={key}>
       <Text style={styles.mainText}>{text}</Text>
-      <TouchableOpacity style={styles.outerBox} onPress={handleChange}>
+      <TouchableOpacity
+        style={styles.outerBox}
+        onPress={handleChange}
+        accessibilityRole="checkbox"
+        accessibilityLabel={text || "Toggle"}
+        accessibilityState={{ checked: boxValue }}
+      >
         <View style={{ ...styles.innerBox, backgroundColor: boxValue ? "black" : "white" }}></View>
       </TouchableOpacity>
     </View>

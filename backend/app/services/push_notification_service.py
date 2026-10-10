@@ -4,6 +4,9 @@ from app.models import DeviceToken, User
 from flask import current_app
 import os
 
+EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
+
+
 class PushNotificationService:
     
     @staticmethod
@@ -36,10 +39,63 @@ class PushNotificationService:
         
         success_count = 0
         for token in tokens:
-            if PushNotificationService._send_fcm_notification(token.token, title, body, data):
+            if PushNotificationService._send_to_token(token.token, title, body, data):
                 success_count += 1
         
         return success_count > 0
+
+    @staticmethod
+    def _is_expo_token(token):
+        return isinstance(token, str) and token.startswith(("ExponentPushToken[", "ExpoPushToken["))
+
+    @staticmethod
+    def _send_to_token(token, title, body, data=None):
+        """Route to Expo's push service for Expo tokens (what the mobile app registers)
+        and to FCM directly for raw device tokens."""
+        if PushNotificationService._is_expo_token(token):
+            return PushNotificationService._send_expo_notification(token, title, body, data)
+        return PushNotificationService._send_fcm_notification(token, title, body, data)
+
+    @staticmethod
+    def _send_expo_notification(token, title, body, data=None):
+        """Send through Expo's push service, which delivers via APNs (iOS) and FCM (Android)
+        using the credentials uploaded to EAS."""
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        access_token = os.getenv("EXPO_ACCESS_TOKEN")
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
+
+        payload = {
+            "to": token,
+            "title": title,
+            "body": body,
+            "sound": "default",
+            "priority": "high",
+            "channelId": "default",
+        }
+        if data:
+            payload["data"] = data
+
+        try:
+            response = requests.post(EXPO_PUSH_URL, headers=headers, json=payload, timeout=10)
+            if response.status_code != 200:
+                current_app.logger.error(f"Expo push HTTP {response.status_code}")
+                return False
+            ticket = (response.json() or {}).get("data") or {}
+            if isinstance(ticket, list):
+                ticket = ticket[0] if ticket else {}
+            if ticket.get("status") == "ok":
+                return True
+            error = (ticket.get("details") or {}).get("error")
+            if error == "DeviceNotRegistered":
+                # The app was uninstalled or the token expired: stop sending to it.
+                from app.services.device_token_service import DeviceTokenService
+                DeviceTokenService.remove_device_token(token)
+            current_app.logger.warning(f"Expo push rejected: {error or ticket.get('message')}")
+            return False
+        except Exception as e:
+            current_app.logger.error(f"Expo push error: {e}")
+            return False
     
     @staticmethod
     def send_to_multiple_users(user_ids, title, body, data=None, notification_type="posts"):

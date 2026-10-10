@@ -7,7 +7,10 @@ import {
   Platform,
   ScrollView,
   useWindowDimensions,
+  Linking,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { PRIVACY_POLICY_URL, TERMS_URL } from "@/constants/legal";
 import Input from "../Sign-up-root/Sign-up-components/Input/Input";
 import { useAppSelector, useAppDispatch } from "../../../store/hooks";
 import { useSignup } from "@/hooks/signUpLogic";
@@ -15,10 +18,7 @@ import sharedStyles from "../SignUpSharedStyles";
 import { theme } from "@/app/theme";
 import { setErrorMessage } from "../../../store/Auth-store/authSlice";
 import { useEffect, useState } from "react";
-
-const image = {
-  uri: "https://images.unsplash.com/vector-1741103791953-12eca7b8e3c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAwfHxibHVlJTIwYWJzdHJhY3QlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D",
-};
+import image from "@/assets/images/auth-background.png";
 
 const Page2 = () => {
   const { height } = useWindowDimensions();
@@ -130,6 +130,39 @@ const Page2 = () => {
               onChangeText={signupAction.handleUsernameChange}
             />
 
+            <TouchableOpacity
+              style={{ flexDirection: "row", alignItems: "center", marginTop: 12, minHeight: 44 }}
+              onPress={() => signupAction.setTermsAccepted(!signupAction.termsAccepted)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: signupAction.termsAccepted }}
+              accessibilityLabel="I agree to the Terms and Privacy Policy"
+            >
+              <Ionicons
+                name={signupAction.termsAccepted ? "checkbox" : "square-outline"}
+                size={26}
+                color={theme.colors.primary}
+              />
+              <Text style={{ flex: 1, marginLeft: 8, color: theme.colors.textSecondary }}>
+                I agree to the{" "}
+                <Text
+                  style={{ color: theme.colors.primary, textDecorationLine: "underline" }}
+                  onPress={() => Linking.openURL(TERMS_URL).catch(() => undefined)}
+                  accessibilityRole="link"
+                >
+                  Terms
+                </Text>{" "}
+                and{" "}
+                <Text
+                  style={{ color: theme.colors.primary, textDecorationLine: "underline" }}
+                  onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)}
+                  accessibilityRole="link"
+                >
+                  Privacy Policy
+                </Text>
+                .
+              </Text>
+            </TouchableOpacity>
+
             <View style={sharedStyles.buttonContainer}>
               <TouchableOpacity
                 style={[
@@ -139,6 +172,8 @@ const Page2 = () => {
                 onPress={() =>
                   signupAction.handleSignup(signupEmail, signupPassword, signupConfirmPassword)
                 }
+                accessibilityRole="button"
+                accessibilityLabel="Sign up"
               >
                 <Text
                   style={[

@@ -42,6 +42,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     marginBottom: 10,
   },
+  commentHeaderRow: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   profileImageContainer: {
     display: "flex",
     justifyContent: "flex-start",

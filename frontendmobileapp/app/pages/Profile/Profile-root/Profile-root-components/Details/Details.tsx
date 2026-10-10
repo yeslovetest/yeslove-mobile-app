@@ -22,13 +22,23 @@ const Details = () => {
     <>
       <View style={styles.container}>
         <Text style={styles.detailsText}>Details</Text>
-        <TouchableOpacity style={styles.iconContainer} onPress={openProfileInformation}>
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={openProfileInformation}
+          accessibilityRole="button"
+          accessibilityLabel="View about profile information"
+        >
           <Ionicons name="information-circle-outline" size={24} style={styles.icon} />
           <Text style={styles.viewInformationText}>View about profile information</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={openEditProfileInformation} style={styles.button}>
+        <TouchableOpacity
+          onPress={openEditProfileInformation}
+          style={styles.button}
+          accessibilityRole="button"
+          accessibilityLabel="Edit your profile information"
+        >
           <Text style={styles.buttonText}>Edit your profile information</Text>
         </TouchableOpacity>
       </View>

@@ -60,3 +60,22 @@ dist/
 # Binary database files
 chatbot-service/chatbot.db
 backend/yeslove-2e1f0-20c3f077a520.json
+backend/*.db
+
+# Local backup snapshots — git history is the backup mechanism, don't commit these
+backend/backups/
+
+# Loki runtime data (WAL/chunks/index) — this is state, not config
+monitoring/loki-data/
+
+# Local env backups can hold real secrets
+.env.save
+*.env.save
+
+# Cloud and signing credentials - never commit these (see scripts/check_secrets.py)
+*-firebase-adminsdk-*.json
+yeslove-2e1f0-*.json
+**/service-account*.json
+*.pem
+*.p12
+*.jks

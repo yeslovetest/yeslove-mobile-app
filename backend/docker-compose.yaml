@@ -1,9 +1,22 @@
-
+# Local development infra only: Postgres, Memgraph, Redis, RabbitMQ, a
+# throwaway Keycloak (seeded from KeyCloakService/imports if you copy that
+# folder's realm-import setup), and a vector Postgres. Run the app itself
+# (backend, chatbot-service) directly on your machine against these
+# containers, e.g. `python run.py`.
+#
+# This is NOT the production Keycloak. Production Keycloak is defined and
+# deployed separately in KeyCloakService/docker-compose.yaml, hostnamed to
+# auth.yeslove.co.uk — the two are kept on different container names on
+# purpose so both can run on the same Docker host without colliding.
+#
+# Production app + chatbot-service (no Keycloak, no local dev infra) is
+# defined in docker-compose.microservices.yml at the repo root; it expects
+# Keycloak to already be running at the URL in backend/.env.
 
 services:
   postgres:
     image: postgres:14
-    container_name: postgres_keycloak
+    container_name: postgres_keycloak_dev
     environment:
       POSTGRES_USER: ${POSTGRESQL_USER}
       POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
@@ -49,7 +62,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
-    container_name: keycloak_server
+    container_name: keycloak_server_dev
     ports:
       - "${PORT_KEYCLOAK}:8080"
     environment:

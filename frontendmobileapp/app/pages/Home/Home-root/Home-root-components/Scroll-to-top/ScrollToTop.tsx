@@ -13,7 +13,14 @@ const ScrollToTop = () => {
 
   return (
     <View style={styles.button}>
-      <TouchableOpacity onPress={goToUp} pressRetentionOffset={10} hitSlop={10} activeOpacity={0.3}>
+      <TouchableOpacity
+        onPress={goToUp}
+        pressRetentionOffset={10}
+        hitSlop={10}
+        activeOpacity={0.3}
+        accessibilityRole="button"
+        accessibilityLabel="Scroll to top"
+      >
         <Entypo name="arrow-with-circle-up" size={28} style={styles.upIcon} />
       </TouchableOpacity>
     </View>

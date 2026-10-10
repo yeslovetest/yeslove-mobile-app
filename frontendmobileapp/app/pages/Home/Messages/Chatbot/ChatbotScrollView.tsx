@@ -5,10 +5,16 @@ import ChatResponse from "./Chatbot-components/ChatResponse";
 import ChatPrompt from "./Chatbot-components/ChatPrompt";
 import GreetingContainer from "./Chatbot-components/GreetingContainer";
 import LoadingAnimation from "./Chatbot-components/LoadingAnimation";
+import type { ChatRecommendation } from "@/chatbot-client-api/api";
 
 type ChatbotScrollViewProps = {
   loading: boolean;
-  messages: { role: "user" | "bot"; text: string; createdAt: Date }[];
+  messages: {
+    role: "user" | "bot";
+    text: string;
+    createdAt: Date;
+    recommendations?: ChatRecommendation[];
+  }[];
 };
 
 const ChatbotScrollView: React.FC<ChatbotScrollViewProps> = ({
@@ -45,7 +51,12 @@ const ChatbotScrollView: React.FC<ChatbotScrollViewProps> = ({
                 return m.role === "user" ? (
                   <ChatPrompt key={idx} prompt={safeText} time={safeTime} />
                 ) : (
-                  <ChatResponse key={idx} text={safeText} time={safeTime} />
+                  <ChatResponse
+                    key={idx}
+                    text={safeText}
+                    time={safeTime}
+                    recommendations={m.recommendations}
+                  />
                 );
               })}
               {loading && <LoadingAnimation />} {/* dots after last message */}

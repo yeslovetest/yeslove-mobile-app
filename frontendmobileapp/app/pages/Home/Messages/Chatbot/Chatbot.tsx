@@ -7,14 +7,23 @@ import styles from "./SharedChatbotStyles";
 import Header from "@/app/Universal-components/Header/Header";
 import { useAppSelector, useAppDispatch } from "@/app/store/hooks";
 import { sendChatbotMessage } from "@/app/store/Chat/chatSlice";
+import type { ChatRecommendation } from "@/chatbot-client-api/api";
+import WellbeingNotice from "@/app/Universal-components/Wellbeing-notice/WellbeingNotice";
+import { containsCrisisLanguage } from "@/app/Universal-components/Wellbeing-notice/crisisLanguage";
 
 const Chatbot = () => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<
-    { role: "user" | "bot"; text: string; createdAt: Date }[]
+    {
+      role: "user" | "bot";
+      text: string;
+      createdAt: Date;
+      recommendations?: ChatRecommendation[];
+    }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [crisisSignal, setCrisisSignal] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const streamSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const screenHeight = Dimensions.get("window").height;
@@ -25,6 +34,9 @@ const Chatbot = () => {
   );
   const chatBotResponseUpdatedAt = useAppSelector(
     (state) => state.chat.chatbotResponse.updated_at ?? 0,
+  );
+  const chatBotResponseRecommendations = useAppSelector(
+    (state) => state.chat.chatbotResponse.recommendations ?? [],
   );
 
   const formatSources = (sources: unknown): string => {
@@ -79,6 +91,9 @@ const Chatbot = () => {
 
   const postPrompt = async (prompt: string) => {
     setLoading(true);
+    if (containsCrisisLanguage(prompt)) {
+      setCrisisSignal((n) => n + 1);
+    }
 
     const now = new Date();
 
@@ -108,6 +123,7 @@ const Chatbot = () => {
         updated[updated.length - 1] = {
           ...lastMessage,
           text: botText,
+          recommendations: chatBotResponseRecommendations,
         };
         return updated;
       }
@@ -118,6 +134,7 @@ const Chatbot = () => {
           role: "bot",
           text: botText,
           createdAt: new Date(),
+          recommendations: chatBotResponseRecommendations,
         },
       ];
     });
@@ -125,11 +142,15 @@ const Chatbot = () => {
     if (streamSettleTimerRef.current) {
       clearTimeout(streamSettleTimerRef.current);
     }
-    // Keep spinner active during rapid stream deltas; hide after stream settles.
     streamSettleTimerRef.current = setTimeout(() => {
       setLoading(false);
     }, 350);
-  }, [chatBotResponse, chatBotResponseSources, chatBotResponseUpdatedAt]);
+  }, [
+    chatBotResponse,
+    chatBotResponseSources,
+    chatBotResponseRecommendations,
+    chatBotResponseUpdatedAt,
+  ]);
 
   const handleSend = (text: string) => {
     if (!text.trim()) return;
@@ -139,6 +160,7 @@ const Chatbot = () => {
   return (
     <Animated.View style={[styles.outerView, { transform: [{ translateY: slideAnim }] }]}>
       <Header />
+      <WellbeingNotice assistantName="Sera" openSignal={crisisSignal} />
       <KeyboardAvoidingView
         style={styles.chatBody}
         behavior="padding"

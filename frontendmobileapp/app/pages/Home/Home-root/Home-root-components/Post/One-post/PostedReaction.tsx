@@ -26,7 +26,8 @@ const PostReaction = (props: Props) => {
           source={getImageSource(props.reaction.picture, "profile")}
         />
         <View style={styles.profileInfoContainer}>
-          <TouchableOpacity style={styles.profileName}>
+          {/* No onPress: purely displays who reacted here. */}
+          <TouchableOpacity style={styles.profileName} accessible={false}>
             <Text>{props.reaction.author}</Text>
           </TouchableOpacity>
 

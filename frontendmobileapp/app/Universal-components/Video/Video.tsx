@@ -11,6 +11,8 @@ type ResizeMode = "cover" | "contain" | "stretch" | "none";
 
 type VideoSource = {
   uri: string;
+  // Sent with the request, for files that need the member's sign-in token.
+  headers?: Record<string, string>;
 };
 
 interface VideoProps {
@@ -56,7 +58,7 @@ export const Video: React.FC<VideoProps> = ({
   const [hasFirstFrameRendered, setHasFirstFrameRendered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const player = useVideoPlayer(source.uri, (createdPlayer) => {
+  const player = useVideoPlayer(source, (createdPlayer) => {
     createdPlayer.muted = muted;
     createdPlayer.loop = isLooping;
 
@@ -101,6 +103,7 @@ export const Video: React.FC<VideoProps> = ({
     VideoThumbnails.getThumbnailAsync(source.uri, {
       time: 1000,
       quality: 0.6,
+      headers: source.headers,
     })
       .then((result) => {
         if (!isCancelled) {
@@ -116,7 +119,7 @@ export const Video: React.FC<VideoProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [source.uri]);
+  }, [source.uri, source.headers?.Authorization]);
 
   return (
     <View style={[style, styles.container]}>

@@ -1,56 +1,63 @@
-from app.perspective import analyze_text
+from app import openai_moderation, perspective
 from app.logging_setup import setup_logger
 
 logger = setup_logger()
 
-# Define which attributes to request from Perspective API
-MODERATION_ATTRIBUTES = {
-    "TOXICITY": {},
-    "INSULT": {},
-    "THREAT": {},
-    "SEXUALLY_EXPLICIT": {}
-}
-
-# Define thresholds per attribute (tune as needed)
+# Per-label thresholds (tune as needed). Scores are normalised to 0-1 by each provider.
+# SEXUAL is set higher because YesLove members legitimately discuss intimacy.
 ATTRIBUTE_THRESHOLDS = {
-    "TOXICITY": 0.7,
-    "INSULT": 0.65,
+    "HARASSMENT": 0.65,
     "THREAT": 0.5,
-    "SEXUALLY_EXPLICIT": 0.6
+    "SEXUAL": 0.75,
+    "SEXUAL_MINORS": 0.3,
+    "SELF_HARM": 0.5,
 }
 
-def moderate_text(text: str):
+# Labels that must never auto-remove content. Someone posting about self-harm needs
+# support rather than a block, so these are flagged for human review instead.
+REVIEW_ONLY_LABELS = {"SELF_HARM"}
+
+
+def _provider_scores(text: str):
+    """Normalised label scores from the first available provider, or None.
+
+    OpenAI moderation is primary. Perspective API is kept as a fallback until
+    Google shuts it down on 31 Dec 2026.
     """
-    Analyzes text using Perspective API.
-    Returns:
-    {
-        "is_flagged": True/False,
-        "severity": "low"/"medium"/"high",
-        "score": float,  # highest score
-        "triggered": {"INSULT": 0.84, ...},
-        "attributes": {full API response}
+    result = openai_moderation.analyze_text(text)
+    if result:
+        return "openai", openai_moderation.normalise(result), result.get("category_scores")
+
+    result = perspective.analyze_text(
+        text,
+        attributes={"TOXICITY": {}, "INSULT": {}, "THREAT": {}, "SEXUALLY_EXPLICIT": {}},
+    )
+    if result:
+        return "perspective", perspective.normalise(result), result.get("attributeScores")
+
+    return None
+
+
+def score_labels(labels: dict) -> dict:
+    """Pure scoring step: labels -> flag decision, severity and triggered labels."""
+    triggered = {
+        label: score
+        for label, score in labels.items()
+        if score >= ATTRIBUTE_THRESHOLDS.get(label, 1.0)
     }
-    """
-    result = analyze_text(text, attributes=MODERATION_ATTRIBUTES)
-    if not result:
-        return None
+    highest = max(labels.values(), default=0.0)
 
-    scores = result["attributeScores"]
-    triggered = {}
-    highest = 0.0
-
-    # Check each attribute
-    for attr, threshold in ATTRIBUTE_THRESHOLDS.items():
-        score = scores.get(attr, {}).get("summaryScore", {}).get("value", 0.0)
-        if score >= threshold:
-            triggered[attr] = score
-        highest = max(highest, score)
-
-    # Classify severity
     severity = "low"
     if highest >= 0.9:
         severity = "high"
     elif highest >= 0.7:
+        severity = "medium"
+
+    # Sexual content involving minors is always the top severity.
+    if "SEXUAL_MINORS" in triggered:
+        severity = "high"
+    # Review-only labels never reach "high" on their own, so they are never auto-removed.
+    elif triggered and set(triggered) <= REVIEW_ONLY_LABELS and severity == "high":
         severity = "medium"
 
     return {
@@ -58,8 +65,31 @@ def moderate_text(text: str):
         "severity": severity,
         "score": highest,
         "triggered": triggered,
-        "attributes": scores
     }
+
+
+def moderate_text(text: str):
+    """
+    Screen text with the configured moderation provider.
+    Returns None when no provider is available, otherwise:
+    {
+        "is_flagged": True/False,
+        "severity": "low"/"medium"/"high",
+        "score": float,  # highest label score
+        "triggered": {"HARASSMENT": 0.84, ...},
+        "attributes": raw provider scores,
+        "provider": "openai" / "perspective"
+    }
+    """
+    provider_result = _provider_scores(text)
+    if not provider_result:
+        return None
+
+    provider, labels, raw = provider_result
+    decision = score_labels(labels)
+    decision["attributes"] = raw
+    decision["provider"] = provider
+    return decision
 
 def handle_content_moderation(content: str, user_id: int, content_type: str):
     """

@@ -16,10 +16,7 @@ import { theme } from "@/app/theme";
 import { useAppSelector, useAppDispatch } from "../../../store/hooks";
 import { setErrorMessage } from "../../../store/Auth-store/authSlice";
 import LoadingOverlay from "@/app/Universal-components/LoadingScreen/Screen";
-
-const image = {
-  uri: "https://images.unsplash.com/vector-1741103791953-12eca7b8e3c7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTAwfHxibHVlJTIwYWJzdHJhY3QlMjBzaGFwZXMlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D",
-};
+import image from "@/assets/images/auth-background.png";
 
 const LoginPage = () => {
   const { height } = useWindowDimensions();
@@ -30,6 +27,8 @@ const LoginPage = () => {
     identifier,
     identifierMode,
     password,
+    otp,
+    handleOtpChange,
     passwordBdColor,
     identifierBdColor,
     handleIdentifierModeChange,
@@ -191,6 +190,27 @@ const LoginPage = () => {
               accessibilityLabel="Password"
             />
 
+            <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
+              Authenticator code (optional)
+            </Text>
+            <TextInput
+              onChangeText={handleOtpChange}
+              value={otp}
+              style={{
+                ...styles.input,
+                ...(isCompactScreen ? styles.compactInput : undefined),
+                borderColor: passwordBdColor[0],
+                borderBottomColor: passwordBdColor[1],
+              }}
+              placeholder="6-digit code, if you use an authenticator app"
+              placeholderTextColor={theme.colors.textMuted}
+              keyboardType="number-pad"
+              maxLength={8}
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
+              accessibilityLabel="Authenticator code, optional"
+            />
+
             <TouchableOpacity
               style={[styles.button, isCompactScreen ? styles.compactButton : undefined]}
               onPress={handleLoginPress}
@@ -204,18 +224,31 @@ const LoginPage = () => {
               </Text>
             </TouchableOpacity>
 
-            <Text
-              style={[
-                styles.containerFooter,
-                isCompactScreen ? styles.compactContainerFooter : undefined,
-              ]}
-            >
-              Not Registered?
-              <Text style={styles.footerLink} onPress={() => handleLoginStateChange("sign-up")}>
-                {" "}
-                Sign up!
+            <View style={styles.footerRow}>
+              <Text
+                style={[
+                  styles.containerFooter,
+                  isCompactScreen ? styles.compactContainerFooter : undefined,
+                ]}
+              >
+                Not Registered?{" "}
               </Text>
-            </Text>
+              <TouchableOpacity
+                onPress={() => handleLoginStateChange("sign-up")}
+                accessibilityRole="button"
+                accessibilityLabel="Sign up"
+              >
+                <Text
+                  style={[
+                    styles.containerFooter,
+                    styles.footerLink,
+                    isCompactScreen ? styles.compactContainerFooter : undefined,
+                  ]}
+                >
+                  Sign up!
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

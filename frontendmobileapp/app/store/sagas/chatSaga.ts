@@ -24,14 +24,22 @@ import {
 import { setUploadedMediaId } from "../Profile-store/mediaSlice";
 
 function* handleGetMessages(action: PayloadAction<string>) {
-  const messages = (
-    (yield call(
-      ChatApiFactory().getGetMessages,
-      action.payload,
-      {},
-    )) as AxiosResponse<GetMessagesResponse>
-  ).data as GetMessagesResponse;
-  yield put(setChatMessages(messages.messages ?? []));
+  try {
+    const messages = (
+      (yield call(
+        ChatApiFactory().getGetMessages,
+        action.payload,
+        {},
+      )) as AxiosResponse<GetMessagesResponse>
+    ).data as GetMessagesResponse;
+    yield put(setChatMessages(messages.messages ?? []));
+  } catch (error) {
+    // Left unhandled, a failed fetch here never dispatches setChatMessages,
+    // so Conversation's loading overlay (which only clears on a messages
+    // change) would spin forever with no way out and no error shown.
+    console.error("failed to fetch chat messages", error);
+    yield put(setChatMessages([]));
+  }
 }
 
 function* handlePostSendMessage(

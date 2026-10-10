@@ -48,6 +48,10 @@ const OneMedium = (props: Props) => {
       style={[styles.mediumContainer, { width: tileWidth, height: tileHeight }]}
       activeOpacity={0.9}
       onPress={props.onPress}
+      accessibilityRole="button"
+      accessibilityLabel={
+        props.media?.content_type?.startsWith("video") ? "View video" : "View image"
+      }
     >
       {props.media?.content_type?.startsWith("image") && (
         <Image

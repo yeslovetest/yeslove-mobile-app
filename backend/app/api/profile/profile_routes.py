@@ -67,7 +67,11 @@ class UpdateProfile(Resource):
     @api.expect(UserProfile)  # ✅ Attach model
     def put(self):
         """Update user profile."""
-        data = request.json or {}
+        # request.json raises 415 when the client sends multipart/form-data
+        # (the profile-picture upload path never sends a JSON body), so parse
+        # leniently and fall back to {} instead of crashing before the
+        # request.files handling below ever runs.
+        data = request.get_json(silent=True) or {}
         
         from app.models import User, db
         # Type hint for request.user added by @require_auth decorator

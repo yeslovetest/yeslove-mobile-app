@@ -15,7 +15,8 @@ def embed_text(text: str) -> list[float]:
     setup_openai()
     response = openai.Embedding.create(
         model="text-embedding-ada-002",
-        input=text
+        input=text,
+        request_timeout=30
     )
     return response['data'][0]['embedding']
 
@@ -24,6 +25,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     setup_openai()
     response = openai.Embedding.create(
         model="text-embedding-ada-002",
-        input=texts
+        input=texts,
+        request_timeout=30
     )
     return [data['embedding'] for data in response['data']]

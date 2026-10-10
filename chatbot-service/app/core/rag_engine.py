@@ -161,7 +161,8 @@ class RAGEngine:
             # Use OpenAI 0.28 API
             response = openai.ChatCompletion.create(
                 model=self.model,
-                messages=messages
+                messages=messages,
+                request_timeout=30
             )
             return response.choices[0].message.content
             

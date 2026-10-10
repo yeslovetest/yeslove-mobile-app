@@ -6,6 +6,20 @@ import requests
 from app.logging_setup import setup_logger
 from app.utils import require_auth, is_valid_email
 
+# Must match the realm's password policy (KeyCloakService/scripts/mfa.py, `harden`) and
+# MIN_PASSWORD_LENGTH in frontendmobileapp/constants/password.ts.
+MIN_PASSWORD_LENGTH = 12
+
+
+def password_problem(password, *own_details):
+    """Why this password is not acceptable, or None. Mirrors the Keycloak password policy so
+    the member gets a clear message instead of a generic failure from Keycloak."""
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return f"Password must be at least {MIN_PASSWORD_LENGTH} characters."
+    if password.lower() in {str(d).lower() for d in own_details if d}:
+        return "Password cannot be the same as your username or email."
+    return None
+
 logger = setup_logger()
 
 
@@ -52,6 +66,17 @@ class Login(Resource):
             "username": username,
             "password": password
         }
+
+        # Second factor. Keycloak asks for a one-time code from any account that has an
+        # authenticator app set up, and gives the same "invalid credentials" answer for a
+        # missing code as for a wrong password, so the app offers an optional code box
+        # and we pass it straight through. The code is never logged.
+        otp = data.get("otp")
+        if otp is not None:
+            otp = str(otp).strip().replace(" ", "")
+            if not (otp.isdigit() and 6 <= len(otp) <= 8):
+                return {"message": "The authenticator code should be 6 to 8 digits."}, 400
+            payload["otp"] = otp
 
         try:
             response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=AUTH_REQUEST_TIMEOUT)
@@ -139,8 +164,29 @@ class Login(Resource):
         else:
             logger.warning(f"❌ Keycloak login failed → Status {response.status_code}: {response.text[:100]}...")
 
+        # Keycloak answers a staff account that has no authenticator set up with a bare 500
+        # (the one-time-code step cannot run), which is indistinguishable from an outage.
+        # Say so, rather than calling it a wrong password.
+        if response.status_code >= 500:
+            return {"message": "We couldn't sign you in. If you are a member of staff, check that "
+                               "two-step verification is set up on your account."}, 503
+
         logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code
+
+def _remove_keycloak_user(base_users_url, user_id, headers):
+    """Best-effort removal of a Keycloak user created during a sign-up that then failed.
+
+    Without this a failed sign-up leaves a sign-in with no app account behind, and the
+    person cannot try again because the username is taken.
+    """
+    try:
+        response = requests.delete(f"{base_users_url}/{user_id}", headers=headers, timeout=10)
+        if response.status_code not in (204, 404):
+            logger.error(f"Could not remove half-created Keycloak user {user_id}: {response.status_code}")
+    except requests.RequestException as exc:
+        logger.error(f"Could not remove half-created Keycloak user {user_id}: {exc}")
+
 
 @api.route("/signup")
 class Signup(Resource):
@@ -159,11 +205,11 @@ class Signup(Resource):
         first_name                  = data.get("first_name")
         last_name                   = data.get("last_name")
         username                    = data.get("username")
-        user_type                   = data.get("user_type")
+        # The app does not send a type for ordinary members, so default to "Standard".
+        user_type                   = (data.get("user_type") or "Standard").strip()
+        is_professional             = user_type.lower() == "professional"
 
-        
         # Professional only fileds
-        user_type                   = data.get("user_type")
         license_body                = data.get("license_body")
         license_number              = data.get("license_number")
         consent_license_data        = data.get("consent_license_data")
@@ -190,9 +236,13 @@ class Signup(Resource):
         if missing:
             logger.warning(f"⚠️ Missing signup fields -> {missing}")
             return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
+
+        problem = password_problem(password, username, email)
+        if problem:
+            return {"message": problem}, 400
         
         # If user is professional, require license data and consent
-        if user_type == "Professional":
+        if is_professional:
             prof_missing = [
                 k for k in ("license_body", "license_number", "consent_license_data")
                 if data.get(k) is None or data.get(k) == ""
@@ -202,7 +252,7 @@ class Signup(Resource):
                 logger.warning(f"⚠️ Missing professional fields → {prof_missing}")
                 return { "message" : "Professional users must provide: " + ", ".join(prof_missing)}, 400
         
-            if consent_license_data != "Yes":
+            if str(consent_license_data).lower() not in ("yes", "true"):
                 return {"message" : "You must consent to use and display tour license data."}, 400
         
         # Gets admin access token
@@ -213,7 +263,7 @@ class Signup(Resource):
             "username" : current_app.config["KEYCLOAK_ADMIN_USER"],
             "password" : current_app.config["KEYCLOAK_ADMIN_PASS"],
         }
-        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token_response = requests.post(token_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
 
         if token_response.status_code != 200:
             logger.error("❌ Keycloak admin token fetch failed")
@@ -242,7 +292,7 @@ class Signup(Resource):
             }]
         }
 
-        if user_type == "Professional":
+        if is_professional:
             user_payload["attributes"].update({
                 "license_body": license_body,
                 "license_number" : license_number,
@@ -251,7 +301,7 @@ class Signup(Resource):
         
         logger.debug("🔑 Admin token acquired successfully")
 
-        response = requests.post(create_user_url, json=user_payload, headers=headers)
+        response = requests.post(create_user_url, json=user_payload, headers=headers, timeout=10)
 
         logger.info(f"🧩 Keycloak create user response → {response.status_code}")
 
@@ -259,7 +309,7 @@ class Signup(Resource):
         if response.status_code == 201:
             # Fetches the created user's ID
             get_users_url = f"{create_user_url}?username={username}"
-            get_response = requests.get(get_users_url, headers=headers)
+            get_response = requests.get(get_users_url, headers=headers, timeout=10)
 
             if get_response.status_code != 200 or not get_response.json():
                 return {"message" : "User created, but failed to retrieve user ID"}, 500
@@ -273,10 +323,11 @@ class Signup(Resource):
             }
             logger.info(f"✅ User {username} created successfully in Keycloak")
 
-            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers)
+            patch_response = requests.put(verify_email_url, json=verify_payload, headers=headers, timeout=10)
 
             if patch_response.status_code != 204:
                 logger.warning(f"⚠️ Failed to assign VERIFY_EMAIL for user {username}")
+                _remove_keycloak_user(create_user_url, user_id, headers)
                 return {
                     "message": "User created, but failed to trigger email verification",
                     "details": patch_response.text
@@ -284,10 +335,11 @@ class Signup(Resource):
             
             # Triggers email validation 
             send_email_url = f"{create_user_url}/{user_id}/send-verify-email"
-            send_email_response = requests.put(send_email_url, headers=headers)
+            send_email_response = requests.put(send_email_url, headers=headers, timeout=10)
 
             if send_email_response.status_code !=204:
                 logger.warning(f"⚠️ Failed to send verification email to {email}")
+                _remove_keycloak_user(create_user_url, user_id, headers)
                 return {
                     "message": "User created and VERIFY_EMAIL action assigned, but failed to send email",
                     "details": send_email_response.text
@@ -308,6 +360,7 @@ class Signup(Resource):
                     logger.info(f"✅ Updated existing user {username} with Keycloak ID")
                 else:
                     logger.warning(f"⚠️ Signup rejected → Username {username} already exists")
+                    _remove_keycloak_user(create_user_url, user_id, headers)
                     return {"message" : "Username already exists"}, 409
             else:
                 # Creates a local user row
@@ -323,20 +376,21 @@ class Signup(Resource):
                 db.session.flush()
 
                 # Creates a professional user row
-                if user_type == "Professional":
+                if is_professional:
                     prof = ProfessionalDetails(
                         user_id=new_user.id,
                         license_body=license_body,
                         license_number=license_number,
-                        consent_license_data=(consent_license_data in ["yes", True])
+                        consent_license_data=(str(consent_license_data).lower() in ("yes", "true"))
                     )
                     db.session.add(prof)
 
                 db.session.commit()
             
             except IntegrityError as e:
-                db.session.rollback
+                db.session.rollback()
                 logger.error(f"❌ Database error when saving user {username}: {e}")
+                _remove_keycloak_user(create_user_url, user_id, headers)
                 return {"message" : "Username already exist"}, 409
 
             # Auto-register device token if provided during signup
@@ -353,7 +407,7 @@ class Signup(Resource):
         elif response.status_code == 409:
             return {"message":"User already exists"},409
         else:
-            print("DEBUG → Keycloak error:", response.status_code, response.text)
+            logger.error(f"Keycloak create user failed: {response.status_code} {response.text}")
             return {"message":"Failed to create user", "details": response.text}, response.status_code
     
 @api.route("/logout")
@@ -372,6 +426,7 @@ class Logout(Resource):
         response = requests.post(
             keycloak_logout_url,
             headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
         )
 
         logger.info("User logout attempt via refresh token")
@@ -490,6 +545,10 @@ class ChangePassword(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
+        problem = password_problem(new_password, user.username, user.email)
+        if problem:
+            return {"message": problem}, 400
+
         keycloak_admin_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user.keycloak_id}/reset-password"
         payload = {
             "type": "password",
@@ -502,7 +561,7 @@ class ChangePassword(Resource):
         token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
         headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.put(keycloak_admin_url, json=payload, headers=headers)
+        response = requests.put(keycloak_admin_url, json=payload, headers=headers, timeout=10)
 
         logger.info(f"Password change requested for user {user.username}")
         
@@ -538,7 +597,7 @@ class ResetPassword(Resource):
             "email": email
         }
 
-        response = requests.post(keycloak_reset_url, json=payload)
+        response = requests.post(keycloak_reset_url, json=payload, timeout=10)
 
         logger.info(f"Password reset request for email {email}")
 
@@ -561,32 +620,74 @@ class DeleteAccount(Resource):
     @api.doc(security='Bearer')
     @api.expect(DeleteAccountRequest)
     def delete(self):
-        """Delete user account via Keycloak API."""
-        from app.models import User, db
-        user_id = request.user["keycloak_id"]
-        user = User.query.filter_by(keycloak_id=user_id).first()
+        """Delete the account and everything the app holds about it."""
+        from app.models import User
+        from app.services.account_service import (
+            AccountErasureBlocked, AccountService, delete_keycloak_user,
+        )
+
+        if (request.get_json(silent=True) or {}).get("confirmation") is not True:
+            return {"message": "Confirmation is required to delete the account"}, 400
+
+        keycloak_id = request.user["keycloak_id"]
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
         if not user:
             return {"message": "User not found"}, 404
 
-        keycloak_delete_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user_id}"
-        
+        # Refuse before touching anything if the account cannot be erased automatically.
+        try:
+            AccountService.check_erasable(user)
+        except AccountErasureBlocked as exc:
+            return {"message": str(exc)}, 409
+
+        username = user.username
         auth_header = request.headers.get("Authorization", "")
-        # To allow for two different formats (Bearer <Token> and <Token>)
         token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
-        headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.delete(keycloak_delete_url, headers=headers)
+        # Remove the sign-in first so the person cannot log back in while data is erased.
+        deleted, status = delete_keycloak_user(keycloak_id, fallback_token=token)
+        if not deleted:
+            logger.error("Keycloak deletion failed for account %s (%s)", username, status)
+            return {"message": "Failed to delete account"}, status if status >= 400 else 500
 
-        logger.info(f"Account deletion requested for user {user.username}")
+        try:
+            counts, object_keys = AccountService.erase_user_data(user)
+        except Exception:
+            from app.models import db
+            db.session.rollback()
+            logger.exception("Sign-in removed but data erasure failed for keycloak id %s", keycloak_id)
+            return {
+                "message": "Your sign-in was removed but we could not finish deleting your data. "
+                           "Please contact support so we can complete it."
+            }, 500
 
-        if response.status_code == 204:
-            return {"message": "Account delete successful"}, 200
-            db.session.delete(user)
-            db.session.commit()
-            logger.info(f"Account deleted successfully for {user.username}")
-        else:
-            logger.error(f"Account deletion failed: {response.status_code} - {response.text}")
-        return {"message": "Failed to delete account"}, response.status_code
+        AccountService.remove_external_copies(keycloak_id, object_keys)
+        logger.info("Account erased for keycloak id %s: %s", keycloak_id, counts)
+        return {"message": "Account delete successful"}, 200
+
+
+@api.route("/export_data")
+class ExportData(Resource):
+    @require_auth()
+    @api.doc(security='Bearer', description="Download a copy of the personal data held about the signed-in member")
+    def get(self):
+        """Export the signed-in member's personal data as JSON."""
+        import json
+        from flask import Response
+        from app.models import User
+        from app.services.account_service import AccountService
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        payload = AccountService.export_user_data(user)
+        logger.info("Data export generated for keycloak id %s", user.keycloak_id)
+        return Response(
+            json.dumps(payload, indent=2, default=str),
+            mimetype="application/json",
+            headers={"Content-Disposition": 'attachment; filename="yeslove-my-data.json"'},
+        )
 
 
 

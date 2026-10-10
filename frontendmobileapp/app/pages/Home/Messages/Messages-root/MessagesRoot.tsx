@@ -75,9 +75,19 @@ const Messages = () => {
       <View style={messagesSharedStyles.container}>
         <Text style={messagesSharedStyles.messagesText}>Messages</Text>
         <AskChatbotButton onClick={() => dispatch(openTabOnTopAction({ type: TabType.CHATBOT }))} />
+        <AskChatbotButton
+          onClick={() => dispatch(openTabOnTopAction({ type: TabType.MULTILINGUAL_CHAT }))}
+          label="Chat in your language"
+          iconName="translate"
+        />
 
         <View style={messagesSharedStyles.filterBar}>
-          <TouchableOpacity onPress={() => setFilter("all")}>
+          <TouchableOpacity
+            onPress={() => setFilter("all")}
+            accessibilityRole="tab"
+            accessibilityLabel="All"
+            accessibilityState={{ selected: filter === "all" }}
+          >
             <View
               style={[
                 messagesSharedStyles.filterButton,
@@ -99,7 +109,12 @@ const Messages = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setFilter("read")}>
+          <TouchableOpacity
+            onPress={() => setFilter("read")}
+            accessibilityRole="tab"
+            accessibilityLabel="Read"
+            accessibilityState={{ selected: filter === "read" }}
+          >
             <View
               style={[
                 messagesSharedStyles.filterButton,
@@ -121,7 +136,12 @@ const Messages = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setFilter("unread")}>
+          <TouchableOpacity
+            onPress={() => setFilter("unread")}
+            accessibilityRole="tab"
+            accessibilityLabel="Unread"
+            accessibilityState={{ selected: filter === "unread" }}
+          >
             <View
               style={[
                 messagesSharedStyles.filterButton,
@@ -159,6 +179,8 @@ const Messages = () => {
               <TouchableOpacity
                 onPress={() => openConversation(friend.id ?? "", friend.profile_pic ?? "")}
                 key={friend.id ?? key}
+                accessibilityRole="button"
+                accessibilityLabel={`Open conversation with ${friend.username ?? "friend"}`}
               >
                 <OneMessage message={friend}></OneMessage>
               </TouchableOpacity>

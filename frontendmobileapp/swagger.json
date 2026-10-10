@@ -1224,6 +1224,30 @@
         "tags": [
           "feed"
         ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Post deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed to delete this post"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        },
+        "summary": "Delete a post by ID",
+        "description": "Only the post's author may delete it.",
+        "operationId": "delete_get_post",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "tags": [
+          "feed"
+        ]
       }
     },
     "/api/feed/post/{post_id}/comment": {

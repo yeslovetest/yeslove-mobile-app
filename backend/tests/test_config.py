@@ -28,6 +28,7 @@ def test_factory_honours_production_environment(monkeypatch):
     from app.config import ProductionConfig
 
     monkeypatch.setenv("FLASK_ENV", "production")
+    monkeypatch.setattr(ProductionConfig, "SECRET_KEY", "test-secret-key")
     monkeypatch.setattr(ProductionConfig, "GRAPH_DB_URI", "")
     monkeypatch.setattr(ProductionConfig, "NEO4J_URI", "")
     monkeypatch.setattr(app, "get_keycloak_public_keys", lambda: None)

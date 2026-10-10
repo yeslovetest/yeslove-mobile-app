@@ -15,6 +15,59 @@ NotificationPreferences = api.model("NotificationPreferences", {
     "blogs": fields.Boolean(description="Notifications for new blogs"),
 })
 
+DeviceTokenRequest = api.model("DeviceTokenRequest", {
+    "token": fields.String(required=True, description="Expo push token (ExponentPushToken[...])"),
+    "platform": fields.String(required=False, description="ios or android"),
+    "device_id": fields.String(required=False, description="Stable id for this install"),
+})
+
+
+@api.route("/device-token")
+class DeviceTokenResource(Resource):
+    @require_auth()
+    @api.expect(DeviceTokenRequest)
+    def post(self):
+        """Register this device to receive push notifications."""
+        from app.models import User
+        from app.services.device_token_service import DeviceTokenService
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        data = request.get_json(silent=True) or {}
+        token = (data.get("token") or "").strip()
+        if not token or len(token) > 255:
+            return {"message": "A valid token is required"}, 400
+
+        platform = data.get("platform")
+        if platform not in (None, "ios", "android"):
+            return {"message": "platform must be ios or android"}, 400
+
+        if not DeviceTokenService.register_device_token(user.id, token, platform, data.get("device_id")):
+            return {"message": "Could not register device"}, 500
+        return {"message": "Device registered"}, 200
+
+    @require_auth()
+    @api.expect(DeviceTokenRequest)
+    def delete(self):
+        """Stop push notifications to this device (call on logout)."""
+        from app.models import DeviceToken, User, db
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        token = ((request.get_json(silent=True) or {}).get("token") or "").strip()
+        if not token:
+            return {"message": "A valid token is required"}, 400
+
+        # Only remove a token that belongs to the caller.
+        DeviceToken.query.filter_by(user_id=user.id, token=token).delete()
+        db.session.commit()
+        return {"message": "Device removed"}, 200
+
+
 @api.route("/preferences")
 class NotificationPreferencesResource(Resource):
     @require_auth()

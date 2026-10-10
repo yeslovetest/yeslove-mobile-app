@@ -123,6 +123,8 @@ const Email = (props: Props) => {
           <TouchableOpacity
             style={styles.saveChangesButton}
             onPress={saveEmailNotificationSettings}
+            accessibilityRole="button"
+            accessibilityLabel="Save changes"
           >
             <Text style={styles.saveChangesButtonText}>Save Changes</Text>
           </TouchableOpacity>

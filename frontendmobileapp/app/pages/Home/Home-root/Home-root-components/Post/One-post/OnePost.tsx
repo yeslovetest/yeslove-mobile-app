@@ -15,10 +15,13 @@ import {
   setPostReactionTab,
   SendFollowUser,
   deletePostAction,
+  removePostFromFeed,
+  removePostsByAuthor,
 } from "@/app/store/Home-store/feedSlice";
 import { BASE_URL } from "@/app/config/baseUrl";
 import PostFilePreview from "@/app/pages/Home/Post-modal/Post-modal-components/File-preview/PostFilePreview";
 import { getImageSource } from "@/constants/imageFallbacks";
+import ReportBlockSheet from "@/app/Universal-components/Report-block/ReportBlockSheet";
 
 export interface Props {
   post: PostData;
@@ -33,6 +36,7 @@ const OnePost = (props: Props) => {
   const [isReactionModalVisible, setReactionModalVisible] = useState(false);
   const [isFollowMenuVisible, setFollowMenuVisible] = useState(false);
   const [isPostMenuVisible, setPostMenuVisible] = useState(false);
+  const [isReportSheetVisible, setReportSheetVisible] = useState(false);
   const currentUserId = useAppSelector((state) => state.user.id);
   const isOwnPost = !!props.post.author_id && props.post.author_id === currentUserId;
 
@@ -221,6 +225,21 @@ const OnePost = (props: Props) => {
             <Ionicons name="ellipsis-horizontal" size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         )}
+        {!isOwnPost && (
+          <TouchableOpacity
+            style={styles.postOptionsButton}
+            onPress={() => setReportSheetVisible(true)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Report or block"
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={theme.colors.textPrimary}
+            />
+          </TouchableOpacity>
+        )}
         {props.post.author_id && props.post.author_id !== currentUserId && (
           <View style={{ justifyContent: "center", alignItems: "flex-end", maxWidth: "42%" }}>
             <TouchableOpacity
@@ -304,7 +323,11 @@ const OnePost = (props: Props) => {
           </View>
         </View>
         {isLongText && (
-          <TouchableOpacity onPress={handleToggle}>
+          <TouchableOpacity
+            onPress={handleToggle}
+            accessibilityRole="button"
+            accessibilityLabel={expanded ? "See less" : "See more"}
+          >
             <Text style={{ color: theme.colors.textPrimary, marginTop: 10 }}>
               {expanded ? "See Less" : "See More"}
             </Text>
@@ -362,6 +385,8 @@ const OnePost = (props: Props) => {
                   backgroundColor: theme.colors.surfaceAlt,
                 }}
                 onPress={() => changeReaction("like")}
+                accessibilityRole="button"
+                accessibilityLabel="Like"
               >
                 <Ionicons name="thumbs-up-sharp" size={28} color="blue" />
                 <Text
@@ -385,6 +410,8 @@ const OnePost = (props: Props) => {
                   backgroundColor: theme.colors.surfaceAlt,
                 }}
                 onPress={() => changeReaction("love")}
+                accessibilityRole="button"
+                accessibilityLabel="Love"
               >
                 <Ionicons name="heart" size={28} color={theme.colors.danger} />
                 <Text
@@ -408,6 +435,8 @@ const OnePost = (props: Props) => {
                   backgroundColor: theme.colors.surfaceAlt,
                 }}
                 onPress={() => changeReaction("laugh")}
+                accessibilityRole="button"
+                accessibilityLabel="Laugh"
               >
                 <FontAwesome6 name="laugh" size={28} color={theme.colors.textPrimary} />
                 <Text
@@ -455,6 +484,8 @@ const OnePost = (props: Props) => {
               <TouchableOpacity
                 style={styles.followMenuOptions}
                 onPress={() => sendFollowReq("basic")}
+                accessibilityRole="button"
+                accessibilityLabel={`Follow ${props.post.author}`}
               >
                 <Text style={styles.followMenuPopUpText}>Follow</Text>
               </TouchableOpacity>
@@ -463,6 +494,8 @@ const OnePost = (props: Props) => {
               <TouchableOpacity
                 style={styles.followMenuOptions}
                 onPress={() => sendFollowReq("friend")}
+                accessibilityRole="button"
+                accessibilityLabel={`Follow ${props.post.author} as friend`}
               >
                 <Text style={styles.followMenuPopUpText}>Follow as friend</Text>
               </TouchableOpacity>
@@ -471,6 +504,8 @@ const OnePost = (props: Props) => {
               <TouchableOpacity
                 style={styles.followMenuOptions}
                 onPress={() => sendFollowReq("friend")}
+                accessibilityRole="button"
+                accessibilityLabel="Send friend request again"
               >
                 <Text style={styles.followMenuPopUpText}>Send friend request again</Text>
               </TouchableOpacity>
@@ -479,6 +514,8 @@ const OnePost = (props: Props) => {
               <TouchableOpacity
                 style={styles.followMenuOptions}
                 onPress={() => sendFollowReq("unfollow")}
+                accessibilityRole="button"
+                accessibilityLabel={`Unfollow ${props.post.author}`}
               >
                 <Text style={styles.followMenuPopUpText}>Unfollow</Text>
               </TouchableOpacity>
@@ -507,6 +544,21 @@ const OnePost = (props: Props) => {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <ReportBlockSheet
+        visible={isReportSheetVisible}
+        onClose={() => setReportSheetVisible(false)}
+        contentType="post"
+        contentId={props.post.id as number}
+        authorId={props.post.author_id}
+        authorName={props.post.author}
+        onReported={() => dispatch(removePostFromFeed({ postId: props.post.id as number }))}
+        onBlocked={() => {
+          if (props.post.author_id) {
+            dispatch(removePostsByAuthor({ authorId: props.post.author_id }));
+          }
+        }}
+      />
     </View>
   );
 };

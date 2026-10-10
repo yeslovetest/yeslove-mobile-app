@@ -12,6 +12,7 @@ import PostModal from "@/app/pages/Home/Post-modal/PostModal";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import { fetchFriendList } from "@/app/store/Chat/chatSlice";
+import ReportBlockSheet from "@/app/Universal-components/Report-block/ReportBlockSheet";
 import ChatbotProfile from "@/app/pages/Home/Messages/Chatbot/Chatbot-components/Chatbot-profile/ChatbotProfile";
 import { theme } from "@/app/theme";
 import { BASE_URL } from "@/app/config/baseUrl";
@@ -56,6 +57,7 @@ export default function Header(props: Props) {
   const assistantMotion = React.useRef(new Animated.Value(0)).current;
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [conversationSheetVisible, setConversationSheetVisible] = useState(false);
 
   const openPostModal = () => setModalVisible(true);
   const closePostModal = () => setModalVisible(false);
@@ -180,8 +182,34 @@ export default function Header(props: Props) {
               </Text>
             </View>
           )}
-          <View />
+          {currentTab === TabType.CONVERSATION && !!conversationData?.userId ? (
+            <TouchableOpacity
+              onPress={() => setConversationSheetVisible(true)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityRole="button"
+              accessibilityLabel="Report or block this user"
+            >
+              <Ionicons name="ellipsis-horizontal" size={24} color={theme.colors.textPrimary} />
+            </TouchableOpacity>
+          ) : (
+            <View />
+          )}
         </View>
+      )}
+
+      {currentTab === TabType.CONVERSATION && !!conversationData?.userId && (
+        <ReportBlockSheet
+          visible={conversationSheetVisible}
+          onClose={() => setConversationSheetVisible(false)}
+          contentType="user"
+          userKeycloakId={conversationData.userId}
+          authorId={conversationData.userId}
+          authorName={conversationUserName}
+          onBlocked={() => {
+            dispatch(fetchFriendList(userId || ""));
+            dispatch(goBackToPreviousTabAction());
+          }}
+        />
       )}
 
       {hasTabToGoBackTo && currentTab === TabType.CHATBOT && (

@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, Linking } from "react-native";
 import styles from "../SharedChatbotStyles";
 import { theme } from "@/app/theme";
+import ChatRecommendations from "./ChatRecommendations";
+import type { ChatRecommendation } from "@/chatbot-client-api/api";
 
 const LINK_PATTERN = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
 const FULL_LINK_PATTERN = /^(https?:\/\/[^\s]+|www\.[^\s]+)$/i;
@@ -123,7 +125,15 @@ const renderTextWithLinks = (
   });
 };
 
-const ChatResponse = ({ text, time }: { text: string; time: Date }) => {
+const ChatResponse = ({
+  text,
+  time,
+  recommendations,
+}: {
+  text: string;
+  time: Date;
+  recommendations?: ChatRecommendation[];
+}) => {
   const safeText = normalizeMarkdownText(text);
 
   const hhmm = time
@@ -148,6 +158,10 @@ const ChatResponse = ({ text, time }: { text: string; time: Date }) => {
           })}
         </Text>
       </View>
+
+      {!!recommendations?.length && (
+        <ChatRecommendations recommendations={recommendations} />
+      )}
 
       <Text style={styles.timeSentResponse}>{hhmm}</Text>
     </View>
