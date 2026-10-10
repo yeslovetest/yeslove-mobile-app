@@ -26,6 +26,18 @@ def get_keycloak_config():
 }
 
 
+def allowed_token_clients():
+    """Keycloak clients whose tokens this API accepts (comma list in ALLOWED_TOKEN_CLIENTS).
+
+    Default: the app's password-login client and the mobile browser-sign-in client. A token from
+    any other client in the realm (for example a tool's own client) is refused.
+    """
+    configured = os.getenv("ALLOWED_TOKEN_CLIENTS")
+    if configured:
+        return {c.strip() for c in configured.split(",") if c.strip()}
+    return {os.getenv("KEYCLOAK_CLIENT_ID", "yeslove"), os.getenv("KEYCLOAK_MOBILE_CLIENT_ID", "yeslove-mobile")}
+
+
 # -------------------------
 # 🔹 Fetch & Cache Keycloak Public Keys
 # -------------------------
@@ -80,6 +92,11 @@ def verify_jwt(token):
         # ✅ Issuer Validation
         if claims["iss"] != expected_issuer:
             logger.warning(f"❌ Invalid issuer! Expected: {expected_issuer}, Found: {claims['iss']}")
+            return None
+
+        # ✅ Only tokens issued to our own clients
+        if claims.get("azp") not in allowed_token_clients():
+            logger.warning("❌ Token was issued to a client this API does not accept")
             return None
 
         # ✅ Log Successful JWT Decoding

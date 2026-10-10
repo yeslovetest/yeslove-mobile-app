@@ -24,6 +24,7 @@ const authSlice = createSlice({
             state.loginState = action.payload; 
         },
         logInAction: (state, action: PayloadAction<LoginRequest>) => {},
+        browserLogInAction: (state, action: PayloadAction<void>) => {},
         attemptRefreshFromLocalStorageAction: (state, action: PayloadAction<void>) => {},
         increasePageNo: (state, action: PayloadAction<number>) => {
             state.SignupPageNo = action.payload + 1;
@@ -65,7 +66,7 @@ const authSlice = createSlice({
     },
 })
 
-export const { setLoginStateAction, logInAction, attemptRefreshFromLocalStorageAction, increasePageNo, decreasePageNo, signupAction, setSignupMessage,
+export const { setLoginStateAction, logInAction, browserLogInAction, attemptRefreshFromLocalStorageAction, increasePageNo, decreasePageNo, signupAction, setSignupMessage,
     setSignupEmail, setSignupConfirmEmail, setSignupPassword, setSignupConfirmPassword, 
     setErrorMessage, setUserPassword, setMessage, setDeleteConfirmation, logoutAction,
     setLastSignupPayload, setSignupSubmitting} = authSlice.actions; 

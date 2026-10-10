@@ -1,6 +1,6 @@
-import { AuthApiFactory } from "@/generated-api";
 import axios from "axios";
 
+import { refreshSession } from "@/app/services/oidc";
 import { secureGet, secureSet } from "./secureStorage";
 
 class TokenRefreshService {
@@ -47,18 +47,17 @@ class TokenRefreshService {
     const scheduleNext = (expiresInSeconds?: number) => {
       const delayMs = this.getRefreshDelayMs(expiresInSeconds);
       this.refreshTimeoutId = setTimeout(() => {
-        AuthApiFactory()
-          .postRefreshToken({ refresh_token: currentRefreshToken })
-          .then(async (response) => {
-            const nextRefreshToken = response.data.refresh_token ?? "";
-            const accessToken = response.data.access_token ?? "";
+        refreshSession(currentRefreshToken)
+          .then(async (tokens) => {
+            const nextRefreshToken = tokens.refresh_token ?? "";
+            const accessToken = tokens.access_token ?? "";
             currentRefreshToken = nextRefreshToken;
 
             this.setAuthHeader(accessToken);
             await this.saveAccessToken(accessToken);
             await this.saveRefreshTokenToLocalStorage(nextRefreshToken);
 
-            scheduleNext(response.data.expires_in ?? undefined);
+            scheduleNext(tokens.expires_in ?? undefined);
           })
           .catch(() => {
             this.stopRefreshingToken();
@@ -89,9 +88,9 @@ class TokenRefreshService {
     }
 
     try {
-      const response = await AuthApiFactory().postRefreshToken({ refresh_token: refreshToken });
-      const accessToken = response.data.access_token ?? "";
-      const nextRefreshToken = response.data.refresh_token ?? "";
+      const tokens = await refreshSession(refreshToken);
+      const accessToken = tokens.access_token ?? "";
+      const nextRefreshToken = tokens.refresh_token ?? "";
 
       if (!accessToken) {
         return null;

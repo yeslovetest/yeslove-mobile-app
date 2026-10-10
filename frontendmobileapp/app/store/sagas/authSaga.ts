@@ -19,6 +19,7 @@ import { TOKEN_REFRESH_SERVICE } from "@/ts/token-service";
 import { appSelect } from "../hooks";
 import {
   attemptRefreshFromLocalStorageAction,
+  browserLogInAction,
   logInAction,
   LoginState,
   logoutAction,
@@ -44,6 +45,15 @@ import { setChatMessages, setFriendList } from "../Chat/chatSlice";
 import { getUserIdentity, UserIdentityResponse } from "../../services/authService";
 import { getApiMessage, getHttpStatus } from "./sagaHelpers";
 import { unregisterPushNotifications } from "@/app/services/pushNotifications";
+import {
+  BrowserSignInCancelled,
+  endBrowserSession,
+  getAuthMode,
+  refreshSession,
+  setAuthMode,
+  signInWithBrowser,
+  usernameFromAccessToken,
+} from "@/app/services/oidc";
 
 const clearPersistedAuthState = async (): Promise<void> => {
   TOKEN_REFRESH_SERVICE.stopRefreshingToken();
@@ -146,6 +156,28 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     return;
   }
 
+  yield* finishLogin({
+    accessToken,
+    refreshToken,
+    keycloakId: loginResponse.keycloak_id,
+    userDbId: loginResponse.user_id,
+    username: request.username,
+    password: request.password,
+  });
+}
+
+type FinishLoginInput = {
+  accessToken: string;
+  refreshToken: string;
+  keycloakId?: string;
+  userDbId?: number;
+  username: string;
+  password: string;
+};
+
+/** Shared by the password login and the browser sign-in, once a valid session exists. */
+function* finishLogin(input: FinishLoginInput) {
+  const { accessToken, refreshToken } = input;
   // A valid login response should route the user to home.
   // Any post-login sync/storage failures are treated as best-effort warnings.
   try {
@@ -163,8 +195,8 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     );
 
     // Never fail a successful auth response because local sync/lookup is delayed.
-    let resolvedKeycloakId = loginResponse.keycloak_id ?? "";
-    let resolvedUserDbId = typeof loginResponse.user_id === "number" ? loginResponse.user_id : -1;
+    let resolvedKeycloakId = input.keycloakId ?? "";
+    let resolvedUserDbId = typeof input.userDbId === "number" ? input.userDbId : -1;
 
     if (!resolvedKeycloakId || resolvedUserDbId < 0) {
       try {
@@ -196,8 +228,8 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     );
     yield put(setUserId(resolvedKeycloakId));
     yield put(setUserDBID(resolvedUserDbId));
-    yield put(setName(request.username));
-    yield put(setPassword(request.password));
+    yield put(setName(input.username));
+    yield put(setPassword(input.password));
   } catch (postLoginError) {
     console.warn("post-login setup failed; continuing to logged-in state", postLoginError);
   }
@@ -205,6 +237,60 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
   yield put(setErrorMessage(""));
   yield put(setLoginStateAction(LoginState.LOGGED_IN));
   yield put(activateLoadingScreen(false));
+}
+
+
+function* handleBrowserLoginRequest() {
+  yield put(activateLoadingScreen(true));
+  let tokens;
+  try {
+    tokens = (yield call(signInWithBrowser)) as Awaited<ReturnType<typeof signInWithBrowser>>;
+  } catch (error) {
+    if (!(error instanceof BrowserSignInCancelled)) {
+      console.error("Browser sign-in failed:", error);
+      yield put(setErrorMessage("Unable to sign in right now. Please try again."));
+    }
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+    yield put(activateLoadingScreen(false));
+    return;
+  }
+
+  const accessToken = tokens.access_token ?? "";
+  const refreshToken = tokens.refresh_token ?? "";
+  if (!accessToken || !refreshToken) {
+    yield put(setErrorMessage("Sign-in did not return a valid session. Please try again."));
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+    yield put(activateLoadingScreen(false));
+    return;
+  }
+
+  // From here on, refresh and sign-out go to Keycloak, not to the password-login endpoints.
+  yield call(setAuthMode, "browser");
+  axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+  // The API creates the local account from the verified token (the password never reaches it).
+  let identity: { keycloak_id?: string; user_id?: number; username?: string } = {};
+  try {
+    identity = ((yield call(axios.post, "/api/auth/session", undefined, { timeout: 15000 })) as AxiosResponse)
+      .data;
+  } catch (error) {
+    console.error("Could not set up the account after sign-in:", error);
+    yield call(clearPersistedAuthState);
+    yield call(setAuthMode, "password");
+    yield put(setErrorMessage("We signed you in but could not set up your account. Please try again."));
+    yield put(setLoginStateAction(LoginState.LOGGED_OUT));
+    yield put(activateLoadingScreen(false));
+    return;
+  }
+
+  yield* finishLogin({
+    accessToken,
+    refreshToken,
+    keycloakId: identity.keycloak_id,
+    userDbId: identity.user_id,
+    username: identity.username || usernameFromAccessToken(accessToken),
+    password: "",
+  });
 }
 
 function* refreshFromLocalStorage(action: PayloadAction<void>) {
@@ -224,14 +310,10 @@ function* refreshFromLocalStorage(action: PayloadAction<void>) {
     try {
       // Enforce a hard timeout so bootstrap can never keep the app in LOADING forever.
       const refreshResult: {
-        refreshedResponse?: AxiosResponse<TokenResponse>;
+        refreshedResponse?: TokenResponse;
         timedOut?: true;
       } = yield race({
-        refreshedResponse: call(
-          AuthApiFactory().postRefreshToken,
-          { refresh_token: normalizedRefreshToken },
-          { timeout: 10000 },
-        ),
+        refreshedResponse: call(refreshSession, normalizedRefreshToken, 10000),
         timedOut: delay(12000),
       });
 
@@ -239,7 +321,7 @@ function* refreshFromLocalStorage(action: PayloadAction<void>) {
         throw new Error("AUTH_BOOTSTRAP_TIMEOUT");
       }
 
-      const refreshResponse = refreshResult.refreshedResponse.data as TokenResponse;
+      const refreshResponse = refreshResult.refreshedResponse;
       const refreshedAccessToken = refreshResponse.access_token ?? "";
       const refreshedRefreshToken = refreshResponse.refresh_token ?? "";
 
@@ -382,7 +464,12 @@ function* handleLogout(action: PayloadAction<string>) {
 
   try {
     if (action.payload) {
-      yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
+      const authMode = (yield call(getAuthMode)) as Awaited<ReturnType<typeof getAuthMode>>;
+      if (authMode === "browser") {
+        yield call(endBrowserSession, action.payload);
+      } else {
+        yield call(AuthApiFactory().postLogout, { refresh_token: action.payload });
+      }
     }
   } catch (error) {
     console.warn("Logout API call failed, continuing local logout cleanup", error);
@@ -391,6 +478,7 @@ function* handleLogout(action: PayloadAction<string>) {
   try {
     // Always clear local auth/session state, even if provider logout fails.
     yield call(clearPersistedAuthState);
+    yield call(setAuthMode, "password");
     yield put(changeTabAction({ type: TabType.HOME }));
     yield put(setLoginStateAction(LoginState.LOGGED_OUT));
     yield put(setFeedDataAction({ post: [], feedType: "friends" }));
@@ -438,6 +526,7 @@ function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
 
 export default function* authSaga() {
   yield takeEvery(logInAction.type, handleLoginRequest);
+  yield takeEvery(browserLogInAction.type, handleBrowserLoginRequest);
   // Keep only one bootstrap refresh in-flight to avoid overlapping loading states.
   yield takeLatest(attemptRefreshFromLocalStorageAction.type, refreshFromLocalStorage);
   yield takeEvery(signupAction.type, handleSignupRequest);
