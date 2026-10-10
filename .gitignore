@@ -71,3 +71,11 @@ monitoring/loki-data/
 # Local env backups can hold real secrets
 .env.save
 *.env.save
+
+# Cloud and signing credentials - never commit these (see scripts/check_secrets.py)
+*-firebase-adminsdk-*.json
+yeslove-2e1f0-*.json
+**/service-account*.json
+*.pem
+*.p12
+*.jks
