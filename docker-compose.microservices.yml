@@ -93,7 +93,7 @@ services:
       - main-db
 
   # Copies the website's professional directory into our database every 6 hours.
-  # Does nothing (and logs why) until the WORDPRESS_DIRECTORY_* settings are in backend/.env.
+  # Needs no login; it reads the website's public member list.
   professional-sync:
     build: ./backend
     restart: unless-stopped

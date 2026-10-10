@@ -3,10 +3,17 @@ from unittest.mock import Mock
 import pytest
 import requests
 
+def member(wp_id, name, bio="", avatar="https://example.invalid/photo.png", extra=()):
+    """A BuddyPress member as the website returns it (only what the member made public)."""
+    fields = [{"name": "Bio", "value": {"rendered": bio}}] + [{"name": n, "value": {"rendered": v}} for n, v in extra]
+    return {"id": wp_id, "name": name, "avatar_urls": {"full": avatar, "thumb": avatar},
+            "member_types": ["professionals"], "xprofile": {"groups": [{"name": "Bio", "fields": fields}]}}
+
+
 PEOPLE = [
-    {"id": 9, "name": "Jane &amp; Doe", "description": "<p>Therapist</p>", "email": "private@example.invalid",
-     "avatar_urls": {"96": "https://example.invalid/photo.png"}},
-    {"id": 4, "name": "Alan Smith", "description": "Counsellor", "avatar_urls": {}},
+    member(9, "Jane &amp; Doe", "<p>Therapist</p>",
+           extra=[("Email:", "private@example.invalid"), ("Birthday", "1 Jan 1980"), ("Phone:", "07000000000")]),
+    member(4, "Alan Smith", "Counsellor", avatar=None),
 ]
 
 
@@ -24,8 +31,7 @@ def wordpress(app, monkeypatch):
     from app.services import wordpress_professional_service as service
 
     monkeypatch.setattr(utils, "verify_jwt", lambda token: {"sub": "test-user"})
-    app.config.update(PROFESSIONALS_SOURCE="wordpress", WORDPRESS_DIRECTORY_USERNAME="test",
-                      WORDPRESS_DIRECTORY_APPLICATION_PASSWORD="test-password")
+    app.config.update(PROFESSIONALS_SOURCE="wordpress")
     get = Mock(return_value=upstream_page(PEOPLE))
     monkeypatch.setattr(service.requests, "get", get)
     return get
@@ -58,10 +64,28 @@ def test_sync_copies_and_the_app_reads_the_copy(client, wordpress):
     assert [p["username"] for p in data["professionals"]] == ["Alan Smith", "Jane & Doe"]
     jane = data["professionals"][1]
     assert jane["bio"] == "Therapist" and jane["profile_pic"] == "https://example.invalid/photo.png"
-    assert "email" not in jane
+    assert set(jane) == {"id", "source", "keycloak_id", "username", "bio", "profile_pic", "specialization", "license_body"}
     kwargs = wordpress.call_args.kwargs
-    assert kwargs["params"]["roles"] == "professional"
+    assert wordpress.call_args.args[0].endswith("/buddypress/v1/members")
+    assert kwargs["params"]["member_type"] == "professionals"
+    assert "auth" not in kwargs  # no login is sent to the website
+    assert "type" not in kwargs["params"]  # on the live site `type` makes the member_type filter be ignored
     assert kwargs["allow_redirects"] is False and kwargs["timeout"] == (3, 10)
+
+
+def test_contact_details_are_never_stored(client, wordpress):
+    from app.models import WordPressProfessional
+
+    sync()
+    stored = " ".join(str(v) for row in WordPressProfessional.query.all() for v in vars(row).values())
+    for private in ("private@example.invalid", "07000000000", "1 Jan 1980"):
+        assert private not in stored
+
+
+def test_bio_falls_back_to_how_i_can_help(client, wordpress):
+    wordpress.return_value = upstream_page([member(5, "No Bio", "", extra=[("How I can help", "Anxiety support")])])
+    sync()
+    assert fetch(client).get_json()["professionals"][0]["bio"] == "Anxiety support"
 
 
 def test_search_and_pagination_use_the_copy(client, wordpress):
@@ -74,7 +98,7 @@ def test_search_and_pagination_use_the_copy(client, wordpress):
 
 def test_resync_updates_adds_and_removes(client, wordpress):
     sync()
-    changed = [dict(PEOPLE[0], description="Psychotherapist"), {"id": 11, "name": "New Person", "description": ""}]
+    changed = [member(9, "Jane &amp; Doe", "Psychotherapist"), member(11, "New Person", "")]
     wordpress.return_value = upstream_page(changed)
     assert sync() == {"added": 1, "updated": 1, "removed": 1, "total": 2}
     names = {p["username"]: p["bio"] for p in fetch(client).get_json()["professionals"]}
@@ -113,7 +137,7 @@ def test_an_empty_answer_does_not_wipe_the_copy(client, wordpress):
 
 
 def test_not_configured_is_not_an_empty_directory(client, app, wordpress):
-    app.config["WORDPRESS_DIRECTORY_APPLICATION_PASSWORD"] = None
+    app.config["WORDPRESS_PROFESSIONAL_MEMBER_TYPE"] = None
     assert fetch(client).status_code == 503
 
 
@@ -123,7 +147,7 @@ def test_configured_but_not_yet_synced_is_an_empty_list(client, wordpress):
 
 
 def test_the_sync_command_needs_configuration(app, wordpress):
-    app.config["WORDPRESS_DIRECTORY_USERNAME"] = None
+    app.config["WORDPRESS_PROFESSIONAL_MEMBER_TYPE"] = None
     result = app.test_cli_runner().invoke(args=["sync-wordpress-professionals"])
     assert result.exit_code != 0 and "not configured" in result.output
     wordpress.assert_not_called()

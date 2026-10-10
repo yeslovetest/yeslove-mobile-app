@@ -1,7 +1,8 @@
 """Copy the website professional directory into our own database.
 
-The WordPress application password is used only here, by the sync job. The app and the API
-never contact WordPress: they read the copy in `wordpress_professionals`.
+Only the sync job contacts WordPress, and it needs no login: it reads the website's public
+BuddyPress member list for the "professionals" member type. BuddyPress returns only what each
+member has chosen to show publicly. The app and the API read the copy in `wordpress_professionals`.
 """
 from datetime import datetime
 from html import unescape
@@ -34,27 +35,34 @@ def safe_url(value):
 def directory_configured():
     config = current_app.config
     base = (config.get("WORDPRESS_DIRECTORY_API_URL") or "").rstrip("/")
-    return bool(config.get("WORDPRESS_DIRECTORY_USERNAME") and config.get("WORDPRESS_DIRECTORY_APPLICATION_PASSWORD")
-                and config.get("WORDPRESS_PROFESSIONAL_ROLE") and urlsplit(base).scheme == "https")
+    return bool(config.get("WORDPRESS_PROFESSIONAL_MEMBER_TYPE") and urlsplit(base).scheme == "https")
+
+
+def _profile_values(member):
+    """Public profile fields by label, e.g. {"Bio": "..."}. Empty values are left out."""
+    values = {}
+    for group in (member.get("xprofile") or {}).get("groups") or []:
+        fields = group.get("fields") or {}
+        for field in (fields.values() if isinstance(fields, dict) else fields):
+            text = plain_text(((field.get("value") or {}).get("rendered")))
+            if text and isinstance(field.get("name"), str):
+                values.setdefault(field["name"], text)
+    return values
 
 
 def fetch_professionals(page, per_page, search=""):
-    """One page of professionals from WordPress (used by the sync job only)."""
+    """One page of professional members from WordPress (used by the sync job only)."""
     config = current_app.config
     base = config["WORDPRESS_DIRECTORY_API_URL"].rstrip("/")
-    username = config.get("WORDPRESS_DIRECTORY_USERNAME")
-    password = config.get("WORDPRESS_DIRECTORY_APPLICATION_PASSWORD")
-    role = config.get("WORDPRESS_PROFESSIONAL_ROLE")
-    if not username or not password or not role or urlsplit(base).scheme != "https":
+    if not directory_configured():
         raise DirectoryError("The professional directory is not configured yet.", 503)
     try:
         response = requests.get(
-            base + "/users",
-            auth=(username, password),
-            params={"roles": role, "context": "view", "page": page,
-                    "per_page": per_page, "search": search,
-                    "orderby": "name", "order": "asc",
-                    "_fields": "id,name,description,avatar_urls"},
+            base + "/members",
+            # Do not add `type=...` here: on this site it makes BuddyPress ignore member_type and
+            # return every member (33 instead of the 6 professionals). We sort in our own database.
+            params={"member_type": config["WORDPRESS_PROFESSIONAL_MEMBER_TYPE"],
+                    "page": page, "per_page": per_page, "search": search},
             timeout=(3, 10), allow_redirects=False,
         )
     except requests.Timeout as exc:
@@ -64,22 +72,24 @@ def fetch_professionals(page, per_page, search=""):
     if response.status_code != 200:
         raise DirectoryError("The professional directory is unavailable. Please try again.")
     try:
-        users = response.json()
-        if not isinstance(users, list):
-            raise ValueError("Expected a user list")
+        members = response.json()
+        if not isinstance(members, list):
+            raise ValueError("Expected a member list")
         total = int(response.headers["X-WP-Total"])
         pages = int(response.headers["X-WP-TotalPages"])
         professionals = []
-        for user in users:
-            if not isinstance(user, dict) or not isinstance(user.get("id"), int) or not isinstance(user.get("name"), str):
+        for member in members:
+            if not isinstance(member, dict) or not isinstance(member.get("id"), int) or not isinstance(member.get("name"), str):
                 raise ValueError("Invalid directory entry")
-            avatars = user.get("avatar_urls") or {}
-            avatar = next((safe_url(avatars[size]) for size in sorted(avatars, key=int, reverse=True)
-                           if safe_url(avatars[size])), None)
+            profile = _profile_values(member)
+            # Only name, photo and a short description are copied. Contact details, birthday and
+            # gender can be public on the website but are not needed here and are never stored.
             professionals.append({
-                "id": user["id"], "source": "wordpress", "keycloak_id": None,
-                "username": plain_text(user["name"]), "bio": plain_text(user.get("description")),
-                "profile_pic": avatar, "specialization": None, "license_body": None,
+                "id": member["id"], "source": "wordpress", "keycloak_id": None,
+                "username": plain_text(member["name"]),
+                "bio": profile.get("Bio") or profile.get("How I can help") or "",
+                "profile_pic": safe_url((member.get("avatar_urls") or {}).get("full")),
+                "specialization": None, "license_body": None,
             })
     except (ValueError, TypeError, KeyError, AttributeError) as exc:
         raise DirectoryError("The professional directory returned an invalid response.") from exc
@@ -87,7 +97,6 @@ def fetch_professionals(page, per_page, search=""):
         "page": page, "per_page": per_page, "total_professionals": total,
         "total_pages": pages, "has_next": page < pages, "has_prev": page > 1,
     }}
-
 
 
 def ensure_professional_table(db):

@@ -12,10 +12,8 @@ class Config:
 
     # Server-only credentials; never include these in the mobile build.
     PROFESSIONALS_SOURCE = os.getenv("PROFESSIONALS_SOURCE", "wordpress")
-    WORDPRESS_DIRECTORY_API_URL = os.getenv("WORDPRESS_DIRECTORY_API_URL", "https://yeslove.co.uk/wp-json/wp/v2")
-    WORDPRESS_DIRECTORY_USERNAME = os.getenv("WORDPRESS_DIRECTORY_USERNAME")
-    WORDPRESS_DIRECTORY_APPLICATION_PASSWORD = os.getenv("WORDPRESS_DIRECTORY_APPLICATION_PASSWORD")
-    WORDPRESS_PROFESSIONAL_ROLE = os.getenv("WORDPRESS_PROFESSIONAL_ROLE", "professional")
+    WORDPRESS_DIRECTORY_API_URL = os.getenv("WORDPRESS_DIRECTORY_API_URL", "https://yeslove.co.uk/wp-json/buddypress/v1")
+    WORDPRESS_PROFESSIONAL_MEMBER_TYPE = os.getenv("WORDPRESS_PROFESSIONAL_MEMBER_TYPE", "professionals")
 
     # Upload Folder Configuration
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))  # Base directory of the project
