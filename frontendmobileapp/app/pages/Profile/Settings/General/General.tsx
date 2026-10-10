@@ -9,6 +9,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DeleteAccountModal from "./Delete-account/DeleteAccountModal";
 import ChangePasswordModal from "./Change-password/ChangePasswordModal";
 import LogoutModal from "./Logout/LogoutModal";
+import SecurityPrompt from "./Security-prompt/SecurityPrompt";
 import LoadingOverlay from "@/app/Universal-components/LoadingScreen/Screen";
 import { useAppSelector } from "@/app/store/hooks";
 import * as WebBrowser from "expo-web-browser";
@@ -24,6 +25,8 @@ const General = () => {
     <>
       <Header />
       <View style={sharedStyles.container}>
+        <SecurityPrompt />
+
         {/* Logout */}
         <View style={settingsSharedStyles.settingsOptionContainer}>
           <TouchableOpacity
