@@ -7,6 +7,26 @@ from app.utils import require_auth
 api = Namespace("media", description="API Endpoints")
 
 
+def _signed_in_user_id():
+    """App database id of the caller if a valid token is sent, else None.
+
+    Public files need no sign-in, so this cannot use @require_auth. A bad or missing
+    token simply means "nobody", and private files then refuse.
+    """
+    from app.models import User
+    from app.utils.utils import verify_jwt
+
+    header = request.headers.get("Authorization")
+    if not header:
+        return None
+    token = header.split(" ")[1] if " " in header else header
+    decoded = verify_jwt(token)
+    if not decoded or not decoded.get("sub"):
+        return None
+    user = User.query.filter_by(keycloak_id=decoded["sub"]).first()
+    return user.id if user else None
+
+
 @api.route("/<string:media_id>")
 class GetMedia(Resource):
     @api.doc(
@@ -20,15 +40,24 @@ class GetMedia(Resource):
     @api.response(403, 'Access denied')
     def get(self, media_id):
         from app.services.media.media_service import MediaService
-        media = MediaService.get_media(media_id)
+        from app.models import Media
 
-        return Response(
-            media.content,
-            mimetype=media.content_type,
-            headers={
-                "Content-Disposition": f'inline; filename="{media.id}.{media.content_type.split("/")[-1]}"'
-            }
-        )
+        media = Media.query.filter_by(id=media_id).first()
+        if media is not None and not media.is_public:
+            # Private file (a chat attachment): the viewer must be signed in and be a party to it.
+            viewer = _signed_in_user_id()
+            if viewer is None:
+                return {"message": "Authentication required"}, 401
+            media = MediaService.get_media(media_id, viewer)
+        else:
+            media = MediaService.get_media(media_id)
+
+        headers = {
+            "Content-Disposition": f'inline; filename="{media.id}.{media.content_type.split("/")[-1]}"'
+        }
+        if not media.is_public:
+            headers["Cache-Control"] = "private, no-store"
+        return Response(MediaService.read_media_bytes(media), mimetype=media.content_type, headers=headers)
     
     @require_auth()
     @api.doc(
@@ -42,7 +71,9 @@ class GetMedia(Resource):
     @api.response(401, 'Unauthorized')
     def delete(self, media_id):
         from app.services.media.media_service import MediaService
-        MediaService.delete_media(media_id, request.user_id)
+        from app.models import User
+        owner = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        MediaService.delete_media(media_id, owner.id if owner else None)
         return {"message": "Media deleted"}, 200
 
 
@@ -114,7 +145,9 @@ class ChatMediaUpload(Resource):
         if not file:
             return {"message": "No file provided"}, 400
         
-        media_id = MediaService.store_file(file, request.user_id)
+        from app.models import User
+        uploader = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        media_id = MediaService.store_file(file, uploader.id if uploader else None, is_public=False)
         return {"media_id": media_id}, 201
 
 
@@ -130,5 +163,5 @@ class GetMediaMetadata(Resource):
     @api.response(404, 'Media not found')
     def get(self, media_id):
         from app.services.media.media_service import MediaService
-        metadata = MediaService.get_media_metadata(media_id)
+        metadata = MediaService.get_media_metadata(media_id, _signed_in_user_id())
         return metadata, 200

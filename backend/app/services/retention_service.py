@@ -115,3 +115,22 @@ def _delete_stored_file(url):
             logger.warning("Could not delete stored file %s during retention run", key)
     except Exception:
         logger.exception("Object storage clean-up failed during retention run")
+
+
+def privatise_chat_media(dry_run=False):
+    """One-off: mark attachments that were sent in direct messages as private.
+
+    Files uploaded before chat attachments became private were saved as public. After
+    this runs they are served only through the API to the sender and receiver. A file
+    already stored in object storage under a public address keeps working at that
+    address until the object itself is made private in the storage console.
+    """
+    from app.models import Chat, Media, db
+
+    attached = db.session.query(Chat.media_id).filter(Chat.media_id.isnot(None))
+    query = Media.query.filter(Media.is_public.is_(True), Media.id.in_(attached))
+    count = query.count()
+    if count and not dry_run:
+        query.update({Media.is_public: False}, synchronize_session=False)
+        db.session.commit()
+    return count

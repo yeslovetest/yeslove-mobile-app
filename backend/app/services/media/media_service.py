@@ -12,7 +12,7 @@ logger = setup_logger()
 class MediaService:
     @staticmethod
     @SecurityService.rate_limit_uploads()
-    def store_file(file, user_id=None, post_id=None):
+    def store_file(file, user_id=None, post_id=None, is_public=True):
         from flask import current_app
         
         if not file:
@@ -47,7 +47,9 @@ class MediaService:
         if current_app.config.get("USE_S3_STORAGE", False):
             storage = ObjectStorage()
             key = f"media/{uuid.uuid4()}/{file.filename}"
-            s3_url = storage.upload_file(content, key, file.content_type)
+            # Private files (chat attachments) come back as a bare key, not a public URL,
+            # and are only ever served through the API after an access check.
+            s3_url = storage.upload_file(content, key, file.content_type, is_public=is_public)
 
         # ✅ Create and save Media record
         media = Media(
@@ -61,13 +63,15 @@ class MediaService:
             user_id=user_id,
             post_id=post_id,
             s3_url=s3_url,
+            is_public=is_public,
         )
 
         db.session.add(media)
         db.session.commit()
 
         # Return both ID and URL (local or object storage).
-        media_url = s3_url or f"/api/media/{media.id}"
+        # A private file's storage key is not a URL anyone can open, so hand back the API route.
+        media_url = s3_url if (s3_url and is_public) else f"/api/media/{media.id}"
 
         return {
             "media_id": media.id,
@@ -82,9 +86,29 @@ class MediaService:
         
         # Check access permissions
         if not SecurityService.check_access_permission(media, user_id):
-            abort(403, "Access denied")
+            # Same answer as a missing file, so a stranger cannot probe which ids exist.
+            abort(404, "Media not found")
         
         return media
+
+    @staticmethod
+    def read_media_bytes(media):
+        """The file's bytes, from the database or from object storage."""
+        if media.content is not None:
+            return bytes(media.content)
+        from app.services.account_service import object_key_from_url
+        from .media_processor import ObjectStorage
+
+        key = object_key_from_url(media.s3_url) or media.s3_url
+        if not key:
+            abort(404, "Media not found")
+        storage = ObjectStorage()
+        response = storage.client.get_object(storage.bucket, key)
+        try:
+            return response.read()
+        finally:
+            response.close()
+            response.release_conn()
     
     @staticmethod
     def delete_media(media_id, user_id):
@@ -162,9 +186,9 @@ class MediaService:
         }
     
     @staticmethod
-    def get_media_metadata(media_id):
+    def get_media_metadata(media_id, user_id=None):
         media = Media.query.filter_by(id=media_id).first()
-        if not media:
+        if not media or not SecurityService.check_access_permission(media, user_id):
             abort(404, "Media not found")
         
         return {

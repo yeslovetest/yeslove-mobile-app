@@ -158,7 +158,7 @@ def create_app(config_class=DevelopmentConfig):
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 
-    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention")
+    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -217,6 +217,14 @@ def create_app(config_class=DevelopmentConfig):
 
         for rule, count in run_retention(dry_run=dry_run).items():
             click.echo(f"{rule}: {count}")
+
+    @app.cli.command("privatise-chat-media")
+    @click.option("--dry-run", is_flag=True, help="Count without changing anything.")
+    def privatise_chat_media_command(dry_run):
+        """Mark existing direct-message attachments as private (run once after deploy)."""
+        from app.services.retention_service import privatise_chat_media
+
+        click.echo(f"chat attachments made private: {privatise_chat_media(dry_run=dry_run)}")
 
     @app.cli.command("sync-wordpress-blogs")
     @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")
