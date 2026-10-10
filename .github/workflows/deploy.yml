@@ -85,6 +85,14 @@ jobs:
     needs:
       - verify-backend
       - verify-chatbot-service
+    # Only one deploy may touch the server at a time. A second push queues behind
+    # the running deploy instead of restarting containers underneath it (which
+    # failed the first deploy's health check when two PRs were merged together).
+    # The server runs `git pull origin main`, so the newest queued run always
+    # deploys everything merged before it; GitHub drops older queued runs.
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
 
     steps:
       - name: Checkout code
