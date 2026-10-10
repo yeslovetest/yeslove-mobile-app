@@ -33,6 +33,23 @@ describe("useSignup (phone number removed)", () => {
     expect(valid).toBe(true);
   });
 
+  it("needs a password of at least 12 characters on page 1", () => {
+    const { wrapper } = makeWrapper();
+    const { result } = renderHook(() => useSignup(), { wrapper });
+
+    act(() => {
+      result.current.handlePasswordChange("eleven-char");
+      result.current.handleConfirmPassword("eleven-char");
+    });
+    expect(result.current.validateInputs(1)).toEqual([false, "passwordLength"]);
+
+    act(() => {
+      result.current.handlePasswordChange("twelve-chars");
+      result.current.handleConfirmPassword("twelve-chars");
+    });
+    expect(result.current.validateInputs(1)).not.toEqual([false, "passwordLength"]);
+  });
+
   it("blocks page 2 until the terms are accepted", () => {
     const { store, wrapper } = makeWrapper();
     const { result } = renderHook(() => useSignup(), { wrapper });

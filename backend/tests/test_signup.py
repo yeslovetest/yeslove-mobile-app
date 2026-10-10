@@ -110,6 +110,31 @@ class SignupTests(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
         self.req.delete.assert_called_once()
 
+    def test_short_password_is_refused_before_keycloak_is_called(self):
+        response = self._post(password="short-pw-11", confirm_password="short-pw-11")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("at least 12 characters", response.get_json()["message"])
+        self.req.post.assert_not_called()
+
+    def test_password_of_exactly_twelve_characters_is_accepted(self):
+        response = self._post(password="exactly12chr", confirm_password="exactly12chr")
+        self.assertEqual(response.status_code, 201, response.get_json())
+
+    def test_password_matching_username_or_email_is_refused(self):
+        for same in ("JaneDoe12345", "jane@example.com"):
+            self.req.post.reset_mock()
+            response = self._post(username=same.split("@")[0] if "@" in same else same,
+                                  password=same, confirm_password=same)
+            self.assertEqual(response.status_code, 400, same)
+            self.assertIn("username or email", response.get_json()["message"])
+            self.req.post.assert_not_called()
+
+    def test_password_problem_helper(self):
+        problem = self.routes.password_problem
+        self.assertIsNone(problem("a-long-enough-one", "someone", "x@example.com"))
+        self.assertIn("12 characters", problem("short", "someone"))
+        self.assertIn("username or email", problem("Someone12345", "someone12345"))
+
 
 if __name__ == "__main__":
     unittest.main()

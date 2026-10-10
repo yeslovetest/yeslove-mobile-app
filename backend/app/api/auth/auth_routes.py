@@ -6,6 +6,20 @@ import requests
 from app.logging_setup import setup_logger
 from app.utils import require_auth, is_valid_email
 
+# Must match the realm's password policy (KeyCloakService/scripts/mfa.py, `harden`) and
+# MIN_PASSWORD_LENGTH in frontendmobileapp/constants/password.ts.
+MIN_PASSWORD_LENGTH = 12
+
+
+def password_problem(password, *own_details):
+    """Why this password is not acceptable, or None. Mirrors the Keycloak password policy so
+    the member gets a clear message instead of a generic failure from Keycloak."""
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return f"Password must be at least {MIN_PASSWORD_LENGTH} characters."
+    if password.lower() in {str(d).lower() for d in own_details if d}:
+        return "Password cannot be the same as your username or email."
+    return None
+
 logger = setup_logger()
 
 
@@ -207,6 +221,10 @@ class Signup(Resource):
         if missing:
             logger.warning(f"⚠️ Missing signup fields -> {missing}")
             return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
+
+        problem = password_problem(password, username, email)
+        if problem:
+            return {"message": problem}, 400
         
         # If user is professional, require license data and consent
         if is_professional:
@@ -506,6 +524,10 @@ class ChangePassword(Resource):
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         if not user:
             return {"message": "User not found"}, 404
+
+        problem = password_problem(new_password, user.username, user.email)
+        if problem:
+            return {"message": problem}, 400
 
         keycloak_admin_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user.keycloak_id}/reset-password"
         payload = {
