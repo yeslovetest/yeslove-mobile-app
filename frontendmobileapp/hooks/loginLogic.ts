@@ -23,6 +23,8 @@ export const useLogin = () => {
   const [identifierMode, setIdentifierMode] = useState<LoginIdentifierMode>("username");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  // Optional: only members who set up an authenticator app need to fill this in.
+  const [otp, setOtp] = useState("");
 
   const initialBdColor = [theme.colors.border, theme.colors.primary];
   const [passwordBdColor, setPasswordBdColor] = useState(initialBdColor);
@@ -72,7 +74,8 @@ export const useLogin = () => {
     const [result, field] = validateInputs();
     if (result) {
       const normalizedIdentifier = identifier.trim();
-      dispatch(logInAction({ username: normalizedIdentifier, password }));
+      const code = otp.replace(/\s/g, "");
+      dispatch(logInAction({ username: normalizedIdentifier, password, ...(code ? { otp: code } : {}) }));
       dispatch(activateLoadingScreen(true));
     } else if (field == "identifierRequired") {
       setIdentifierBdColor([theme.colors.danger, theme.colors.danger]);
@@ -111,6 +114,8 @@ export const useLogin = () => {
     identifier,
     identifierMode,
     password,
+    otp,
+    handleOtpChange: (value: string) => setOtp(value.replace(/[^0-9 ]/g, "")),
     passwordBdColor,
     identifierBdColor,
     handleIdentifierModeChange,

@@ -27,6 +27,8 @@ const LoginPage = () => {
     identifier,
     identifierMode,
     password,
+    otp,
+    handleOtpChange,
     passwordBdColor,
     identifierBdColor,
     handleIdentifierModeChange,
@@ -186,6 +188,27 @@ const LoginPage = () => {
               placeholderTextColor={theme.colors.textMuted}
               secureTextEntry
               accessibilityLabel="Password"
+            />
+
+            <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
+              Authenticator code (optional)
+            </Text>
+            <TextInput
+              onChangeText={handleOtpChange}
+              value={otp}
+              style={{
+                ...styles.input,
+                ...(isCompactScreen ? styles.compactInput : undefined),
+                borderColor: passwordBdColor[0],
+                borderBottomColor: passwordBdColor[1],
+              }}
+              placeholder="6-digit code, if you use an authenticator app"
+              placeholderTextColor={theme.colors.textMuted}
+              keyboardType="number-pad"
+              maxLength={8}
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
+              accessibilityLabel="Authenticator code, optional"
             />
 
             <TouchableOpacity
