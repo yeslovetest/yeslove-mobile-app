@@ -14,7 +14,8 @@ import { useLogin } from "../../../../hooks/loginLogic";
 import styles from "./LoginPageStyles";
 import { theme } from "@/app/theme";
 import { useAppSelector, useAppDispatch } from "../../../store/hooks";
-import { setErrorMessage } from "../../../store/Auth-store/authSlice";
+import { browserLogInAction, setErrorMessage } from "../../../store/Auth-store/authSlice";
+import { BROWSER_SIGN_IN_ENABLED } from "@/app/services/oidc";
 import LoadingOverlay from "@/app/Universal-components/LoadingScreen/Screen";
 import image from "@/assets/images/auth-background.png";
 
@@ -98,131 +99,158 @@ const LoginPage = () => {
               {errorMessage}
             </Text>
 
-            <View
-              style={[
-                styles.modeToggleContainer,
-                isCompactScreen ? styles.compactModeToggleContainer : undefined,
-              ]}
-            >
+            {BROWSER_SIGN_IN_ENABLED ? (
               <TouchableOpacity
-                style={[
-                  styles.modeToggleButton,
-                  identifierMode === "username" ? styles.modeToggleButtonActive : undefined,
-                ]}
-                onPress={() => handleIdentifierModeChange("username")}
+                style={[styles.button, isCompactScreen ? styles.compactButton : undefined]}
+                onPress={() => dispatch(browserLogInAction())}
                 accessibilityRole="button"
-                accessibilityLabel="Sign in with username"
-                accessibilityState={{ selected: identifierMode === "username" }}
+                accessibilityLabel="Sign in"
+                accessibilityHint="Opens the secure YesLove sign-in page"
               >
                 <Text
                   style={[
-                    styles.modeToggleText,
-                    identifierMode === "username" ? styles.modeToggleTextActive : undefined,
+                    styles.buttonText,
+                    isCompactScreen ? styles.compactButtonText : undefined,
                   ]}
                 >
-                  Username
+                  SIGN IN
                 </Text>
               </TouchableOpacity>
+            ) : (
+              <>
+                <View
+                  style={[
+                    styles.modeToggleContainer,
+                    isCompactScreen ? styles.compactModeToggleContainer : undefined,
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={[
+                      styles.modeToggleButton,
+                      identifierMode === "username" ? styles.modeToggleButtonActive : undefined,
+                    ]}
+                    onPress={() => handleIdentifierModeChange("username")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Sign in with username"
+                    accessibilityState={{ selected: identifierMode === "username" }}
+                  >
+                    <Text
+                      style={[
+                        styles.modeToggleText,
+                        identifierMode === "username" ? styles.modeToggleTextActive : undefined,
+                      ]}
+                    >
+                      Username
+                    </Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.modeToggleButton,
-                  identifierMode === "email" ? styles.modeToggleButtonActive : undefined,
-                ]}
-                onPress={() => handleIdentifierModeChange("email")}
-                accessibilityRole="button"
-                accessibilityLabel="Sign in with email"
-                accessibilityState={{ selected: identifierMode === "email" }}
-              >
+                  <TouchableOpacity
+                    style={[
+                      styles.modeToggleButton,
+                      identifierMode === "email" ? styles.modeToggleButtonActive : undefined,
+                    ]}
+                    onPress={() => handleIdentifierModeChange("email")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Sign in with email"
+                    accessibilityState={{ selected: identifierMode === "email" }}
+                  >
+                    <Text
+                      style={[
+                        styles.modeToggleText,
+                        identifierMode === "email" ? styles.modeToggleTextActive : undefined,
+                      ]}
+                    >
+                      Email
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
+                  {identifierMode === "email" ? "Email" : "Username"}
+                </Text>
+                <TextInput
+                  onChangeText={handleIdentifierChange}
+                  value={identifier}
+                  style={{
+                    ...styles.input,
+                    ...(isCompactScreen ? styles.compactInput : undefined),
+                    borderColor: identifierBdColor[0],
+                    borderBottomColor: identifierBdColor[1],
+                  }}
+                  placeholder={identifierMode === "email" ? "Enter email" : "Enter username"}
+                  placeholderTextColor={theme.colors.textMuted}
+                  keyboardType={identifierMode === "email" ? "email-address" : "default"}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  accessibilityLabel={identifierMode === "email" ? "Email" : "Username"}
+                />
                 <Text
                   style={[
-                    styles.modeToggleText,
-                    identifierMode === "email" ? styles.modeToggleTextActive : undefined,
+                    styles.helperText,
+                    isCompactScreen ? styles.compactHelperText : undefined,
                   ]}
                 >
-                  Email
+                  {identifierMode !== "email" && hasTriedLogin && !!errorMessage
+                    ? "Are you logging in for the first time? use your email instead of username."
+                    : ""}
                 </Text>
-              </TouchableOpacity>
-            </View>
 
-            <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
-              {identifierMode === "email" ? "Email" : "Username"}
-            </Text>
-            <TextInput
-              onChangeText={handleIdentifierChange}
-              value={identifier}
-              style={{
-                ...styles.input,
-                ...(isCompactScreen ? styles.compactInput : undefined),
-                borderColor: identifierBdColor[0],
-                borderBottomColor: identifierBdColor[1],
-              }}
-              placeholder={identifierMode === "email" ? "Enter email" : "Enter username"}
-              placeholderTextColor={theme.colors.textMuted}
-              keyboardType={identifierMode === "email" ? "email-address" : "default"}
-              autoCapitalize="none"
-              autoCorrect={false}
-              accessibilityLabel={identifierMode === "email" ? "Email" : "Username"}
-            />
-            <Text
-              style={[styles.helperText, isCompactScreen ? styles.compactHelperText : undefined]}
-            >
-              {identifierMode !== "email" && hasTriedLogin && !!errorMessage
-                ? "Are you logging in for the first time? use your email instead of username."
-                : ""}
-            </Text>
+                <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
+                  Password
+                </Text>
+                <TextInput
+                  onChangeText={handlePasswordChange}
+                  value={password}
+                  style={{
+                    ...styles.input,
+                    ...(isCompactScreen ? styles.compactInput : undefined),
+                    borderColor: passwordBdColor[0],
+                    borderBottomColor: passwordBdColor[1],
+                  }}
+                  placeholder="Enter password"
+                  placeholderTextColor={theme.colors.textMuted}
+                  secureTextEntry
+                  accessibilityLabel="Password"
+                />
 
-            <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
-              Password
-            </Text>
-            <TextInput
-              onChangeText={handlePasswordChange}
-              value={password}
-              style={{
-                ...styles.input,
-                ...(isCompactScreen ? styles.compactInput : undefined),
-                borderColor: passwordBdColor[0],
-                borderBottomColor: passwordBdColor[1],
-              }}
-              placeholder="Enter password"
-              placeholderTextColor={theme.colors.textMuted}
-              secureTextEntry
-              accessibilityLabel="Password"
-            />
+                <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
+                  Authenticator code (optional)
+                </Text>
+                <TextInput
+                  onChangeText={handleOtpChange}
+                  value={otp}
+                  style={{
+                    ...styles.input,
+                    ...(isCompactScreen ? styles.compactInput : undefined),
+                    borderColor: passwordBdColor[0],
+                    borderBottomColor: passwordBdColor[1],
+                  }}
+                  placeholder="6-digit code, if you use an authenticator app"
+                  placeholderTextColor={theme.colors.textMuted}
+                  keyboardType="number-pad"
+                  maxLength={8}
+                  textContentType="oneTimeCode"
+                  autoComplete="one-time-code"
+                  accessibilityLabel="Authenticator code, optional"
+                />
 
-            <Text style={[styles.label, isCompactScreen ? styles.compactLabel : undefined]}>
-              Authenticator code (optional)
-            </Text>
-            <TextInput
-              onChangeText={handleOtpChange}
-              value={otp}
-              style={{
-                ...styles.input,
-                ...(isCompactScreen ? styles.compactInput : undefined),
-                borderColor: passwordBdColor[0],
-                borderBottomColor: passwordBdColor[1],
-              }}
-              placeholder="6-digit code, if you use an authenticator app"
-              placeholderTextColor={theme.colors.textMuted}
-              keyboardType="number-pad"
-              maxLength={8}
-              textContentType="oneTimeCode"
-              autoComplete="one-time-code"
-              accessibilityLabel="Authenticator code, optional"
-            />
-
-            <TouchableOpacity
-              style={[styles.button, isCompactScreen ? styles.compactButton : undefined]}
-              onPress={handleLoginPress}
-              accessibilityRole="button"
-              accessibilityLabel="Log in"
-            >
-              <Text
-                style={[styles.buttonText, isCompactScreen ? styles.compactButtonText : undefined]}
-              >
-                LOGIN
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, isCompactScreen ? styles.compactButton : undefined]}
+                  onPress={handleLoginPress}
+                  accessibilityRole="button"
+                  accessibilityLabel="Log in"
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      isCompactScreen ? styles.compactButtonText : undefined,
+                    ]}
+                  >
+                    LOGIN
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
 
             <View style={styles.footerRow}>
               <Text

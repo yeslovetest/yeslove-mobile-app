@@ -11,6 +11,8 @@ import ChangePasswordModal from "./Change-password/ChangePasswordModal";
 import LogoutModal from "./Logout/LogoutModal";
 import LoadingOverlay from "@/app/Universal-components/LoadingScreen/Screen";
 import { useAppSelector } from "@/app/store/hooks";
+import * as WebBrowser from "expo-web-browser";
+import { ACCOUNT_SECURITY_URL, BROWSER_SIGN_IN_ENABLED } from "@/app/services/oidc";
 
 const General = () => {
   const [changePasswordSection, setChangePasswordSection] = useState(false);
@@ -40,14 +42,24 @@ const General = () => {
         {/* Change password */}
         <View style={settingsSharedStyles.settingsOptionContainer}>
           <TouchableOpacity
-            onPress={() => setChangePasswordSection(true)}
+            // Browser sign-in: the app never holds the password, so the password and the
+            // authenticator app are managed on Keycloak's own account page.
+            onPress={() =>
+              BROWSER_SIGN_IN_ENABLED
+                ? WebBrowser.openBrowserAsync(ACCOUNT_SECURITY_URL)
+                : setChangePasswordSection(true)
+            }
             style={settingsSharedStyles.settingsOptionButton}
             accessibilityRole="button"
-            accessibilityLabel="Change password"
+            accessibilityLabel={
+              BROWSER_SIGN_IN_ENABLED ? "Password and security" : "Change password"
+            }
           >
             <View style={{ flexDirection: "row", height: "100%", alignItems: "center" }}>
               <MaterialIcons name="password" size={24} color={theme.colors.textPrimary} />
-              <Text style={settingsSharedStyles.settingsOptionText}>Change password</Text>
+              <Text style={settingsSharedStyles.settingsOptionText}>
+                {BROWSER_SIGN_IN_ENABLED ? "Password and security" : "Change password"}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>

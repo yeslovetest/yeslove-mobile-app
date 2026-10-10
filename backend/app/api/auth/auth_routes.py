@@ -28,6 +28,37 @@ api = Namespace("auth", description="API Endpoints")
 
 AUTH_REQUEST_TIMEOUT = (5, 10)
 
+def ensure_local_user(claims, fallback_username=None):
+    """Find or create the local database user for a verified Keycloak token (idempotent).
+
+    Used by the password login and by the browser sign-in session check, so a member who
+    signs in either way ends up with the same local account.
+    """
+    from app import db
+    from app.models import User
+
+    roles = (claims.get("realm_access") or {}).get("roles", [])
+    user_type = "professional" if "professional" in roles else "standard"
+    username = claims.get("preferred_username") or fallback_username
+
+    user = User.query.filter_by(keycloak_id=claims["sub"]).first()
+    if not user:
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            existing_user.keycloak_id = claims["sub"]
+            existing_user.email = claims.get("email", existing_user.email)
+            existing_user.user_type = user_type
+            user = existing_user
+            logger.info(f"✅ Updated existing user {user.username} with Keycloak ID")
+        else:
+            logger.info(f"🔹 Creating new user {username} in database...")
+            user = User(keycloak_id=claims["sub"], username=username, email=claims.get("email", ""), user_type=user_type)
+            db.session.add(user)
+            logger.info(f"✅ User {user.username} created successfully.")
+        db.session.commit()
+    return user
+
+
 @api.route("/login")
 class Login(Resource):
     from .auth_models import LoginRequest, TokenResponse
@@ -103,34 +134,8 @@ class Login(Resource):
             keycloak_roles = user_info.get("realm_access", {}).get("roles", [])
             logger.info(f"User roles from Keycloak: {keycloak_roles}")
 
-            # Determine user type
-            user_type = "professional" if "professional" in keycloak_roles else "standard"
-
             # ✅ Ensure user exists in local DB
-            user = User.query.filter_by(keycloak_id=user_info["sub"]).first()
-            if not user:
-                # Check if user exists by username to avoid duplicates
-                existing_user = User.query.filter_by(username=user_info.get("preferred_username", username)).first()
-                if existing_user:
-                    # Update existing user with Keycloak ID
-                    existing_user.keycloak_id = user_info["sub"]
-                    existing_user.email = user_info.get("email", existing_user.email)
-                    existing_user.user_type = user_type
-                    user = existing_user
-                    logger.info(f"✅ Updated existing user {user.username} with Keycloak ID")
-                else:
-                    # Create new user
-                    logger.info(f"🔹 Creating new user {user_info['preferred_username']} in database...")
-                    user = User(
-                        keycloak_id=user_info["sub"],
-                        username=user_info.get("preferred_username", username),
-                        email=user_info.get("email", ""),
-                        user_type=user_type
-                    )
-                    db.session.add(user)
-                    logger.info(f"✅ User {user.username} created successfully.")
-                
-                db.session.commit()
+            user = ensure_local_user(user_info, fallback_username=username)
 
             # Include identity so the client can initialise its session without
             # a separate sync request. Professional onboarding still needs a token.
@@ -410,6 +415,29 @@ class Signup(Resource):
             logger.error(f"Keycloak create user failed: {response.status_code} {response.text}")
             return {"message":"Failed to create user", "details": response.text}, response.status_code
     
+@api.route("/session")
+class Session(Resource):
+    @require_auth()
+    @api.doc(security='Bearer')
+    def post(self):
+        """Complete a browser sign-in: make sure the local account exists and return its identity.
+
+        The password never reaches this API in a browser sign-in, so the account is created
+        here, from the verified token, instead of in /login.
+        """
+        from app.models import ProfessionalDetails
+
+        info = request.user
+        claims = {"sub": info["keycloak_id"], "preferred_username": info.get("username"),
+                  "email": info.get("email"), "realm_access": info.get("realm_access") or {}}
+        user = ensure_local_user(claims)
+        body = {"keycloak_id": user.keycloak_id, "user_id": user.id, "username": user.username, "user_type": user.user_type}
+        if user.user_type == "professional" and not ProfessionalDetails.query.filter_by(user_id=user.id).first():
+            body.update({"message": "Professional details missing. Please provide license and specialization.",
+                         "set_professional_details_required": True})
+        return body, 200
+
+
 @api.route("/logout")
 class Logout(Resource):
     from .auth_models import LogoutRequest
