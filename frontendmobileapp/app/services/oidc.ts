@@ -34,7 +34,9 @@ export const DISCOVERY = {
   endSessionEndpoint: `${ISSUER}/protocol/openid-connect/logout`,
   revocationEndpoint: `${ISSUER}/protocol/openid-connect/revoke`,
 };
-export const ACCOUNT_SECURITY_URL = `${ISSUER}/account`;
+// Keycloak account console, opened on the "Signing in" page where a member sets their password,
+// an authenticator app and (with the feature on) passkeys and recovery codes.
+export const ACCOUNT_SECURITY_URL = `${ISSUER}/account/#/security/signing-in`;
 
 export type SessionTokens = {
   access_token?: string;
