@@ -26,6 +26,8 @@ logger = setup_logger()
 
 api = Namespace("auth", description="API Endpoints")
 
+AUTH_REQUEST_TIMEOUT = (5, 10)
+
 @api.route("/login")
 class Login(Resource):
     from .auth_models import LoginRequest, TokenResponse
@@ -76,7 +78,12 @@ class Login(Resource):
                 return {"message": "The authenticator code should be 6 to 8 digits."}, 400
             payload["otp"] = otp
 
-        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
+        try:
+            response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=AUTH_REQUEST_TIMEOUT)
+        except requests.Timeout:
+            return {"message": "Sign-in service timed out. Please try again."}, 504
+        except requests.RequestException:
+            return {"message": "Sign-in service is temporarily unavailable. Please try again."}, 503
         
 
         if response.status_code == 200:
@@ -125,14 +132,22 @@ class Login(Resource):
                 
                 db.session.commit()
 
-            # ✅ If user is professional, ensure they have details
+            # Include identity so the client can initialise its session without
+            # a separate sync request. Professional onboarding still needs a token.
+            token_data.update({
+                "keycloak_id": user.keycloak_id,
+                "user_id": user.id,
+                "user_type": user.user_type,
+            })
+
+            # ✅ If user is professional, flag missing details without dropping tokens.
             if user.user_type == "professional":
                 professional_details = ProfessionalDetails.query.filter_by(user_id=user.id).first()
                 if not professional_details:
-                    return {
+                    token_data.update({
                         "message": "Professional details missing. Please provide license and specialization.",
                         "set_professional_details_required": True
-                    }, 200
+                    })
 
             # Auto-register device token if provided
             device_token = data.get("device_token")
@@ -430,7 +445,7 @@ class RefreshToken(Resource):
     @api.response(200, "Success",TokenResponse)  # ✅ Ensure correct model
     def post(self):
         """Refresh expired access token using Keycloak refresh token."""
-        data = request.json
+        data = request.get_json(silent=True) or {}
         refresh_token = data.get("refresh_token")
 
         if not refresh_token:
@@ -444,7 +459,12 @@ class RefreshToken(Resource):
             "refresh_token": refresh_token
         }
 
-        response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
+        try:
+            response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=AUTH_REQUEST_TIMEOUT)
+        except requests.Timeout:
+            return {"message": "Session refresh timed out. Please try again."}, 504
+        except requests.RequestException:
+            return {"message": "Sign-in service is temporarily unavailable. Please try again."}, 503
 
         logger.info(f"Token refresh requested")
         if response.status_code == 200:
@@ -668,7 +688,6 @@ class ExportData(Resource):
             mimetype="application/json",
             headers={"Content-Disposition": 'attachment; filename="yeslove-my-data.json"'},
         )
-
 
 
 

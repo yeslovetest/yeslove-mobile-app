@@ -42,8 +42,8 @@ def get_keycloak_public_keys():
 
     if not KEYCLOAK_PUBLIC_KEYS:
         try:
-            response = urlopen(certs_url)
-            KEYCLOAK_PUBLIC_KEYS = json.loads(response.read())
+            with urlopen(certs_url, timeout=10) as response:
+                KEYCLOAK_PUBLIC_KEYS = json.loads(response.read())
             logger.info("✅ Successfully fetched Keycloak public keys.")
         except Exception as e:
             logger.error(f"⚠️ Could not fetch Keycloak public keys. Error: {e}")

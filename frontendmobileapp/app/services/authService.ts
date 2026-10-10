@@ -13,13 +13,17 @@ export type UserIdentityResponse = {
 };
 
 /**
- * Ensure a local DB user row exists for the authenticated user so protected
- * endpoints that depend on backend user rows work after first login.
+ * Resolve the authenticated user's identity on backends that do not include it
+ * in the login response. Login already creates the local database user.
  *
- * POST /api/auth/sync_user. Uses the configured global axios instance (baseURL
+ * POST /api/profile/user/keycloak_id. Uses the configured global axios instance (baseURL
  * and 401 refresh/retry are applied there).
  */
-export const syncUser = async (username: string): Promise<UserIdentityResponse> => {
-  const response = await axios.post<UserIdentityResponse>("/api/auth/sync_user", { username });
+export const getUserIdentity = async (): Promise<UserIdentityResponse> => {
+  const response = await axios.post<UserIdentityResponse>(
+    "/api/profile/user/keycloak_id",
+    undefined,
+    { timeout: 10000 },
+  );
   return response.data;
 };

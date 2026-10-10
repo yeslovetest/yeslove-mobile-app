@@ -158,7 +158,7 @@ const DateFilterDropdown = ({
             {/* Buttons */}
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <Button
-                style={Styles.cancelButton}
+                color={Styles.cancelButton.backgroundColor}
                 title="Cancel"
                 onPress={() => setVisibility(false)}
               />

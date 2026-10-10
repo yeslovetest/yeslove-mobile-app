@@ -114,6 +114,7 @@ UpdateEventRequest = api.model("UpdateEventRequest", {
 })
 
 ProfessionalResponse = api.model("ProfessionalResponse", {
+    "source": fields.String(description="Directory source; WordPress IDs are not app user IDs"),
     "id": fields.Integer(description="User ID"),
     "keycloak_id": fields.String(description="Keycloak ID"),
     "username": fields.String(description="Username"),

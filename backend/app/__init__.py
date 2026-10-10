@@ -12,7 +12,11 @@ from flask_migrate import Migrate
 from prometheus_flask_exporter import PrometheusMetrics
 
 from dotenv import load_dotenv
-from app.config import DevelopmentConfig
+
+# Configuration classes and route modules read environment variables at import time.
+load_dotenv()
+
+from app.config import DevelopmentConfig, ProductionConfig
 from app.utils import get_keycloak_public_keys
 from app.graph.neo4j_client import create_driver, close_driver
 from app.graph.repository import GraphRepository
@@ -40,9 +44,6 @@ except (ModuleNotFoundError, ImportError) as e:
     multilingual_api = None
 
 
-# Load environment variables
-load_dotenv()
-
 # 🔹 Initialize extensions
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -52,7 +53,9 @@ migrate = Migrate()
 def _running_flask_command(*command_names):
     return "flask" in os.path.basename(sys.argv[0]) and any(command in sys.argv for command in command_names)
 
-def create_app(config_class=DevelopmentConfig):
+def create_app(config_class=None):
+    if config_class is None:
+        config_class = ProductionConfig if os.getenv("FLASK_ENV") == "production" else DevelopmentConfig
     app = Flask(__name__)
 
     # Initialising of monitoring stack 
@@ -153,12 +156,14 @@ def create_app(config_class=DevelopmentConfig):
     if not _running_flask_command("db"):
         try:
             from app.utils.safety import ensure_safety_tables
+            from app.services.wordpress_professional_service import ensure_professional_table
             with app.app_context():
                 ensure_safety_tables(db)
+                ensure_professional_table(db)
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 
-    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media")
+    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media", "sync-wordpress-professionals")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -225,6 +230,19 @@ def create_app(config_class=DevelopmentConfig):
         from app.services.retention_service import privatise_chat_media
 
         click.echo(f"chat attachments made private: {privatise_chat_media(dry_run=dry_run)}")
+
+    @app.cli.command("sync-wordpress-professionals")
+    def sync_wordpress_professionals_command():
+        """Refresh our copy of the website professional directory (safe to run often)."""
+        from app.services.wordpress_professional_service import DirectoryError, directory_configured, sync_professionals
+
+        if not directory_configured():
+            raise click.ClickException("The WordPress directory is not configured (see docs/wordpress-professional-directory.md).")
+        try:
+            counts = sync_professionals()
+        except DirectoryError as exc:
+            raise click.ClickException(str(exc))
+        click.echo(", ".join(f"{name}: {value}" for name, value in counts.items()))
 
     @app.cli.command("sync-wordpress-blogs")
     @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")

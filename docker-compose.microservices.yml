@@ -92,6 +92,17 @@ services:
     depends_on:
       - main-db
 
+  # Copies the website's professional directory into our database every 6 hours.
+  # Needs no login; it reads the website's public member list.
+  professional-sync:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    command: sh -c "while true; do flask sync-wordpress-professionals; sleep 21600; done"
+    depends_on:
+      - main-db
+
   # Celery Worker for async tasks
   celery-worker:
     build: ./backend

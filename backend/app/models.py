@@ -284,6 +284,21 @@ class Address(db.Model):
             "post_code": self.post_code
         }
 
+class WordPressProfessional(db.Model):
+    """Copy of a website professional, refreshed by `flask sync-wordpress-professionals`.
+
+    The app reads only this table; WordPress is contacted only by the sync job.
+    """
+    __tablename__ = "wordpress_professionals"
+
+    id = db.Column(db.Integer, primary_key=True)
+    wp_user_id = db.Column(db.Integer, unique=True, nullable=False, index=True)
+    name = db.Column(db.String(255), nullable=False, index=True)
+    bio = db.Column(db.Text, nullable=True)
+    avatar_url = db.Column(db.String(500), nullable=True)
+    synced_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
 # ------------------------- Create BlogPost Model -------------------------
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"

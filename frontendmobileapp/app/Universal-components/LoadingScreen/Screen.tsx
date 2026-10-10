@@ -3,7 +3,9 @@ import { ActivityIndicator, Animated, Modal, View } from "react-native";
 import styles from "./LoadingScreenStyle";
 import { theme } from "@/app/theme";
 
-const LoadingOverlay = ({ visible, color = theme.colors.textOnPrimary }) => {
+type LoadingOverlayProps = { visible: boolean; color?: string };
+
+const LoadingOverlay = ({ visible, color = theme.colors.textOnPrimary }: LoadingOverlayProps) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { call, put, takeEvery } from "redux-saga/effects";
+import { call, put, takeEvery, takeLatest } from "redux-saga/effects";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
 
@@ -20,7 +20,11 @@ import {
   setOneEvent,
   setUserEvents,
 } from "../Events-store/eventsSlice";
-import { fetchProfessionals, setProfessionals } from "../Get-help-store/getHelpSlice";
+import {
+  fetchProfessionals,
+  setProfessionals,
+  setProfessionalsError,
+} from "../Get-help-store/getHelpSlice";
 
 function* handleGetEventsList(
   action: PayloadAction<{
@@ -119,7 +123,7 @@ function* handleRemoveAttendeeFromEvent(action: PayloadAction<{ eventId: number 
 }
 
 function* handleFetchProfessionals(
-  action: PayloadAction<{ perPage?: number; currentPage?: number }>,
+  action: PayloadAction<{ perPage?: number; currentPage?: number; search?: string }>,
 ) {
   try {
     const response = (
@@ -127,6 +131,7 @@ function* handleFetchProfessionals(
         EventsApiFactory().getGetProfessionals,
         action.payload.perPage ?? undefined,
         action.payload.currentPage ?? undefined,
+        { timeout: 15000, params: { search: action.payload.search ?? "" } },
       )) as AxiosResponse<ProfessionalsListResponse>
     ).data as ProfessionalsListResponse;
     const pagination = (response.pagination ?? {}) as {
@@ -144,7 +149,7 @@ function* handleFetchProfessionals(
       }),
     );
   } catch (error) {
-    console.error("failed to fetch professionals", error);
+    yield put(setProfessionalsError("Unable to load professionals. Please try again."));
   }
 }
 
@@ -153,6 +158,6 @@ export default function* eventsSaga() {
   yield takeEvery(fetchUserEvents.type, handleGetAttendingEvents);
   yield takeEvery(addAttendeeToEvent.type, handleAddAttendeeToEvent);
   yield takeEvery(removeAttendeeFromEvent.type, handleRemoveAttendeeFromEvent);
-  yield takeEvery(fetchProfessionals.type, handleFetchProfessionals);
+  yield takeLatest(fetchProfessionals.type, handleFetchProfessionals);
   yield takeEvery(fetchOneEvent.type, handleGetOneEvent);
 }

@@ -9,8 +9,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 interface Props {
   tab: TabData;
   title: string;
-  icon: string;
-  selectedIcon: string;
+  icon: React.ComponentProps<typeof Ionicons>["name"];
+  selectedIcon: React.ComponentProps<typeof Ionicons>["name"];
   clicked?: () => void;
   children?: ReactNode;
   selectionCondition?: () => boolean;

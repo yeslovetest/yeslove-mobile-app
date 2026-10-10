@@ -7,7 +7,12 @@ import React, { useRef, useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import LoadingAnimation from "./LoadingAnimation";
 
-const ChatScrollView = ({ loading, messages }) => {
+type ChatScrollViewProps = {
+  loading: boolean;
+  messages: { role: "user" | "bot"; text: string; createdAt: Date }[];
+};
+
+const ChatScrollView = ({ loading, messages }: ChatScrollViewProps) => {
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
