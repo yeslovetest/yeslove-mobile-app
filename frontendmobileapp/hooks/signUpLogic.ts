@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MIN_PASSWORD_LENGTH, PASSWORD_TOO_SHORT_MESSAGE } from "@/constants/password";
 import { useAppDispatch, useAppSelector } from "../app/store/hooks";
 import {
   setLoginStateAction,
@@ -61,7 +62,7 @@ export const useSignup = () => {
   const validateInputs = (page: number) => {
     if (page == 1) {
       // Validate password pair before validating email fields.
-      if (!password || password.length < 6) {
+      if (!password || password.length < MIN_PASSWORD_LENGTH) {
         return [false, "passwordLength"];
       }
 
@@ -106,7 +107,7 @@ export const useSignup = () => {
       setPasswordBdColor([theme.colors.danger, theme.colors.danger]);
       setEmailBdColor(initialBdColor);
       setConfirmEmailBdColor(initialBdColor);
-      dispatch(setErrorMessage("Password must be at least 6 characters."));
+      dispatch(setErrorMessage(PASSWORD_TOO_SHORT_MESSAGE));
     } else if (field == "password") {
       setPasswordBdColor([theme.colors.danger, theme.colors.danger]);
       setEmailBdColor(initialBdColor);

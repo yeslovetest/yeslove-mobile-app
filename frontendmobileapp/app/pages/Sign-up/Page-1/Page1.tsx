@@ -75,7 +75,7 @@ const Page1 = () => {
 
             <Text style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}>Password</Text>
             <Input
-            placeholder="Enter password"
+            placeholder="Enter password (12+ characters)"
             borderColor={passwordBdColor[0]}
             borderBottomColor={passwordBdColor[1]}
             onChangeText={signupAction.handlePasswordChange}
