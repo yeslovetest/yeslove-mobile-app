@@ -8,6 +8,10 @@ Every command is a dry run unless you pass --apply, and every change is idempote
   require-enrolment   Ask staff without an authenticator to set one up at their next browser login.
   enforce             Stage 2: refuse password logins from staff roles unless they give a code.
   undo-enforce        Put the original password-grant flow back.
+  fix-account-console Point the account console at this realm. Members and staff set up their
+                      authenticator app there; an export made from the master realm left its
+                      redirect list pointing at /realms/master, so it fails with
+                      "Invalid parameter: redirect_uri".
 
 Connection comes from the environment, so no secret is ever written to a file:
   KEYCLOAK_URL (default http://localhost:8099), KEYCLOAK_REALM (default YesLove_Auth),
@@ -253,15 +257,49 @@ def cmd_undo_enforce(s, args):
     print("\nApplied.")
 
 
+def cmd_fix_account_console(s, args):
+    """The account console (where members set up an authenticator) must redirect back into this realm."""
+    wanted_base = f"/realms/{REALM}/account/"
+    wanted_redirects = [f"/realms/{REALM}/account/*"]
+    changed = False
+    for client_id in ("account-console", "account"):
+        r = s.get(f"{s.base}/clients", params={"clientId": client_id}, timeout=30)
+        r.raise_for_status()
+        client = next((c for c in r.json() if c["clientId"] == client_id), None)
+        if client is None:
+            print(f"{client_id}: not found, nothing to do")
+            continue
+        redirects = client.get("redirectUris") or []
+        # Keep any other entries (including a wildcard someone added on purpose); only replace
+        # the master-realm path, which can never be right here.
+        fixed = [u for u in redirects if "/realms/master/" not in u]
+        for u in wanted_redirects:
+            if u not in fixed:
+                fixed.append(u)
+        if client.get("baseUrl") == wanted_base and fixed == redirects:
+            print(f"{client_id}: already correct")
+            continue
+        print(f"{client_id}: baseUrl {client.get('baseUrl')!r} -> {wanted_base!r}; redirectUris {redirects} -> {fixed}")
+        if args.apply:
+            client.update({"baseUrl": wanted_base, "redirectUris": fixed})
+            s.put(f"{s.base}/clients/{client['id']}", data=json.dumps(client), timeout=30).raise_for_status()
+        changed = True
+    if changed and not args.apply:
+        print("\nDry run. Re-run with --apply to make these changes.")
+    elif changed:
+        print("\nApplied.")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=["status", "harden", "require-enrolment", "enforce", "undo-enforce"])
+    p.add_argument("command", choices=["status", "harden", "require-enrolment", "enforce", "undo-enforce", "fix-account-console"])
     p.add_argument("--apply", action="store_true", help="make the change (default is a dry run)")
     p.add_argument("--force", action="store_true", help="enforce even if some staff have no authenticator")
     args = p.parse_args()
     s = session()
     {"status": cmd_status, "harden": cmd_harden, "require-enrolment": cmd_require_enrolment,
-     "enforce": cmd_enforce, "undo-enforce": cmd_undo_enforce}[args.command](s, args)
+     "enforce": cmd_enforce, "undo-enforce": cmd_undo_enforce,
+     "fix-account-console": cmd_fix_account_console}[args.command](s, args)
 
 
 if __name__ == "__main__":

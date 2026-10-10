@@ -6,6 +6,17 @@ How members protect their accounts, and what support does when one is locked out
 
 In a browser sign-in build, **Settings > General** shows a **Protect your account** card. It explains two-step verification in plain words and opens Keycloak's account page on **Signing in**, where the member sets up an authenticator app. Signing in afterwards asks for the 6-digit code on Keycloak's own page.
 
+## Before any of this works: fix the account console
+
+The realm was exported from the master realm, so the account console's redirect list pointed at `/realms/master/account/*`. On production (and locally) the account page therefore fails with "Invalid parameter: redirect_uri", which blocks members and staff from setting up an authenticator there. A person with Keycloak admin access runs, against production:
+
+```
+python3 KeyCloakService/scripts/mfa.py fix-account-console           # dry run
+python3 KeyCloakService/scripts/mfa.py fix-account-console --apply
+```
+
+Then open `https://auth.yeslove.co.uk/realms/YesLove_Auth/account/` in a browser and check it shows the sign-in page, not the error. The account console asks for the password again even right after a sign-in in the app; that is expected.
+
 ## When a member is locked out (lost or replaced phone)
 
 1. **Check it is them** before changing anything. Ask for something only the account holder would know and that you can verify (for example, the email on the account plus a recent post or the date they joined), and reply only to the email address on the account. Never accept a code, password or screenshot of an authenticator app.
