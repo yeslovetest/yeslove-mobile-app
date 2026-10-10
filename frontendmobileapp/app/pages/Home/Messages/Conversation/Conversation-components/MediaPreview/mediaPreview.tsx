@@ -5,6 +5,7 @@ import styles from "./mediaPreviewStyles";
 import { theme } from "@/app/theme";
 import { BASE_URL } from "@/app/config/baseUrl";
 import { getImageSource } from "@/constants/imageFallbacks";
+import { getMediaHeaders, isApiMediaUri, useMediaAuthToken } from "@/app/services/mediaAuth";
 
 interface PreviewFile {
   uri?: string;
@@ -34,6 +35,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
   bubbleTone = "sent",
   maxPreviewWidth,
 }) => {
+  const { token, loaded: tokenLoaded } = useMediaAuthToken();
   const [fullScreenVisible, setFullScreenVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const fullScreenListRef = useRef<FlatList<NormalizedMedia> | null>(null);
@@ -56,8 +58,15 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
         const mediaType = item?.type || item?.content_type || "";
         return { uri: resolvedUri, type: mediaType };
       })
-      .filter((item) => item.uri.length > 0);
-  }, [file]);
+      // Private files need the sign-in token, so wait for it rather than asking without it.
+      .filter((item) => item.uri.length > 0 && (tokenLoaded || !isApiMediaUri(item.uri)));
+  }, [file, tokenLoaded]);
+
+  const imageSource = (uri: string) => {
+    const headers = getMediaHeaders(uri, token);
+    const source = getImageSource(uri, "generic");
+    return headers && typeof source === "object" && "uri" in source ? { ...source, headers } : source;
+  };
 
   if (normalizedMedia.length === 0) {
     return null;
@@ -110,7 +119,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
 
                 {isImage ? (
                   <Image
-                    source={getImageSource(item.uri, "generic")}
+                    source={imageSource(item.uri)}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -120,7 +129,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
                   />
                 ) : (
                   <Video
-                    source={{ uri: item.uri }}
+                    source={{ uri: item.uri, headers: getMediaHeaders(item.uri, token) }}
                     style={{ width: "100%", height: "100%", backgroundColor: "#0f172a" }}
                     resizeMode="contain"
                     muted
@@ -159,13 +168,13 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
                   <View style={[styles.fullScreenItem, { width: screenWidth }]}>
                     {isImage ? (
                       <Image
-                        source={getImageSource(item.uri, "generic")}
+                        source={imageSource(item.uri)}
                         style={styles.fullScreenImage}
                         resizeMode="contain"
                       />
                     ) : (
                       <Video
-                        source={{ uri: item.uri }}
+                        source={{ uri: item.uri, headers: getMediaHeaders(item.uri, token) }}
                         style={styles.fullScreenVideo}
                         useNativeControls
                         resizeMode="contain"
@@ -198,13 +207,13 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
 
         {isFirstImage ? (
           <Image
-            source={getImageSource(firstItem.uri, "generic")}
+            source={imageSource(firstItem.uri)}
             style={[styles.previewImage, { width: previewWidth, height: previewHeight }]}
             resizeMode="cover"
           />
         ) : (
           <Video
-            source={{ uri: firstItem.uri }}
+            source={{ uri: firstItem.uri, headers: getMediaHeaders(firstItem.uri, token) }}
             style={[styles.previewVideo, { width: previewWidth, height: previewHeight }]}
             resizeMode="cover"
             muted
@@ -259,13 +268,13 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
                 <View style={[styles.fullScreenItem, { width: screenWidth }]}>
                   {isImage ? (
                     <Image
-                      source={getImageSource(item.uri, "generic")}
+                      source={imageSource(item.uri)}
                       style={styles.fullScreenImage}
                       resizeMode="contain"
                     />
                   ) : (
                     <Video
-                      source={{ uri: item.uri }}
+                      source={{ uri: item.uri, headers: getMediaHeaders(item.uri, token) }}
                       style={styles.fullScreenVideo}
                       useNativeControls
                       resizeMode="contain"
