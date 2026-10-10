@@ -54,12 +54,29 @@ class SecurityService:
     
     @staticmethod
     def check_access_permission(media, user_id):
-        """Check if user can access media"""
+        """Can this user open this file?
+
+        Public files (posts, profile photos) can be opened by anyone. A private file, such
+        as a chat attachment, can be opened only by whoever uploaded it and by the sender
+        and receiver of a message that carries it. user_id is the app database id of the
+        signed-in user, or None when nobody is signed in.
+        """
         if media.is_public:
             return True
-        
+
+        if user_id is None:
+            return False
+
         if media.user_id == user_id:
             return True
-        
-        # Add friend/follower checks here
-        return False
+
+        from app.models import Chat
+        from sqlalchemy import or_
+
+        return (
+            Chat.query.filter(
+                Chat.media_id == media.id,
+                or_(Chat.sender_id == user_id, Chat.receiver_id == user_id),
+            ).first()
+            is not None
+        )

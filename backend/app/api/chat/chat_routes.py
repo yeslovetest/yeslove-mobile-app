@@ -38,7 +38,7 @@ class UploadChatMedia(Resource):
             return {"message": "No file selected"}, 400
             
         try:
-            result = MediaService.store_file(file=file, user_id=user.id)
+            result = MediaService.store_file(file=file, user_id=user.id, is_public=False)
             return {
                 "media_id": result.get("media_id"),
                 "media_url": result.get("media_url"),
