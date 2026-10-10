@@ -51,6 +51,17 @@ class Login(Resource):
             "password": password
         }
 
+        # Second factor. Keycloak asks for a one-time code from any account that has an
+        # authenticator app set up, and gives the same "invalid credentials" answer for a
+        # missing code as for a wrong password, so the app offers an optional code box
+        # and we pass it straight through. The code is never logged.
+        otp = data.get("otp")
+        if otp is not None:
+            otp = str(otp).strip().replace(" ", "")
+            if not (otp.isdigit() and 6 <= len(otp) <= 8):
+                return {"message": "The authenticator code should be 6 to 8 digits."}, 400
+            payload["otp"] = otp
+
         response = requests.post(keycloak_url, data=payload, headers={"Content-Type": "application/x-www-form-urlencoded"}, timeout=10)
         
 
@@ -123,6 +134,13 @@ class Login(Resource):
         
         else:
             logger.warning(f"❌ Keycloak login failed → Status {response.status_code}: {response.text[:100]}...")
+
+        # Keycloak answers a staff account that has no authenticator set up with a bare 500
+        # (the one-time-code step cannot run), which is indistinguishable from an outage.
+        # Say so, rather than calling it a wrong password.
+        if response.status_code >= 500:
+            return {"message": "We couldn't sign you in. If you are a member of staff, check that "
+                               "two-step verification is set up on your account."}, 503
 
         logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code

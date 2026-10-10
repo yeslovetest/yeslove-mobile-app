@@ -1031,6 +1031,12 @@ export interface LoginRequest {
      */
     'password': string;
     /**
+     * Authenticator app code, for accounts that use one
+     * @type {string}
+     * @memberof LoginRequest
+     */
+    'otp'?: string;
+    /**
      * Device token for push notifications
      * @type {string}
      * @memberof LoginRequest
