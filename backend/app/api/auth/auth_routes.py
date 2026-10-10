@@ -127,6 +127,20 @@ class Login(Resource):
         logger.error("❌ Invalid login credentials")
         return {"message": "Invalid login credentials"}, response.status_code
 
+def _remove_keycloak_user(base_users_url, user_id, headers):
+    """Best-effort removal of a Keycloak user created during a sign-up that then failed.
+
+    Without this a failed sign-up leaves a sign-in with no app account behind, and the
+    person cannot try again because the username is taken.
+    """
+    try:
+        response = requests.delete(f"{base_users_url}/{user_id}", headers=headers, timeout=10)
+        if response.status_code not in (204, 404):
+            logger.error(f"Could not remove half-created Keycloak user {user_id}: {response.status_code}")
+    except requests.RequestException as exc:
+        logger.error(f"Could not remove half-created Keycloak user {user_id}: {exc}")
+
+
 @api.route("/signup")
 class Signup(Resource):
     from .auth_models import SignupRequest, SignupResponse
@@ -144,11 +158,11 @@ class Signup(Resource):
         first_name                  = data.get("first_name")
         last_name                   = data.get("last_name")
         username                    = data.get("username")
-        user_type                   = data.get("user_type")
+        # The app does not send a type for ordinary members, so default to "Standard".
+        user_type                   = (data.get("user_type") or "Standard").strip()
+        is_professional             = user_type.lower() == "professional"
 
-        
         # Professional only fileds
-        user_type                   = data.get("user_type")
         license_body                = data.get("license_body")
         license_number              = data.get("license_number")
         consent_license_data        = data.get("consent_license_data")
@@ -177,7 +191,7 @@ class Signup(Resource):
             return {"message" : f"Missing fields: {", ".join(missing)}"}, 400
         
         # If user is professional, require license data and consent
-        if user_type == "Professional":
+        if is_professional:
             prof_missing = [
                 k for k in ("license_body", "license_number", "consent_license_data")
                 if data.get(k) is None or data.get(k) == ""
@@ -187,7 +201,7 @@ class Signup(Resource):
                 logger.warning(f"⚠️ Missing professional fields → {prof_missing}")
                 return { "message" : "Professional users must provide: " + ", ".join(prof_missing)}, 400
         
-            if consent_license_data != "Yes":
+            if str(consent_license_data).lower() not in ("yes", "true"):
                 return {"message" : "You must consent to use and display tour license data."}, 400
         
         # Gets admin access token
@@ -227,7 +241,7 @@ class Signup(Resource):
             }]
         }
 
-        if user_type == "Professional":
+        if is_professional:
             user_payload["attributes"].update({
                 "license_body": license_body,
                 "license_number" : license_number,
@@ -262,6 +276,7 @@ class Signup(Resource):
 
             if patch_response.status_code != 204:
                 logger.warning(f"⚠️ Failed to assign VERIFY_EMAIL for user {username}")
+                _remove_keycloak_user(create_user_url, user_id, headers)
                 return {
                     "message": "User created, but failed to trigger email verification",
                     "details": patch_response.text
@@ -273,6 +288,7 @@ class Signup(Resource):
 
             if send_email_response.status_code !=204:
                 logger.warning(f"⚠️ Failed to send verification email to {email}")
+                _remove_keycloak_user(create_user_url, user_id, headers)
                 return {
                     "message": "User created and VERIFY_EMAIL action assigned, but failed to send email",
                     "details": send_email_response.text
@@ -293,6 +309,7 @@ class Signup(Resource):
                     logger.info(f"✅ Updated existing user {username} with Keycloak ID")
                 else:
                     logger.warning(f"⚠️ Signup rejected → Username {username} already exists")
+                    _remove_keycloak_user(create_user_url, user_id, headers)
                     return {"message" : "Username already exists"}, 409
             else:
                 # Creates a local user row
@@ -308,12 +325,12 @@ class Signup(Resource):
                 db.session.flush()
 
                 # Creates a professional user row
-                if user_type == "Professional":
+                if is_professional:
                     prof = ProfessionalDetails(
                         user_id=new_user.id,
                         license_body=license_body,
                         license_number=license_number,
-                        consent_license_data=(consent_license_data in ["yes", True])
+                        consent_license_data=(str(consent_license_data).lower() in ("yes", "true"))
                     )
                     db.session.add(prof)
 
@@ -322,6 +339,7 @@ class Signup(Resource):
             except IntegrityError as e:
                 db.session.rollback()
                 logger.error(f"❌ Database error when saving user {username}: {e}")
+                _remove_keycloak_user(create_user_url, user_id, headers)
                 return {"message" : "Username already exist"}, 409
 
             # Auto-register device token if provided during signup
