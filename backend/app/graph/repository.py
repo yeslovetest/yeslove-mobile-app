@@ -40,6 +40,15 @@ class GraphRepository:
         rows = run_write(self.driver, cypher, params)
         return rows[0]["post"] if rows else {}
 
+    def delete_user(self, user_id: str) -> None:
+        """Remove a user's node, the posts they authored and every relationship on them."""
+        cypher = (
+            "MATCH (u:User {user_id:$user_id})\n"
+            "OPTIONAL MATCH (u)-[:AUTHORED]->(p:Post)\n"
+            "DETACH DELETE p, u"
+        )
+        run_write(self.driver, cypher, {"user_id": user_id})
+
     def follow(self, follower_id: str, followed_id: str, follow_type: str = "basic") -> Dict[str, Any]:
         cypher = (
             "MATCH (a:User {user_id:$follower}), (b:User {user_id:$followed})\n"

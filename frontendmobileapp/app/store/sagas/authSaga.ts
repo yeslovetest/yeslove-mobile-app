@@ -1,4 +1,5 @@
 import { call, put, takeEvery, takeLatest, race, delay } from "redux-saga/effects";
+import { Alert } from "react-native";
 import { PayloadAction } from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
 
@@ -425,6 +426,11 @@ function* handleDeleteAccount(action: PayloadAction<DeleteAccountRequest>) {
     yield put(logoutAction(refreshToken || ""));
   } catch (error) {
     console.error("Delete action failed", error);
+    // Tell the member what happened instead of failing silently.
+    Alert.alert(
+      "Couldn't delete your account",
+      getApiMessage(error) || "Please check your connection and try again.",
+    );
   }
 }
 

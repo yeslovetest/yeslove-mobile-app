@@ -542,32 +542,74 @@ class DeleteAccount(Resource):
     @api.doc(security='Bearer')
     @api.expect(DeleteAccountRequest)
     def delete(self):
-        """Delete user account via Keycloak API."""
-        from app.models import User, db
-        user_id = request.user["keycloak_id"]
-        user = User.query.filter_by(keycloak_id=user_id).first()
+        """Delete the account and everything the app holds about it."""
+        from app.models import User
+        from app.services.account_service import (
+            AccountErasureBlocked, AccountService, delete_keycloak_user,
+        )
+
+        if (request.get_json(silent=True) or {}).get("confirmation") is not True:
+            return {"message": "Confirmation is required to delete the account"}, 400
+
+        keycloak_id = request.user["keycloak_id"]
+        user = User.query.filter_by(keycloak_id=keycloak_id).first()
         if not user:
             return {"message": "User not found"}, 404
 
-        keycloak_delete_url = f"{current_app.config['KEYCLOAK_SERVER_URL']}/admin/realms/{current_app.config['KEYCLOAK_REALM_NAME']}/users/{user_id}"
-        
+        # Refuse before touching anything if the account cannot be erased automatically.
+        try:
+            AccountService.check_erasable(user)
+        except AccountErasureBlocked as exc:
+            return {"message": str(exc)}, 409
+
+        username = user.username
         auth_header = request.headers.get("Authorization", "")
-        # To allow for two different formats (Bearer <Token> and <Token>)
         token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
-        headers = {"Authorization": f"Bearer {token}"}
 
-        response = requests.delete(keycloak_delete_url, headers=headers, timeout=10)
+        # Remove the sign-in first so the person cannot log back in while data is erased.
+        deleted, status = delete_keycloak_user(keycloak_id, fallback_token=token)
+        if not deleted:
+            logger.error("Keycloak deletion failed for account %s (%s)", username, status)
+            return {"message": "Failed to delete account"}, status if status >= 400 else 500
 
-        logger.info(f"Account deletion requested for user {user.username}")
+        try:
+            counts, object_keys = AccountService.erase_user_data(user)
+        except Exception:
+            from app.models import db
+            db.session.rollback()
+            logger.exception("Sign-in removed but data erasure failed for keycloak id %s", keycloak_id)
+            return {
+                "message": "Your sign-in was removed but we could not finish deleting your data. "
+                           "Please contact support so we can complete it."
+            }, 500
 
-        if response.status_code == 204:
-            return {"message": "Account delete successful"}, 200
-            db.session.delete(user)
-            db.session.commit()
-            logger.info(f"Account deleted successfully for {user.username}")
-        else:
-            logger.error(f"Account deletion failed: {response.status_code} - {response.text}")
-        return {"message": "Failed to delete account"}, response.status_code
+        AccountService.remove_external_copies(keycloak_id, object_keys)
+        logger.info("Account erased for keycloak id %s: %s", keycloak_id, counts)
+        return {"message": "Account delete successful"}, 200
+
+
+@api.route("/export_data")
+class ExportData(Resource):
+    @require_auth()
+    @api.doc(security='Bearer', description="Download a copy of the personal data held about the signed-in member")
+    def get(self):
+        """Export the signed-in member's personal data as JSON."""
+        import json
+        from flask import Response
+        from app.models import User
+        from app.services.account_service import AccountService
+
+        user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
+        if not user:
+            return {"message": "User not found"}, 404
+
+        payload = AccountService.export_user_data(user)
+        logger.info("Data export generated for keycloak id %s", user.keycloak_id)
+        return Response(
+            json.dumps(payload, indent=2, default=str),
+            mimetype="application/json",
+            headers={"Content-Disposition": 'attachment; filename="yeslove-my-data.json"'},
+        )
 
 
 
