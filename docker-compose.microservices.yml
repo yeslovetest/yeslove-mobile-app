@@ -82,6 +82,16 @@ services:
     ports:
       - "6379:6379"
 
+  # Daily data retention job (deletes and anonymises data past its retention period)
+  retention:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    command: sh -c "while true; do flask run-retention; sleep 86400; done"
+    depends_on:
+      - main-db
+
   # Celery Worker for async tasks
   celery-worker:
     build: ./backend
