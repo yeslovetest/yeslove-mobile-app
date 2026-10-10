@@ -158,7 +158,7 @@ def create_app(config_class=DevelopmentConfig):
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 
-    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos")
+    skip_optional_services = _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -208,6 +208,15 @@ def create_app(config_class=DevelopmentConfig):
     # Initalises professional user admin panel
     from .admin import init_admin
     init_admin(app)
+
+    @app.cli.command("run-retention")
+    @click.option("--dry-run", is_flag=True, help="Count what would change without changing anything.")
+    def run_retention_command(dry_run):
+        """Apply the data retention schedule (safe to run daily)."""
+        from app.services.retention_service import run_retention
+
+        for rule, count in run_retention(dry_run=dry_run).items():
+            click.echo(f"{rule}: {count}")
 
     @app.cli.command("sync-wordpress-blogs")
     @click.option("--page", default=1, show_default=True, type=int, help="First WordPress page to sync.")
