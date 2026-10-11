@@ -18,7 +18,8 @@ The `--user` account must already exist locally (sign up or sign in as it first)
 | Feed | About 48 posts over the last two months (some by your account, some anonymous), roughly 90 comments, 150 likes and 45 reactions |
 | Friends | 10 friends of your account, a few followers, and some follows between the others |
 | Messages | 10 conversations (8 friends, 2 professionals) of 8 to 30 messages each, with the newest ones unread |
-| Notifications | 26 for your account, about 40% unread |
+| Notifications | 26 for your account, about 40% unread; message ones name people you have a conversation with |
+| Your bio | A sample bio, only if yours is empty (removal takes it back; a bio you wrote is never touched) |
 | Events | 8 events, past and upcoming, with attendees, your account attending half |
 | Professionals | 6 sample professionals in the directory, each linked to a synthetic account so the Message button works |
 | Safety | One blocked person, so blocking can be tried |

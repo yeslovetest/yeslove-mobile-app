@@ -144,3 +144,37 @@ def test_the_commands_work_and_refuse_a_non_local_database(app, me):
     app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://admin:pw@main-db/yeslove"
     refused = runner.invoke(args=["seed-synthetic-data", "--user", "test-user"])
     assert refused.exit_code != 0 and "not a local" in refused.output
+
+
+def test_message_notifications_name_someone_the_account_has_a_conversation_with(me):
+    from app.models import Chat, Notification, User
+
+    sd.seed_synthetic_data("test-user")
+    talked_to = {
+        User.query.get(c.sender_id if c.receiver_id == me.id else c.receiver_id).username
+        for c in Chat.query.filter((Chat.sender_id == me.id) | (Chat.receiver_id == me.id))
+    }
+    messages = Notification.query.filter_by(user_id=me.id, notification_type="message").all()
+    assert messages
+    for n in messages:
+        assert n.body.split(" ")[0] in talked_to
+
+
+def test_an_empty_bio_gets_a_sample_one_that_removal_takes_back(me):
+    from app.models import User
+
+    sd.seed_synthetic_data("test-user")
+    assert User.query.get(me.id).bio == sd.SAMPLE_BIO
+    sd.remove_synthetic_data()
+    assert User.query.get(me.id).bio == ""
+
+
+def test_a_real_bio_is_never_overwritten(me):
+    from app import db
+    from app.models import User
+
+    me.bio = "My own words"
+    db.session.commit()
+    sd.seed_synthetic_data("test-user")
+    sd.remove_synthetic_data()
+    assert User.query.get(me.id).bio == "My own words"

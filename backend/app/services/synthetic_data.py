@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 PREFIX = "synth_"
 SAMPLE_MARK = "[sample] "
 SYNTHETIC_ID_PREFIX = "synthetic:"
+SAMPLE_BIO = "Sample bio: here to listen, learn and join in."
 
 FIRST_NAMES = ["amara", "ben", "chloe", "dev", "elena", "farid", "grace", "hiro", "isla", "jonas", "kemi",
                "leo", "maya", "noor", "omar", "priya", "quinn", "rosa", "sam", "tara", "umar", "vera",
@@ -128,6 +129,8 @@ def remove_synthetic_data(app=None):
         db.session.execute(event_attendees.delete().where(event_attendees.c.event_id.in_(event_ids)))
         run("events", Event.query.filter(Event.id.in_(event_ids)))
     run("notifications", Notification.query.filter(Notification.data.like('%"synthetic": true%')))
+    run_bio = User.query.filter(User.bio == SAMPLE_BIO, ~User.username.like(PREFIX + "%"))
+    counts["sample_bios"] = run_bio.update({"bio": ""}, synchronize_session=False)
     run("wordpress_professionals", WordPressProfessional.query.filter(WordPressProfessional.wp_user_id < 0))
     if ids:
         run("professional_details", ProfessionalDetails.query.filter(ProfessionalDetails.user_id.in_(ids)))
@@ -249,13 +252,18 @@ def seed_synthetic_data(target_username, *, people=24, professionals=6, seed=7, 
              ("comment", "New comment", "{} commented on your post."),
              ("follow", "New follower", "{} started following you."),
              ("message", "New message", "{} sent you a message.")]
+    # Message notifications name someone the account really has a conversation with.
     for i in range(26):
         kind, title, body = rng.choice(kinds)
-        who = rng.choice(members).username.replace(PREFIX, "")
+        who = (rng.choice(partners) if kind == "message" else rng.choice(members)).username
         db.session.add(Notification(user_id=target.id, title=title, body=body.format(who), notification_type=kind,
                                     data={"synthetic": True}, is_read=rng.random() < 0.6,
                                     created_at=ago(days=rng.uniform(0, 20))))
     counts["notifications"] = 26
+
+    # A bio, so the "Tell people about yourself" prompt is not all a tester sees. Never overwrites a real one.
+    if not (target.bio or "").strip():
+        target.bio = SAMPLE_BIO
 
     # Events: some past, some coming up; the test account attends some
     for i, (name, place) in enumerate(EVENTS):
