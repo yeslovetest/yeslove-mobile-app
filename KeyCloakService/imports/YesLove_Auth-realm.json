@@ -1475,7 +1475,9 @@
     "port" : "587",
     "from" : "authyeslove@gmail.com",
     "auth" : "true",
-    "user" : "authyeslove@gmail.com"
+    "user" : "authyeslove@gmail.com",
+    "starttls" : "true",
+    "ssl" : "false"
    },
   "eventsEnabled" : false,
   "eventsListeners" : [ "jboss-logging" ],
