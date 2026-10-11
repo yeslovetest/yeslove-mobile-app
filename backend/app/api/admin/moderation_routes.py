@@ -1,6 +1,7 @@
 from flask import request
 from flask_restx import Namespace, Resource
 from app.utils import require_auth
+from app.utils.audit import audited
 from app.logging_setup import setup_logger
 from app.utils.moderation_utils import apply_user_penalties
 from datetime import date, datetime, timedelta
@@ -40,6 +41,7 @@ def _serialize_professional(details):
 @api.route("/logs")
 class ModerationLogs(Resource):
     @require_auth()
+    @audited('admin.moderation_logs.list')
     @api.doc(description="Get moderation logs with filtering options")
     @api.param("status", "Filter by status: flagged, blocked, reviewed", type='string')
     @api.param("severity", "Filter by severity: low, medium, high", type='string')
@@ -105,6 +107,7 @@ class ModerationLogs(Resource):
 @api.route("/logs/<int:log_id>/review")
 class ReviewModerationLog(Resource):
     @require_auth()
+    @audited('admin.moderation_log.review', resource=lambda kw: f"moderation_log:{kw['log_id']}")
     @api.doc(description="Admin review of a moderation log")
     def put(self, log_id):
         """Admin review and override moderation decision."""
@@ -146,6 +149,7 @@ class ReviewModerationLog(Resource):
 @api.route("/users/<int:user_id>/suspend")
 class SuspendUser(Resource):
     @require_auth()
+    @audited('admin.user.suspend', resource=lambda kw: f"user:{kw['user_id']}", subject=lambda kw: kw["user_id"])
     @api.doc(description="Suspend or unsuspend a user")
     def put(self, user_id):
         """Suspend or unsuspend a user."""
@@ -173,6 +177,7 @@ class SuspendUser(Resource):
 @api.route("/stats")
 class ModerationStats(Resource):
     @require_auth()
+    @audited('admin.moderation_stats.view')
     @api.doc(description="Get moderation statistics")
     def get(self):
         """Get moderation statistics for dashboard."""
@@ -214,6 +219,7 @@ class ModerationStats(Resource):
 @api.route("/professionals")
 class ProfessionalVerificationList(Resource):
     @require_auth()
+    @audited('admin.professionals.list')
     @api.doc(description="List professional verification records")
     @api.param("status", "Filter by status: pending, verified, all", type="string", default="pending")
     @api.param("q", "Search username, email, license number, or specialization", type="string")
@@ -266,6 +272,7 @@ class ProfessionalVerificationList(Resource):
 @api.route("/professionals/<int:professional_id>/verification")
 class ProfessionalVerification(Resource):
     @require_auth()
+    @audited('admin.professional.verify', resource=lambda kw: f"professional_details:{kw['professional_id']}")
     @api.doc(description="Verify or unverify a professional license")
     def put(self, professional_id):
         from app.models import ProfessionalDetails, db
@@ -305,6 +312,7 @@ class ProfessionalVerification(Resource):
 @api.route("/reports")
 class ListContentReports(Resource):
     @require_auth()
+    @audited('admin.reports.list')
     @api.doc(description="List user reports of posts, comments, messages and users")
     @api.param("status", "open, actioned or dismissed", type='string', default="open")
     @api.param("page", "Page number", type='integer', default=1)
@@ -354,6 +362,7 @@ class ListContentReports(Resource):
 @api.route("/reports/<int:report_id>")
 class ReviewContentReport(Resource):
     @require_auth()
+    @audited('admin.report.review', resource=lambda kw: f"report:{kw['report_id']}")
     @api.doc(description="Resolve a content report")
     def put(self, report_id):
         """Mark a report actioned or dismissed. Actioned reports can also remove the reported post."""

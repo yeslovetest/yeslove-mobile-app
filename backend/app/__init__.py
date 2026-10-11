@@ -35,6 +35,7 @@ from app.api.video_podcast.video_podcast_routes import api as video_podcast_api
 # from app.api.social.social_routes import api as social_api
 from app.api.feed.recommendations_routes import api as recommendations_api
 from app.api.admin.moderation_routes import api as admin_moderation_api
+from app.api.admin.audit_routes import api as admin_audit_api
 from app.api.safety.safety_routes import api as safety_api
 try:
     from app.api.chatbot.voice_routes import api as multilingual_api
@@ -133,6 +134,7 @@ def create_app(config_class=None):
     api.add_namespace(notifications_api, path="/api/notifications")
     api.add_namespace(recommendations_api, path="/api/recommendations")
     api.add_namespace(admin_moderation_api, path="/api/admin/moderation")
+    api.add_namespace(admin_audit_api, path="/api/admin/audit")
     api.add_namespace(safety_api, path="/api/safety")
     if multilingual_api is not None:
         api.add_namespace(multilingual_api, path="/api/v1/multilingual")
@@ -157,9 +159,11 @@ def create_app(config_class=None):
         try:
             from app.utils.safety import ensure_safety_tables
             from app.services.wordpress_professional_service import ensure_professional_table
+            from app.utils.audit import ensure_audit_table
             with app.app_context():
                 ensure_safety_tables(db)
                 ensure_professional_table(db)
+                ensure_audit_table(db)
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 
@@ -268,6 +272,8 @@ def create_app(config_class=None):
         try:
             if unlink:
                 unlink_professional(wp_user_id)
+                from app.utils.audit import record_audit
+                record_audit("cli.professional.unlink", resource=f"wordpress_professional:{wp_user_id}")
                 click.echo(f"Unlinked website professional {wp_user_id}.")
                 return
             if not username:
@@ -275,6 +281,8 @@ def create_app(config_class=None):
             professional, user = link_professional(wp_user_id, username)
         except LinkError as exc:
             raise click.ClickException(str(exc))
+        from app.utils.audit import record_audit
+        record_audit("cli.professional.link", subject_user_id=user.id, resource=f"wordpress_professional:{wp_user_id}")
         click.echo(f"Linked website professional {professional.wp_user_id} ({professional.name}) to app account {user.username}.")
 
     @app.cli.command("sync-wordpress-blogs")
@@ -334,5 +342,18 @@ def create_app(config_class=None):
             raise click.ClickException(f"Could not refresh video podcasts from WordPress: {exc}") from exc
 
         click.echo(f"Synced {synced} WordPress video podcasts into app DB cache ({total or synced} available).")
+
+    @app.route("/healthz")
+    def healthz():
+        """Liveness check for uptime monitors: the app is serving and can reach its database.
+
+        Deliberately cheap and public: it returns no data about members or the system.
+        """
+        try:
+            db.session.execute(db.text("SELECT 1"))
+        except Exception:
+            app.logger.exception("Health check could not reach the database")
+            return {"status": "unavailable"}, 503
+        return {"status": "ok"}, 200
 
     return app
