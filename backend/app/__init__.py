@@ -167,7 +167,7 @@ def create_app(config_class=None):
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 
-    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media", "sync-wordpress-professionals", "link-wordpress-professional", "list-wordpress-professionals")
+    skip_optional_services = app.testing or _running_flask_command("db", "sync-wordpress-blogs", "sync-wordpress-videos", "run-retention", "privatise-chat-media", "sync-wordpress-professionals", "link-wordpress-professional", "list-wordpress-professionals", "seed-synthetic-data", "remove-synthetic-data")
 
     # 🔐 Fetch Keycloak Public Keys (Runs ONCE at startup)
     if not skip_optional_services:
@@ -247,6 +247,34 @@ def create_app(config_class=None):
         except DirectoryError as exc:
             raise click.ClickException(str(exc))
         click.echo(", ".join(f"{name}: {value}" for name, value in counts.items()))
+
+    @app.cli.command("seed-synthetic-data")
+    @click.option("--user", "username", required=True, help="Existing local account to build the sample content around.")
+    @click.option("--people", default=24, show_default=True, type=int, help="How many synthetic members to create.")
+    @click.option("--reset", is_flag=True, help="Remove any earlier synthetic data first.")
+    def seed_synthetic_data_command(username, people, reset):
+        """Fill the LOCAL development database with made-up content for testing (never production)."""
+        from app.services.synthetic_data import SyntheticDataRefused, check_safe_target, remove_synthetic_data, seed_synthetic_data
+
+        try:
+            check_safe_target(app)
+            if reset:
+                remove_synthetic_data()
+            counts = seed_synthetic_data(username, people=max(12, people))
+        except SyntheticDataRefused as exc:
+            raise click.ClickException(str(exc))
+        click.echo("Created: " + ", ".join(f"{k} {v}" for k, v in counts.items()))
+
+    @app.cli.command("remove-synthetic-data")
+    def remove_synthetic_data_command():
+        """Delete all synthetic data again (local development database only)."""
+        from app.services.synthetic_data import SyntheticDataRefused, check_safe_target, remove_synthetic_data
+
+        try:
+            check_safe_target(app)
+        except SyntheticDataRefused as exc:
+            raise click.ClickException(str(exc))
+        click.echo("Removed: " + ", ".join(f"{k} {v}" for k, v in remove_synthetic_data().items() if v))
 
     @app.cli.command("list-wordpress-professionals")
     def list_wordpress_professionals_command():
