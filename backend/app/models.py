@@ -284,6 +284,26 @@ class Address(db.Model):
             "post_code": self.post_code
         }
 
+class AuditEvent(db.Model):
+    """Who did what to whose personal data. Holds ids and action names only, never content.
+
+    No foreign keys on purpose: a record must outlive the account it is about. Recorded by
+    app/utils/audit.py; read by admins at /api/admin/audit/events; deleted after 12 months.
+    """
+    __tablename__ = "audit_events"
+
+    id = db.Column(db.Integer, primary_key=True)
+    occurred_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    actor_user_id = db.Column(db.Integer, nullable=True, index=True)
+    actor_keycloak_id = db.Column(db.String(255), nullable=True)
+    actor_role = db.Column(db.String(20), nullable=False, default="member")  # admin, member or system
+    action = db.Column(db.String(80), nullable=False, index=True)
+    subject_user_id = db.Column(db.Integer, nullable=True, index=True)  # whose data was touched
+    resource = db.Column(db.String(120), nullable=True)
+    outcome = db.Column(db.String(10), nullable=False, default="ok")  # ok, denied, error
+    ip_address = db.Column(db.String(64), nullable=True)
+
+
 class WordPressProfessional(db.Model):
     """Copy of a website professional, refreshed by `flask sync-wordpress-professionals`.
 

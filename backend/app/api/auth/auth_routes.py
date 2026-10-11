@@ -668,6 +668,8 @@ class DeleteAccount(Resource):
         except AccountErasureBlocked as exc:
             return {"message": str(exc)}, 409
 
+        from app.utils.audit import record_audit
+        record_audit("account.delete", subject_user_id=user.id, resource=f"user:{user.id}")
         username = user.username
         auth_header = request.headers.get("Authorization", "")
         token = auth_header.split()[1] if len(auth_header.split()) == 2 else auth_header
@@ -709,6 +711,8 @@ class ExportData(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
+        from app.utils.audit import record_audit
+        record_audit("account.export", subject_user_id=user.id, resource=f"user:{user.id}")
         payload = AccountService.export_user_data(user)
         logger.info("Data export generated for keycloak id %s", user.keycloak_id)
         return Response(

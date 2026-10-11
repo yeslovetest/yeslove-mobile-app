@@ -16,6 +16,7 @@ POLICY = {
     "blog_views": 730,                 # which articles a member read
     "moderation_records": 365,         # flagged text is anonymised after 12 months
     "closed_reports": 730,             # resolved or dismissed reports
+    "audit_events": 365,               # the audit trail of access to personal data
     "removed_posts": 90,               # posts an admin removed, kept briefly as evidence
 }
 
@@ -29,7 +30,7 @@ def _cutoff(days, now):
 def run_retention(now=None, dry_run=False):
     """Apply every rule. Returns {rule: rows affected}."""
     from app.models import (
-        BlogView, ContentReport, DeviceToken, Media, ModerationLog, Notification, Post, db,
+        AuditEvent, BlogView, ContentReport, DeviceToken, Media, ModerationLog, Notification, Post, db,
     )
 
     now = now or datetime.utcnow()
@@ -49,6 +50,11 @@ def run_retention(now=None, dry_run=False):
     count_or_apply(
         "notifications",
         Notification.query.filter(Notification.created_at < _cutoff(POLICY["notifications"], now)),
+        lambda q: q.delete(synchronize_session=False),
+    )
+    count_or_apply(
+        "audit_events",
+        AuditEvent.query.filter(AuditEvent.occurred_at < _cutoff(POLICY["audit_events"], now)),
         lambda q: q.delete(synchronize_session=False),
     )
     count_or_apply(

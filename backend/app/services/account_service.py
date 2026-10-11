@@ -116,6 +116,10 @@ class AccountService:
         delete("likes", Like.query.filter_by(user_id=uid))
         delete("comments", Comment.query.filter_by(user_id=uid))
 
+        # Audit rows are kept (they are the record of who accessed what) but lose the sign-in id.
+        from app.models import AuditEvent
+        AuditEvent.query.filter_by(actor_keycloak_id=kid).update({"actor_keycloak_id": None}, synchronize_session=False)
+
         # A deleted account must not stay linked to a website professional.
         from app.models import WordPressProfessional
         WordPressProfessional.query.filter_by(user_id=uid).update({"user_id": None}, synchronize_session=False)
