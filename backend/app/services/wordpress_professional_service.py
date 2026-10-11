@@ -177,7 +177,8 @@ def sync_professionals(per_page=100):
 
     ensure_professional_table(db)
     existing = {row.wp_user_id: row for row in WordPressProfessional.query.all()}
-    if not fetched and existing:
+    real_existing = {k: v for k, v in existing.items() if k >= 0}
+    if not fetched and real_existing:
         raise DirectoryError("WordPress returned no professionals; the existing copy was kept.", 502)
 
     now, added, updated = datetime.utcnow(), 0, 0
@@ -197,7 +198,8 @@ def sync_professionals(per_page=100):
         row.synced_at = now
     removed = 0
     for wp_user_id, row in existing.items():
-        if wp_user_id not in seen:
+        # Negative ids are local-only test rows (see synthetic_data.py); the website never has them.
+        if wp_user_id not in seen and wp_user_id >= 0:
             db.session.delete(row)
             removed += 1
     db.session.commit()
