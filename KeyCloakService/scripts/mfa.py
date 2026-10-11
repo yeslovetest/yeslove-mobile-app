@@ -46,6 +46,12 @@ HARDENING = {
     "maxDeltaTimeSeconds": 43200,
     "quickLoginCheckMilliSeconds": 1000,
     "minimumQuickLoginWaitSeconds": 60,
+    # Session lengths for a mobile app. The defaults (30 minutes idle, 10 hours in all, 60-second
+    # access tokens) sign members out all the time. Keycloak applies these to everyone, including
+    # admins; signing out from Settings or a password reset still ends a session at once.
+    "accessTokenLifespan": 300,
+    "ssoSessionIdleTimeout": 604800,    # 7 days without use
+    "ssoSessionMaxLifespan": 2592000,   # 30 days, then sign in again
     # NCSC guidance favours length over complexity rules.
     "passwordPolicy": "length(12) and notUsername(undefined) and notEmail(undefined)",
     # Audit trail: sign-in events kept 90 days, and who changed what in the admin console.
