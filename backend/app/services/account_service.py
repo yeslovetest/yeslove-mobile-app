@@ -90,7 +90,7 @@ class AccountService:
         """
         from app.models import (
             BlogView, Chat, Comment, ContentReport, DeviceToken, EmailNotificationSettings,
-            Event, Follow, Like, Media, ModerationLog, Notification, NotificationSettings,
+            Event, Follow, FriendRequest, Like, Media, ModerationLog, Notification, NotificationSettings,
             Post, PostMedia, ProfileVisibilitySettings, Reaction, User, UserBlock, db,
             event_attendees,
         )
@@ -127,6 +127,8 @@ class AccountService:
         # Direct messages go before media because messages reference attachments.
         delete("messages", Chat.query.filter((Chat.sender_id == uid) | (Chat.receiver_id == uid)))
         delete("follows", Follow.query.filter((Follow.follower_id == uid) | (Follow.followed_id == uid)))
+        delete("friend_requests", FriendRequest.query.filter(
+            (FriendRequest.requester_id == uid) | (FriendRequest.recipient_id == uid)))
 
         # Media may still be linked from posts; detach, then remove the posts and the files.
         if post_ids:
@@ -190,7 +192,7 @@ class AccountService:
     def export_user_data(user):
         """Everything the app holds about the user, as plain JSON-ready data."""
         from app.models import (
-            BlogView, Chat, Comment, ContentReport, DeviceToken, Follow, Like, Media,
+            BlogView, Chat, Comment, ContentReport, DeviceToken, Follow, FriendRequest, Like, Media,
             ModerationLog, Notification, NotificationSettings, Post, Reaction, User,
             UserBlock,
         )
@@ -259,6 +261,15 @@ class AccountService:
             "followers": [
                 {"username": username(f.follower_id), "type": f.follow_type}
                 for f in Follow.query.filter_by(followed_id=uid)
+            ],
+            "friend_requests": [
+                {
+                    "direction": "sent" if r.requester_id == uid else "received",
+                    "with": username(r.recipient_id if r.requester_id == uid else r.requester_id),
+                    "status": r.status, "requested_at": iso(r.created_at), "answered_at": iso(r.responded_at),
+                }
+                for r in FriendRequest.query.filter(
+                    (FriendRequest.requester_id == uid) | (FriendRequest.recipient_id == uid))
             ],
             "messages": [
                 {

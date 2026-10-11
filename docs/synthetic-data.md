@@ -16,7 +16,7 @@ The `--user` account must already exist locally (sign up or sign in as it first)
 | --- | --- |
 | People | About 30 synthetic members and 6 synthetic professionals. Usernames start `synth_`, addresses are at `example.invalid`, and none has a Keycloak login, so nobody can sign in as them |
 | Feed | About 48 posts over the last two months (some by your account, some anonymous), roughly 90 comments, 150 likes and 45 reactions |
-| Friends | 10 friends of your account, a few followers, and some follows between the others |
+| Friends | 10 friends of your account, a few followers, and some follows between the others, plus 3 pending friend requests to accept or decline |
 | Messages | 10 conversations (8 friends, 2 professionals) of 8 to 30 messages each, with the newest ones unread |
 | Notifications | 26 for your account, about 40% unread; message ones name people you have a conversation with |
 | Your bio | A sample bio, only if yours is empty (removal takes it back; a bio you wrote is never touched) |

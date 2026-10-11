@@ -95,8 +95,8 @@ def remove_synthetic_data(app=None):
     """Delete everything seed_synthetic_data created. Returns counts."""
     from app import db
     from app.models import (
-        Chat, Comment, ContentReport, Event, Follow, Like, Notification, Post, ProfessionalDetails, Reaction,
-        User, UserBlock, WordPressProfessional, event_attendees,
+        Chat, Comment, ContentReport, Event, Follow, FriendRequest, Like, Notification, Post, ProfessionalDetails,
+        Reaction, User, UserBlock, WordPressProfessional, event_attendees,
     )
 
     counts = {}
@@ -120,6 +120,8 @@ def remove_synthetic_data(app=None):
         run("likes_by_synthetic", Like.query.filter(Like.user_id.in_(ids)))
         run("messages", Chat.query.filter(Chat.sender_id.in_(ids) | Chat.receiver_id.in_(ids)))
         run("follows", Follow.query.filter(Follow.follower_id.in_(ids) | Follow.followed_id.in_(ids)))
+        run("friend_requests", FriendRequest.query.filter(
+            FriendRequest.requester_id.in_(ids) | FriendRequest.recipient_id.in_(ids)))
         run("blocks", UserBlock.query.filter(UserBlock.blocker_id.in_(ids) | UserBlock.blocked_id.in_(ids)))
         run("reports", ContentReport.query.filter(ContentReport.reporter_id.in_(ids) | ContentReport.reported_user_id.in_(ids)))
     if post_ids:
@@ -143,8 +145,8 @@ def seed_synthetic_data(target_username, *, people=24, professionals=6, seed=7, 
     """Create synthetic content around the existing user `target_username`. Returns counts."""
     from app import db
     from app.models import (
-        Chat, Comment, Event, Follow, Like, Notification, Post, ProfessionalDetails, Reaction, User, UserBlock,
-        WordPressProfessional,
+        Chat, Comment, Event, Follow, FriendRequest, Like, Notification, Post, ProfessionalDetails, Reaction, User,
+        UserBlock, WordPressProfessional,
     )
 
     target = User.query.filter_by(username=target_username).first()
@@ -274,6 +276,12 @@ def seed_synthetic_data(target_username, *, people=24, professionals=6, seed=7, 
         event.attendees = rng.sample(members, rng.randint(2, 9)) + ([target] if i % 2 == 0 else [])
         db.session.add(event)
     counts["events"] = len(EVENTS)
+
+    # People asking to be friends, so the Friend Requests tab has something to accept or decline
+    strangers = [m for m in members if m not in friends and m is not members[-1]]
+    for who in strangers[:3]:
+        db.session.add(FriendRequest(requester_id=who.id, recipient_id=target.id, created_at=ago(days=rng.uniform(0, 3))))
+    counts["friend_requests"] = len(strangers[:3])
 
     # One blocked person, so blocking can be tried
     blocked = members[-1]

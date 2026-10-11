@@ -177,6 +177,23 @@ class Follow(db.Model):
     __table_args__ = (db.UniqueConstraint("follower_id", "followed_id", name="unique_follow"),)
 
 # -------------------------
+# 🚀 Friend requests
+# -------------------------
+class FriendRequest(db.Model):
+    """A request to become friends. Kept apart from Follow on purpose: chat and the friends
+    feed treat any friend Follow row as a friendship, so a pending request must not live there."""
+    __tablename__ = "friend_request"
+    id = db.Column(db.Integer, primary_key=True)
+    requester_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = db.Column(db.String(10), nullable=False, default="pending")  # pending, accepted, declined, cancelled
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    responded_at = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (db.CheckConstraint("requester_id != recipient_id", name="check_no_self_friend_request"),)
+
+
+# -------------------------
 # 🚀 Chat Model
 # -------------------------
 class Chat(db.Model):

@@ -620,27 +620,49 @@ class FollowUser(Resource):
         if is_blocked_between(user.id, target_user.id):
             return {"message": "User not found"}, 404
 
-        follow_action = request.json.get("action", "follow")  # Default to "follow"
-        follow_type = request.json.get("follow_type", "basic")
-        
-        # Get existing follow relationships (both directions)
+        from app.services import friend_request_service as friends
+        from app.services.notification_service import NotificationService
+
+        payload = request.get_json(silent=True) or {}
+        follow_action = payload.get("action", "follow")  # Default to "follow"
+        follow_type = payload.get("follow_type", "basic")
+        if follow_action not in ("follow", "unfollow", "decline"):
+            return {"message": "Unknown action"}, 400
+        if follow_type not in ("basic", "friend"):
+            return {"message": "Unknown follow type"}, 400
+        if target_user.id == user.id:
+            return {"message": "You cannot follow yourself"}, 400
+
+        incoming = friends.pending_between(target_user.id, user.id)
+        outgoing = friends.pending_between(user.id, target_user.id)
+
+        # Decline a friend request. This never creates a friendship, and the requester is not told.
+        if follow_action == "decline":
+            if not incoming:
+                return {"message": "No friend request to decline"}, 404
+            friends.close(incoming, "declined")
+            return {"message": "Friend request declined"}, 200
+
         follows = Follow.query.filter(
-            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) | 
+            ((Follow.follower_id == user.id) & (Follow.followed_id == target_user.id)) |
             ((Follow.follower_id == target_user.id) & (Follow.followed_id == user.id))
         ).all()
         existing = {(f.follower_id, f.followed_id): f for f in follows}
-
         followby_current_user = existing.get((user.id, target_user.id))
         followby_target_user = existing.get((target_user.id, user.id))
 
-        # Unfollow
+        # Unfollow, or withdraw a friend request you sent.
         if follow_action == "unfollow":
+            if not followby_current_user and not outgoing:
+                return {"message": "You are not following this user"}, 400
+            if outgoing:
+                friends.close(outgoing, "cancelled")
             if followby_current_user:
                 db.session.delete(followby_current_user)
                 logger.info(f"User {user.username} unfollowed {target_user.username}")
                 if followby_target_user and followby_target_user.follow_type == 'friend':
-                   db.session.delete(followby_target_user) 
-                   logger.info('Also removed reverse friend follow')
+                    db.session.delete(followby_target_user)
+                    logger.info('Also removed reverse friend follow')
                 db.session.commit()
 
                 if hasattr(current_app, 'graph_repository'):
@@ -649,68 +671,58 @@ class FollowUser(Resource):
                             follower_id=user.keycloak_id,
                             followed_id=target_user.keycloak_id
                         )
-                        if follow_type == "friend":
+                        if followby_target_user and followby_target_user.follow_type == 'friend':
                             current_app.graph_repository.unfollow(
                                 follower_id=target_user.keycloak_id,
                                 followed_id=user.keycloak_id
                             )
                     except Exception as e:
                         logger.warning(f"Graph unfollow failed: {e}")
-                
-                return {"message": "Unfollowed successfully"}, 200
-            return {"message": "You are not following this user"}, 400
-        
-        # Follow
-        if followby_current_user:
-            # Already following
-            if follow_type == "basic":
-                return {"message": "Already following"}, 400
-            if follow_type == "friend":
-                followby_current_user.follow_type = "friend" 
-                # Add reverse record if not exists  (send frienship request by email, To be done later)
-                if not followby_target_user:
-                    new_follow = Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend")
-                    db.session.add(new_follow)
-                    db.session.commit()
-                    return {"message": "Connected as friend"}, 201
-                # Otherwise just update both
-                followby_target_user.follow_type = "friend"
-                db.session.commit()
-                return {"message": "Follow type updated"}, 201
+            return {"message": "Unfollowed successfully"}, 200
 
-        # Create new follows
-        records = []
-        if follow_type == "friend": # send frienship request by email, To be done later
-            records.append(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="friend"))
-            records.append(Follow(follower_id=target_user.id, followed_id=user.id, follow_type="friend"))
-            db.session.add_all(records)
-            db.session.commit()
+        if follow_type == "friend":
+            # Accepting: the other person asked first.
+            if incoming:
+                friends.accept(incoming)
+                from app.utils.audit import record_audit
+                record_audit("friend_request.accept", subject_user_id=target_user.id, resource=f"user:{user.id}")
+                NotificationService.create_notification(
+                    user_id=target_user.id,
+                    title="Friend request accepted",
+                    body=f"{user.username} accepted your friend request",
+                    notification_type="follows",
+                    data={"type": "friend_accepted", "user_id": user.id},
+                )
+                if hasattr(current_app, 'graph_repository'):
+                    try:
+                        current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "friend")
+                        current_app.graph_repository.follow(target_user.keycloak_id, user.keycloak_id, "friend")
+                    except Exception as e:
+                        logger.warning(f"Graph friend follow failed: {e}")
+                return {"message": "Connected as friend"}, 201
 
-            if hasattr(current_app, 'graph_repository'):
-                try:
-                    current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "friend")
-                    current_app.graph_repository.follow(target_user.keycloak_id, user.keycloak_id, "friend")
-                except Exception as e:
-                    logger.warning(f"Graph friend follow failed: {e}")
-            
-            return {"message": "Connected as friend"}, 201
+            # Asking: nobody becomes a friend until the other person accepts.
+            try:
+                friends.send(user, target_user)
+            except friends.FriendRequestError as error:
+                return {"message": error.message}, error.status
+            NotificationService.create_notification(
+                user_id=target_user.id,
+                title="Friend request",
+                body=f"{user.username} sent you a friend request",
+                notification_type="follows",
+                data={"type": "friend_request", "user_id": user.id},
+            )
+            return {"message": "Friend request sent"}, 202
 
         # Basic follow
-        db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
-
-        # Follow the user
-        existing_follow = Follow.query.filter_by(follower_id=user.id, followed_id=user_id).first()
-        if existing_follow:
+        if followby_current_user:
             return {"message": "Already following"}, 400
-
-        new_follow = Follow(follower_id=user.id, followed_id=user_id)
-        db.session.add(new_follow)
+        db.session.add(Follow(follower_id=user.id, followed_id=target_user.id, follow_type="basic"))
         db.session.commit()
-        
-        # Notify user about new follower
-        from app.services.notification_service import NotificationService
+
         NotificationService.create_notification(
-            user_id=user_id,
+            user_id=target_user.id,
             title="New Follower",
             body=f"{user.username} started following you",
             notification_type="follows",
@@ -722,8 +734,33 @@ class FollowUser(Resource):
                 current_app.graph_repository.follow(user.keycloak_id, target_user.keycloak_id, "basic")
             except Exception as e:
                 logger.warning(f"Graph follow failed: {e}")
-        
+
         return {"message": "Followed successfully"}, 201
+
+
+@api.route("/friend-requests")
+class FriendRequests(Resource):
+    @require_auth()
+    @api.doc(security='Bearer')
+    def get(self):
+        """Pending friend requests other people have sent to the current user."""
+        from app.models import User
+        from app.services import friend_request_service as friends
+        from app.utils.common_helpers import get_current_user
+        from app.utils.safety import blocked_user_ids
+
+        user, error_response, status_code = get_current_user()
+        if error_response:
+            return error_response, status_code
+
+        blocked = blocked_user_ids(user.id)
+        rows = [r for r in friends.incoming(user.id) if r.requester_id not in blocked]
+        people = {u.id: u for u in User.query.filter(User.id.in_([r.requester_id for r in rows])).all()} if rows else {}
+        return {"requests": [
+            {"keycloak_id": people[r.requester_id].keycloak_id, "username": people[r.requester_id].username,
+             "image": people[r.requester_id].profile_pic_url}
+            for r in rows if r.requester_id in people
+        ]}, 200
 
 
 @api.route("/followers/<string:keycloak_id>")
@@ -756,11 +793,23 @@ class GetFollowing(Resource):
     def get(self, keycloak_id):
         """Fetch all users the current user is following."""
         from app.models import Follow, User
+        from app.services import friend_request_service as friends
         user = User.query.filter_by(keycloak_id=request.user["keycloak_id"]).first()
         following = Follow.query.filter_by(follower_id=user.id).all()
-        return {'following':
-                [
-                    {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
-                      "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic_url}
-                    for follow in following
-                ]}, 200
+        friend_ids = {f.followed_id for f in following if f.follow_type == "friend" and friends.are_friends(user.id, f.followed_id)}
+        entries = {
+            follow.followed_id: {"id": follow.followed.keycloak_id, "follow_type": follow.follow_type,
+                                 "username": follow.followed.username, 'profile_pic': follow.followed.profile_pic_url,
+                                 "friendship_status": "friend" if follow.followed_id in friend_ids else ""}
+            for follow in following
+        }
+        # A friend request you sent shows as "Requested" until the other person answers.
+        for recipient_id in friends.outgoing_pending_ids(user.id):
+            if recipient_id in friend_ids:
+                continue
+            recipient = User.query.get(recipient_id)
+            if recipient:
+                entries[recipient_id] = {"id": recipient.keycloak_id, "follow_type": "friend",
+                                         "username": recipient.username, 'profile_pic': recipient.profile_pic_url,
+                                         "friendship_status": "requested"}
+        return {'following': list(entries.values())}, 200

@@ -186,6 +186,8 @@ class BlockUser(Resource):
             ((Follow.follower_id == user.id) & (Follow.followed_id == target.id))
             | ((Follow.follower_id == target.id) & (Follow.followed_id == user.id))
         ).delete(synchronize_session=False)
+        from app.services.friend_request_service import remove_between
+        remove_between(user.id, target.id)
         try:
             db.session.commit()
         except IntegrityError:
