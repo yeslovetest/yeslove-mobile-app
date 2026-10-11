@@ -62,7 +62,9 @@ const Page3 = () => {
           imageStyle={{ opacity: 1, height: "110%" }}
         >
           <View style={styles.innerContainer}>
-            <Text style={styles.title}>Thank you for signing up!</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              Thank you for signing up!
+            </Text>
 
             <Text style={styles.label}>
               {normalizedResponse ||
@@ -97,7 +99,9 @@ const Page3 = () => {
           imageStyle={{ opacity: 1, height: "110%" }}
         >
           <View style={styles.innerContainer}>
-            <Text style={styles.title}>User already exists</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              User already exists
+            </Text>
 
             <Text style={styles.label}>{normalizedResponse}</Text>
 
@@ -129,7 +133,9 @@ const Page3 = () => {
           imageStyle={{ opacity: 1, height: "110%" }}
         >
           <View style={styles.innerContainer}>
-            <Text style={styles.title}>Sign up failed</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              Sign up failed
+            </Text>
 
             <Text style={styles.label}>{normalizedResponse}</Text>
 

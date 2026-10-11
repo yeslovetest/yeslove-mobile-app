@@ -111,7 +111,9 @@ const NotificationsRoot = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Notifications</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            Notifications
+          </Text>
           <Text style={styles.noOfNotifications}>
             You have <Text style={styles.blueText}>{unreadNotifications} unread notfications</Text>
           </Text>

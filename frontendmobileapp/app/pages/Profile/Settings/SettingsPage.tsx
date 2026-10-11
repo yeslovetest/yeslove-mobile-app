@@ -82,7 +82,9 @@ const SettingsPage = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={settingsSharedStyles.pageHeaderRow}>
-          <Text style={settingsSharedStyles.pageTitle}>Settings</Text>
+          <Text accessibilityRole="header" style={settingsSharedStyles.pageTitle}>
+            Settings
+          </Text>
           <Text style={settingsSharedStyles.pageSubtitle}>
             Manage privacy, notifications, and account preferences.
           </Text>

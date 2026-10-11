@@ -93,6 +93,9 @@ const EventsInfoHeader = () => {
         {isFuture && (
           <Animated.View style={[styles.favouriteContainer, !isAttending && addEventAnimatedStyle]}>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={isAttending ? "Attending, tap to remove" : "Add Event"}
+              accessibilityState={{ selected: isAttending }}
               onPress={() => toggleAttending(isAttending)}
               style={styles.favouritePressable}
             >

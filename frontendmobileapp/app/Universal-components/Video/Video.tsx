@@ -136,6 +136,7 @@ export const Video: React.FC<VideoProps> = ({
 
       {!!thumbnailUri && !hasFirstFrameRendered && (
         <Image
+          accessible={false}
           source={getImageSource(thumbnailUri, "generic")}
           style={styles.mediaFill}
           resizeMode={getImageResizeMode(resizeMode)}

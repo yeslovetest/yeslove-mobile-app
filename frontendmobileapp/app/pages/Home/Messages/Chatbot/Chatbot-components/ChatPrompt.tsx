@@ -23,6 +23,7 @@ export default function ChatPrompt({ prompt, time }: { prompt: string; time: Dat
         </View>
 
         <Image
+          accessible={false}
           style={styles.profileImg}
           source={getImageSource(profilePic, "profile", { treatBareAsMediaId: true })}
         />

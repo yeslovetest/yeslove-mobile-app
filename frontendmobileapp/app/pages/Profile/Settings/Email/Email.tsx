@@ -82,7 +82,9 @@ const Email = (props: Props) => {
         style={sharedStyles.container}
       >
         <View style={styles.settingsNavItemContainer}>
-          <Text style={styles.mainHeaderText}>receive email notifications for</Text>
+          <Text accessibilityRole="header" style={styles.mainHeaderText}>
+            receive email notifications for
+          </Text>
 
           <CheckBoxList
             header="Activity"

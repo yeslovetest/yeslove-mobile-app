@@ -14,7 +14,9 @@ const BlogHeader = () => {
 
   return (
     <View style={styles.indBlogContainer}>
-      <Text style={styles.indBlogTitle}>{blog.title}</Text>
+      <Text accessibilityRole="header" style={styles.indBlogTitle}>
+        {blog.title}
+      </Text>
       <ImageBackground
         style={styles.blogImage}
         imageStyle={styles.blogImageContent}

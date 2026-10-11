@@ -12,21 +12,29 @@ const EventInfoDetails = () => {
     <View>
       <View style={styles.eventInfo}>
         <View style={styles.addressContainer}>
-          <Text style={styles.addressHeader}>Address</Text>
+          <Text accessibilityRole="header" style={styles.addressHeader}>
+            Address
+          </Text>
           <Text style={styles.eventAddress}>{event.location || "Address not available"}</Text>
         </View>
         <View style={styles.dateAndTimeContainer}>
           <View style={styles.dateContainer2}>
-            <Text style={styles.dateHeader}>Date</Text>
+            <Text accessibilityRole="header" style={styles.dateHeader}>
+              Date
+            </Text>
             <Text style={styles.eventDate}>{dayjs(event.event_time).format("MMM D, YYYY")}</Text>
           </View>
           <View style={styles.timeContainer}>
-            <Text style={styles.timeHeader}>Time</Text>
+            <Text accessibilityRole="header" style={styles.timeHeader}>
+              Time
+            </Text>
             <Text style={styles.eventTime}>{dayjs(event.event_time).format("h:mm A")}</Text>
           </View>
         </View>
         <View style={styles.extraInfoContainer}>
-          <Text style={styles.extraInfoHeader}>Extra Information</Text>
+          <Text accessibilityRole="header" style={styles.extraInfoHeader}>
+            Extra Information
+          </Text>
           <Text style={styles.eventExtraInfo}>
             {event.description || "No extra information provided for this event yet."}
           </Text>

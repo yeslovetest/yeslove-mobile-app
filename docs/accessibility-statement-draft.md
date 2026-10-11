@@ -18,17 +18,14 @@ We want as many people as possible to be able to use this app. For example, you 
 
 The app has not yet been independently audited against the Web Content Accessibility Guidelines (WCAG) 2.2 at level AA, so we cannot say it meets them. Our own review has found these problems:
 
-- Some text, for example white text on orange banners, does not have enough colour contrast.
-- Some buttons that show only an icon have no name for a screen reader to read out.
-- Some form fields rely on placeholder text rather than a label.
-- Screen titles are not marked as headings, so a screen reader cannot jump between sections.
-- Some images have no description.
+- Pale borders around some cards and disabled buttons are hard to see for people with low vision.
+- We have checked colour contrast and added labels, headings and image descriptions in the code, but we have not yet checked how they sound with a screen reader, so some labels may be unclear or in a confusing order.
 - We have not checked captions or transcripts for video and audio.
 - We have not tested the app at the largest text sizes or with a keyboard or switch control.
 
 **What we are doing about it**
 
-We plan to fix the contrast, labelling and heading problems by [date], test the main journeys with VoiceOver and TalkBack, and commission an independent audit by [date]. We will update this statement afterwards.
+We plan to strengthen the pale borders by [date], test the main journeys with VoiceOver and TalkBack, and commission an independent audit by [date]. We will update this statement afterwards.
 
 **Feedback and contact**
 

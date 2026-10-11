@@ -22,6 +22,7 @@ const PostReaction = (props: Props) => {
     <View style={[styles.postContainer, styles.indCommentContainer]}>
       <View style={styles.profileImageContainer}>
         <Image
+          accessible={false}
           style={styles.profileImage}
           source={getImageSource(props.reaction.picture, "profile")}
         />

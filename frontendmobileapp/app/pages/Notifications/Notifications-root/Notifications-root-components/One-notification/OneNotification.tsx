@@ -126,7 +126,7 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
       
         
         <View style={(!isFriendRequestItem && notification && !notification.is_read) ? styles.activeIndicator : undefined}></View>
-        <Image source={getImageSource(imagePath, itemImageFallbackKind, { treatBareAsMediaId: true })} style={styles.profileImage} />
+        <Image accessible={false} source={getImageSource(imagePath, itemImageFallbackKind, { treatBareAsMediaId: true })} style={styles.profileImage} />
 
         <View style={styles.textContainer}>
           <Text style={styles.messageText}>
@@ -150,12 +150,12 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
         animationType="fade"
         onRequestClose={() => setFriendRequestModalVisible(false)}
       >
-        <Pressable
+        <Pressable accessible={false}
           style={styles.modalOverlay}
           onPress={() => setFriendRequestModalVisible(false)}
         >
-          <Pressable style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Friend request</Text>
+          <Pressable accessible={false} style={styles.modalCard}>
+            <Text accessibilityRole="header" style={styles.modalTitle}>Friend request</Text>
             <Text style={styles.modalBody}>{friendRequest?.username ?? 'User'} wants to connect as a friend.</Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -187,13 +187,13 @@ const OneNotification: React.FC<OneNotificationProps> = ({ notification, friendR
         animationType="fade"
         onRequestClose={() => setFollowModalVisible(false)}
       >
-        <Pressable
+        <Pressable accessible={false}
           style={styles.modalOverlay}
           onPress={() => setFollowModalVisible(false)}
         >
-          <Pressable style={styles.modalCard}>
-            <Text style={styles.modalTitle}>You have a new follower</Text>
-            <Image source={getImageSource(imagePath, 'profile', { treatBareAsMediaId: true })} style={styles.profileImage} />
+          <Pressable accessible={false} style={styles.modalCard}>
+            <Text accessibilityRole="header" style={styles.modalTitle}>You have a new follower</Text>
+            <Image accessible={false} source={getImageSource(imagePath, 'profile', { treatBareAsMediaId: true })} style={styles.profileImage} />
             <Text style={styles.modalBody}>{followUserName} is now following your updates.</Text>
             <View style={styles.modalActions}>
               <TouchableOpacity

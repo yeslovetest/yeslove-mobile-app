@@ -90,6 +90,7 @@ const TimelineContent = () => {
           >
             <View style={styles.headerRow}>
               <Image
+                accessible={false}
                 style={styles.profileImage}
                 source={getImageSource(timelineCardImage, "profile")}
               />

@@ -40,7 +40,11 @@ const PostCommentField = ({ id, pic }: Props) => {
   return (
     <View style={styles.commentContainer}>
       <View style={styles.postCommentContainer}>
-        <Image style={styles.commentProfileImage} source={getImageSource(pic, "profile")} />
+        <Image
+          accessible={false}
+          style={styles.commentProfileImage}
+          source={getImageSource(pic, "profile")}
+        />
         <TextInput
           style={styles.commentBox}
           onChangeText={(val) => setUserComment(val)}

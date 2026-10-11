@@ -55,6 +55,7 @@ const OneMedium = (props: Props) => {
     >
       {props.media?.content_type?.startsWith("image") && (
         <Image
+          accessibilityLabel="Photo"
           source={getImageSource(mediaUrl, "generic")}
           style={styles.imageMedium}
           resizeMode="contain"

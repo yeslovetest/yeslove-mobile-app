@@ -19,6 +19,7 @@ const PostingUserProfile: React.FC<PostingUserProfileProps> = ({ profilePic, use
     <View style={styles.container}>
       <View style={styles.profileImageContainer}>
         <Image
+          accessible={false}
           style={styles.profileImage}
           source={
             imageLoadFailed

@@ -10,7 +10,11 @@ const ChatbotProfile = () => {
     <View style={styles.headerContainer}>
       <View style={styles.onlineNowContainer}></View>
       <View style={styles2.botProfile}>
-        <Image source={CHATBOT_HUMAN_AVATAR} style={styles2.botProfileImagee}></Image>
+        <Image
+          accessible={false}
+          source={CHATBOT_HUMAN_AVATAR}
+          style={styles2.botProfileImagee}
+        ></Image>
       </View>
       <View>
         <Text style={styles.chatbot}>{assistantName}</Text>

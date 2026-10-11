@@ -195,6 +195,7 @@ const OnePost = (props: Props) => {
       <View style={styles.postHeaderContent}>
         <View style={styles.profileImageContainer}>
           <Image
+            accessible={false}
             style={styles.profileImage}
             source={getImageSource(resolveMediaUrl(props.post.author_pic), "profile")}
           />
@@ -233,11 +234,7 @@ const OnePost = (props: Props) => {
             accessibilityRole="button"
             accessibilityLabel="Report or block"
           >
-            <Ionicons
-              name="ellipsis-horizontal"
-              size={20}
-              color={theme.colors.textPrimary}
-            />
+            <Ionicons name="ellipsis-horizontal" size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         )}
         {props.post.author_id && props.post.author_id !== currentUserId && (
@@ -342,6 +339,7 @@ const OnePost = (props: Props) => {
         onRequestClose={() => setReactionModalVisible(false)}
       >
         <Pressable
+          accessible={false}
           style={{
             flex: 1,
             backgroundColor: theme.colors.overlay,
@@ -352,6 +350,7 @@ const OnePost = (props: Props) => {
           onPress={() => setReactionModalVisible(false)}
         >
           <Pressable
+            accessible={false}
             style={{
               width: "92%",
               maxWidth: 380,
@@ -462,6 +461,7 @@ const OnePost = (props: Props) => {
         onRequestClose={() => setFollowMenuVisible(false)}
       >
         <Pressable
+          accessible={false}
           style={{
             flex: 1,
             backgroundColor: theme.colors.overlay,
@@ -472,6 +472,7 @@ const OnePost = (props: Props) => {
           onPress={() => setFollowMenuVisible(false)}
         >
           <Pressable
+            accessible={false}
             style={{
               width: "86%",
               maxWidth: 360,
@@ -530,8 +531,12 @@ const OnePost = (props: Props) => {
         animationType="fade"
         onRequestClose={() => setPostMenuVisible(false)}
       >
-        <Pressable style={styles.modalBackdrop} onPress={() => setPostMenuVisible(false)}>
-          <Pressable style={styles.followMenuCard}>
+        <Pressable
+          accessible={false}
+          style={styles.modalBackdrop}
+          onPress={() => setPostMenuVisible(false)}
+        >
+          <Pressable accessible={false} style={styles.followMenuCard}>
             <TouchableOpacity
               style={styles.postMenuOption}
               onPress={confirmDeletePost}

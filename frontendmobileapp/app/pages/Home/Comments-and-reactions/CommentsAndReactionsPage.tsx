@@ -175,6 +175,7 @@ const IndividualPost = () => {
             <View style={[styles.postContainer, styles.indPostContainer]}>
               <View style={styles.profileImageContainer}>
                 <Image
+                  accessible={false}
                   style={styles.profileImage}
                   source={getImageSource(resolveMediaUrl(individualPost.author_pic), "profile")}
                 />
@@ -201,6 +202,7 @@ const IndividualPost = () => {
               )}
               {individualPost.image && (
                 <Image
+                  accessibilityLabel="Photo in this post"
                   style={styles.postImage}
                   source={getImageSource(resolveMediaUrl(individualPost.image), "generic")}
                 />
@@ -325,9 +327,15 @@ const IndividualPost = () => {
           animationType="fade"
           onRequestClose={() => setReactionModalVisible(false)}
         >
-          <Pressable style={styles.modalBackdrop} onPress={() => setReactionModalVisible(false)}>
-            <Pressable style={styles.reactionModalCard}>
-              <Text style={styles.modalTitle}>Choose reaction</Text>
+          <Pressable
+            accessible={false}
+            style={styles.modalBackdrop}
+            onPress={() => setReactionModalVisible(false)}
+          >
+            <Pressable accessible={false} style={styles.reactionModalCard}>
+              <Text accessibilityRole="header" style={styles.modalTitle}>
+                Choose reaction
+              </Text>
               <View style={styles.reactionModalActions}>
                 <TouchableOpacity
                   style={styles.reactionAction}

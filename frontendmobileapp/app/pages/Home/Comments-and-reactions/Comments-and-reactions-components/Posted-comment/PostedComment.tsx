@@ -30,6 +30,7 @@ const PostedComment = (props: Props) => {
       <View style={styles.commentHeaderRow}>
         <View style={styles.profileImageContainer}>
           <Image
+            accessible={false}
             style={styles.profileImage}
             source={getImageSource(props.comment.picture, "profile", { treatBareAsMediaId: true })}
           />
