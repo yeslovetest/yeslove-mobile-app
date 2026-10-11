@@ -13,6 +13,7 @@ const BlogText = () => {
       {lines.map((line, index) => {
         return (
           <Text
+            accessibilityRole={line.isHeading ? "header" : undefined}
             key={`${index}-${line.text.slice(0, 12)}`}
             style={line.isHeading ? styles.blogHeading : styles.blogText}
           >

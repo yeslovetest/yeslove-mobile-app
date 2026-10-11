@@ -20,7 +20,9 @@ const CheckBoxList = (props: Props) => {
 
   return (
     <View style={{ ...styles.settingsNavItemContent, alignItems: "flex-start" }}>
-      <Text style={[styles.headerText, styles.headerText2]}>{headerText}</Text>
+      <Text accessibilityRole="header" style={[styles.headerText, styles.headerText2]}>
+        {headerText}
+      </Text>
       {itemList &&
         itemList.map((checkBox, indx) => (
           <CheckBox

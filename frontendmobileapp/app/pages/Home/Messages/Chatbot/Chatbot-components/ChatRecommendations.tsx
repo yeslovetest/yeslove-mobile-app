@@ -17,11 +17,7 @@ const openRecommendation = async (url: string): Promise<void> => {
 
 const typeLabel = (type: string): string => (type === "video_podcast" ? "Video" : "Article");
 
-const ChatRecommendations = ({
-  recommendations,
-}: {
-  recommendations: ChatRecommendation[];
-}) => {
+const ChatRecommendations = ({ recommendations }: { recommendations: ChatRecommendation[] }) => {
   if (!recommendations || recommendations.length === 0) {
     return null;
   }
@@ -44,6 +40,7 @@ const ChatRecommendations = ({
             accessibilityLabel={`${typeLabel(item.type)}: ${item.title}`}
           >
             <Image
+              accessible={false}
               source={getImageSource(item.thumbnail_url ?? item.image_url ?? undefined, "generic")}
               style={styles.recommendationImage}
               resizeMode="cover"

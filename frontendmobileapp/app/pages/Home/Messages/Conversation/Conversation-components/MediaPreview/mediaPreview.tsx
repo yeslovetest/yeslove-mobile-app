@@ -51,21 +51,25 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
   const previewHeight = Math.round(previewWidth * 0.74);
 
   const normalizedMedia = useMemo<NormalizedMedia[]>(() => {
-    return (file ?? [])
-      .map((item) => {
-        const candidate = item?.uri || item?.media_url || "";
-        const resolvedUri = candidate.startsWith("/api") ? `${BASE_URL}${candidate}` : candidate;
-        const mediaType = item?.type || item?.content_type || "";
-        return { uri: resolvedUri, type: mediaType };
-      })
-      // Private files need the sign-in token, so wait for it rather than asking without it.
-      .filter((item) => item.uri.length > 0 && (tokenLoaded || !isApiMediaUri(item.uri)));
+    return (
+      (file ?? [])
+        .map((item) => {
+          const candidate = item?.uri || item?.media_url || "";
+          const resolvedUri = candidate.startsWith("/api") ? `${BASE_URL}${candidate}` : candidate;
+          const mediaType = item?.type || item?.content_type || "";
+          return { uri: resolvedUri, type: mediaType };
+        })
+        // Private files need the sign-in token, so wait for it rather than asking without it.
+        .filter((item) => item.uri.length > 0 && (tokenLoaded || !isApiMediaUri(item.uri)))
+    );
   }, [file, tokenLoaded]);
 
   const imageSource = (uri: string) => {
     const headers = getMediaHeaders(uri, token);
     const source = getImageSource(uri, "generic");
-    return headers && typeof source === "object" && "uri" in source ? { ...source, headers } : source;
+    return headers && typeof source === "object" && "uri" in source
+      ? { ...source, headers }
+      : source;
   };
 
   if (normalizedMedia.length === 0) {
@@ -101,6 +105,8 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
             const isImage = item.type.startsWith("image");
             return (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="View attachment"
                 style={{
                   position: "relative",
                   width: railItemSize,
@@ -113,12 +119,18 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
                 }}
                 onPress={() => openFullScreen(index)}
               >
-                <Pressable style={styles.deleteWrapper} onPress={() => deleteItem(index)}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove attachment"
+                  style={styles.deleteWrapper}
+                  onPress={() => deleteItem(index)}
+                >
                   <Text style={styles.deleteIcon}>x</Text>
                 </Pressable>
 
                 {isImage ? (
                   <Image
+                    accessibilityLabel="Attached photo"
                     source={imageSource(item.uri)}
                     style={{
                       width: "100%",
@@ -142,7 +154,12 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
 
         <Modal visible={fullScreenVisible} animationType="fade" transparent>
           <View style={styles.fullScreenContainer}>
-            <Pressable style={styles.fullScreenClose} onPress={() => setFullScreenVisible(false)}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              style={styles.fullScreenClose}
+              onPress={() => setFullScreenVisible(false)}
+            >
               <Text style={styles.fullScreenCloseText}>Close</Text>
             </Pressable>
 
@@ -168,6 +185,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
                   <View style={[styles.fullScreenItem, { width: screenWidth }]}>
                     {isImage ? (
                       <Image
+                        accessibilityLabel="Attached photo"
                         source={imageSource(item.uri)}
                         style={styles.fullScreenImage}
                         resizeMode="contain"
@@ -198,15 +216,26 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
 
   return (
     <View>
-      <Pressable style={styles.previewContainer} onPress={() => openFullScreen(0)}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="View attachment"
+        style={styles.previewContainer}
+        onPress={() => openFullScreen(0)}
+      >
         {editable && (
-          <Pressable style={styles.deleteWrapper} onPress={() => deleteItem(0)}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Remove attachment"
+            style={styles.deleteWrapper}
+            onPress={() => deleteItem(0)}
+          >
             <Text style={styles.deleteIcon}>x</Text>
           </Pressable>
         )}
 
         {isFirstImage ? (
           <Image
+            accessibilityLabel="Attached photo"
             source={imageSource(firstItem.uri)}
             style={[styles.previewImage, { width: previewWidth, height: previewHeight }]}
             resizeMode="cover"
@@ -223,6 +252,8 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
 
       {remainingCount > 0 && (
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View all attachments"
           style={[
             styles.moreChip,
             bubbleTone === "received" ? styles.moreChipReceived : styles.moreChipSent,
@@ -242,7 +273,12 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
 
       <Modal visible={fullScreenVisible} animationType="fade" transparent>
         <View style={styles.fullScreenContainer}>
-          <Pressable style={styles.fullScreenClose} onPress={() => setFullScreenVisible(false)}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            style={styles.fullScreenClose}
+            onPress={() => setFullScreenVisible(false)}
+          >
             <Text style={styles.fullScreenCloseText}>Close</Text>
           </Pressable>
 
@@ -268,6 +304,7 @@ const MediaFilePreview: React.FC<FilePreviewProps> = ({
                 <View style={[styles.fullScreenItem, { width: screenWidth }]}>
                   {isImage ? (
                     <Image
+                      accessibilityLabel="Attached photo"
                       source={imageSource(item.uri)}
                       style={styles.fullScreenImage}
                       resizeMode="contain"

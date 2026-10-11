@@ -63,7 +63,9 @@ const ProfileVisibility = (props: Props) => {
         style={sharedStyles.container}
       >
         <View style={styles.settingsNavItemContainer}>
-          <Text style={styles.mainHeaderText}>Make your profile information visible to others</Text>
+          <Text accessibilityRole="header" style={styles.mainHeaderText}>
+            Make your profile information visible to others
+          </Text>
 
           <CheckBoxList
             header="Contact"

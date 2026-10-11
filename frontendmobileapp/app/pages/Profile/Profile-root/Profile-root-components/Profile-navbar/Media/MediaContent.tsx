@@ -60,7 +60,12 @@ const MediaContent = () => {
 
       <Modal visible={viewerVisible} animationType="fade" transparent>
         <View style={styles.viewerContainer}>
-          <Pressable style={styles.viewerClose} onPress={() => setViewerVisible(false)}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            style={styles.viewerClose}
+            onPress={() => setViewerVisible(false)}
+          >
             <Text style={styles.viewerCloseText}>Close</Text>
           </Pressable>
 
@@ -95,6 +100,7 @@ const MediaContent = () => {
                     />
                   ) : (
                     <Image
+                      accessibilityLabel="Photo"
                       source={getImageSource(mediaUrl, "generic")}
                       style={styles.viewerImage}
                       resizeMode="contain"

@@ -85,7 +85,10 @@ const LoginPage = () => {
               isCompactScreen ? styles.compactInnerContainer : undefined,
             ]}
           >
-            <Text style={[styles.title, isCompactScreen ? styles.compactTitle : undefined]}>
+            <Text
+              accessibilityRole="header"
+              style={[styles.title, isCompactScreen ? styles.compactTitle : undefined]}
+            >
               LOGIN
             </Text>
 

@@ -162,13 +162,19 @@ const PostFilePreview: React.FC<Props> = ({ file, editable, delFunc, showNextPre
               }}
             >
               {editable && (
-                <Pressable style={styles.deleteWrapper} onPress={() => delFunc?.(index)}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove attachment"
+                  style={styles.deleteWrapper}
+                  onPress={() => delFunc?.(index)}
+                >
                   <Text style={styles.deleteIcon}>✖</Text>
                 </Pressable>
               )}
 
               {isImage ? (
                 <Image
+                  accessibilityLabel="Photo you are adding to your post"
                   source={{ uri }}
                   style={{ ...mediaPresentation.style, borderRadius: 10 }}
                   resizeMode={mediaPresentation.resizeMode}

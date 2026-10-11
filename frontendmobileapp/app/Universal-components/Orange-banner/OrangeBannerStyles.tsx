@@ -32,17 +32,18 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-start",
     borderLeftWidth: 5,
-    borderLeftColor: theme.colors.textOnPrimary,
+    // Dark on the orange: white on this orange is only 2.5:1, dark slate is about 7:1 (WCAG 1.4.3).
+    borderLeftColor: theme.colors.textPrimary,
     paddingHorizontal: 10,
   },
   ourProfessionalsText: {
     fontSize: 23,
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.textPrimary,
     fontWeight: "bold",
   },
   ourProfessionalsCaption: {
     fontSize: theme.typography.fontSize.body,
-    color: theme.colors.textOnPrimary,
+    color: theme.colors.textPrimary,
     fontWeight: "600",
   },
 });

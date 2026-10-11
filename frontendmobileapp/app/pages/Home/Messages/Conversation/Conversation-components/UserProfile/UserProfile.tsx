@@ -12,6 +12,7 @@ const UserProfile = (props: Props) => {
   return (
     <View>
       <Image
+        accessible={false}
         style={styles.profileImg}
         source={getImageSource(
           props.photo.startsWith("/api") ? `${BASE_URL}${props.photo}` : props.photo,

@@ -40,7 +40,9 @@ class ErrorBoundary extends React.Component<Props, State> {
 
     return (
       <View style={styles.container} accessibilityRole="alert">
-        <Text style={styles.title}>Something went wrong</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Something went wrong
+        </Text>
         <Text style={styles.message}>
           An unexpected error occurred. Try again — if it keeps happening, please restart the app.
         </Text>

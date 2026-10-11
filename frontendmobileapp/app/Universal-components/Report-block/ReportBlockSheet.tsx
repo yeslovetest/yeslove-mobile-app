@@ -160,7 +160,9 @@ const ReportBlockSheet = ({
                 >
                   <Ionicons name="chevron-back" size={24} style={styles.rowIcon} />
                 </TouchableOpacity>
-                <Text style={styles.reasonTitle}>Why are you reporting this?</Text>
+                <Text accessibilityRole="header" style={styles.reasonTitle}>
+                  Why are you reporting this?
+                </Text>
                 <View style={{ width: 24 }} />
               </View>
               {busy && <ActivityIndicator style={styles.spinner} />}
@@ -176,9 +178,7 @@ const ReportBlockSheet = ({
                   <Text style={styles.rowText}>{reason.label}</Text>
                 </TouchableOpacity>
               ))}
-              <Text style={styles.footnote}>
-                If someone is in immediate danger, call 999.
-              </Text>
+              <Text style={styles.footnote}>If someone is in immediate danger, call 999.</Text>
             </>
           )}
         </View>

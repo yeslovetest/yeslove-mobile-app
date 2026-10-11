@@ -1,5 +1,7 @@
 # Accessibility pre-audit (against WCAG 2.2 AA)
 
+**Status (updated after the first fixes):** the contrast failures on the orange banners, the missing roles and labels, the image descriptions and the screen headings listed below were fixed in code and are guarded by `frontendmobileapp/test/a11y/accessibility.test.ts`. A correction: the first version of this document counted tappable elements with a rough text search that miscounted; the figures below come from parsing every screen. Nothing here has been checked on a device.
+
 **This is not an audit.** It is what could be found from the code and the theme without a screen reader, a device, or a person using the app. It tells an external auditor where to look first and it gives engineering a head start. DTAC D1.4 needs a real audit, with testing on a phone using VoiceOver and TalkBack, large text, and keyboard or switch access.
 
 Method: the colour tokens in `frontendmobileapp/app/theme/colors.ts` were checked against WCAG contrast ratios (the app uses the light theme), and every `.tsx` file under `app/` was scanned for accessibility props. Numbers are exact for what was scanned and say nothing about runtime behaviour.
@@ -14,22 +16,26 @@ Method: the colour tokens in `frontendmobileapp/app/theme/colors.ts` were checke
 | Brand blue text and links | 5.4 to 7.2 | Pass |
 | White text on brand blue buttons | 5.65 to 7.18 | Pass |
 | Error red text, and white on red | 4.6 to 4.8 | Pass |
-| **White text on the orange banners (accent)** | **2.51** | **Fails.** The Newsfeed, Our Professionals and similar banners use white text on orange. Needs a darker orange or dark text |
-| **Orange accent as text on white** | **2.4 to 2.5** | **Fails** wherever it is used for text |
-| Success green and warning orange as text | 3.0 to 3.3 | Fail for normal text; pass only for large text or icons |
+| White text on the orange banners (accent) | 2.51 | Failed. **Fixed:** the banner title, caption, icon and divider are now dark slate, about 7:1 |
+| Orange accent as text on white | 2.4 to 2.5 | Fails, but the accent colour is used only for the banner background, so no text is affected |
+| Success green and warning orange as text | 3.0 to 3.3 | Fail for normal text. Neither is used for text in the screens (success is a status dot); keep it that way |
 | **Borders and disabled states** (`border`, `borderStrong`, `disabled`) | **1.2 to 1.5** | **Fail 1.4.11** if a border is the only thing showing where a field or button is. Text fields have a blue underline, which passes, but cards and disabled controls rely on very pale edges |
 
 ## Screen reader support (WCAG 4.1.2, 1.1.1, 1.3.1)
 
-| Scan result | Count | What it means |
-| --- | --- | --- |
-| Tappable elements | 154 | |
-| Without a label or a role | 89 | Where a tappable contains visible text it is still read out, but it is not announced as a button. Icon-only ones, such as the post options (three dots) and message icons, have no name at all. Worst areas: Home (47), Profile (9), Notifications (9), Events (7) |
-| Text fields without a label | 7 of 17 | Placeholder text disappears when typing and is not a reliable name |
-| Images without a description or an explicit "hidden from screen reader" | 27 of 27 | Avatars and photos: meaningful ones need a description, decorative ones need to be hidden |
-| Elements marked as headings | 1 | Screen reader users navigate by headings. Section titles are not marked, so they cannot jump between sections |
+Every `.tsx` file under `app/` was parsed, not searched. The counts are for the code as it stood before the fixes, and all were fixed:
 
-New screens added recently (the Protect your account card, browser sign-in, the Message button on professionals) do have roles and labels. Older screens are where the gaps are.
+| Scan result | Count | Fixed by |
+| --- | --- | --- |
+| Tappable elements | 152 | |
+| Without a role or label | 22 | The five real buttons (attend an event, remove an attachment, close, view attachment) now have a role and a label; the 16 modal backdrops and cards, which were never controls, are marked not accessible |
+| Text fields | 17 | |
+| Without a label | 2 (the web date fields) | Labelled |
+| Images | 27 | |
+| Without a description or a "decorative" mark | 27 | Avatars next to a name, thumbnails inside a labelled button and similar are marked decorative; photos in posts, chats and attachments have a description |
+| Elements marked as headings | 2 | 43 screen and section titles are now marked as headings |
+
+What this does not show: whether the labels are good, whether the reading order is sensible, and whether custom components behave. Only a person using VoiceOver and TalkBack can say.
 
 ## Text size, targets, motion
 
@@ -41,8 +47,6 @@ New screens added recently (the Protect your account card, browser sign-in, the 
 
 ## Suggested order of work
 
-1. **Fix the contrast failures** (the orange banners, orange text, success and warning text, pale borders). Small, visible, and the cheapest to verify.
-2. **Name the icon-only buttons and give every field a label.** Start with Home, Profile and Notifications.
-3. **Mark screen titles as headings** and hide decorative images from screen readers; describe meaningful ones.
-4. **Test on a device** with VoiceOver and TalkBack for the main journeys (see `docs/user-journeys.md`), then at the largest text size.
-5. **Commission the external audit** with the results above as the starting brief, and publish an accessibility statement (a draft is in `docs/accessibility-statement-draft.md`).
+1. ~~Fix the contrast failures on the banners~~ and ~~name the controls, label the fields, describe the images and mark the headings~~ are done. Pale borders (1.2 to 1.5:1) are not: they only matter where a border is the sole sign of where a control is.
+2. **Test on a device** with VoiceOver and TalkBack for the main journeys (see `docs/user-journeys.md`), then at the largest text size.
+3. **Commission the external audit** with the results above as the starting brief, and publish an accessibility statement (a draft is in `docs/accessibility-statement-draft.md`).

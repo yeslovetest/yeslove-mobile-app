@@ -101,6 +101,7 @@ const DateFilterDropdown = ({
             {Platform.OS === "web" ? (
               // Use simple text input for web
               <TextInput
+                accessibilityLabel="Start date, year-month-day"
                 placeholder="YYYY-MM-DD"
                 value={startDate ? formatDate(startDate) : ""}
                 onChangeText={(text) => {
@@ -129,6 +130,7 @@ const DateFilterDropdown = ({
             {Platform.OS === "web" ? (
               //  Use simple text input for web
               <TextInput
+                accessibilityLabel="End date, year-month-day"
                 placeholder="YYYY-MM-DD"
                 value={endDate ? formatDate(endDate) : ""}
                 onChangeText={(text) => {

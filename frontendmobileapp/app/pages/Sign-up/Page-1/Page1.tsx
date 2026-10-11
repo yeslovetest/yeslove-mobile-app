@@ -52,7 +52,7 @@ const Page1 = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={[sharedStyles.innerContainer, isCompactScreen ? sharedStyles.compactInnerContainer : undefined]}>
-        <Text style={[sharedStyles.title, isCompactScreen ? sharedStyles.compactTitle : undefined]}>SIGN UP</Text>
+        <Text accessibilityRole="header" style={[sharedStyles.title, isCompactScreen ? sharedStyles.compactTitle : undefined]}>SIGN UP</Text>
 
             <Text style={{...sharedStyles.errorMessage, ...(isCompactScreen ? sharedStyles.compactErrorMessage : undefined), display: errorDisplay }}>{errorMessage}</Text>
             <Text style={[sharedStyles.label, isCompactScreen ? sharedStyles.compactLabel : undefined]}>Email</Text>

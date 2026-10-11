@@ -218,6 +218,7 @@ const ProfileHeaderAndBio = () => {
           <View style={styles.overlay}></View>
           <View style={styles.profileImageWrapper}>
             <Image
+              accessible={false}
               style={styles.profileImage}
               source={getImageSource(displayedProfileImageUri, "profile")}
             />
@@ -260,7 +261,10 @@ const ProfileHeaderAndBio = () => {
                   disabled={isProfileImageUploading}
                   accessibilityRole="button"
                   accessibilityLabel="Upload photo"
-                  accessibilityState={{ disabled: isProfileImageUploading, busy: isProfileImageUploading }}
+                  accessibilityState={{
+                    disabled: isProfileImageUploading,
+                    busy: isProfileImageUploading,
+                  }}
                 >
                   {isProfileImageUploading ? (
                     <ActivityIndicator color={theme.colors.textOnPrimary} size="small" />
@@ -299,7 +303,9 @@ const ProfileHeaderAndBio = () => {
           <Text style={styles.userBioText}>{bio}</Text>
         ) : isCurrentUserProfile ? (
           <>
-            <Text style={styles.emptyBioTitle}>Tell people about yourself</Text>
+            <Text accessibilityRole="header" style={styles.emptyBioTitle}>
+              Tell people about yourself
+            </Text>
             <Text style={styles.emptyBioText}>
               Add a short bio so others can get to know you. Click Edit your profile information to
               update it.

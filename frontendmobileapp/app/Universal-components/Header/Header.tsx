@@ -169,15 +169,18 @@ export default function Header(props: Props) {
             <FontAwesome5 name="chevron-left" size={20} />
           </TouchableOpacity>
           {hasTabToGoBackTo && currentTab === TabType.MESSAGES && (
-            <Text style={styles.title}>{props.mainTitle}</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              {props.mainTitle}
+            </Text>
           )}
           {hasTabToGoBackTo && currentTab === TabType.CONVERSATION && (
             <View style={styles.conversationHeaderCenter}>
               <Image
+                accessible={false}
                 source={getImageSource(resolvedConversationPhoto, "profile")}
                 style={styles.conversationAvatar}
               />
-              <Text style={styles.conversationTitle} numberOfLines={1}>
+              <Text accessibilityRole="header" style={styles.conversationTitle} numberOfLines={1}>
                 {conversationUserName}
               </Text>
             </View>
@@ -228,7 +231,9 @@ export default function Header(props: Props) {
 
       {!hasTabToGoBackTo && currentTab === TabType.HOME && (
         <View style={styles.homeHeaderDistribution}>
-          <Text style={[styles.title, styles.homeTitle]}>{props.mainTitle}</Text>
+          <Text accessibilityRole="header" style={[styles.title, styles.homeTitle]}>
+            {props.mainTitle}
+          </Text>
           <View style={styles.homeActions}>
             <TouchableOpacity
               style={styles.homeActionButton}
@@ -264,7 +269,9 @@ export default function Header(props: Props) {
       {!hasTabToGoBackTo && isCurrentUserProfile && currentTab === TabType.PROFILE && (
         <View style={styles.headerDistribution}>
           <View />
-          <Text style={styles.title}>{props.mainTitle}</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            {props.mainTitle}
+          </Text>
           <TouchableOpacity
             onPress={openSettings}
             accessibilityRole="button"
@@ -277,7 +284,9 @@ export default function Header(props: Props) {
 
       {!hasTabToGoBackTo && currentTab === TabType.EVENTS && (
         <View style={styles.homeHeaderDistribution}>
-          <Text style={[styles.title, styles.homeTitle]}>{props.mainTitle}</Text>
+          <Text accessibilityRole="header" style={[styles.title, styles.homeTitle]}>
+            {props.mainTitle}
+          </Text>
           <TouchableOpacity
             style={[styles.homeActionButton, styles.homeMessagesIcon]}
             onPress={props.onEventsFilterPress}
@@ -295,14 +304,18 @@ export default function Header(props: Props) {
       {!hasTabToGoBackTo && currentTab === TabType.NOTIFICATIONS && (
         <View style={styles.headerDistribution}>
           <View />
-          <Text style={styles.title}>{props.mainTitle}</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            {props.mainTitle}
+          </Text>
           <View></View>
         </View>
       )}
 
       {!hasTabToGoBackTo && currentTab === TabType.GET_HELP && (
         <View style={styles.homeHeaderDistribution}>
-          <Text style={[styles.title, styles.homeTitle]}>{props.mainTitle}</Text>
+          <Text accessibilityRole="header" style={[styles.title, styles.homeTitle]}>
+            {props.mainTitle}
+          </Text>
           {/* Tapping the avatar opens the AI assistant page. */}
           <TouchableOpacity
             style={[styles.assistantButton, styles.homeMessagesIcon]}
@@ -325,7 +338,7 @@ export default function Header(props: Props) {
               ]}
             >
               <Animated.View style={[styles.assistantGlow, { opacity: assistantGlowOpacity }]} />
-              <Image source={assistantAvatar} style={styles.assistantImage} />
+              <Image accessible={false} source={assistantAvatar} style={styles.assistantImage} />
             </Animated.View>
           </TouchableOpacity>
         </View>

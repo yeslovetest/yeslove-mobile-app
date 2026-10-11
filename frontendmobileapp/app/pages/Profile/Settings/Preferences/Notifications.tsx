@@ -46,7 +46,9 @@ const NotificationPreferences = () => {
         style={sharedStyles.container}
       >
         <View style={styles.settingsNavItemContainer}>
-          <Text style={styles.mainHeaderText}>Change Push Notification Settings</Text>
+          <Text accessibilityRole="header" style={styles.mainHeaderText}>
+            Change Push Notification Settings
+          </Text>
 
           <CheckBoxList
             header="Push Notification"

@@ -36,10 +36,11 @@ const PersonaPicker = () => {
 
   return (
     <View style={styles.pickerContainer}>
-      <Text style={styles.pickerTitle}>Choose who you'd like to talk to</Text>
+      <Text accessibilityRole="header" style={styles.pickerTitle}>
+        Choose who you'd like to talk to
+      </Text>
       <Text style={styles.pickerSubtitle}>
-        Each persona responds in your language, mindful of the cultural context that comes with
-        it.
+        Each persona responds in your language, mindful of the cultural context that comes with it.
       </Text>
 
       {status === "loading" && <ActivityIndicator style={{ marginTop: 24 }} />}
@@ -106,10 +107,16 @@ const MultilingualChat = () => {
     return (
       <View style={styles.outer}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close">
+          <TouchableOpacity
+            onPress={handleClose}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+          >
             <Ionicons name="close" size={26} color={styles.headerTitle.color as string} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Chat in your language</Text>
+          <Text accessibilityRole="header" style={styles.headerTitle}>
+            Chat in your language
+          </Text>
           <View style={{ width: 26 }} />
         </View>
         <WellbeingNotice assistantName="These assistants" />
@@ -133,10 +140,16 @@ const MultilingualChat = () => {
           <Ionicons name="chevron-back" size={26} color={styles.headerTitle.color as string} />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>{persona?.name ?? "Sera"}</Text>
+          <Text accessibilityRole="header" style={styles.headerTitle}>
+            {persona?.name ?? "Sera"}
+          </Text>
           <Text style={styles.headerSubtitle}>{persona?.language_name}</Text>
         </View>
-        <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close">
+        <TouchableOpacity
+          onPress={handleClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+        >
           <Ionicons name="close" size={26} color={styles.headerTitle.color as string} />
         </TouchableOpacity>
       </View>

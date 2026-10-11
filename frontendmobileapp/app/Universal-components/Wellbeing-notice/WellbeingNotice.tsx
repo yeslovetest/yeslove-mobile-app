@@ -79,7 +79,9 @@ const WellbeingNotice = ({ assistantName = "This assistant", openSignal = 0 }: P
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>If you need urgent support</Text>
+              <Text accessibilityRole="header" style={styles.sheetTitle}>
+                If you need urgent support
+              </Text>
               <TouchableOpacity
                 onPress={() => setVisible(false)}
                 accessibilityRole="button"
@@ -90,8 +92,8 @@ const WellbeingNotice = ({ assistantName = "This assistant", openSignal = 0 }: P
             </View>
             <Text style={styles.sheetIntro}>
               {assistantName} is an AI. It can share information from YesLove, but it is not a
-              doctor, counsellor or therapist and cannot assess your situation. If you are in
-              danger or thinking about harming yourself, please contact one of these services.
+              doctor, counsellor or therapist and cannot assess your situation. If you are in danger
+              or thinking about harming yourself, please contact one of these services.
             </Text>
             <ScrollView>
               {RESOURCES.map((resource) => (

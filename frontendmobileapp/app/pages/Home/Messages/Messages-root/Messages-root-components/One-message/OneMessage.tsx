@@ -15,6 +15,7 @@ const OneMessage = ({ message }: Props) => {
       {message?.unread && <View style={styles.activeIndicator}></View>}
 
       <Image
+        accessible={false}
         source={getImageSource(message?.profile_pic, "profile")}
         style={styles.profilePicture}
       />

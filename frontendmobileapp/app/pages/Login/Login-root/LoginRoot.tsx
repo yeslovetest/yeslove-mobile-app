@@ -11,7 +11,9 @@ const LoginRoot: React.FC<LoginRootProps> = ({ showSlowLoadingHelp = false }: Lo
   return (
     <View style={styles.container}>
       <ActivityIndicator size={"large"} color={theme.colors.primary}></ActivityIndicator>
-      <Text style={styles.title}>Getting everything ready</Text>
+      <Text accessibilityRole="header" style={styles.title}>
+        Getting everything ready
+      </Text>
       <Text style={styles.message}>
         {showSlowLoadingHelp
           ? "This is taking a little longer than expected. We will take you to sign in if reconnect fails."

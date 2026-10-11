@@ -32,7 +32,7 @@ const OneBlog = (props: Props) => {
         ]}
         source={props.blog?.image_url ? { uri: props.blog.image_url } : defaultBlogImg}
       ></ImageBackground>
-      <Text onPress={handleBlogClick} style={styles.blogTitle}>
+      <Text accessibilityRole="header" onPress={handleBlogClick} style={styles.blogTitle}>
         {props.blog?.title}
       </Text>
       <View style={styles.authorAndDateContainer}>

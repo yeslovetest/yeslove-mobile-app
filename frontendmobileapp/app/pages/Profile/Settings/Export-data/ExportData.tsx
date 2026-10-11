@@ -36,7 +36,9 @@ const ExportData = () => {
         contentContainerStyle={sharedStyles.contentContainer}
       >
         <View style={settingsSharedStyles.pageHeaderRow}>
-          <Text style={settingsSharedStyles.pageTitle}>Export your data</Text>
+          <Text accessibilityRole="header" style={settingsSharedStyles.pageTitle}>
+            Export your data
+          </Text>
           <Text style={settingsSharedStyles.pageSubtitle}>
             Download a copy of the personal data YesLove holds about you: your account details,
             posts, comments, messages, followers, uploaded files, notifications and settings.
@@ -61,8 +63,8 @@ const ExportData = () => {
         </View>
 
         <Text style={[settingsSharedStyles.pageSubtitle, { marginTop: theme.spacing.md }]}>
-          The file is a JSON document. Messages include both sides of each conversation. It
-          contains personal information, so keep it somewhere safe.
+          The file is a JSON document. Messages include both sides of each conversation. It contains
+          personal information, so keep it somewhere safe.
         </Text>
       </ScrollView>
     </>

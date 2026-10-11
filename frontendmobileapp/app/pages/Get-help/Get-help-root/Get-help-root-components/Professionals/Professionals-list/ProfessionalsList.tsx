@@ -78,6 +78,7 @@ const ProfessionalsList = () => {
               style={{ alignItems: "center" }}
             >
               <Image
+                accessible={false}
                 style={styles.profileImage}
                 source={getImageSource(professional?.profile_pic, "profile")}
               />

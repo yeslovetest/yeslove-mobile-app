@@ -80,6 +80,7 @@ const Page2 = () => {
             ]}
           >
             <Text
+              accessibilityRole="header"
               style={[sharedStyles.title, isCompactScreen ? sharedStyles.compactTitle : undefined]}
             >
               SIGN UP TO YESLOVE!

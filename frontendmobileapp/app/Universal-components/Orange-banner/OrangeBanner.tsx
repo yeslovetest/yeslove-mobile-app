@@ -20,10 +20,15 @@ const OrangeBanner = (props: Props) => {
           resizeMode="cover"
         />
         <View style={styles.contentRow}>
-          <FontAwesome6 name={props.icon} size={40} color={theme.colors.textOnPrimary} />
+          {/* The icon only repeats the title, so screen readers skip it. */}
+          <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <FontAwesome6 name={props.icon} size={40} color={theme.colors.textPrimary} />
+          </View>
 
           <View style={styles.textContainer}>
-            <Text style={styles.ourProfessionalsText}>{props.mainTitle}</Text>
+            <Text accessibilityRole="header" style={styles.ourProfessionalsText}>
+              {props.mainTitle}
+            </Text>
             <Text style={styles.ourProfessionalsCaption}>{props.description}</Text>
           </View>
         </View>

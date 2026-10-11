@@ -30,7 +30,9 @@ const ProfileInformation = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.headerRow}>
-            <Text style={styles.pageTitle}>Profile Information</Text>
+            <Text accessibilityRole="header" style={styles.pageTitle}>
+              Profile Information
+            </Text>
             <Text style={styles.pageSubtitle}>Your saved contact and account details.</Text>
           </View>
 

@@ -140,7 +140,9 @@ const EditProfileInformation = () => {
           automaticallyAdjustKeyboardInsets
         >
           <View style={styles.headerRow}>
-            <Text style={styles.pageTitle}>Edit Profile</Text>
+            <Text accessibilityRole="header" style={styles.pageTitle}>
+              Edit Profile
+            </Text>
             <Text style={styles.pageSubtitle}>
               Update your contact details and bio information.
             </Text>
