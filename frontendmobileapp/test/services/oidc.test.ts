@@ -1,5 +1,12 @@
-jest.mock("expo-auth-session", () => ({ AuthRequest: jest.fn(), ResponseType: { Code: "code" }, exchangeCodeAsync: jest.fn() }));
-jest.mock("expo-web-browser", () => ({ maybeCompleteAuthSession: jest.fn(), openBrowserAsync: jest.fn() }));
+jest.mock("expo-auth-session", () => ({
+  AuthRequest: jest.fn(),
+  ResponseType: { Code: "code" },
+  exchangeCodeAsync: jest.fn(),
+}));
+jest.mock("expo-web-browser", () => ({
+  maybeCompleteAuthSession: jest.fn(),
+  openBrowserAsync: jest.fn(),
+}));
 jest.mock("@/ts/secureStorage", () => {
   const store: Record<string, string> = {};
   return {
@@ -10,17 +17,25 @@ jest.mock("@/ts/secureStorage", () => {
   };
 });
 const mockPostRefreshToken = jest.fn();
-jest.mock("@/generated-api", () => ({ AuthApiFactory: () => ({ postRefreshToken: mockPostRefreshToken }) }));
+jest.mock("@/generated-api", () => ({
+  AuthApiFactory: () => ({ postRefreshToken: mockPostRefreshToken }),
+}));
 
-import {
-  DISCOVERY,
-  REDIRECT_URI,
-  endBrowserSession,
-  getAuthMode,
-  refreshSession,
-  setAuthMode,
-  usernameFromAccessToken,
-} from "@/app/services/oidc";
+type Oidc = typeof import("@/app/services/oidc");
+
+// BROWSER_SIGN_IN_ENABLED is read when the module loads, so load it afresh with the build flag set or not.
+const load = (browserSignIn: boolean): Oidc => {
+  let mod: Oidc | undefined;
+  const previous = process.env.EXPO_PUBLIC_BROWSER_SIGN_IN;
+  process.env.EXPO_PUBLIC_BROWSER_SIGN_IN = browserSignIn ? "true" : "";
+  jest.isolateModules(() => {
+    mod = require("@/app/services/oidc");
+  });
+  process.env.EXPO_PUBLIC_BROWSER_SIGN_IN = previous;
+  return mod as Oidc;
+};
+
+const { DISCOVERY, REDIRECT_URI, endBrowserSession, usernameFromAccessToken } = load(true);
 
 const fetchMock = jest.fn();
 beforeEach(() => {
@@ -31,12 +46,15 @@ beforeEach(() => {
 describe("browser sign-in settings", () => {
   it("uses the app's link scheme and Keycloak's standard endpoints", () => {
     expect(REDIRECT_URI).toBe("yeslove://auth/callback");
-    expect(DISCOVERY.authorizationEndpoint).toMatch(/\/realms\/.+\/protocol\/openid-connect\/auth$/);
+    expect(DISCOVERY.authorizationEndpoint).toMatch(
+      /\/realms\/.+\/protocol\/openid-connect\/auth$/,
+    );
     expect(DISCOVERY.tokenEndpoint).toMatch(/\/protocol\/openid-connect\/token$/);
   });
 });
 
 describe("refreshSession", () => {
+  const { refreshSession, setAuthMode } = load(true);
   it("goes through the API for a password sign-in", async () => {
     await setAuthMode("password");
     mockPostRefreshToken.mockResolvedValue({ data: { access_token: "a", refresh_token: "r" } });
@@ -47,7 +65,10 @@ describe("refreshSession", () => {
 
   it("goes straight to Keycloak, with the public client and no secret, for a browser sign-in", async () => {
     await setAuthMode("browser");
-    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ access_token: "a2", refresh_token: "r2", expires_in: 60 }) });
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ access_token: "a2", refresh_token: "r2", expires_in: 60 }),
+    });
     expect(await refreshSession("old")).toMatchObject({ access_token: "a2", refresh_token: "r2" });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(DISCOVERY.tokenEndpoint);
@@ -66,6 +87,7 @@ describe("refreshSession", () => {
 });
 
 describe("auth mode and sign-out", () => {
+  const { getAuthMode, setAuthMode } = load(true);
   it("defaults to password and remembers browser", async () => {
     await setAuthMode("password");
     expect(await getAuthMode()).toBe("password");
@@ -83,11 +105,24 @@ describe("auth mode and sign-out", () => {
 });
 
 describe("usernameFromAccessToken", () => {
-  const token = (claims: object) => `h.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.s`;
+  const token = (claims: object) =>
+    `h.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.s`;
   it("reads preferred_username", () => {
     expect(usernameFromAccessToken(token({ preferred_username: "jane" }))).toBe("jane");
   });
   it("returns an empty string for anything unreadable", () => {
     expect(usernameFromAccessToken("not-a-token")).toBe("");
+  });
+});
+
+describe("a stored browser sign-in in a build that has it switched off", () => {
+  it("is ignored: refresh goes through the API, never to Keycloak's public client", async () => {
+    await load(true).setAuthMode("browser"); // left over from an earlier build on this device
+    const ordinaryBuild = load(false);
+    expect(await ordinaryBuild.getAuthMode()).toBe("password");
+    mockPostRefreshToken.mockResolvedValue({ data: { access_token: "a", refresh_token: "r" } });
+    await ordinaryBuild.refreshSession("old");
+    expect(mockPostRefreshToken).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

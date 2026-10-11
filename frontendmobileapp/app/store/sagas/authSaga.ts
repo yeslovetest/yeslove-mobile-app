@@ -156,6 +156,8 @@ function* handleLoginRequest(action: PayloadAction<LoginRequest>) {
     return;
   }
 
+  // A password sign-in is refreshed through the API; forget any earlier browser sign-in.
+  yield call(setAuthMode, "password");
   yield* finishLogin({
     accessToken,
     refreshToken,

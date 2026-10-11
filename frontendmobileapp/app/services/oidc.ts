@@ -17,7 +17,10 @@ import { secureGet, secureSet } from "@/ts/secureStorage";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const KEYCLOAK_URL = (process.env.EXPO_PUBLIC_KEYCLOAK_URL ?? "https://auth.yeslove.co.uk").replace(/\/+$/, "");
+const KEYCLOAK_URL = (process.env.EXPO_PUBLIC_KEYCLOAK_URL ?? "https://auth.yeslove.co.uk").replace(
+  /\/+$/,
+  "",
+);
 const REALM = process.env.EXPO_PUBLIC_KEYCLOAK_REALM ?? "YesLove_Auth";
 const CLIENT_ID = process.env.EXPO_PUBLIC_KEYCLOAK_MOBILE_CLIENT_ID ?? "yeslove-mobile";
 
@@ -54,8 +57,14 @@ export class BrowserSignInCancelled extends Error {
 const AUTH_MODE_KEY = "authMode";
 export type AuthMode = "browser" | "password";
 
+// A stored "browser" only counts in a build that has browser sign-in switched on. A device that
+// once ran such a build keeps the stored value, and without this check a password sign-in in an
+// ordinary build would try to refresh its tokens against Keycloak's public client, fail within a
+// minute, and sign the member out.
 export const getAuthMode = async (): Promise<AuthMode> =>
-  (await secureGet(AUTH_MODE_KEY)) === "browser" ? "browser" : "password";
+  BROWSER_SIGN_IN_ENABLED && (await secureGet(AUTH_MODE_KEY)) === "browser"
+    ? "browser"
+    : "password";
 
 export const setAuthMode = (mode: AuthMode): Promise<void> => secureSet(AUTH_MODE_KEY, mode);
 
@@ -98,7 +107,11 @@ export const signInWithBrowser = async (): Promise<SessionTokens> => {
 
 // fetch, not axios: the shared axios instance would attach the member's access token to a
 // request to Keycloak's token endpoint.
-const postForm = async (url: string, fields: Record<string, string>, timeoutMs: number): Promise<Response> => {
+const postForm = async (
+  url: string,
+  fields: Record<string, string>,
+  timeoutMs: number,
+): Promise<Response> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -144,7 +157,11 @@ export const refreshSession = async (
 export const endBrowserSession = async (refreshToken: string): Promise<void> => {
   if (!refreshToken) return;
   try {
-    await postForm(DISCOVERY.endSessionEndpoint, { client_id: CLIENT_ID, refresh_token: refreshToken }, 8000);
+    await postForm(
+      DISCOVERY.endSessionEndpoint,
+      { client_id: CLIENT_ID, refresh_token: refreshToken },
+      8000,
+    );
   } catch {
     // The refresh token expires on its own; signing out locally still happens.
   }
@@ -154,7 +171,9 @@ export const endBrowserSession = async (refreshToken: string): Promise<void> => 
 export const usernameFromAccessToken = (accessToken: string): string => {
   try {
     const payload = accessToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = JSON.parse(decodeURIComponent(escape(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, "=")))));
+    const json = JSON.parse(
+      decodeURIComponent(escape(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, "=")))),
+    );
     return typeof json.preferred_username === "string" ? json.preferred_username : "";
   } catch {
     return "";
