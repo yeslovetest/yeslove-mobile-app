@@ -47,6 +47,8 @@ How people use the app today, written from the code and the screens. **Not user-
 
 ## 5. Messaging a friend
 
+Becoming friends needs the other person to accept. Tapping **Friend** on someone's post sends a request (the button shows **Requested**); they see it under Friend Requests on the Notifications tab and can accept or decline. A decline is not announced. See `docs/friend-requests.md`.
+
 Messages (the speech bubble at the top of Home) lists your conversations, including anyone you have messaged. Open one, type a message, attach a photo or video if you like, and send. The text is checked by moderation. The three dots offer report and block.
 
 ## 6. Talking to the AI assistant (Sera) and the multilingual chat

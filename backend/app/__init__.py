@@ -160,10 +160,12 @@ def create_app(config_class=None):
             from app.utils.safety import ensure_safety_tables
             from app.services.wordpress_professional_service import ensure_professional_table
             from app.utils.audit import ensure_audit_table
+            from app.services.friend_request_service import ensure_friend_request_table
             with app.app_context():
                 ensure_safety_tables(db)
                 ensure_professional_table(db)
                 ensure_audit_table(db)
+                ensure_friend_request_table(db)
         except Exception:
             app.logger.exception("Could not ensure safety tables")
 

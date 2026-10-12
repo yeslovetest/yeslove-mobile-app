@@ -178,3 +178,13 @@ def test_a_real_bio_is_never_overwritten(me):
     sd.seed_synthetic_data("test-user")
     sd.remove_synthetic_data()
     assert User.query.get(me.id).bio == "My own words"
+
+
+def test_some_friend_requests_are_waiting_for_the_account_and_removal_clears_them(me):
+    from app.models import FriendRequest
+
+    counts = sd.seed_synthetic_data("test-user")
+    pending = FriendRequest.query.filter_by(recipient_id=me.id, status="pending").all()
+    assert counts["friend_requests"] == len(pending) == 3
+    sd.remove_synthetic_data()
+    assert FriendRequest.query.count() == 0

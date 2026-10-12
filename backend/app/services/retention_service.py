@@ -17,6 +17,7 @@ POLICY = {
     "moderation_records": 365,         # flagged text is anonymised after 12 months
     "closed_reports": 730,             # resolved or dismissed reports
     "audit_events": 365,               # the audit trail of access to personal data
+    "friend_requests_answered": 90,    # accepted, declined or withdrawn friend requests
     "removed_posts": 90,               # posts an admin removed, kept briefly as evidence
 }
 
@@ -30,7 +31,7 @@ def _cutoff(days, now):
 def run_retention(now=None, dry_run=False):
     """Apply every rule. Returns {rule: rows affected}."""
     from app.models import (
-        AuditEvent, BlogView, ContentReport, DeviceToken, Media, ModerationLog, Notification, Post, db,
+        AuditEvent, BlogView, ContentReport, DeviceToken, FriendRequest, Media, ModerationLog, Notification, Post, db,
     )
 
     now = now or datetime.utcnow()
@@ -55,6 +56,14 @@ def run_retention(now=None, dry_run=False):
     count_or_apply(
         "audit_events",
         AuditEvent.query.filter(AuditEvent.occurred_at < _cutoff(POLICY["audit_events"], now)),
+        lambda q: q.delete(synchronize_session=False),
+    )
+    count_or_apply(
+        "friend_requests_answered",
+        FriendRequest.query.filter(
+            FriendRequest.status != "pending",
+            FriendRequest.responded_at < _cutoff(POLICY["friend_requests_answered"], now),
+        ),
         lambda q: q.delete(synchronize_session=False),
     )
     count_or_apply(
