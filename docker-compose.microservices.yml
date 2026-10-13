@@ -60,7 +60,7 @@ services:
     volumes:
       - main_db_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
 
   # Independent Vector Database for Chatbot
   vector-db:
@@ -73,14 +73,14 @@ services:
     volumes:
       - vector_db_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
 
   # Redis for Celery tasks
   redis:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
   # Daily data retention job (deletes and anonymises data past its retention period)
   retention:
@@ -125,8 +125,8 @@ services:
     image: rabbitmq:3-management
     restart: unless-stopped
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=testpassword
@@ -138,8 +138,8 @@ services:
     image: memgraph/memgraph-platform
     restart: unless-stopped
     ports:
-      - "7687:7687"
-      - "3000:3000"
+      - "127.0.0.1:7687:7687"
+      - "127.0.0.1:3000:3000"
     volumes:
       - memgraph_data:/var/lib/memgraph
 
