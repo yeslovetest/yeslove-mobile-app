@@ -43,6 +43,7 @@ services:
       - PORT=8000
       - KEYCLOAK_URL=https://auth.yeslove.co.uk
       - LOCAL_DEV_AUTH=${LOCAL_DEV_AUTH:-false}
+      - SENTRY_DSN=${SENTRY_DSN:-}
     depends_on:
       - vector-db
     volumes:

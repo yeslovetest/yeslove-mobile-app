@@ -11,7 +11,20 @@ from app.core.database import create_tables
 
 load_dotenv()
 
+def _init_error_reporting():
+    """Send crashes to Sentry when SENTRY_DSN is set; does nothing otherwise."""
+    dsn = os.getenv("SENTRY_DSN")
+    if not dsn:
+        return
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=dsn,
+        environment=os.getenv("ENVIRONMENT", "production"),
+        traces_sample_rate=0.0,   # errors only, no performance tracing
+        send_default_pii=False,   # never send user data (emails, IPs, bodies)
+    )
 def create_app():
+    _init_error_reporting()
     app = Flask(__name__)
     
     # Enable CORS
