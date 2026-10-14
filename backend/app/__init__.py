@@ -54,9 +54,23 @@ migrate = Migrate()
 def _running_flask_command(*command_names):
     return "flask" in os.path.basename(sys.argv[0]) and any(command in sys.argv for command in command_names)
 
+def _init_error_reporting():
+    """Send crashes to Sentry when SENTRY_DSN is set; does nothing otherwise."""
+    dsn = os.getenv("SENTRY_DSN")
+    if not dsn:
+        return
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=dsn,
+        environment=os.getenv("ENVIRONMENT", "production"),
+        traces_sample_rate=0.0,   # errors only, no performance tracing
+        send_default_pii=False,   # never send user data (emails, IPs, bodies)
+    )
+
 def create_app(config_class=None):
     if config_class is None:
         config_class = ProductionConfig if os.getenv("FLASK_ENV") == "production" else DevelopmentConfig
+    _init_error_reporting()
     app = Flask(__name__)
 
     # Initialising of monitoring stack 

@@ -80,3 +80,4 @@ soundfile>=0.12.1
 torch>=2.2.0
 transformers>=4.40.0
 psycopg[binary]
+sentry-sdk[flask]>=2.0,<3
