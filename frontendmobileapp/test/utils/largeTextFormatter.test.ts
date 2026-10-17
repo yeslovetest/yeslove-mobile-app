@@ -28,17 +28,17 @@ describe("formatLargeTextContent", () => {
   });
 
 
-  
-it("converts bullet points into readable text", () => {
-  const result = formatLargeTextContent(
-    "<ul><li>First item</li><li>Second item</li></ul>"
-  );
 
-  expect(result.map((line) => line.text)).toEqual([
-    "• First item",
-    "• Second item",
-  ]);
-});
+  it("converts bullet points into readable text", () => {
+    const result = formatLargeTextContent(
+      "<ul><li>First item</li><li>Second item</li></ul>"
+    );
+
+    expect(result.map((line) => line.text)).toEqual([
+      "• First item",
+      "• Second item",
+    ]);
+  });
 
 
   it("preserves text inside bold HTML tags", () => {
