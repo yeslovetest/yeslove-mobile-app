@@ -11,7 +11,6 @@ describe("formatLargeTextContent", () => {
       "About Us",
       "Welcome to our blog.",
     ]);
-    console.log("Formatter result:", result);
     expect(result[0].isHeading).toBe(true);
   });
 

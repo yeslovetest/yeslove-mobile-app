@@ -38,11 +38,11 @@ const decodeHtmlEntities = (text: string): string => {
     )
     .replace(/&#(\d+);/g, (_, code: string) => {
       const number = Number(code);
-      return number <= 0x10ffff ? String.fromCharCode(number) : _;
+      return number <= 0x10ffff ? String.fromCodePoint(number) : _;
     })
     .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => {
       const number = parseInt(code, 16);
-      return number <= 0x10ffff ? String.fromCharCode(number) : _;
+      return number <= 0x10ffff ? String.fromCodePoint(number) : _;
     });
 };
 
